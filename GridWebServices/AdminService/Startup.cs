@@ -58,6 +58,8 @@ namespace AdminService
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new Info { Title = "GRID Admin API", Version = "v1" });
+                var xmlDocPath = System.AppDomain.CurrentDomain.BaseDirectory + @"AdminService.xml";
+                c.IncludeXmlComments(xmlDocPath);
             });
         }
 
@@ -94,7 +96,7 @@ namespace AdminService
 
             app.Run(async (context) =>
             {
-                await context.Response.WriteAsync("Hello World!");
+                await context.Response.WriteAsync("Admin Service!");
             });
           
         }       

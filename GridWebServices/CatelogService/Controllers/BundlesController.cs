@@ -21,6 +21,10 @@ namespace CatelogService.Controllers
             _context = context;
         }
 
+        /// <summary>
+        /// This will provide the listing of all Customer selectable flag enabled Bundles.
+        /// </summary>        
+        /// <returns>Bundles</returns>
         // GET: api/Bundles
         [HttpGet]
         public IEnumerable<Bundle> GetBundles()
@@ -39,6 +43,11 @@ namespace CatelogService.Controllers
            
         }
 
+        /// <summary>
+        /// This will provide Bundle details for specific ID passed 
+        /// </summary>
+        /// <param name="id">Bundle ID</param>
+        /// <returns>Bundle</returns>
         // GET: api/Bundles/5
         [HttpGet("{id}")]
         public async Task<IActionResult> GetBundle([FromRoute] int id)
@@ -58,6 +67,12 @@ namespace CatelogService.Controllers
             return Ok(bundle);
         }
 
+        /// <summary>
+        /// Promotion Bundle for a bundle id and promotion code. Retuns the new bundle for the id passed which is matching the promotion code.
+        /// </summary>
+        /// <param name="id">Bundle ID</param>
+        /// <param name="promocode">Promotion code</param>
+        /// <returns>Bundle</returns>
         // GET: api/Bundles/5
         [HttpGet("{id}/{promocode}")]
         public async Task<IActionResult> GetBundle([FromRoute] int id, string promocode)
@@ -78,6 +93,12 @@ namespace CatelogService.Controllers
             return Ok(bundle);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="bundle"></param>
+        /// <returns></returns>
         // PUT: api/Bundles/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutBundle([FromRoute] int id, [FromBody] Bundle bundle)

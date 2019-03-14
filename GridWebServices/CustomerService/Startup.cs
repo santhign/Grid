@@ -60,6 +60,8 @@ namespace CustomerService
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new Info { Title = "GRID Customer API", Version = "v1" });
+                var xmlDocPath = System.AppDomain.CurrentDomain.BaseDirectory + @"CustomerService.xml";
+                c.IncludeXmlComments(xmlDocPath);
             });
         }
 
@@ -85,7 +87,7 @@ namespace CustomerService
             app.UseMvc();
             app.Run(async (context) =>
             {
-                await context.Response.WriteAsync("Hello World!");
+                await context.Response.WriteAsync("Customer Service!");
             });
         }
     }

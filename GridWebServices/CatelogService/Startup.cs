@@ -61,6 +61,8 @@ namespace CatelogService
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new Info { Title = "GRID Catelog API", Version = "v1" });
+                var xmlDocPath = System.AppDomain.CurrentDomain.BaseDirectory + @"CatelogService.xml";
+                c.IncludeXmlComments(xmlDocPath);
             });
         }
 
@@ -86,7 +88,7 @@ namespace CatelogService
             app.UseMvc();
             app.Run(async (context) =>
             {
-                await context.Response.WriteAsync("Hello World!");
+                await context.Response.WriteAsync("Catalog Service!");
             });
         }
     }
