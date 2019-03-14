@@ -2,23 +2,25 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CustomerService.Contexts;
 using CustomerService.Models;
 
+
+
+
 namespace CustomerService.Controllers
-{
+{   
     [Route("api/[controller]")]
     [ApiController]
     public class CustomersController : ControllerBase
     {
-        private readonly CustomerContext _context;
+        private readonly CustomerContext _context;       
 
         public CustomersController(CustomerContext context)
         {
-            _context = context;
+            _context = context;           
         }
 
         // GET: api/Customers
@@ -40,7 +42,7 @@ namespace CustomerService.Controllers
                 return BadRequest(ModelState);
             }
 
-            var customer = await _context.Customers.FromSql("Admin_GetCustomerListing").FirstAsync(p => p.CustomerID == id);
+            var customer = await _context.Customers.FromSql("Admin_GetCustomerListing").FirstOrDefaultAsync(p => p.CustomerID == id);
 
             if (customer == null)
             {
@@ -86,17 +88,22 @@ namespace CustomerService.Controllers
         }
 
         // POST: api/Customers
-        [HttpPost]
-        public async Task<IActionResult> PostCustomer([FromBody] RegisterCustomer customer)
+        [HttpPost]            
+        public async Task<IActionResult> Create([FromBody] RegisterCustomer customer)
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                string messages = string.Join("; ", ModelState.Values
+                                       .SelectMany(x => x.Errors)
+                                       .Select(x => x.ErrorMessage));
+                return BadRequest(messages);
             }
-            Customer _customer = 
-            await _context.Customers.FromSql("[Customer_CreateCustomer] @Email, @Password, @ReferralCode", parameters : new[] { customer.Email, customer.Password, GenerateRandomString() }).FirstAsync();
 
-            return CreatedAtAction("GetCustomer", new { id = _customer.CustomerID }, customer);
+            Customer _customer = 
+            
+            await _context.Customers.FromSql($"[Customer_CreateCustomer] @Email={customer.Email}, @Password={new Sha2().Hash(customer.Password)}, @ReferralCode={GenerateRandomString()}" ).FirstOrDefaultAsync();
+
+            return Ok(_customer);
         }
 
         // DELETE: api/Customers/5
@@ -154,5 +161,7 @@ namespace CustomerService.Controllers
 
             return new string(chars.ToArray());
         }
+        
+       
     }
 }

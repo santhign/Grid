@@ -25,10 +25,18 @@ namespace CatelogService.Controllers
         [HttpGet]
         public IEnumerable<Bundle> GetBundles()
         {
-            var bundles = _context.Bundles
-                      .FromSql("Catelog_GetBundlesListing")
-                      .ToList();
-            return bundles;
+            try
+            {
+                var bundles = _context.Bundles
+                     .FromSql("Catelog_GetBundlesListing")
+                     .ToList();
+                return bundles;
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
+           
         }
 
         // GET: api/Bundles/5
