@@ -1,0 +1,121 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>AdminService</name>
+    </assembly>
+    <members>
+        <member name="T:CatelogService.Controllers.BannersController">
+            <summary>
+            This Banner API Process Banner CRUID operations as well as banner conditional/unconditional queries/searches.
+            </summary>
+        </member>
+        <member name="M:CatelogService.Controllers.BannersController.#ctor(AdminService.DataAccess.AdminContext,Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Setting context for EF and Configuration for ADO.Net 
+            </summary>
+            <param name="context"></param>
+            <param name="configuration"></param>
+        </member>
+        <member name="T:AdminService.DataAccess.SPHelper">
+            <summary>
+            Helper class to execute stored procedures
+            </summary>
+        </member>
+        <member name="M:AdminService.DataAccess.SPHelper.GetConnection(Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Returns connneciton string form configuration 
+            </summary>
+            <param name="configuration"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AdminService.DataAccess.SPHelper.#ctor(System.String,Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Run SP without parameters
+            </summary>
+            <param name="sprocName"></param>
+            <param name="configuration"></param>
+        </member>
+        <member name="M:AdminService.DataAccess.SPHelper.#ctor(System.String,System.Data.SqlClient.SqlParameter[],Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            
+            </summary>
+            <param name="sprocName"></param>
+            <param name="parameters"></param>
+            <param name="configuration"></param>
+        </member>
+        <member name="M:AdminService.DataAccess.SPHelper.Run">
+            <summary>
+            Run command with executeNonQuery
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AdminService.DataAccess.SPHelper.Run(System.Data.DataTable)">
+            <summary>
+            Run command  with data adapter: fill datatable 
+            </summary>
+            <param name="dataTable"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AdminService.DataAccess.SPHelper.Run(System.Data.DataSet)">
+            <summary>
+            Run command  with data adapter: fill dataset
+            </summary>
+            <param name="dataSet"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AdminService.DataAccess.SPHelper.Dispose">
+            <summary>
+            Dispose connection and command objects
+            </summary>
+        </member>
+        <member name="T:AdminService.Models.Helper.DataHelper">
+            <summary>
+            Helper class to pass SAP helper to call
+            </summary>
+        </member>
+        <member name="M:AdminService.Models.Helper.DataHelper.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Constructor setting configuration
+            </summary>
+            <param name="configuration"></param>
+        </member>
+        <member name="M:AdminService.Models.Helper.DataHelper.GetBannerDetails(AdminService.Models.BannerDetailsRequest)">
+            <summary>
+            
+            </summary>
+            <param name="request"></param>       
+            <returns></returns>
+        </member>
+        <member name="T:AdminService.Startup">
+            <summary>
+            Application startup/entry point
+            </summary>
+        </member>
+        <member name="P:AdminService.Startup.Configuration">
+            <summary>
+            Application configuration
+            </summary>
+        </member>
+        <member name="M:AdminService.Startup.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Setting configuaration on startup
+            </summary>
+            <param name="configuration"></param>
+        </member>
+        <member name="M:AdminService.Startup.ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+             <summary>
+            This method gets called by the runtime. Use this method to add services to the container.
+             For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
+             </summary>
+             <param name="services"></param>
+             
+        </member>
+        <member name="M:AdminService.Startup.Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder,Microsoft.AspNetCore.Hosting.IHostingEnvironment)">
+            <summary>
+            This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+            </summary>
+            <param name="app"></param>
+            <param name="env"></param>
+        </member>
+    </members>
+</doc>

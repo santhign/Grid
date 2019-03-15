@@ -101,8 +101,10 @@ namespace CustomerService.Controllers
 
             Customer _customer = 
             
-            await _context.Customers.FromSql($"[Customer_CreateCustomer] @Email={customer.Email}, @Password={new Sha2().Hash(customer.Password)}, @ReferralCode={GenerateRandomString()}" ).FirstOrDefaultAsync();
+           // await _context.Customers.FromSql($"[Customer_CreateCustomer] @Email={customer.Email}, @Password={new Sha2().Hash(customer.Password)}, @ReferralCode={GenerateRandomString()}" ).FirstOrDefaultAsync();
 
+
+            await _context.Customers.FromSql($"[Customer_CreateCustomer]").FirstOrDefaultAsync();
             return Ok(_customer);
         }
 

@@ -6,31 +6,46 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using AdminService.Models;
+using AdminService.Models.Helper;
 using AdminService.DataAccess;
+using Microsoft.Extensions.Configuration;
 
 namespace CatelogService.Controllers
-{
+{ 
+   
     [Route("api/[controller]")]
-    [ApiController]
+    [ApiController]    
     public class BannersController : ControllerBase
     {
         private readonly AdminContext _context;
-
-        public BannersController(AdminContext context)
+        IConfiguration _iconfiguration;
+       
+        public BannersController(AdminContext context, IConfiguration configuration)
         {
             _context = context;
+            _iconfiguration = configuration;
         }
 
-        // POST: api/Banners
-       
+/// <summary>
+/// Get banner details
+/// </summary>
+/// <param name="request"></param>
+/// <returns></returns>
+        [HttpPost]
         [Route("BannerDetails")]
         public async Task<List<BannerDetails>> BannerDetails([FromBody] BannerDetailsRequest request)
         {
 
-            var banners = await _context.Banners
-                      .FromSql($"Admin_GetBannerDetails {request.LocationName}, {request.PageName} ").ToListAsync();
+            DataHelper helper = new DataHelper(_iconfiguration);
+
+            return  await  helper.GetBannerDetails(request);
+          
+            //var banners = await _context.Banners
+            //          .FromSql($"Admin_GetBannerDetails {request.LocationName}, {request.PageName} ").ToListAsync();
             
-            return banners.Select(x => new BannerDetails { BannerImage = x.BannerImage, BannerUrl = x.BannerUrl, UrlType = x.UrlType == 0 ? "_self" : "_blank" }).ToList();
+            //return banners.Select(x => new BannerDetails { BannerImage = x.BannerImage, BannerUrl = x.BannerUrl, UrlType = x.UrlType == 0 ? "_self" : "_blank" }).ToList();
+
+           
         }
 
         // GET: api/Banners/5
