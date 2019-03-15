@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using AdminService.Models;
 using AdminService.DataAccess;
 using Microsoft.Extensions.Configuration;
+using AdminService.Common.Models;
+
 
 namespace CatelogService.Controllers
 { 
@@ -30,11 +32,42 @@ namespace CatelogService.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("BannerDetails")]
-        public async Task<List<Banners>> BannerDetails([FromBody] BannerDetailsRequest request)
+        public async Task<IActionResult> BannerDetails([FromBody] BannerDetailsRequest request)
         {
-            BannerDataAccess _bannerAccess = new BannerDataAccess(_iconfiguration);
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = StatusMessages.DomainValidationError,
+                        IsDomainValidationErrors = true
+                    });
+                }
 
-            return  await _bannerAccess.GetBannerDetails(request);           
+                BannerDataAccess _bannerAccess = new BannerDataAccess(_iconfiguration);
+
+                return Ok(new ServerResponse
+                {
+                    HasSucceeded = true,
+                    Message = StatusMessages.SuccessMessage,
+                    Result = await _bannerAccess.GetBannerDetails(request)
+
+                });
+            }
+            catch(Exception ex)
+            {
+                //to do Logging
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false                   
+                });
+            }
+               
         }
     }
 }
