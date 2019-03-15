@@ -1,13 +1,14 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+
 using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace AdminService.Helpers
+namespace Core.Helpers
 {
     public class DataAccessHelper : IDisposable
     {
@@ -100,7 +101,7 @@ namespace AdminService.Helpers
             dataAdapter.SelectCommand = command;
             dataAdapter.Fill(dataTable);
 
-            return (dataTable.Rows.Count);
+            return (int)command.Parameters["ReturnValue"].Value; 
         }
 
 
@@ -120,7 +121,7 @@ namespace AdminService.Helpers
 
             dataAdapter.SelectCommand = command;
             dataAdapter.Fill(dataSet);
-            return (dataSet.Tables.Count);
+            return (int)command.Parameters["ReturnValue"].Value; 
         }
 
 

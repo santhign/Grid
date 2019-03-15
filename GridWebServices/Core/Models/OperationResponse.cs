@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 
-namespace AdminService.Common.Models
+namespace Core.Models
 {
     /// <summary>
     /// Operation response convey status of request - success/failure/validation error etc. without a result data collection.
@@ -62,6 +62,15 @@ namespace AdminService.Common.Models
             HasSucceeded = hasSucceeded;
             Message = msg;
         }
+
+
+    }
+
+    public class DatabaseResponse
+    {
+        public int ResponseCode { get; set; }
+
+        public object  Results {get;set;}
 
 
     }

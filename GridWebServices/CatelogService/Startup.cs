@@ -35,9 +35,10 @@ namespace CatelogService
                        .AllowAnyMethod()
                        .AllowAnyHeader();
             }));
-            services.AddDbContext<VASContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-            services.AddDbContext<BundleContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+           
             services.AddMvc();
+            //to access configuration from controller
+            services.AddSingleton(Configuration);
 
             services.Configure<MvcOptions>(options =>
             {

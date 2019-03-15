@@ -21,4 +21,30 @@ namespace CatelogService.Models
         public double ApplicableServiceFee { get; set; }
         public string ServiceName { get; set; }
     }
+
+    public class CreateBundleRequest
+    {      
+        public string BundleName { get; set; }
+        public string PlanMarketingName { get; set; }
+        public string PortalDescription { get; set; }
+        public string PortalSummaryDescription { get; set; }
+        public bool IsCustomerSelectable { get; set; }
+        public DateTime ValidFrom { get; set; }
+        public DateTime ValidTo { get; set; }      
+
+    }
+
+    public class UpdateBundleRequest
+    {
+        public int BundleID { get; set; }
+        public string BundleName { get; set; }
+        public string PlanMarketingName { get; set; }
+        public string PortalDescription { get; set; }
+        public string PortalSummaryDescription { get; set; }
+        public bool IsCustomerSelectable { get; set; }
+        public DateTime ValidFrom { get; set; }
+        public DateTime ValidTo { get; set; }
+        public int Status { get; set; }
+
+    }
 }

@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using AdminService.Models;
 using AdminService.DataAccess;
 using Microsoft.Extensions.Configuration;
-using AdminService.Common.Models;
+using Core.Models;
 
 namespace AdminService.Controllers
 {

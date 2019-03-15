@@ -5,8 +5,15 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using CatelogService.Models;
 using CatelogService.DataAccess;
+using Core.Models;
+using Core.Helpers;
+using Core.Enums;
+using Core.Extensions;
+
+
 
 namespace CatelogService.Controllers
 {
@@ -14,12 +21,12 @@ namespace CatelogService.Controllers
     [ApiController]
     public class BundlesController : ControllerBase
     {
-        private readonly BundleContext _context;
+        IConfiguration _iconfiguration;
 
-        public BundlesController(BundleContext context)
+        public BundlesController(IConfiguration configuration)
         {
-            _context = context;
-        }
+            _iconfiguration = configuration;
+        }       
 
         /// <summary>
         /// This will provide the listing of all Customer selectable flag enabled Bundles.
@@ -27,18 +34,29 @@ namespace CatelogService.Controllers
         /// <returns>Bundles</returns>
         // GET: api/Bundles
         [HttpGet]
-        public IEnumerable<Bundle> GetBundles()
+        public async Task<IActionResult> GetBundles()
         {
             try
             {
-                var bundles = _context.Bundles
-                     .FromSql("Catelog_GetBundlesListing")
-                     .ToList();
-                return bundles;
+                BundleDataAccess _bundleAccess = new BundleDataAccess(_iconfiguration);
+
+                return Ok(new ServerResponse
+                {
+                    HasSucceeded = true,
+                    Message = StatusMessages.SuccessMessage,
+                    Result = await _bundleAccess.GetBundleList()
+
+                });
+              
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                throw ex;
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
             }
            
         }
@@ -51,20 +69,43 @@ namespace CatelogService.Controllers
         // GET: api/Bundles/5
         [HttpGet("{id}")]
         public async Task<IActionResult> GetBundle([FromRoute] int id)
-        {
-            if (!ModelState.IsValid)
+        {           
+            try
             {
-                return BadRequest(ModelState);
-            }
-            
-            var bundle = await _context.Bundles.FromSql("Catelog_GetBundlesListing").FirstAsync(p => p.BundleID == id);
+                if (!ModelState.IsValid)
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = StatusMessages.DomainValidationError,
+                        IsDomainValidationErrors = true
+                    });
+                }
 
-            if (bundle == null)
+                BundleDataAccess _bundleAccess = new BundleDataAccess(_iconfiguration);
+
+                return Ok(new ServerResponse
+                {
+                    HasSucceeded = true,
+                    Message = StatusMessages.SuccessMessage,
+                    Result = (await _bundleAccess.GetBundleById(id)).FirstOrDefault()
+
+                });
+            }
+
+            catch (Exception ex)
             {
-                return NotFound();
+                //to do Logging
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
             }
 
-            return Ok(bundle);
+
         }
 
         /// <summary>
@@ -77,20 +118,40 @@ namespace CatelogService.Controllers
         [HttpGet("{id}/{promocode}")]
         public async Task<IActionResult> GetBundle([FromRoute] int id, string promocode)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
+                if (!ModelState.IsValid)
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = StatusMessages.DomainValidationError,
+                        IsDomainValidationErrors = true
+                    });
+                }
+
+                BundleDataAccess _bundleAccess = new BundleDataAccess(_iconfiguration);
+
+                return Ok(new ServerResponse
+                {
+                    HasSucceeded = true,
+                    Message = StatusMessages.SuccessMessage,
+                    Result = (await _bundleAccess.GetBundleByPromocode(id,promocode)).FirstOrDefault()
+
+                });
             }
 
-            var bundle = await _context.Bundles
-                      .FromSql($"Catelog_GetPromotionalBundle {id}, {promocode}").FirstAsync();
-
-            if (bundle == null)
+            catch (Exception ex)
             {
-                return NotFound();
-            }
+                //to do Logging
 
-            return Ok(bundle);
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+            }           
         }
 
         /// <summary>
@@ -101,78 +162,136 @@ namespace CatelogService.Controllers
         /// <returns></returns>
         // PUT: api/Bundles/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutBundle([FromRoute] int id, [FromBody] Bundle bundle)
+        public async Task<IActionResult> PutBundle([FromRoute] int id, [FromBody] UpdateBundleRequest bundle)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            if (id != bundle.BundleID)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(bundle).State = EntityState.Modified;
-
             try
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!BundleExists(id))
+                if (!ModelState.IsValid)
                 {
-                    return NotFound();
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = StatusMessages.DomainValidationError,
+                        IsDomainValidationErrors = true
+                    });
                 }
-                else
+
+                BundleDataAccess _bundleAccess = new BundleDataAccess(_iconfiguration);
+
+                DatabaseResponse dbResponse = await _bundleAccess.UpdateBundle(bundle);
+
+                return Ok(new ServerResponse
                 {
-                    throw;
-                }
+                    HasSucceeded = dbResponse.ResponseCode == 1?true: false,
+                    Message =  EnumExtensions.GetDescription(dbResponse.ResponseCode == 1 ?DbReturnValue.UpdateSuccess:(DbReturnValue) dbResponse.ResponseCode),
+                    Result = dbResponse.Results
+                    
+                });
             }
 
-            return NoContent();
+            catch (Exception ex)
+            {
+                //to do Logging
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+            }            
         }
 
         // POST: api/Bundles
         [HttpPost]
-        public async Task<IActionResult> PostBundle([FromBody] Bundle bundle)
+        public async Task<IActionResult> PostBundle([FromBody] CreateBundleRequest bundle)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
+                if (!ModelState.IsValid)
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = StatusMessages.DomainValidationError,
+                        IsDomainValidationErrors = true
+                    });
+                }
+
+                BundleDataAccess _bundleAccess = new BundleDataAccess(_iconfiguration);
+
+                DatabaseResponse dbResponse  = await _bundleAccess.CreateBundle(bundle);
+
+                return Ok(new ServerResponse
+                {
+                    HasSucceeded = (dbResponse.ResponseCode==(int) DbReturnValue.CreateSuccess),
+                    Message = EnumExtensions.GetDescription((DbReturnValue)dbResponse.ResponseCode),
+                    Result = dbResponse.Results
+
+                });
             }
 
-            _context.Bundles.Add(bundle);
-            await _context.SaveChangesAsync();
+            catch (Exception ex)
+            {
+                //to do Logging
 
-            return CreatedAtAction("GetBundle", new { id = bundle.BundleID }, bundle);
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+            }           
         }
 
         // DELETE: api/Bundles/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBundle([FromRoute] int id)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
+                if (!ModelState.IsValid)
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = StatusMessages.DomainValidationError,
+                        IsDomainValidationErrors = true
+                    });
+                }
+
+                BundleDataAccess _bundleAccess = new BundleDataAccess(_iconfiguration);
+
+                int result = await _bundleAccess.DeleteBundle(id);
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = (result == ((int) DbReturnValue.DeleteSuccess)),
+
+                    Message = EnumExtensions.GetDescription((DbReturnValue) result),                  
+
+                });
             }
 
-            var bundle = await _context.Bundles.FindAsync(id);
-            if (bundle == null)
+            catch (Exception ex)
             {
-                return NotFound();
+                //to do Logging
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
             }
-
-            _context.Bundles.Remove(bundle);
-            await _context.SaveChangesAsync();
-
-            return Ok(bundle);
+           
         }
 
-        private bool BundleExists(int id)
-        {
-            return _context.Bundles.Any(e => e.BundleID == id);
+        private async Task<bool> BundleExists(int id)
+        {  
+            BundleDataAccess _bundleAccess = new BundleDataAccess(_iconfiguration);
+
+           return (await _bundleAccess.BundleExists(id) == ((int)DbReturnValue.DeleteSuccess));
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -8,7 +9,8 @@ using Microsoft.EntityFrameworkCore;
 using AdminService.Models;
 using AdminService.DataAccess;
 using Microsoft.Extensions.Configuration;
-using AdminService.Common.Models;
+using Core.Models;
+
 
 
 namespace CatelogService.Controllers
