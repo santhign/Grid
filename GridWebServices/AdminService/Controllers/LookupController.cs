@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using AdminService.Models;
 using AdminService.DataAccess;
+using Microsoft.Extensions.Configuration;
 
 namespace AdminService.Controllers
 {
@@ -14,18 +15,19 @@ namespace AdminService.Controllers
     [ApiController]
     public class LookupController : ControllerBase
     {
-        private readonly AdminContext _context;
+        IConfiguration _iconfiguration;
 
-        public LookupController(AdminContext context)
+        public LookupController(IConfiguration configuration)
         {
-            _context = context;
+            _iconfiguration = configuration;
         }
 
-       [HttpGet]
-        public async Task<List<Lookup>> GetLookup([FromRoute] int id, string lookupType)
+        [HttpGet("{lookupType}")]
+        public async Task<List<Lookup>> GetLookup([FromRoute] string lookupType)
         {
-            return await _context.Lookup
-                      .FromSql($"[Admin_GetLookup] @LookupType={lookupType} ").ToListAsync();            
+            LookupDataAccess _lookupAccess = new LookupDataAccess(_iconfiguration);
+
+            return await _lookupAccess.GetLookupList(lookupType);         
         }
     }
 }

@@ -49,7 +49,6 @@ namespace AdminService
                        .AllowAnyHeader();
             }));
            
-            services.AddDbContext<AdminContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
             services.AddMvc();
           
             //to access configuration from controller

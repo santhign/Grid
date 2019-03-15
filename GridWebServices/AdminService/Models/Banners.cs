@@ -8,15 +8,16 @@ namespace AdminService.Models
 {
     public class Banners
     {
-        [Key]
-        public int BannerID { get; set; }
-        public int LocationID { get; set; }
-        public string BannerName { get; set; }
-        public string BannerUrl { get; set; }
-        public int UrlType { get; set; }
         public string BannerImage { get; set; }
-        public DateTime ValidFrom { get; set; }
-        public DateTime ValidTo { get; set; }
-        public int Status { get; set; }       
+        public string BannerUrl { get; set; }
+        public string UrlType { get; set; }
+    }
+
+    public class BannerDetailsRequest
+    {
+        public string LocationName { get; set; }
+        public string PageName { get; set; }
+
+
     }
 }

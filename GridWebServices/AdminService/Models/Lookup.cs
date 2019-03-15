@@ -8,8 +8,6 @@ namespace AdminService.Models
 {
     public class Lookup
     {
-        [Key]
-        public int LookupID { get; set; }
         public string LookupText { get; set; }
     }
 }

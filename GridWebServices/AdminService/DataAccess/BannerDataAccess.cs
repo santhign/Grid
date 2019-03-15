@@ -1,22 +1,18 @@
-﻿using System;
+﻿using AdminService.Helpers;
+using AdminService.Models;
+using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Data;
 using System.Data.SqlClient;
-using AdminService.DataAccess;
-using Microsoft.Extensions.Configuration;
+using System.Linq;
+using System.Threading.Tasks;
 
-
-
-namespace AdminService.Models.Helper
+namespace AdminService.DataAccess
 {
-    /// <summary>
-    /// Helper class to pass SAP helper to call
-    /// </summary>
-    public class DataHelper
+    public class BannerDataAccess
     {
-        internal SPHelper spHelper = null;
+        internal DataAccessHelper _DataHelper = null;
 
         private IConfiguration _configuration;
 
@@ -24,7 +20,7 @@ namespace AdminService.Models.Helper
         /// Constructor setting configuration
         /// </summary>
         /// <param name="configuration"></param>
-        public DataHelper(IConfiguration configuration)
+        public BannerDataAccess(IConfiguration configuration)
         {
             _configuration = configuration;
         }
@@ -33,7 +29,7 @@ namespace AdminService.Models.Helper
         /// </summary>
         /// <param name="request"></param>       
         /// <returns></returns>
-        public async Task<List<BannerDetails>> GetBannerDetails(BannerDetailsRequest request)
+        public async Task<List<Banners>> GetBannerDetails(BannerDetailsRequest request)
         {
             try
             {
@@ -41,28 +37,28 @@ namespace AdminService.Models.Helper
                 {
                     new SqlParameter( "@LocationName",  SqlDbType.VarChar ),
                     new SqlParameter( "@PageName",  SqlDbType.VarChar )
-			    };
+                };
 
                 parameters[0].Value = request.LocationName;
                 parameters[1].Value = request.PageName;
 
-                spHelper = new SPHelper("Admin_GetBannerDetails", parameters, _configuration);
+                _DataHelper = new DataAccessHelper("Admin_GetBannerDetails", parameters, _configuration);
 
                 DataTable dt = new DataTable();
 
-                spHelper.Run(dt);                
+                _DataHelper.Run(dt);
 
-                List<BannerDetails> statusList = new List<BannerDetails>();
+                List<Banners> statusList = new List<Banners>();
 
                 if (dt.Rows.Count > 0)
                 {
 
                     statusList = (from model in dt.AsEnumerable()
-                                  select new BannerDetails()
+                                  select new Banners()
                                   {
                                       BannerImage = model.Field<string>("BannerImage"),
                                       BannerUrl = model.Field<string>("BannerUrl"),
-                                      UrlType= model.Field<int>("UrlType").ToString(),
+                                      UrlType = model.Field<int>("UrlType").ToString(),
 
                                   }).ToList();
                 }
@@ -76,9 +72,9 @@ namespace AdminService.Models.Helper
             }
             finally
             {
-                spHelper.Dispose();
+                _DataHelper.Dispose();
             }
         }
-       
+
     }
 }

@@ -1,22 +1,17 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Data;
-using System.Configuration;
-using System.Diagnostics;
-using System.Data.SqlClient;
-using Microsoft.Extensions.Configuration;
 
-
-namespace AdminService.DataAccess
+namespace AdminService.Helpers
 {
-    /// <summary>
-    /// Helper class to execute stored procedures
-    /// </summary>
-    public class SPHelper : IDisposable    {
-     
-        private SqlCommand command;       
+    public class DataAccessHelper : IDisposable
+    {
+        private SqlCommand command;
 
         /// <summary>
         /// Returns connneciton string form configuration 
@@ -24,17 +19,17 @@ namespace AdminService.DataAccess
         /// <param name="configuration"></param>
         /// <returns></returns>
         public string GetConnection(IConfiguration configuration)
-        {           
+        {
             return configuration.GetConnectionString("DefaultConnection");
         }
 
-      
+
         /// <summary>
         /// Run SP without parameters
         /// </summary>
         /// <param name="sprocName"></param>
         /// <param name="configuration"></param>
-        public SPHelper(string sprocName, IConfiguration configuration)
+        public DataAccessHelper(string sprocName, IConfiguration configuration)
         {
             //creating command object with connection name and proc name, and open connection for the command
             command = new SqlCommand(sprocName, new SqlConnection(GetConnection(configuration)));
@@ -43,13 +38,13 @@ namespace AdminService.DataAccess
             command.Connection.Open();
         }
 
-      /// <summary>
-      /// 
-      /// </summary>
-      /// <param name="sprocName"></param>
-      /// <param name="parameters"></param>
-      /// <param name="configuration"></param>
-        public SPHelper(string sprocName, SqlParameter[] parameters, IConfiguration configuration)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sprocName"></param>
+        /// <param name="parameters"></param>
+        /// <param name="configuration"></param>
+        public DataAccessHelper(string sprocName, SqlParameter[] parameters, IConfiguration configuration)
         {
             // prepare a command object with procedure and parameters
             command = new SqlCommand(sprocName, new SqlConnection(GetConnection(configuration)));
@@ -74,8 +69,8 @@ namespace AdminService.DataAccess
             command.CommandTimeout = 0;
             command.Connection.Open();
         }
-     
- 
+
+
         /// <summary>
         /// Run command with executeNonQuery
         /// </summary>
@@ -107,14 +102,14 @@ namespace AdminService.DataAccess
 
             return (dataTable.Rows.Count);
         }
-       
+
 
         /// <summary>
         /// Run command  with data adapter: fill dataset
         /// </summary>
         /// <param name="dataSet"></param>
         /// <returns></returns>
-     
+
         public int Run(DataSet dataSet)
         {
             //	Fill a DataSet with the result of executing this stored procedure.
@@ -128,10 +123,10 @@ namespace AdminService.DataAccess
             return (dataSet.Tables.Count);
         }
 
-       
-      /// <summary>
-      /// Dispose connection and command objects
-      /// </summary>
+
+        /// <summary>
+        /// Dispose connection and command objects
+        /// </summary>
         public void Dispose()
         {
             //	Dispose of this StoredProcedure.
