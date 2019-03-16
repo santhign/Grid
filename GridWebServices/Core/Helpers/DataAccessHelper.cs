@@ -1,12 +1,8 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System;
-using System.Collections.Generic;
-
 using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Core.Helpers
 {
@@ -35,6 +31,19 @@ namespace Core.Helpers
             //creating command object with connection name and proc name, and open connection for the command
             command = new SqlCommand(sprocName, new SqlConnection(GetConnection(configuration)));
             command.CommandType = CommandType.StoredProcedure;
+            command.Parameters.Add(
+                new SqlParameter("ReturnValue",
+                    SqlDbType.Int,
+                /* int size */ 4,
+                    ParameterDirection.ReturnValue,
+                /* bool isNullable */ false,
+                /* byte precision */ 0,
+                /* byte scale */ 0,
+                /* string srcColumn */ string.Empty,
+                    DataRowVersion.Default,
+                /* value */ null
+                )
+            );
             command.CommandTimeout = 0;
             command.Connection.Open();
         }
