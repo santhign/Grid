@@ -39,5 +39,11 @@ namespace InfrastructureService
         {
             Log.Debug(message);
         }
+
+        public static void EntityInformation(string id, string source, string message)
+        {
+            string info = "{ \"id\": \"" + id + "\", \"source\": \"" + source + "\", \"message\": \"" + message + "\" }";
+            Log.Information(info);
+        }
     }
 }
