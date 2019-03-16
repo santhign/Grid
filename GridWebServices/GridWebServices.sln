@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.438
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28711.60
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CatelogService", "CatelogService\CatelogService.csproj", "{997DF3CC-C2B1-49E1-8AAA-3B65870CD43C}"
 EndProject
@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomerService", "Customer
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminService", "AdminService\AdminService.csproj", "{A59CDFC8-F5DA-45AB-964F-692C8D75C5C0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "Core\Core.csproj", "{0F965DEB-D58C-4CA3-967B-D9753D082C6B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "Core\Core.csproj", "{0F965DEB-D58C-4CA3-967B-D9753D082C6B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InfrastructureService", "InfrastructureService\InfrastructureService.csproj", "{3CB7E20B-E4F4-4D22-B742-2DAE087FD431}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{0F965DEB-D58C-4CA3-967B-D9753D082C6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0F965DEB-D58C-4CA3-967B-D9753D082C6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0F965DEB-D58C-4CA3-967B-D9753D082C6B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3CB7E20B-E4F4-4D22-B742-2DAE087FD431}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3CB7E20B-E4F4-4D22-B742-2DAE087FD431}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3CB7E20B-E4F4-4D22-B742-2DAE087FD431}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3CB7E20B-E4F4-4D22-B742-2DAE087FD431}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
