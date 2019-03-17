@@ -23,7 +23,7 @@ namespace CustomerService
             Log.Logger = new LoggerConfiguration()
                   .ReadFrom.Configuration(Configuration)
                   .CreateLogger();
-            Log.Information("Admin Service is running");
+            Log.Information("Customer Service is running");
             CreateWebHostBuilder(args).Build().Run();
         }
 
