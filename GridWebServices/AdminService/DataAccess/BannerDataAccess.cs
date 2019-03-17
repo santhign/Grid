@@ -73,7 +73,7 @@ namespace AdminService.DataAccess
             {
                 Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
-                return new List<Banners>();
+                throw ex;
             }
             finally
             {
