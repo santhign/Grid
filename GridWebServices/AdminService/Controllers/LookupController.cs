@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using AdminService.Models;
 using AdminService.DataAccess;
 using Microsoft.Extensions.Configuration;
 using Core.Models;
+using Core.Helpers;
+using Core.Enums;
+using Serilog;
 
 namespace AdminService.Controllers
 {
@@ -51,7 +49,7 @@ namespace AdminService.Controllers
             }
             catch (Exception ex)
             {
-                //to do Logging
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 return Ok(new OperationResponse
                 {

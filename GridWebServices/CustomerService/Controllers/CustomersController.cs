@@ -4,11 +4,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using CustomerService.Contexts;
 using CustomerService.Models;
-
-
-
+using Core.Enums;
+using Core.Helpers;
+using Core.Models;
+using Core.Extensions;
+using Serilog;
+using Microsoft.Extensions.Configuration;
+using CustomerService.DataAccess;
 
 namespace CustomerService.Controllers
 {   
@@ -16,154 +19,238 @@ namespace CustomerService.Controllers
     [ApiController]
     public class CustomersController : ControllerBase
     {
-        private readonly CustomerContext _context;       
+        IConfiguration _iconfiguration;
 
-        public CustomersController(CustomerContext context)
+        public CustomersController(IConfiguration configuration)
         {
-            _context = context;           
-        }
-
+            _iconfiguration = configuration;
+        }      
         // GET: api/Customers
         [HttpGet]
-        public IEnumerable<Customer> GetCustomers()
+        public async Task<IActionResult> GetCustomers()
         {
-            var customers = _context.Customers
-                      .FromSql("Admin_GetCustomerListing")
-                      .ToList();
-            return customers;
+            try
+            {
+               // throw new Exception("test");
+                CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
+
+                List<Customer> customerList = new List<Customer>();
+
+                customerList = await _customerAccess.GetCustomers();
+
+                if (customerList == null || customerList.Count==0)
+                {
+                    return Ok(new ServerResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.NotExists)
+
+                    });
+                }
+                else
+                {
+                    return Ok(new ServerResponse
+                    {
+                        HasSucceeded = true,
+                        Message = StatusMessages.SuccessMessage,
+                        Result = customerList
+
+                    });
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+         
         }
 
         // GET: api/Customers/5
         [HttpGet("{id}")]
         public async Task<IActionResult> GetCustomer([FromRoute] int id)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var customer = await _context.Customers.FromSql("Admin_GetCustomerListing").FirstOrDefaultAsync(p => p.CustomerID == id);
-
-            if (customer == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(customer);
-        }
-
-        // PUT: api/Customers/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutCustomer([FromRoute] int id, [FromBody] Customer customer)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            if (id != customer.CustomerID)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(customer).State = EntityState.Modified;
-
             try
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!CustomerExists(id))
+                if (!ModelState.IsValid)
                 {
-                    return NotFound();
+                    new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                                            .SelectMany(x => x.Errors)
+                                            .Select(x => x.ErrorMessage))
+                    };                   
+                }
+
+                CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
+
+                Customer customer= await _customerAccess.GetCustomer(id);
+
+                if (customer == null)
+                {
+                    return Ok(new ServerResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.NotExists)                      
+
+                    });
                 }
                 else
                 {
-                    throw;
-                }
-            }
+                    return Ok(new ServerResponse
+                    {
+                        HasSucceeded = true,
+                        Message = StatusMessages.SuccessMessage,
+                        Result = customer
 
-            return NoContent();
+                    });
+                }
+               
+
+            }
+            catch(Exception ex)
+            {
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
         }
+
+        //// PUT: api/Customers/5
+        //[HttpPut("{id}")]
+        //public async Task<IActionResult> PutCustomer([FromRoute] int id, [FromBody] Customer customer)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return BadRequest(ModelState);
+        //    }
+
+        //    if (id != customer.CustomerID)
+        //    {
+        //        return BadRequest();
+        //    }
+
+        //    _context.Entry(customer).State = EntityState.Modified;
+
+        //    try
+        //    {
+        //        await _context.SaveChangesAsync();
+        //    }
+        //    catch (DbUpdateConcurrencyException ex)
+        //    {
+        //        if (!CustomerExists(id))
+        //        {
+        //            return NotFound();
+        //        }
+        //        else
+        //        {
+        //            Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+        //        }
+        //    }
+
+        //    return NoContent();
+        //}
 
         // POST: api/Customers
         [HttpPost]            
         public async Task<IActionResult> Create([FromBody] RegisterCustomer customer)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                string messages = string.Join("; ", ModelState.Values
-                                       .SelectMany(x => x.Errors)
-                                       .Select(x => x.ErrorMessage));
-                return BadRequest(messages);
+                if (!ModelState.IsValid)
+                {
+                    new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                                                 .SelectMany(x => x.Errors)
+                                                 .Select(x => x.ErrorMessage))
+                    };
+                }
+
+                CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
+
+                DatabaseResponse response = await _customerAccess.CreateCustomer(customer);
+
+
+                if (response.ResponseCode == ((int)DbReturnValue.EmailExists))
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.EmailExists),
+                        IsDomainValidationErrors = true
+                    });
+                }
+                else
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = true,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.CreateSuccess),
+                        IsDomainValidationErrors = false,
+                        ReturnedObject = response.Results
+
+                    });
+                }
             }
+            catch(Exception ex)
+            {
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
-            Customer _customer = 
-            
-           // await _context.Customers.FromSql($"[Customer_CreateCustomer] @Email={customer.Email}, @Password={new Sha2().Hash(customer.Password)}, @ReferralCode={GenerateRandomString()}" ).FirstOrDefaultAsync();
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
 
-
-            await _context.Customers.FromSql($"[Customer_CreateCustomer]").FirstOrDefaultAsync();
-            return Ok(_customer);
+            }
         }
 
-        // DELETE: api/Customers/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCustomer([FromRoute] int id)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+        //// DELETE: api/Customers/5
+        //[HttpDelete("{id}")]
+        //public async Task<IActionResult> DeleteCustomer([FromRoute] int id)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return BadRequest(ModelState);
+        //    }
 
-            var customer = await _context.Customers.FindAsync(id);
-            if (customer == null)
-            {
-                return NotFound();
-            }
+        //    var customer = await _context.Customers.FindAsync(id);
+        //    if (customer == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            _context.Customers.Remove(customer);
-            await _context.SaveChangesAsync();
+        //    _context.Customers.Remove(customer);
+        //    await _context.SaveChangesAsync();
 
-            return Ok(customer);
-        }
+        //    return Ok(customer);
+        //}
 
-        private bool CustomerExists(int id)
-        {
-            return _context.Customers.Any(e => e.CustomerID == id);
-        }
-
-        private string GenerateRandomString()
-        {
-            string[] randomChars = new[] {
-                "ABCDEFGHJKLMNOPQRSTUVWXYZ",    // uppercase 
-                "abcdefghijkmnopqrstuvwxyz",    // lowercase
-                "0123456789"                    // digits
-            };
-            Random rand = new Random(Environment.TickCount);
-            List<char> chars = new List<char>();
-
-            chars.Insert(rand.Next(0, chars.Count),
-                    randomChars[0][rand.Next(0, randomChars[0].Length)]);
-
-            chars.Insert(rand.Next(0, chars.Count),
-                    randomChars[1][rand.Next(0, randomChars[1].Length)]);
-
-            chars.Insert(rand.Next(0, chars.Count),
-                    randomChars[2][rand.Next(0, randomChars[2].Length)]);
-
-            for (int i = chars.Count; i < 8
-                || chars.Distinct().Count() < 4; i++)
-            {
-                string rcs = randomChars[rand.Next(0, randomChars.Length)];
-                chars.Insert(rand.Next(0, chars.Count),
-                    rcs[rand.Next(0, rcs.Length)]);
-            }
-
-            return new string(chars.ToArray());
-        }
-        
+        //private bool CustomerExists(int id)
+        //{
+        //    return _context.Customers.Any(e => e.CustomerID == id);
+        //}  
        
     }
 }

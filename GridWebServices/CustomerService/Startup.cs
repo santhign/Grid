@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
-using CustomerService.Contexts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -35,8 +34,11 @@ namespace CustomerService
                        .AllowAnyMethod()
                        .AllowAnyHeader();
             }));
-            services.AddDbContext<CustomerContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+         
             services.AddMvc();
+
+            //to access configuration from controller
+            services.AddSingleton(Configuration);
 
             services.Configure<MvcOptions>(options =>
             {

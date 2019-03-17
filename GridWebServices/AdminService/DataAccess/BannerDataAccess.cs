@@ -7,6 +7,8 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
+using Core.Enums;
+using Serilog;
 
 
 namespace AdminService.DataAccess
@@ -51,7 +53,7 @@ namespace AdminService.DataAccess
 
                 List<Banners> statusList = new List<Banners>();
 
-                if (dt.Rows.Count > 0)
+                if (dt != null && dt.Rows.Count > 0)
                 {
 
                     statusList = (from model in dt.AsEnumerable()
@@ -69,7 +71,9 @@ namespace AdminService.DataAccess
 
             catch (Exception ex)
             {
-                throw (ex);
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return new List<Banners>();
             }
             finally
             {

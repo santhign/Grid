@@ -8,6 +8,8 @@ using Microsoft.Extensions.Configuration;
 using Core.Helpers;
 using CatelogService.Models;
 using Core.Models;
+using Core.Enums;
+using Serilog;
 
 
 
@@ -39,12 +41,12 @@ namespace CatelogService.DataAccess
 
                 _DataHelper.Run(dt);
 
-                List<Bundle> statusList = new List<Bundle>();
+                List<Bundle> bundleList = new List<Bundle>();
 
                 if (dt.Rows.Count > 0)
                 {
 
-                    statusList = (from model in dt.AsEnumerable()
+                    bundleList = (from model in dt.AsEnumerable()
                                   select new Bundle()
                                   {
                                       BundleID = model.Field<int>("BundleID"),
@@ -64,7 +66,7 @@ namespace CatelogService.DataAccess
                                   }).ToList();
                 }
 
-                return statusList;
+                return bundleList;
             }
 
             catch (Exception ex)
@@ -125,6 +127,7 @@ namespace CatelogService.DataAccess
 
             catch (Exception ex)
             {
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
                 throw (ex);
             }
             finally
@@ -183,6 +186,7 @@ namespace CatelogService.DataAccess
 
             catch (Exception ex)
             {
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
                 throw (ex);
             }
             finally
@@ -253,6 +257,7 @@ namespace CatelogService.DataAccess
 
             catch (Exception ex)
             {
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
                 throw (ex);
             }
             finally
@@ -327,6 +332,7 @@ namespace CatelogService.DataAccess
 
             catch (Exception ex)
             {
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
                 throw (ex);
             }
             finally
@@ -358,6 +364,7 @@ namespace CatelogService.DataAccess
 
             catch (Exception ex)
             {
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
                 throw (ex);
             }
             finally
@@ -389,6 +396,8 @@ namespace CatelogService.DataAccess
 
             catch (Exception ex)
             {
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
                 throw (ex);
             }
             finally

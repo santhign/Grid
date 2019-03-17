@@ -12,6 +12,8 @@ using Core.Models;
 using Core.Helpers;
 using Core.Enums;
 using Core.Extensions;
+using Serilog;
+
 
 
 
@@ -29,7 +31,7 @@ namespace CatelogService.Controllers
         }       
 
         /// <summary>
-        /// This will provide the listing of all Customer selectable flag enabled Bundles.
+        /// This will provide the list of all Customer selectable flag enabled Bundles.
         /// </summary>        
         /// <returns>Bundles</returns>
         // GET: api/Bundles
@@ -38,8 +40,7 @@ namespace CatelogService.Controllers
         {
             try
             {
-                BundleDataAccess _bundleAccess = new BundleDataAccess(_iconfiguration);
-
+                BundleDataAccess _bundleAccess = new BundleDataAccess(_iconfiguration);              
                 return Ok(new ServerResponse
                 {
                     HasSucceeded = true,
@@ -51,6 +52,7 @@ namespace CatelogService.Controllers
             }
             catch (Exception ex)
             {
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
                 return Ok(new OperationResponse
                 {
                     HasSucceeded = false,
@@ -95,7 +97,7 @@ namespace CatelogService.Controllers
 
             catch (Exception ex)
             {
-                //to do Logging
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 return Ok(new OperationResponse
                 {
@@ -143,7 +145,7 @@ namespace CatelogService.Controllers
 
             catch (Exception ex)
             {
-                //to do Logging
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 return Ok(new OperationResponse
                 {
@@ -155,11 +157,11 @@ namespace CatelogService.Controllers
         }
 
         /// <summary>
-        /// 
+        /// To update details of a promotion bundle specified by the bundleID in database. 
         /// </summary>
         /// <param name="id"></param>
         /// <param name="bundle"></param>
-        /// <returns></returns>
+        /// <returns>Bundle</returns>
         // PUT: api/Bundles/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutBundle([FromRoute] int id, [FromBody] UpdateBundleRequest bundle)
@@ -191,7 +193,7 @@ namespace CatelogService.Controllers
 
             catch (Exception ex)
             {
-                //to do Logging
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 return Ok(new OperationResponse
                 {
@@ -201,6 +203,12 @@ namespace CatelogService.Controllers
                 });
             }            
         }
+
+        /// <summary>
+        ///  To create a promotion bundle in database. 
+        /// </summary>
+        /// <param name="bundle"></param>
+        /// <returns>Bundle</returns>
 
         // POST: api/Bundles
         [HttpPost]
@@ -244,6 +252,12 @@ namespace CatelogService.Controllers
             }           
         }
 
+        /// <summary>
+        ///  To delete a promotion bundle specified by the id from database. 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns>Bundle</returns>
+
         // DELETE: api/Bundles/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBundle([FromRoute] int id)
@@ -275,7 +289,7 @@ namespace CatelogService.Controllers
 
             catch (Exception ex)
             {
-                //to do Logging
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 return Ok(new OperationResponse
                 {
@@ -287,11 +301,27 @@ namespace CatelogService.Controllers
            
         }
 
+        /// <summary>
+        /// To check a promotion bundle specified by  id exists in database
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns>bool</returns>
         private async Task<bool> BundleExists(int id)
         {  
-            BundleDataAccess _bundleAccess = new BundleDataAccess(_iconfiguration);
+            try
+            {
+                BundleDataAccess _bundleAccess = new BundleDataAccess(_iconfiguration);
 
-           return (await _bundleAccess.BundleExists(id) == ((int)DbReturnValue.DeleteSuccess));
+                return (await _bundleAccess.BundleExists(id) == ((int)DbReturnValue.DeleteSuccess));
+            }
+
+            catch(Exception ex)
+            {
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return false;
+            }
+            
         }
     }
 }

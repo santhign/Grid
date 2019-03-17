@@ -7,6 +7,9 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
+using Core.Enums;
+
+using Serilog;
 
 namespace AdminService.DataAccess
 {
@@ -64,7 +67,9 @@ namespace AdminService.DataAccess
 
             catch (Exception ex)
             {
-                throw (ex);
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+               throw ex;
             }
             finally
             {

@@ -1,15 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.ComponentModel;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using AdminService.Models;
 using AdminService.DataAccess;
 using Microsoft.Extensions.Configuration;
 using Core.Models;
+using Core.Enums;
+using Core.Helpers;
+using Serilog;
 
 
 
@@ -39,15 +37,15 @@ namespace CatelogService.Controllers
             try
             {
                 if (!ModelState.IsValid)
-                {
+                {                   
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
-                        Message = StatusMessages.DomainValidationError,
+                        Message = StatusMessages.DomainValidationError ,
                         IsDomainValidationErrors = true
                     });
                 }
-
+              
                 BannerDataAccess _bannerAccess = new BannerDataAccess(_iconfiguration);
 
                 return Ok(new ServerResponse
@@ -60,7 +58,7 @@ namespace CatelogService.Controllers
             }
             catch(Exception ex)
             {
-                //to do Logging
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 return Ok(new OperationResponse
                 {

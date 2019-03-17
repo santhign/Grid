@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Security.Cryptography;
 
-namespace CustomerService.Models
+namespace Core.Helpers
 {
     public class Sha2
     {

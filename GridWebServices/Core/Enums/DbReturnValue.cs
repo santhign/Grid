@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Runtime.Serialization;
 
 namespace Core.Enums
@@ -39,5 +36,25 @@ namespace Core.Enums
         [EnumMember(Value = "Creation Failed")]
         [Description("Record creation failed")]
         CreationFailed = 107,
+
+        [EnumMember(Value = "Email Exists")]
+        [Description("Email Already Exists")]
+        EmailExists = 108,
+
+        [EnumMember(Value = "Email Not Exists")]
+        [Description("Email Does not exists")]
+        EmailNotExists = 109,
+
+        [EnumMember(Value = "Password Incorrect")]
+        [Description("Password Does not match")]
+        PasswordIncorrect = 110,
+
+        [EnumMember(Value = "Authentication Success")]
+        [Description("Customer Authentication Success")]
+        AuthSuccess = 111,
+
+        [EnumMember(Value = "Reason Unknown")]
+        [Description("Operation Failed Due to Unknown Reason")]
+        ReasonUnknown = 112,
     }
 }
