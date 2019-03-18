@@ -9,7 +9,7 @@ using Core.Helpers;
 using CatelogService.Models;
 using Core.Models;
 using Core.Enums;
-using Serilog;
+using InfrastructureService;
 
 
 
@@ -127,7 +127,7 @@ namespace CatelogService.DataAccess
 
             catch (Exception ex)
             {
-                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
                 throw (ex);
             }
             finally
@@ -150,7 +150,7 @@ namespace CatelogService.DataAccess
                 parameters[0].Value = bundleId;
                 parameters[1].Value = promocode;
 
-                _DataHelper = new DataAccessHelper("Catelog_GetPromotionalBundle", _configuration);
+                _DataHelper = new DataAccessHelper("Catelog_GetPromotionalBundle", parameters, _configuration);
 
                 DataTable dt = new DataTable();
 
@@ -186,7 +186,7 @@ namespace CatelogService.DataAccess
 
             catch (Exception ex)
             {
-                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
                 throw (ex);
             }
             finally
@@ -257,7 +257,7 @@ namespace CatelogService.DataAccess
 
             catch (Exception ex)
             {
-                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
                 throw (ex);
             }
             finally
@@ -332,7 +332,7 @@ namespace CatelogService.DataAccess
 
             catch (Exception ex)
             {
-                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
                 throw (ex);
             }
             finally
@@ -364,7 +364,7 @@ namespace CatelogService.DataAccess
 
             catch (Exception ex)
             {
-                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
                 throw (ex);
             }
             finally
@@ -396,7 +396,7 @@ namespace CatelogService.DataAccess
 
             catch (Exception ex)
             {
-                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 throw (ex);
             }

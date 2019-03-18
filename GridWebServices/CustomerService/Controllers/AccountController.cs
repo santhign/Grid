@@ -13,7 +13,7 @@ using Core.Models;
 using Core.Enums;
 using Core.Extensions;
 using Core.Helpers;
-using Serilog;
+using InfrastructureService;
 
 
 namespace CustomerService.Controllers
@@ -125,7 +125,7 @@ namespace CustomerService.Controllers
             }
             catch (Exception ex)
             {
-                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 return Ok(new OperationResponse
                 {

@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>OrderService</name>
+    </assembly>
+    <members>
+        <member name="M:OrderService.Controllers.OrdersController.Post(OrderService.Models.CreateOrder)">
+            <summary>
+            This will Create an order for the logged in customer with the bundle selected.
+            </summary>
+            <param name="order"></param>
+            <returns>OperationResponse</returns>
+        </member>
+        <member name="M:OrderService.DataAccess.OrderDataAccess.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Constructor setting configuration
+            </summary>
+            <param name="configuration"></param>
+        </member>
+        <member name="M:OrderService.DataAccess.OrderDataAccess.CreateOrder(OrderService.Models.CreateOrder)">
+            <summary>
+            This method will create a new order for createOrder endpoint
+            </summary>
+            <param name="order"></param>
+            <returns></returns>
+        </member>
+        <member name="T:OrderService.Startup">
+            <summary>
+            Application startup/entry point
+            </summary>
+        </member>
+    </members>
+</doc>

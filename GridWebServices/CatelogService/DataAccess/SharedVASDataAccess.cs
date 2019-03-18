@@ -7,7 +7,7 @@ using CatelogService.Models;
 using System.Collections.Generic;
 using System.Linq;
 using Core.Enums;
-using Serilog;
+using InfrastructureService;
 
 namespace CatelogService.DataAccess
 {
@@ -63,7 +63,7 @@ namespace CatelogService.DataAccess
 
             catch (Exception ex)
             {
-                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
                 throw ex;
             }
             finally

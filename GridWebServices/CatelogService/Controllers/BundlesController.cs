@@ -12,9 +12,7 @@ using Core.Models;
 using Core.Helpers;
 using Core.Enums;
 using Core.Extensions;
-using Serilog;
-
-
+using InfrastructureService;
 
 
 namespace CatelogService.Controllers
@@ -52,7 +50,7 @@ namespace CatelogService.Controllers
             }
             catch (Exception ex)
             {
-                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
                 return Ok(new OperationResponse
                 {
                     HasSucceeded = false,
@@ -97,7 +95,7 @@ namespace CatelogService.Controllers
 
             catch (Exception ex)
             {
-                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 return Ok(new OperationResponse
                 {
@@ -145,7 +143,7 @@ namespace CatelogService.Controllers
 
             catch (Exception ex)
             {
-                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 return Ok(new OperationResponse
                 {
@@ -193,7 +191,7 @@ namespace CatelogService.Controllers
 
             catch (Exception ex)
             {
-                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 return Ok(new OperationResponse
                 {
@@ -289,7 +287,7 @@ namespace CatelogService.Controllers
 
             catch (Exception ex)
             {
-                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 return Ok(new OperationResponse
                 {
@@ -317,7 +315,7 @@ namespace CatelogService.Controllers
 
             catch(Exception ex)
             {
-                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 return false;
             }

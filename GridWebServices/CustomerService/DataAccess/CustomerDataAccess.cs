@@ -9,7 +9,7 @@ using Core.Helpers;
 using Core.Models;
 using Core.Enums;
 using CustomerService.Models;
-using Serilog;
+using InfrastructureService;
 
 
 namespace CustomerService.DataAccess
@@ -77,7 +77,7 @@ namespace CustomerService.DataAccess
 
             catch (Exception ex)
             {
-                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 throw (ex);
             }
@@ -124,7 +124,7 @@ namespace CustomerService.DataAccess
 
             catch (Exception ex)
             {
-                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 throw (ex);
             }
@@ -171,7 +171,7 @@ namespace CustomerService.DataAccess
 
             catch (Exception ex)
             {
-                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 throw (ex);
             }

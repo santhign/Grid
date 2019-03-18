@@ -7,7 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Core.Models;
 using Core.Enums;
 using Core.Helpers;
-using Serilog;
+using InfrastructureService;
 
 namespace CatelogService.Controllers
 {
@@ -46,7 +46,7 @@ namespace CatelogService.Controllers
             }
             catch (Exception ex)
             {
-                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 return Ok(new OperationResponse
                 {
@@ -88,7 +88,7 @@ namespace CatelogService.Controllers
             }
             catch (Exception ex)
             {
-                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 return Ok(new OperationResponse
                 {

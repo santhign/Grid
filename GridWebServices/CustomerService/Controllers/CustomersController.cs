@@ -9,7 +9,7 @@ using Core.Enums;
 using Core.Helpers;
 using Core.Models;
 using Core.Extensions;
-using Serilog;
+using InfrastructureService;
 using Microsoft.Extensions.Configuration;
 using CustomerService.DataAccess;
 
@@ -62,7 +62,7 @@ namespace CustomerService.Controllers
             }
             catch (Exception ex)
             {
-                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 return Ok(new OperationResponse
                 {
@@ -121,7 +121,7 @@ namespace CustomerService.Controllers
             }
             catch(Exception ex)
             {
-                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 return Ok(new OperationResponse
                 {
@@ -161,7 +161,7 @@ namespace CustomerService.Controllers
         //        }
         //        else
         //        {
-        //            Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+        //            LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
         //        }
         //    }
 
@@ -214,7 +214,7 @@ namespace CustomerService.Controllers
             }
             catch(Exception ex)
             {
-                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 return Ok(new OperationResponse
                 {

@@ -7,7 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Core.Models;
 using Core.Enums;
 using Core.Helpers;
-using Serilog;
+using InfrastructureService;
 
 namespace CatelogService.Controllers
 {
@@ -22,7 +22,10 @@ namespace CatelogService.Controllers
             _iconfiguration = configuration;
         }
 
-
+        /// <summary>
+        /// This will returns value added Services list
+        /// </summary>
+        /// <returns>VAS</returns>
         // GET: api/VASes
         [HttpGet]
         public async Task<IActionResult> GetVASes()
@@ -43,7 +46,7 @@ namespace CatelogService.Controllers
             }
             catch (Exception ex)
             {
-                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
                 return Ok(new OperationResponse
                 {
                     HasSucceeded = false,
@@ -53,6 +56,11 @@ namespace CatelogService.Controllers
             }
         }
 
+        /// <summary>
+        /// Returns details of a value added service specified by the id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns>VAS</returns>
         // GET: api/VASes/5
         [HttpGet("{id}")]
         public async Task<IActionResult> GetVAS([FromRoute] int id)
@@ -82,7 +90,7 @@ namespace CatelogService.Controllers
             }
             catch (Exception ex)
             {
-                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 return Ok(new OperationResponse
                 {
