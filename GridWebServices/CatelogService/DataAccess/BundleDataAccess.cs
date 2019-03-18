@@ -150,7 +150,7 @@ namespace CatelogService.DataAccess
                 parameters[0].Value = bundleId;
                 parameters[1].Value = promocode;
 
-                _DataHelper = new DataAccessHelper("Catelog_GetPromotionalBundle", _configuration);
+                _DataHelper = new DataAccessHelper("Catelog_GetPromotionalBundle", parameters, _configuration);
 
                 DataTable dt = new DataTable();
 
