@@ -13,64 +13,64 @@ namespace Core.Helpers
         List<RequestParam> paramList = new List<RequestParam>();
         public async Task<AssetsResponse> GetAssetInventory()
         {
-            ApiClient client = new ApiClient( new Uri("http://10.184.2.107:18080/APIGateway/APIRequest/Submit"));
+            //ApiClient client = new ApiClient( new Uri("http://10.184.2.107:18080/APIGateway/APIRequest/Submit"));
 
-           // string x = await client.PostAsync<string>(new Uri("http://10.184.2.107:18080/APIGateway/APIRequest/Submit"), "test");
+          
 
-            var requestUrl =client. CreateRequestUri(string.Format(System.Globalization.CultureInfo.InvariantCulture,
+            //var requestUrl =client. CreateRequestUri(string.Format(System.Globalization.CultureInfo.InvariantCulture,
                 
-                "http://10.184.2.107:18080/APIGateway/APIRequest/Submit"));
+            //    "http://10.184.2.107:18080/APIGateway/APIRequest/Submit"));
 
-            BSSAssetRequest request = new BSSAssetRequest();
+            //BSSAssetRequest request = new BSSAssetRequest();
 
-            SetParam param = new SetParam();
+            //SetParam param = new SetParam();
 
             
 
-            AddParam("product_type", 94);
+            //AddParam("product_type", 94);
 
-            AddParam("asset_status", 1);
+            //AddParam("asset_status", 1);
 
-            AddParam("asset_id",0);
+            //AddParam("asset_id",0);
 
-            AddParam("product_id", 41328);
+            //AddParam("product_id", 41328);
 
-            AddParam("offset", 1);
+            //AddParam("offset", 1);
 
-            AddParam("limit", 100);
+            //AddParam("limit", 100);
 
-            AddParam("start_range", 0);
+            //AddParam("start_range", 0);
 
-            AddParam("end_range", 0);
+            //AddParam("end_range", 0);
 
-            AddParam("pos_id", 0);
+            //AddParam("pos_id", 0);
 
-            AddParam("category_id", 0);
+            //AddParam("category_id", 0);
 
-            AddParam("entity_id", 41001343);
+            //AddParam("entity_id", 41001343);
 
-            param.param = paramList;
+            //param.param = paramList;
 
-            request.request_id = "GR260110000000000005";
+            //request.request_id = "GR260110000000000005";
 
-            request.request_timestamp = DateTime.Now.ToString("ddmmyyyyhhmmss");
+            //request.request_timestamp = DateTime.Now.ToString("ddmmyyyyhhmmss");
 
-            request.action = "GetAssets";
+            //request.action = "GetAssets";
 
-            request.userid = 212;
+            //request.userid = 212;
 
-            request.username = "griduser";
+            //request.username = "griduser";
 
-            request.source_node = "griduser";
+            //request.source_node = "griduser";
 
 
-            request.dataset = param;
+            //request.dataset = param;
 
-            RequestObject req = new RequestObject();
+            //RequestObject req = new RequestObject();
 
-            req.Request = request;
+            //req.Request = request;
 
-            return await client.PostAsync<AssetsResponse, RequestObject>(requestUrl, req);
+            //return await client.PostAsync<AssetsResponse, RequestObject>(requestUrl, req);
 
         }
 
