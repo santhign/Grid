@@ -11,7 +11,7 @@ namespace Core.Helpers
     public class BSSAPIHelper
     {
         List<RequestParam> paramList = new List<RequestParam>();
-        public async Task<AssetsResponse> GetAssetInventory()
+        public async Task<ResponseObject> GetAssetInventory()
         {
             ApiClient client = new ApiClient(new Uri("http://10.184.2.107:18080/APIGateway/APIRequest/Submit"));
 
@@ -27,7 +27,7 @@ namespace Core.Helpers
 
 
 
-            AddParam("product_type", 94);
+          //  AddParam("product_type", 94);
 
             AddParam("asset_status", 1);
 
@@ -37,7 +37,7 @@ namespace Core.Helpers
 
             AddParam("offset", 1);
 
-            AddParam("limit", 100);
+            AddParam("limit", 10);
 
           //  AddParam("start_range", 0);
 
@@ -51,9 +51,9 @@ namespace Core.Helpers
 
             param.param = paramList;
 
-            request.request_id = "GR" + DateTime.Now.ToString("ddmmyyyy") + "02774";
+            request.request_id = "11227855502778";
 
-            request.request_timestamp = DateTime.Now.ToString("ddmmyyyyhhmmss");
+            request.request_timestamp = "19032019152714";// DateTime.Now.ToString("ddmmyyyyhhmmss");
 
             request.action = "GetAssets";
 
@@ -70,7 +70,7 @@ namespace Core.Helpers
 
             req.Request = request;
 
-            return await client.PostAsync<AssetsResponse, RequestObject>(requestUrl, req);
+            return await client.PostAsync<ResponseObject, RequestObject>(requestUrl, req);
 
         }
 

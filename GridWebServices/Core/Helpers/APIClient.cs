@@ -83,6 +83,7 @@ namespace Core.Helpers
 
         public void addHeaders()
         {
+            // if athuentication required, add authorization header here
            
         }
     }

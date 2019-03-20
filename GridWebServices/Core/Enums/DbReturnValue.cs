@@ -56,5 +56,6 @@ namespace Core.Enums
         [EnumMember(Value = "Reason Unknown")]
         [Description("Operation Failed Due to Unknown Reason")]
         ReasonUnknown = 112,
+       
     }
 }
