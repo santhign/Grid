@@ -10,9 +10,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Helpers\**" />
     <Compile Remove="wwwroot\**" />
+    <Content Remove="Helpers\**" />
     <Content Remove="wwwroot\**" />
+    <EmbeddedResource Remove="Helpers\**" />
     <EmbeddedResource Remove="wwwroot\**" />
+    <None Remove="Helpers\**" />
     <None Remove="wwwroot\**" />
   </ItemGroup>
 
@@ -27,10 +31,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Core\Core.csproj" />
     <ProjectReference Include="..\InfrastructureService\InfrastructureService.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Helpers\" />
   </ItemGroup>
 
 </Project>
