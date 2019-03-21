@@ -85,7 +85,9 @@ namespace CustomerService.Controllers
                     customer = (Customer) response.Results;
 
                     var tokenHandler = new JwtSecurityTokenHandler();
+
                     var key = Encoding.ASCII.GetBytes("stratagile grid customer signin jwt hashing secret");
+
                     var tokenDescriptor = new SecurityTokenDescriptor
                     {
                         Subject = new ClaimsIdentity(new Claim[]
@@ -95,8 +97,14 @@ namespace CustomerService.Controllers
                         Expires = DateTime.UtcNow.AddDays(7), //  need to check with business needs
                         SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
                     };
+
                     var token = tokenHandler.CreateToken(tokenDescriptor);
+
                     var tokenString = tokenHandler.WriteToken(token);
+
+                    DatabaseResponse tokenResponse = new DatabaseResponse();
+
+                    tokenResponse=await _AccountAccess.LogCustomerToken(tokenString);
 
                     // return basic user info (without password) and token to store client side
                     return Ok(new OperationResponse

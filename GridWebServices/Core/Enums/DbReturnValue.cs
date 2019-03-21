@@ -56,6 +56,18 @@ namespace Core.Enums
         [EnumMember(Value = "Reason Unknown")]
         [Description("Operation Failed Due to Unknown Reason")]
         ReasonUnknown = 112,
-       
+
+        [EnumMember(Value = "Token Auth Failed")]
+        [Description("Operation Failed Due to Unknown Reason")]
+        TokenAuthFailed = 113,
+
+        [EnumMember(Value = "Token Expired")]
+        [Description("Authorization Failed. Given Token is Expired")]
+        TokenExpired = 114,
+
+        [EnumMember(Value = "GetAssets Failed")]
+        [Description("Failed to get Assets from BSS")]
+        GetAssetsFailed = 115
+
     }
 }

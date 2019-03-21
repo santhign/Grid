@@ -9,11 +9,11 @@ namespace Core.Models
     [DataContract]
     public class BSSAssetRequest
     {
-        [DataMember(Name = "request_id")] //-- running request  GRddmmyyyy0nnnnn  
+        [DataMember(Name = "request_id")] //
         public string request_id { get; set; }
 
         [DataMember(Name = "request_timestamp")]
-        public string request_timestamp { get; set; } // ddmmyyyyhhmmss
+        public string request_timestamp { get; set; } 
 
         [DataMember(Name = "action")]
         public string action { get; set; }
@@ -48,7 +48,7 @@ namespace Core.Models
         public string id { get; set; }
 
         [DataMember(Name = "value")]
-        public int? value { get; set; }
+        public string value { get; set; }
     }
 
     [DataContract]

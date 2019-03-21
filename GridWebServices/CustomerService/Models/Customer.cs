@@ -46,4 +46,10 @@ namespace CustomerService.Models
         public bool IsAuthenticated { get; set; }
         public string Token { get; set; }
     }
+
+    public class AuthTokenResponse
+    {
+        public int CustomerID { get; set; }
+        public DateTime CreatedOn { get; set; }
+    }
 }

@@ -5,21 +5,21 @@ namespace Core.Enums
 {
     public enum BSSApis
     {
-        [EnumMember(Value = "BSS_GetAsset")]
+        [EnumMember(Value = "GetAssets")]
         [Description("BSS API to Get Assets")]
-        BSS_GetAsset = 1,
+        GetAssets = 1,
 
-        [EnumMember(Value = "BSS_UpdateAsset")]
+        [EnumMember(Value = "UpdateAssetStatus")]
         [Description("BSS API to Update Asset")]
-        BSS_UpdateAsset = 2,
+        UpdateAssetStatus = 2,
 
-        [EnumMember(Value = "BSS_QueryPlan")]
+        [EnumMember(Value = "QueryPlan")]
         [Description("BSS API to get Query Plan")]
-        BSS_QueryPlan = 3,
+        QueryPlan = 3,
 
-        [EnumMember(Value = "BSS_Invoice")]
+        [EnumMember(Value = "GetInvoiceDetails")]
         [Description("BSS get Invoice")]
-        BSS_Invoice = 4
+        GetInvoiceDetails = 4
     }
 
     public enum GridMicroservices
@@ -42,26 +42,75 @@ namespace Core.Enums
         Catalog = 4
        
     }
-    public enum ServiceCodes
+    public enum ServiceTypes
     {
-        [EnumMember(Value = "BSS Free")]
-        [Description("BSS Free Number")]
-        BSSFree = 0,
+        [EnumMember(Value = "Generic")]
+        [Description("Grid Generic")]
+        Generic = 1,
          
-        [EnumMember(Value = "BSS Bronze")]
-        [Description("BSS Bronze Number")]
-        BSSBronze = 1,
+        [EnumMember(Value = "Premium")]
+        [Description("BSS Premium")]
+        Premium = 2,
 
-        [EnumMember(Value = "BSS Silver")]
-        [Description("BSS Silver Number")]
-        BSSSilver = 2,
+        [EnumMember(Value = "Free")]
+        [Description("BSS Free")]
+        Free = 3,
 
-        [EnumMember(Value = "BSS Platinum")]
-        [Description("BSS Platinum Number")]
-        BSSPlatinum = 3,
+        
+    }
 
-        [EnumMember(Value = "BSS Gold")]
-        [Description("BSS Gold Number")]
-        BSSGold = 4
+    public enum AssetStatus
+    {
+        [EnumMember(Value = "New")]
+        [Description("New Number")]
+        New = 1,
+
+        [EnumMember(Value = "Out in Market")]
+        [Description("Number Out in Market")]
+        OutInMarket = 2,
+
+        [EnumMember(Value = "Blocked")]
+        [Description("Blocked Number")]
+        Blocked = 3,
+
+        [EnumMember(Value = "Sold")]
+        [Description("Sold Number")]
+        Sold = 4,
+
+        [EnumMember(Value = "Archived")]
+        [Description("Archived Number")]
+        Archived = 5,
+
+        [EnumMember(Value = "Return-Damaged")]
+        [Description("Return-Damaged Number")]
+        ReturnDamaged = 6,
+
+        [EnumMember(Value = "Returned-Exchange")]
+        [Description("Returned-Exchange Number")]
+        ReturnedExchange = 7,
+
+        [EnumMember(Value = "Reserved")]
+        [Description("Reserved Number")]
+        Reserved = 8,
+
+        [EnumMember(Value = "In Transit")]
+        [Description("In Transit Number")]
+        InTransit = 9,
+
+        [EnumMember(Value = "Lost")]
+        [Description("Lost Number")]
+        Lost = 10,
+
+        [EnumMember(Value = "Repairing")]
+        [Description("Repairing Number")]
+        Repairing = 11,
+
+        [EnumMember(Value = "Stolen")]
+        [Description("Stolen Number")]
+        Stolen = 12,
+
+        [EnumMember(Value = "De-Activ")]
+        [Description("De-Active Number")]
+        DeActiv = 13
     }
 }

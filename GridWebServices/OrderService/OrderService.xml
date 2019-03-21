@@ -4,11 +4,11 @@
         <name>OrderService</name>
     </assembly>
     <members>
-        <member name="M:OrderService.Controllers.OrdersController.Post(OrderService.Models.CreateOrder)">
+        <member name="M:OrderService.Controllers.OrdersController.Post(OrderService.Models.CreateOrderRequest)">
             <summary>
             This will Create an order for the logged in customer with the bundle selected.
             </summary>
-            <param name="CreateOrder"></param>
+            <param name="request">CreateOrderRequest</param>
             <returns>OperationResponse</returns>
         </member>
         <member name="M:OrderService.DataAccess.OrderDataAccess.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">

@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using Core.Enums;
 using InfrastructureService;
 using Core.Models;
+using Core.Extensions;
+
 
 namespace OrderService.DataAccess
 {
@@ -206,70 +208,51 @@ namespace OrderService.DataAccess
             }
         }
 
-        public async Task<DatabaseResponse> GetBssApiRequestId(int orderId)
+        public async Task<DatabaseResponse> GetBssApiRequestId(string source, string apiName, int customerId)
         {
             try
             {
 
                 SqlParameter[] parameters =
                {
-                    new SqlParameter( "@OrderID",  SqlDbType.Int )
+                    new SqlParameter( "@Source",  SqlDbType.NVarChar ), 
+                    new SqlParameter( "@APIName",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+                }; 
 
-                };
-
-                parameters[0].Value = orderId;
+                parameters[0].Value = source;
+                parameters[1].Value = apiName;
+                parameters[2].Value = customerId;
 
                 _DataHelper = new DataAccessHelper("Admin_GetRequestIDForBSSAPI", parameters, _configuration);
 
-                DataSet ds = new DataSet();
+                DataTable dt = new DataTable();
 
-                int result = _DataHelper.Run(ds); // 100 /109
+                _DataHelper.Run(dt);
 
-                DatabaseResponse response = new DatabaseResponse();
+                BSSAssetRequest assetRequest = new BSSAssetRequest();
 
-                if (result == 100)
-                {
+                DatabaseResponse response = new DatabaseResponse();                
 
-                    OrderBasicDetails orderDetails = new OrderBasicDetails();
-
-                    if (ds != null && ds.Tables[0] != null && ds.Tables[0].Rows.Count > 0)
-                    {
-
-                        orderDetails = (from model in ds.Tables[0].AsEnumerable()
-                                        select new OrderBasicDetails()
-                                        {
-                                            OrderID = model.Field<int>("OrderID"),
-                                            OrderNumber = model.Field<string>("OrderNumber"),
-                                            OrderDate = model.Field<DateTime>("OrderDate"),
-                                        }).FirstOrDefault();
-
-                        List<OrderSubscription> subscriptions = new List<OrderSubscription>();
-
-                        if (ds.Tables[1].Rows.Count > 0)
+                        if (dt.Rows.Count > 0)
                         {
 
-                            subscriptions = (from model in ds.Tables[1].AsEnumerable()
-                                             select new OrderSubscription()
-                                             {
-                                                 BundleID = model.Field<int>("BundleID"),
-                                                 DisplayName = model.Field<string>("DisplayName"),
-                                                 MobileNumber = model.Field<string>("MobileNumber"),
-                                             }).ToList();
+                        assetRequest = (from model in dt.AsEnumerable()
+                                    select new BSSAssetRequest()
+                                    {
+                                        request_id = model.Field<string>("RequestID")
 
-                            orderDetails.OrderSubscriptions = subscriptions;
+                                    }).FirstOrDefault();                          
 
                         }
-                    }
+                   
 
-                    response = new DatabaseResponse { ResponseCode = result, Results = orderDetails };
+	
+                    response = new DatabaseResponse { Results = assetRequest };
 
-                }
+              
 
-                else
-                {
-                    response = new DatabaseResponse { ResponseCode = result };
-                }
-
+               
                 return response;
             }
 
@@ -298,7 +281,7 @@ namespace OrderService.DataAccess
 
                 parameters[0].Value = serviceCode;
 
-                _DataHelper = new DataAccessHelper("Order_GetServiceFee", parameters, _configuration);
+                _DataHelper = new DataAccessHelper("Admin_GetServiceFee", parameters, _configuration);
 
                 DataTable dt = new DataTable();
 
@@ -411,50 +394,132 @@ namespace OrderService.DataAccess
             {
                 _DataHelper.Dispose();
             }
-        }
+        }  
 
-
-        public async Task<DatabaseResponse> LogCustomerToken(string token)
+        public async Task<DatabaseResponse> UpdateSubscriberNumber(UpdateSubscriberNumber subscriber)
         {
             try
             {
+
                 SqlParameter[] parameters =
                {
-                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
-                     new SqlParameter( "@Token",  SqlDbType.Int )
-
+                    new SqlParameter( "@OrderID",  SqlDbType.Int ),
+                    new SqlParameter( "@OldMobileNumber",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@NewMobileNumber",  SqlDbType.NVarChar),
+                    new SqlParameter( "@DisplayName",  SqlDbType.NVarChar), 
+                    new SqlParameter( "@PremiumTypeSericeCode",  SqlDbType.Int)
                 };
 
-                parameters[0].Value = token;
+                parameters[0].Value = subscriber.OrderID;
+                parameters[1].Value = subscriber.OldMobileNumber;
+                parameters[2].Value = subscriber.NewMobileNumber;
+                parameters[3].Value = subscriber.DisplayName;
+                parameters[4].Value = subscriber.PremiumTypeSericeCode;
 
-                _DataHelper = new DataAccessHelper("Customer_CreateToken", parameters, _configuration);
+                _DataHelper = new DataAccessHelper("Orders_UpdateSubscriberNumber", parameters, _configuration);
 
                 DataTable dt = new DataTable();
 
-                int result = _DataHelper.Run(dt); // 100 /105
+                int result = _DataHelper.Run();    // 101 / 109 
+
+                return new DatabaseResponse { ResponseCode = result };
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> UpdateSubscriberPortingNumber(UpdateSubscriberPortingNumber portingNumber)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@OrderID",  SqlDbType.Int ),
+                    new SqlParameter( "@OldMobileNumber",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@NewMobileNumber",  SqlDbType.NVarChar),
+                    new SqlParameter( "@DisplayName",  SqlDbType.NVarChar),
+                    new SqlParameter( "@IsOwnNumber",  SqlDbType.Int),
+                    new SqlParameter( "@DonorProvider",  SqlDbType.NVarChar),
+                    new SqlParameter( "@PortedNumberTransferForm",  SqlDbType.NVarChar),
+                    new SqlParameter( "@PortedNumberOwnedBy",  SqlDbType.NVarChar),
+                    new SqlParameter( "@PortedNumberOwnerRegistrationID",  SqlDbType.NVarChar),
+                };
+
+                parameters[0].Value = portingNumber.OrderID;
+                parameters[1].Value = portingNumber.OldMobileNumber;
+                parameters[2].Value = portingNumber.NewMobileNumber;
+                parameters[3].Value = portingNumber.DisplayName;
+                parameters[4].Value = portingNumber.IsOwnNumber;
+                parameters[5].Value = portingNumber.DonorProvider;
+                parameters[6].Value = portingNumber.PortedNumberTransferForm;
+                parameters[7].Value = portingNumber.PortedNumberOwnedBy;
+                parameters[8].Value = portingNumber.PortedNumberOwnerRegistrationID;
+
+                _DataHelper = new DataAccessHelper("Orders_UpdateSubscriberPortingNumber", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = _DataHelper.Run();    // 101 / 109 
+
+                return new DatabaseResponse { ResponseCode = result };
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> GetConfiguration(string serviceCode)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@ConfigType",  SqlDbType.NVarChar )
+
+                };
+
+                parameters[0].Value = serviceCode;
+
+                _DataHelper = new DataAccessHelper("Admin_GetConfigurations", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = _DataHelper.Run(dt); // 102 /105
 
                 DatabaseResponse response = new DatabaseResponse();
 
-                if (result == 111)
+                if (result == 105)
                 {
 
-                    AuthTokenResponse tokenResponse = new AuthTokenResponse();
+                    List<Dictionary<string, string>> configDictionary = new List<Dictionary<string, string>>();
 
                     if (dt != null && dt.Rows.Count > 0)
                     {
 
-                        tokenResponse = (from model in dt.AsEnumerable()
-                                         select new AuthTokenResponse()
-                                         {
-                                             CustomerID = model.Field<int>("CustomerID"),
+                        configDictionary = LinqExtensions.GetDictionary(dt);
 
-                                             CreatedOn = model.Field<DateTime>("CreatedOn")
-
-
-                                         }).FirstOrDefault();
                     }
 
-                    response = new DatabaseResponse { ResponseCode = result, Results = tokenResponse };
+                    response = new DatabaseResponse { ResponseCode = result, Results = configDictionary };
 
                 }
 
@@ -477,9 +542,71 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
-
-
         
+        public async Task<DatabaseResponse> GetBSSServiceCategoryAndFee(string serviceType)
+        {
+            try
+            {
 
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@ServiceType",  SqlDbType.NVarChar )
+
+                };
+
+                parameters[0].Value = serviceType;
+
+                _DataHelper = new DataAccessHelper("Admin_GetNumberTypeCodes", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = _DataHelper.Run(dt); // 102 /105
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 105)
+                {
+
+                    ServiceFees serviceFee = new ServiceFees();
+
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+
+                        serviceFee = (from model in dt.AsEnumerable()
+
+                                      select new ServiceFees()
+                                      {
+                                          PortalServiceName = model.Field<string>("PortalServiceName"),
+
+                                          ServiceCode = model.Field<int>("ServiceCode"),
+
+                                          ServiceFee = model.Field<double>("ServiceFee")
+
+                                      }).FirstOrDefault();
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = serviceFee };
+
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
     }
 }

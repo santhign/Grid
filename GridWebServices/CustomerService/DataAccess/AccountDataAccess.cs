@@ -86,5 +86,70 @@ namespace CustomerService.DataAccess
             }
         }
 
+
+        public async Task<DatabaseResponse> LogCustomerToken(string token)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+                     new SqlParameter( "@Token",  SqlDbType.Int )
+
+                };
+
+                parameters[0].Value = token;
+
+                _DataHelper = new DataAccessHelper("Customer_CreateToken", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = _DataHelper.Run(dt); // 100 /105
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 111)
+                {
+
+                    AuthTokenResponse tokenResponse = new AuthTokenResponse();
+
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+
+                        tokenResponse = (from model in dt.AsEnumerable()
+                                         select new AuthTokenResponse()
+                                         {
+                                             CustomerID = model.Field<int>("CustomerID"),
+
+                                             CreatedOn = model.Field<DateTime>("CreatedOn")
+
+
+                                         }).FirstOrDefault();
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = tokenResponse };
+
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
     }
 }
