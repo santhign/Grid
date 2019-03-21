@@ -28,7 +28,7 @@ namespace OrderService.Controllers
         /// <summary>
         /// This will Create an order for the logged in customer with the bundle selected.
         /// </summary>
-        /// <param name="order"></param>
+        /// <param name="CreateOrder"></param>
         /// <returns>OperationResponse</returns>
         // POST: api/Orders
         [HttpPost]
@@ -69,7 +69,8 @@ namespace OrderService.Controllers
                     {
                         HasSucceeded = true,
                         Message = EnumExtensions.GetDescription(DbReturnValue.CreateSuccess),
-                        IsDomainValidationErrors = false                       
+                        IsDomainValidationErrors = false,
+                        ReturnedObject=response.Results
 
                     });
                 }

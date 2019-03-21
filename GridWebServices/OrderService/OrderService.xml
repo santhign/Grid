@@ -8,7 +8,7 @@
             <summary>
             This will Create an order for the logged in customer with the bundle selected.
             </summary>
-            <param name="order"></param>
+            <param name="CreateOrder"></param>
             <returns>OperationResponse</returns>
         </member>
         <member name="M:OrderService.DataAccess.OrderDataAccess.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">

@@ -84,7 +84,7 @@ namespace Core.Models
         public string bundle_sale { get; set; }
 
         [DataMember(Name = "asset_specific_info")]
-        public string asset_specific_info { get; set; }
+        public List<SetParam> asset_specific_info { get; set; }
 
         [DataMember(Name = "asset_status_id")]
         public string asset_status_id { get; set; }
@@ -133,5 +133,14 @@ namespace Core.Models
 
         [DataMember(Name = "asset_details")]
         public AssetDetails asset_details { get; set; }
+    }
+
+    [DataContract]
+    public class ResponseObject
+    {
+        [DataMember(Name = "Response")]
+        public AssetsResponse Response { get; set; }
+
+
     }
 }
