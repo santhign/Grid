@@ -1,6 +1,8 @@
 ﻿using AdminService.Models;
 using Core.Enums;
 using Core.Helpers;
+using Core.Models;
+using InfrastructureService;
 using Microsoft.Extensions.Configuration;
 using Serilog;
 using System;
@@ -33,7 +35,7 @@ namespace AdminService.DataAccess
                     new SqlParameter( "@Password",  SqlDbType.VarChar )
                 };
 
-                parameters[0].Value = users.Email ;
+                parameters[0].Value = users.Email;
                 parameters[1].Value = users.Password;
 
                 _DataHelper = new DataAccessHelper("Admin_AuthenticateAdminUser", parameters, _configuration);
@@ -42,7 +44,7 @@ namespace AdminService.DataAccess
 
                 _DataHelper.Run(dt);
 
-                  List<AdminUsers> adminuser = new List<AdminUsers>();
+                List<AdminUsers> adminuser = new List<AdminUsers>();
 
                 if (dt != null && dt.Rows.Count > 0)
                 {
@@ -73,5 +75,160 @@ namespace AdminService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+
+        public async Task<DatabaseResponse> CreateAdminUser(RegisterAdminUser adminuser)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@Email",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@Password",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@DepartmentID",  SqlDbType.Int ),
+                    new SqlParameter( "@OfficeID", SqlDbType.Int),
+                    new SqlParameter( "@RoleID", SqlDbType.Int)
+                };
+
+                parameters[0].Value = adminuser.Email;
+                parameters[1].Value = new Sha2().Hash(adminuser.Password);
+                parameters[2].Value = adminuser.DepartmentID;
+                parameters[3].Value = adminuser.OfficeID;
+                parameters[4].Value = adminuser.RoleID;
+
+                _DataHelper = new DataAccessHelper("Admin_CreateAdminUser", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = _DataHelper.Run(dt);
+
+                AdminUsers newCustomer = new AdminUsers();
+
+                if (dt != null && dt.Rows.Count > 0)
+                {
+
+                    newCustomer = (from model in dt.AsEnumerable()
+                                   select new AdminUsers()
+                                   {
+                                       AdminUserID = model.Field<int>("AdminUserID"),
+                                       Email = model.Field<string>("Email"),
+                                       Password = model.Field<string>("Password"),
+                                       Name = model.Field<string>("Name"),
+                                       Role = model.Field<string>("Role"),
+                                   }).FirstOrDefault();
+                }
+
+                return new DatabaseResponse { ResponseCode = result, Results = adminuser };
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<AdminUsers> GetAdminUser(int userId)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@AdminUserID",  SqlDbType.Int )
+                };
+
+                parameters[0].Value = userId;
+
+                _DataHelper = new DataAccessHelper("Admin_GetAdminUserByID", parameters,_configuration);
+
+                DataTable dt = new DataTable();
+
+                _DataHelper.Run(dt);
+
+                AdminUsers adminuser = new AdminUsers();
+
+                if (dt.Rows.Count > 0)
+                {
+
+
+                    adminuser = (from model in dt.AsEnumerable()
+                                 select new AdminUsers()
+                                 {
+                                     AdminUserID = model.Field<int>("AdminUserID"),
+                                     Name = model.Field<string>("Name"),
+                                     Email = model.Field<string>("Email"),
+                                     Password = model.Field<string>("Password"),
+                                     Role = model.Field<string>("Role")
+                                 }).Where(c => c.AdminUserID == userId).FirstOrDefault();
+                }
+
+                return adminuser;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<List<AdminUsers >> GetAdminusers(string RoleName)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+             {
+                    new SqlParameter( "@RoleName",  SqlDbType.VarChar)
+                };
+
+                parameters[0].Value = RoleName;
+                
+                _DataHelper = new DataAccessHelper("Admin_GetAllAdminUsers", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                _DataHelper.Run(dt);
+
+                List<AdminUsers> adminusersList = new List<AdminUsers>();
+
+                if (dt.Rows.Count > 0)
+                {
+
+                    adminusersList = (from model in dt.AsEnumerable()
+                                    select new AdminUsers ()
+                                    {
+                                        AdminUserID = model.Field<int>("AdminUserID"),
+                                        Name = model.Field<string>("Name"),
+                                        Email = model.Field<string>("Email"),
+                                        Password = model.Field<string>("Password"),
+                                        Role = model.Field<string>("Role")
+                                    }).ToList();
+                }
+
+                return adminusersList;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
     }
 }
