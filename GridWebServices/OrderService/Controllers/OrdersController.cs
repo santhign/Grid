@@ -116,7 +116,7 @@ namespace OrderService.Controllers
 
                                     DatabaseResponse requestIdToUpdateRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.UpdateAssetStatus.ToString(), aTokenResp.CustomerID);
 
-                                    BSSUpdateResponseObject bssUpdateResponse = await helper.UpdateAssetBlockNumber(config, ((BSSAssetRequest)requestIdToUpdateRes.Results).request_id, AssetToSubscribe);
+                                    BSSUpdateResponseObject bssUpdateResponse = await helper.UpdateAssetBlockNumber(config, ((BSSAssetRequest)requestIdToUpdateRes.Results).request_id, AssetToSubscribe,false);
 
                                     if(helper.GetResponseCode(bssUpdateResponse)=="0")
                                     {
@@ -128,6 +128,14 @@ namespace OrderService.Controllers
                                         // Get Order Basic Details
 
                                         DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails(((OrderInit)createOrderRresponse.Results).OrderID);
+
+                                        //Start Remove while going live
+
+                                        DatabaseResponse requestIdToUpdateUnblock = await _orderAccess.GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.UpdateAssetStatus.ToString(), aTokenResp.CustomerID);
+
+                                        BSSUpdateResponseObject bssUnblockUpdateResponse = await helper.UpdateAssetBlockNumber(config, ((BSSAssetRequest)requestIdToUpdateRes.Results).request_id, AssetToSubscribe,true);
+
+                                        // end remove
 
                                         return Ok(new OperationResponse
                                         {                                            

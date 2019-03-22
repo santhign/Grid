@@ -100,7 +100,7 @@ namespace Core.Helpers
           return  responseObject.Response.asset_details.assets.FirstOrDefault().asset_id;
         }
 
-        public async Task<BSSUpdateResponseObject> UpdateAssetBlockNumber(GridBSSConfi confi, string requestId, string asset)
+        public async Task<BSSUpdateResponseObject> UpdateAssetBlockNumber(GridBSSConfi confi, string requestId, string asset, bool unblock)
         {
             ApiClient client = new ApiClient(new Uri(confi.BSSAPIUrl));
 
@@ -115,7 +115,7 @@ namespace Core.Helpers
             var requestUrl = GetRequestUrl(confi.BSSAPIUrl, ref client);
 
             // set param list
-            SetParamsBlockNumber(confi, asset);
+            SetParamsBlockNumber(confi, asset,unblock);
 
             param.param = paramList;
 
@@ -148,17 +148,29 @@ namespace Core.Helpers
             return await client.PostAsync<BSSUpdateResponseObject, UpdateRequestObject>(requestUrl, req);
         }
 
-        private void SetParamsBlockNumber(GridBSSConfi confi, string asset)
+        private void SetParamsBlockNumber(GridBSSConfi confi, string asset, bool unblock)
         {
             paramList = new List<RequestParam>();
 
             BSSParams bssParams = new BSSParams();
 
-            AddParam(bssParams.AssetId, asset); // mobilenumber need to set here
+            AddParam(bssParams.AssetId, asset); 
+            
 
-            AddParam(bssParams.AssetStatus, ((int)AssetStatus.Blocked).ToString());           
+            if (unblock)
+            {
+                AddParam(bssParams.AssetStatus, ((int)AssetStatus.New).ToString());
 
-            AddParam(bssParams.UnBlockAsset, "");          
+                AddParam(bssParams.UnBlockAsset, "true");
+            }
+
+            else
+            {
+                AddParam(bssParams.AssetStatus, ((int)AssetStatus.Blocked).ToString());
+
+                AddParam(bssParams.UnBlockAsset, "false");
+            }
+                   
 
             AddParam(bssParams.EntityId, confi.GridEntityId.ToString());
         }
