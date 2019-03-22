@@ -27,6 +27,17 @@ namespace AdminService.Controllers
             _iconfiguration = configuration;
         }
 
+        /// <summary>
+        /// This will check user authentication against email and password
+        /// </summary>
+        /// <param name="userdetails"></param>
+        /// <returns>LoggedInPrinciple</returns>
+        /// POST: api/GetAdminLoginAuthentication
+        ///Body: 
+        ///{
+        ///	"Email" : "abcd@gmail.com",
+        ///	"Password" : "xyz" 
+        ///}
         [HttpPost]
         [Route("GetAdminLoginAuthentication")]
         public async Task<IActionResult> GetAdminLoginAuthentication([FromBody]AdminUserLoginRequest userdetails)
@@ -36,10 +47,11 @@ namespace AdminService.Controllers
 
                 if ((string.IsNullOrEmpty(userdetails.Email)) || (string.IsNullOrEmpty(userdetails.Password)))
                 {
+                    Log.Error(StatusMessages.MissingRequiredFields);
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
-                        Message = StatusMessages.DomainValidationError,
+                        Message = StatusMessages.MissingRequiredFields,
                         IsDomainValidationErrors = true
                     });
 
@@ -71,6 +83,21 @@ namespace AdminService.Controllers
 
         }
 
+
+        /// <summary>
+        /// This will create new admin user
+        /// </summary>
+        /// <param name="userdetails"></param>
+        /// <returns>created user details</returns>
+        /// POST: api/Create
+        ///Body: 
+        ///{
+        ///	"Email" : "abcd@gmail.com",
+        ///	"Password" : "xyz",
+        ///	"DepartmentID" : 1,
+        ///	"OfficeID" : 1,
+        ///	"RoleID" : 1
+        ///}
         [HttpPost]
         [Route("Create")]
         public async Task<IActionResult> Create([FromBody] RegisterAdminUser adminuser)
@@ -79,6 +106,7 @@ namespace AdminService.Controllers
             {
                 if (!ModelState.IsValid)
                 {
+                    Log.Error(StatusMessages.DomainValidationError);
                     new OperationResponse
                     {
                         HasSucceeded = false,
@@ -130,6 +158,7 @@ namespace AdminService.Controllers
         }
 
 
+        // GET: api/GetAdminUser/1
         [HttpGet]
         [Route("{id}")]
         public async Task<IActionResult> GetAdminUser([FromRoute] int id)
@@ -138,6 +167,7 @@ namespace AdminService.Controllers
             {
                 if (!ModelState.IsValid)
                 {
+                    Log.Error(StatusMessages.DomainValidationError);
                     new OperationResponse
                     {
                         HasSucceeded = false,
@@ -190,13 +220,14 @@ namespace AdminService.Controllers
             }
         }
 
-         
+
+        // GET: api/GetAdminusers
         [HttpGet]
         public async Task<IActionResult> GetAdminusers()
         {
             try
             {
-                 
+
                 AdminUsersDataAccess _adminUsersDataAccess = new AdminUsersDataAccess(_iconfiguration);
 
                 List<AdminUsers> AdminUsersList = new List<AdminUsers>();
@@ -205,6 +236,8 @@ namespace AdminService.Controllers
 
                 if (AdminUsersList == null || AdminUsersList.Count == 0)
                 {
+                    Log.Error(EnumExtensions.GetDescription(DbReturnValue.NotExists));
+
                     return Ok(new ServerResponse
                     {
                         HasSucceeded = false,

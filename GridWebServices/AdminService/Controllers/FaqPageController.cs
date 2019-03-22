@@ -23,6 +23,7 @@ namespace AdminService.Controllers
             _iconfiguration = configuration;
         }
 
+        // GET: api/GetPageFAQ/page1
         [HttpGet("GetPageFAQ/{Pagename}")]
         public async Task<IActionResult> GetPageFAQ([FromRoute] string Pagename)
         {
