@@ -87,18 +87,18 @@ namespace CustomerService.DataAccess
         }
 
 
-        public async Task<DatabaseResponse> LogCustomerToken(string token)
+        public async Task<DatabaseResponse> LogCustomerToken(int customerId, string token)
         {
             try
             {
                 SqlParameter[] parameters =
                {
                     new SqlParameter( "@CustomerID",  SqlDbType.Int ),
-                     new SqlParameter( "@Token",  SqlDbType.Int )
+                     new SqlParameter( "@Token",  SqlDbType.NVarChar )
 
                 };
-
-                parameters[0].Value = token;
+                parameters[0].Value = customerId;
+                parameters[1].Value = token;
 
                 _DataHelper = new DataAccessHelper("Customer_CreateToken", parameters, _configuration);
 

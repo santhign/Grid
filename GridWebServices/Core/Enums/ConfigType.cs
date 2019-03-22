@@ -19,7 +19,7 @@ namespace Core.Enums
     {
         [EnumMember(Value = "New Order")]
         [Description("New Order")]
-        New = 1,
+        NewOrder = 1,
 
        
     }

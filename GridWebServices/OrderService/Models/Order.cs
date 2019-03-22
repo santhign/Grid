@@ -65,10 +65,7 @@ namespace OrderService.Models
 
         [MaxLength(8, ErrorMessage = "Maximum 8 characters allowed")]
         [Required(ErrorMessage = "MobileNumber is required")]
-        public string MobileNumber { get; set; }
-
-        [Required(ErrorMessage = "IsPrimary is required")]
-        public int IsPrimary { get; set; }
+        public string MobileNumber { get; set; }       
         public string PromotionCode { get; set; }
     }
 

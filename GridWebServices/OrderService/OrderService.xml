@@ -5,11 +5,18 @@
     </assembly>
     <members>
         <member name="M:OrderService.Controllers.OrdersController.Post(OrderService.Models.CreateOrderRequest)">
-            <summary>
-            This will Create an order for the logged in customer with the bundle selected.
-            </summary>
-            <param name="request">CreateOrderRequest</param>
-            <returns>OperationResponse</returns>
+             <summary>
+             This will Create an order for the logged in customer with the bundle selected.
+             </summary>
+             <param name="request">CreateOrderRequest</param>
+            Body: 
+            {
+            	"token" : "kfnsldfnksdnfefiu3r9882",
+            	"BundleID" : "1",
+            	"ReferralCode" : "dkfsdsd" --optional
+            	"PromotionCode" : "Launch2019" --optional
+            }
+             <returns>OperationResponse</returns>
         </member>
         <member name="M:OrderService.DataAccess.OrderDataAccess.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
             <summary>

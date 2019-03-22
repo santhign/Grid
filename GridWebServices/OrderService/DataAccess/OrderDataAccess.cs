@@ -97,16 +97,14 @@ namespace OrderService.DataAccess
                     new SqlParameter( "@OrderID",  SqlDbType.Int ),
                     new SqlParameter( "@BundleID",  SqlDbType.Int ),
                     new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar),
-                    new SqlParameter( "@IsPrimary",  SqlDbType.Int),
-                    new SqlParameter( "@PromotionCode",  SqlDbType.NVarChar)                  
-
+                    new SqlParameter( "@PromotionCode",  SqlDbType.NVarChar) 
                 };
 
                 parameters[0].Value = subscriber.OrderID;
                 parameters[1].Value = subscriber.BundleID;
                 parameters[2].Value = subscriber.MobileNumber;
-                parameters[3].Value = subscriber.IsPrimary;
-                parameters[4].Value = subscriber.PromotionCode;
+                parameters[3].Value = subscriber.PromotionCode;
+              
 
                 _DataHelper = new DataAccessHelper("Order_CreateSubscriber", parameters, _configuration);
 
@@ -339,7 +337,7 @@ namespace OrderService.DataAccess
 
                 SqlParameter[] parameters =
                {
-                    new SqlParameter( "@Customer_AuthenticateToken",  SqlDbType.Int )
+                    new SqlParameter( "@Token",  SqlDbType.NVarChar )
 
                 };
 
