@@ -159,8 +159,8 @@ namespace AdminService.Controllers
         /// This will  get admin user details based on specific id supplied
         /// </summary>
         /// <param name="id">1</param>
-        /// <returns>get user details with specific id</returns> 
-        ///
+        /// <returns>get user details with specific id</returns>  
+        /// 
         // GET: api/GetAdminUser/1
         [HttpGet]
         [Route("{id}")]
