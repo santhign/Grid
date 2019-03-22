@@ -35,7 +35,7 @@ namespace Core.Enums
 
         [EnumMember(Value = "UpdateAssetBlockingFailed")]
         [Description("Update asset failed for blocking number")]
-        UpdateAssetBlockingFailed = 1,
+        UpdateAssetBlockingFailed = 4,
 
     }
 }
