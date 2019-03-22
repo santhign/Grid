@@ -33,6 +33,7 @@ namespace Core.Models
             EntityId = "entity_id";
 
             UnBlockAsset = "unblock_asset";
+           
         }
         public string ProductType { get; set; }
         public string AssetStatus { get; set; }

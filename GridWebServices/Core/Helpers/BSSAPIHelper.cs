@@ -48,9 +48,10 @@ namespace Core.Helpers
             return await client.PostAsync<ResponseObject, RequestObject>(requestUrl, req);
         }
 
-
         private void SetParams(GridBSSConfi confi, int serviceCode)
-        { 
+        {
+            paramList = new List<RequestParam>();
+
             BSSParams bssParams = new BSSParams();
 
             AddParam(bssParams.AssetStatus, ((int)AssetStatus.New).ToString());
@@ -97,6 +98,85 @@ namespace Core.Helpers
         public string GetAssetId(ResponseObject responseObject)
         {
           return  responseObject.Response.asset_details.assets.FirstOrDefault().asset_id;
+        }
+
+        public async Task<BSSUpdateResponseObject> UpdateAssetBlockNumber(GridBSSConfi confi, string requestId, string asset, bool unblock)
+        {
+            ApiClient client = new ApiClient(new Uri(confi.BSSAPIUrl));
+
+            BSSUpdateRequest request = new BSSUpdateRequest();
+
+            SetParam param = new SetParam();
+
+            UpdateRequestObject req = new UpdateRequestObject();
+
+            BSSOrderInformation orderInformation = new BSSOrderInformation();
+
+            var requestUrl = GetRequestUrl(confi.BSSAPIUrl, ref client);
+
+            // set param list
+            SetParamsBlockNumber(confi, asset,unblock);
+
+            param.param = paramList;
+
+            request.request_id = requestId;
+
+            request.request_timestamp = DateTime.Now.ToString("ddmmyyyyhhmmss");
+
+            request.action = BSSApis.UpdateAssetStatus.ToString();
+
+            request.userid = confi.GridId;
+
+            request.username = confi.GridUserName;
+
+            request.source_node = confi.GridSourceNode;
+
+            // set order information
+
+            orderInformation.customer_name = "";
+
+            orderInformation.order_type = BSSApis.UpdateAssetStatus.ToString();
+
+            // sert parameter list in order information
+            orderInformation.dataset = param;
+
+            // set order information to request
+            request.order_information = orderInformation;
+
+            req.Request = request;
+
+            return await client.PostAsync<BSSUpdateResponseObject, UpdateRequestObject>(requestUrl, req);
+        }
+
+        private void SetParamsBlockNumber(GridBSSConfi confi, string asset, bool unblock)
+        {
+            paramList = new List<RequestParam>();
+
+            BSSParams bssParams = new BSSParams();
+
+            AddParam(bssParams.AssetId, asset); 
+            
+
+            if (unblock)
+            {
+                AddParam(bssParams.AssetStatus, ((int)AssetStatus.New).ToString());
+
+                AddParam(bssParams.UnBlockAsset, "true");
+            }
+
+            else
+            {
+                AddParam(bssParams.AssetStatus, ((int)AssetStatus.Blocked).ToString());
+
+                AddParam(bssParams.UnBlockAsset, "false");
+            }
+                   
+
+            AddParam(bssParams.EntityId, confi.GridEntityId.ToString());
+        }
+        public string GetResponseCode(BSSUpdateResponseObject responseObject)
+        {
+            return responseObject.Response.result_code;
         }
 
     }

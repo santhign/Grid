@@ -104,7 +104,7 @@ namespace CustomerService.Controllers
 
                     DatabaseResponse tokenResponse = new DatabaseResponse();
 
-                    tokenResponse=await _AccountAccess.LogCustomerToken(tokenString);
+                    tokenResponse=await _AccountAccess.LogCustomerToken(customer.CustomerID,tokenString);
 
                     // return basic user info (without password) and token to store client side
                     return Ok(new OperationResponse
