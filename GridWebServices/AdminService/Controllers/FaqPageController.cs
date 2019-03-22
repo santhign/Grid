@@ -1,4 +1,5 @@
 ﻿using AdminService.DataAccess;
+using AdminService.Models;
 using Core.Enums;
 using Core.Helpers;
 using Core.Models;
@@ -7,7 +8,6 @@ using Microsoft.Extensions.Configuration;
 using Serilog;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace AdminService.Controllers
@@ -23,6 +23,12 @@ namespace AdminService.Controllers
             _iconfiguration = configuration;
         }
 
+
+        /// <summary>
+        /// This will get all FAQ based on pagename
+        /// </summary>
+        /// <param name="Pagename">Page1</param>
+        /// <returns>LoggedInPrinciple</returns>  
         // GET: api/GetPageFAQ/page1
         [HttpGet("GetPageFAQ/{Pagename}")]
         public async Task<IActionResult> GetPageFAQ([FromRoute] string Pagename)
@@ -40,13 +46,27 @@ namespace AdminService.Controllers
 
                 }
 
-                FaqPageDataAccess _FaqPageDataAccess = new FaqPageDataAccess(_iconfiguration); 
+                FaqPageDataAccess _FaqPageDataAccess = new FaqPageDataAccess(_iconfiguration);
+
+                List<FaqPages> faqresult = await _FaqPageDataAccess.GetPageFAQ(Pagename);
+                string faqmessage;
+                 
+                if (faqresult!=null && faqresult.Count >0 )
+                {
+                    faqmessage = StatusMessages.SuccessMessage; 
+                }
+                else
+                {
+                    faqmessage = "Faq not found";
+                }
+               
 
                 return Ok(new ServerResponse
                 {
                     HasSucceeded = true,
-                    Message = StatusMessages.SuccessMessage,
-                    Result = await _FaqPageDataAccess.GetPageFAQ(Pagename)
+                    Message = faqmessage,
+                    Result = faqresult 
+
 
                 });
             }
