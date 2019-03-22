@@ -182,18 +182,11 @@ namespace AdminService.DataAccess
             }
         }
 
-        public async Task<List<AdminUsers >> GetAdminusers(string RoleName)
+        public async Task<List<AdminUsers >> GetAdminusers()
         {
             try
-            {
-                SqlParameter[] parameters =
-             {
-                    new SqlParameter( "@RoleName",  SqlDbType.VarChar)
-                };
-
-                parameters[0].Value = RoleName;
-                
-                _DataHelper = new DataAccessHelper("Admin_GetAllAdminUsers", parameters, _configuration);
+            {                
+                _DataHelper = new DataAccessHelper("Admin_GetAllAdminUsers", _configuration);
 
                 DataTable dt = new DataTable();
 

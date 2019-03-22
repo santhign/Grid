@@ -131,7 +131,7 @@ namespace AdminService.Controllers
 
 
         [HttpGet]
-        [Route("GetAdminUser/{id}")]
+        [Route("{id}")]
         public async Task<IActionResult> GetAdminUser([FromRoute] int id)
         {
             try
@@ -192,8 +192,7 @@ namespace AdminService.Controllers
 
          
         [HttpGet]
-        [Route("GetAdminusers/{rolename}")]
-        public async Task<IActionResult> GetAdminusers([FromRoute] string rolename)
+        public async Task<IActionResult> GetAdminusers()
         {
             try
             {
@@ -202,7 +201,7 @@ namespace AdminService.Controllers
 
                 List<AdminUsers> AdminUsersList = new List<AdminUsers>();
 
-                AdminUsersList = await _adminUsersDataAccess.GetAdminusers(rolename);
+                AdminUsersList = await _adminUsersDataAccess.GetAdminusers();
 
                 if (AdminUsersList == null || AdminUsersList.Count == 0)
                 {
