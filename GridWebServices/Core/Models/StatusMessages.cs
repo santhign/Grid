@@ -15,6 +15,8 @@ namespace Core.Models
 
         public static string DomainValidationError = "Domain Validation Error";
 
+        public static string MissingRequiredFields = "Required field missing";
+
 
     }
 }
