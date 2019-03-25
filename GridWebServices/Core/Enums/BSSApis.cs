@@ -54,11 +54,25 @@ namespace Core.Enums
 
         [EnumMember(Value = "Free")]
         [Description("BSS Free")]
-        Free = 3,
-
-        
+        Free = 3,        
     }
 
+    public enum PremiumTypes
+    {
+        [EnumMember(Value = "Gold")]
+        [Description("Premium Gold")]
+        Gold = 1,
+
+        [EnumMember(Value = "Platinum")]
+        [Description("Premium Platinum")]
+        Platinum = 2,
+
+        [EnumMember(Value = "Silver")]
+        [Description("Premium Silver")]
+        Silver = 3,
+
+
+    }
     public enum AssetStatus
     {
         [EnumMember(Value = "New")]

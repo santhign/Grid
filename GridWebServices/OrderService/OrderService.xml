@@ -4,6 +4,40 @@
         <name>OrderService</name>
     </assembly>
     <members>
+        <member name="M:OrderService.Controllers.BSSAssetsController.GetNumbers(System.String)">
+            <summary>
+            This will return a set of Mobile Numbers from BSS API
+            </summary>
+            <param name="token">AuthToken</param>
+            <returns>OperationResponse
+            Body{
+             HasSucceeded = true,
+             IsDomainValidationErrors = false,
+             ReturnedObject = {numbers} 
+            }
+            </returns>
+        </member>
+        <member name="M:OrderService.Controllers.BSSAssetsController.GetMoreNumbers(System.String,System.Int32)">
+            <summary>
+            This will return a set of free or premium Mobile Numbers from BSS API based on the given type input
+            </summary>
+            <param name="token">token</param>
+            <param name="type">type=1-free/2-premium</param>
+            <returns>OperationResponse
+            Body{
+             HasSucceeded = true,
+             IsDomainValidationErrors = false,
+             ReturnedObject = {numbers} 
+            }
+            </returns>
+        </member>
+        <member name="M:OrderService.Controllers.OrdersController.Get(System.Int32)">
+            <summary>
+            This will return Order details for specific ID passed 
+            </summary>
+            <param name="id">OrderID</param>
+            <returns>OperationsResponse</returns>
+        </member>
         <member name="M:OrderService.Controllers.OrdersController.Post(OrderService.Models.CreateOrderRequest)">
              <summary>
              This will Create an order for the logged in customer with the bundle selected.
@@ -17,6 +51,20 @@
             	"PromotionCode" : "Launch2019" --optional
             }
              <returns>OperationResponse</returns>
+        </member>
+        <member name="M:OrderService.Controllers.OrdersController.UpdateSubscriberNumber(OrderService.Models.UpdateSubscriberNumberRequest)">
+            <summary>
+            This will Update subscribers existing number with new number selected.
+            </summary>
+            <param name="request">
+            body{
+            "OrderID" :1,
+            "OldMobileNumber" :"97854562",
+            "NewMobileNumber" :"97854572",
+            "DisplayName" : ""       
+            }
+            </param>
+            <returns>OperationResponse</returns>       
         </member>
         <member name="M:OrderService.DataAccess.OrderDataAccess.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
             <summary>

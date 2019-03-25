@@ -37,5 +37,20 @@ namespace Core.Enums
         [Description("Update asset failed for blocking number")]
         UpdateAssetBlockingFailed = 4,
 
+        [EnumMember(Value = "UpdateAssetUnBlockingFailed")]
+        [Description("Update asset failed for unblocking number")]
+        UpdateAssetUnBlockingFailed = 5,
+
+        [EnumMember(Value = "UpdateSubscriptionFailed")]
+        [Description("Update Subscription Failed for unblocking number")]
+        UpdateSubscriptionFailed = 6,
+
+        [EnumMember(Value = "Failed To Locate Updated Subscription")]
+        [Description("Failed ToLocate Updated Subscription")]
+        FailedToLocateUpdatedSubscription = 7,
+
+        [EnumMember(Value = "Failed To Get Order Customer")]
+        [Description("Failed To Get Order Customer")]
+        FailedToGetCustomer = 8,
     }
 }

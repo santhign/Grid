@@ -67,6 +67,7 @@ namespace Core.Helpers
             AddParam(bssParams.EntityId, confi.GridEntityId.ToString());
 
         }
+
         private void AddParam(string id, string value)
         {
             paramList.Add(new RequestParam {id=id,value=value});
@@ -179,5 +180,105 @@ namespace Core.Helpers
             return responseObject.Response.result_code;
         }
 
+        public GridSystemConfig GetGridSystemConfig(List<Dictionary<string, string>> configDict)
+        {
+            GridSystemConfig config = new GridSystemConfig();
+            config.DeliveryMarginInDays = int.Parse(configDict.Single(x => x["key"] == "DeliveryMarginInDays")["value"]);
+            config.FreeNumberListCount = int.Parse(configDict.Single(x => x["key"] == "FreeNumberListCount")["value"]);
+            config.PremiumNumberListCount = int.Parse(configDict.Single(x => x["key"] == "PremiumNumberListCount")["value"]); 
+            return config;
+        }
+
+        public async Task<ResponseObject> GetAssetInventory(GridBSSConfi confi, int serviceCode, string requestId, int count)
+        {
+            ApiClient client = new ApiClient(new Uri(confi.BSSAPIUrl));
+
+            BSSAssetRequest request = new BSSAssetRequest();
+
+            SetParam param = new SetParam();
+
+            RequestObject req = new RequestObject();
+
+            var requestUrl = GetRequestUrl(confi.BSSAPIUrl, ref client);
+
+            SetParams(confi, serviceCode, count);
+
+            param.param = paramList;
+
+            request.request_id = requestId;
+
+            request.request_timestamp = DateTime.Now.ToString("ddmmyyyyhhmmss");
+
+            request.action = BSSApis.GetAssets.ToString();
+
+            request.userid = confi.GridId;
+
+            request.username = confi.GridUserName;
+
+            request.source_node = confi.GridSourceNode;
+
+            request.dataset = param;
+
+            req.Request = request;
+
+            return await client.PostAsync<ResponseObject, RequestObject>(requestUrl, req);
+        }
+
+        private void SetParams(GridBSSConfi confi, int serviceCode, int limit)
+        {
+            paramList = new List<RequestParam>();
+
+            BSSParams bssParams = new BSSParams();
+
+            AddParam(bssParams.AssetStatus, ((int)AssetStatus.New).ToString());
+
+            AddParam(bssParams.CategoryId, serviceCode.ToString());
+
+            AddParam(bssParams.ProductId, confi.GridProductId.ToString());
+
+            AddParam(bssParams.Offset, confi.GridDefaultOffset.ToString());
+
+            AddParam(bssParams.Limit, limit.ToString());
+
+            AddParam(bssParams.EntityId, confi.GridEntityId.ToString());
+
+        }
+
+        public List<FreeNumber> GetFreeNumbers(ResponseObject responseObject)
+        {
+            List<FreeNumber> numbers = new List<FreeNumber>();
+
+            List<BSSAsset> assets = new List<BSSAsset>();
+
+            assets = responseObject.Response.asset_details.assets;
+
+            numbers = (from asset in assets
+                       select new FreeNumber
+                       {
+                           MobileNumber = asset.asset_id
+                       }).ToList();
+
+            return numbers;
+        }
+
+        public List<PremiumNumbers> GetPremiumNumbers(ResponseObject responseObject, ServiceFees fee)
+        {
+            List<PremiumNumbers> numbers = new List<PremiumNumbers>();
+
+            List<BSSAsset> assets = new List<BSSAsset>();
+
+            assets = responseObject.Response.asset_details.assets;
+
+            numbers = (from asset in assets
+                       select new PremiumNumbers
+                       {
+                           MobileNumber = asset.asset_id,
+                           PortalServiceName = fee.PortalServiceName,
+                           ServiceCode =  fee.ServiceCode,
+                           Price=fee.ServiceFee
+                       }).ToList();
+
+            return numbers;
+        }
     }
 }

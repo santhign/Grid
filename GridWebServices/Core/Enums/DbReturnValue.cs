@@ -71,7 +71,11 @@ namespace Core.Enums
 
         [EnumMember(Value = "Blocking Failed")]
         [Description("BSSAPI Asset Update Number Blocking Failed")]
-        BlockingFailed = 117
+        BlockingFailed = 117,
+
+        [EnumMember(Value = "Un Blocking Failed")]
+        [Description("BSSAPI Asset Update Number Un Blocking Failed")]
+        UnBlockingFailed = 118
 
     }
 }

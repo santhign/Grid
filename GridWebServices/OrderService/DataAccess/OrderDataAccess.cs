@@ -144,11 +144,11 @@ namespace OrderService.DataAccess
 
                 DataSet ds = new DataSet();
 
-                int result = _DataHelper.Run(ds); // 100 /109
+                int result = _DataHelper.Run(ds); // 105 /109
 
                 DatabaseResponse response = new DatabaseResponse();
 
-                if (result == 100)
+                if (result == 105)
                 {              
 
                 OrderBasicDetails orderDetails = new OrderBasicDetails();
@@ -394,7 +394,7 @@ namespace OrderService.DataAccess
             }
         }  
 
-        public async Task<DatabaseResponse> UpdateSubscriberNumber(UpdateSubscriberNumber subscriber)
+        public async Task<DatabaseResponse> UpdateSubscriberNumber(UpdateSubscriberNumberRequest subscriber)
         {
             try
             {
@@ -410,15 +410,15 @@ namespace OrderService.DataAccess
 
                 parameters[0].Value = subscriber.OrderID;
                 parameters[1].Value = subscriber.OldMobileNumber;
-                parameters[2].Value = subscriber.NewMobileNumber;
+                parameters[2].Value = subscriber.NewNumber.MobileNumber;
                 parameters[3].Value = subscriber.DisplayName;
-                parameters[4].Value = subscriber.PremiumTypeSericeCode;
+                parameters[4].Value = subscriber.NewNumber.ServiceCode;
 
                 _DataHelper = new DataAccessHelper("Orders_UpdateSubscriberNumber", parameters, _configuration);
 
                 DataTable dt = new DataTable();
 
-                int result = _DataHelper.Run();    // 101 / 109 
+                int result = _DataHelper.Run();    // 101 / 102 
 
                 return new DatabaseResponse { ResponseCode = result };
             }
@@ -484,7 +484,7 @@ namespace OrderService.DataAccess
             }
         }
 
-        public async Task<DatabaseResponse> GetConfiguration(string serviceCode)
+        public async Task<DatabaseResponse> GetConfiguration(string configType)
         {
             try
             {
@@ -495,7 +495,7 @@ namespace OrderService.DataAccess
 
                 };
 
-                parameters[0].Value = serviceCode;
+                parameters[0].Value = configType;
 
                 _DataHelper = new DataAccessHelper("Admin_GetConfigurations", parameters, _configuration);
 
@@ -565,12 +565,12 @@ namespace OrderService.DataAccess
                 if (result == 105)
                 {
 
-                    ServiceFees serviceFee = new ServiceFees();
+                   List< ServiceFees> serviceFees = new List<ServiceFees>();
 
                     if (dt != null && dt.Rows.Count > 0)
                     {
 
-                        serviceFee = (from model in dt.AsEnumerable()
+                        serviceFees = (from model in dt.AsEnumerable()
 
                                       select new ServiceFees()
                                       {
@@ -580,10 +580,10 @@ namespace OrderService.DataAccess
 
                                           ServiceFee = model.Field<double>("ServiceFee")
 
-                                      }).FirstOrDefault();
+                                      }).ToList();
                     }
 
-                    response = new DatabaseResponse { ResponseCode = result, Results = serviceFee };
+                    response = new DatabaseResponse { ResponseCode = result, Results = serviceFees };
 
                 }
 
@@ -606,5 +606,196 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+
+
+        public async Task<DatabaseResponse> GetOrderDetails(int orderId)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@OrderID",  SqlDbType.Int )
+
+                };
+
+                parameters[0].Value = orderId;
+
+                _DataHelper = new DataAccessHelper("Order_GetOrderDetails", parameters, _configuration);
+
+                DataSet ds = new DataSet();
+
+                int result = _DataHelper.Run(ds); // 105 /102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 105)
+                {
+
+                    Order orderDetails = new Order();
+
+                    if (ds != null && ds.Tables[0] != null && ds.Tables[0].Rows.Count > 0)
+                    {
+
+                        orderDetails = (from model in ds.Tables[0].AsEnumerable()
+                                        select new Order()
+                                        {
+                                            OrderID = model.Field<int>("OrderID"),
+                                            OrderNumber = model.Field<string>("OrderNumber"),
+                                            OrderDate = model.Field<DateTime>("OrderDate"),                                            
+                                            BillingUnit = model.Field<string>("BillingUnit"),
+                                            BillingFloor = model.Field<string>("BillingFloor"),
+                                            BillingBuildingNumber = model.Field<string>("BillingBuildingNumber"),
+                                            BillingBuildingName = model.Field<string>("BillingBuildingName"),
+                                            BillingStreetName = model.Field<string>("BillingStreetName"),
+                                            BillingPostCode = model.Field<string>("BillingPostCode"),
+                                            BillingContactNumber = model.Field<string>("BillingContactNumber"),
+                                            ReferralCode = model.Field<string>("ReferralCode"),
+                                            Name = model.Field<string>("Name"),
+                                            Email = model.Field<string>("Email"),
+                                            IDType = model.Field<string>("IDType"),
+                                            IDNumber = model.Field<string>("IDNumber"),
+                                            IsSameAsBilling = model.Field<int?>("IsSameAsBilling"),
+                                            ShippingUnit = model.Field<string>("ShippingUnit"),
+                                            ShippingFloor = model.Field<string>("ShippingFloor"),
+                                            ShippingBuildingNumber = model.Field<string>("ShippingBuildingNumber"),
+                                            ShippingBuildingName = model.Field<string>("ShippingBuildingName"),
+                                            ShippingStreetName = model.Field<string>("ShippingStreetName"),
+                                            ShippingPostCode = model.Field<string>("ShippingPostCode"),
+                                            ShippingContactNumber = model.Field<string>("ShippingContactNumber"),
+                                            AlternateRecipientContact = model.Field<string>("AlternateRecipientContact"),
+                                            AlternateRecipientName = model.Field<string>("AlternateRecipientName"),
+                                            AlternateRecipientEmail = model.Field<string>("AlternateRecipientEmail"),
+                                            PortalSlotID = model.Field<string>("PortalSlotID"),
+                                            SlotDate = model.Field<DateTime?>("SlotDate"),
+                                            SlotFromTime = model.Field<TimeSpan?>("SlotFromTime"),
+                                            SlotToTime = model.Field<TimeSpan?>("SlotToTime"),
+                                            ScheduledDate = model.Field<DateTime?>("ScheduledDate"),
+                                            ServiceFee = model.Field<double?>("ServiceFee")                                           
+                                        }).FirstOrDefault();
+
+                        List<Bundle> orderBundles = new List<Bundle>();
+
+                        if (ds.Tables[1]!=null && ds.Tables[1].Rows.Count > 0)
+                        {
+
+                            orderBundles = (from model in ds.Tables[1].AsEnumerable()
+                                             select new Bundle()
+                                             {
+                                                 BundleID = model.Field<int>("BundleID"),
+                                                 DisplayName = model.Field<string>("DisplayName"),
+                                                 MobileNumber = model.Field<string>("MobileNumber"), 
+                                                 IsPrimaryNumber = model.Field<int>("IsPrimaryNumber"),
+                                                 PlanMarketingName = model.Field<string>("PlanMarketingName"),
+                                                 PortalDescription = model.Field<string>("PortalDescription"),
+                                                 TotalData = model.Field<string>("TotalData"),
+                                                 TotalSMS = model.Field<double?>("TotalSMS"),
+                                                 TotalVoice = model.Field<double?>("TotalVoice"),
+                                                 ApplicableSubscriptionFee = model.Field<double?>("ApplicableSubscriptionFee"),
+                                                 ServiceName = model.Field<string>("ServiceName"),
+                                                 ApplicableServiceFee = model.Field<double?>("ApplicableServiceFee"),
+                                                 PremiumType = model.Field<int>("PremiumType"),
+                                                 IsPorted = model.Field<int>("IsPorted"),
+                                                 IsOwnNumber = model.Field<int>("IsOwnNumber"),
+                                                 DonorProvider = model.Field<string>("DonorProvider"),
+                                                 PortedNumberTransferForm = model.Field<string>("PortedNumberTransferForm"),
+                                                 PortedNumberOwnedBy = model.Field<string>("PortedNumberOwnedBy"),
+                                                 PortedNumberOwnerRegistrationID = model.Field<string>("PortedNumberOwnerRegistrationID"),
+                                             }).ToList();
+
+                            orderDetails.Bundles = orderBundles;
+
+                        }
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = orderDetails };
+
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> GetCustomerIdFromOrderId(int orderId)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@OrderID",  SqlDbType.Int )
+
+                };
+
+                parameters[0].Value = orderId;
+
+                _DataHelper = new DataAccessHelper("Order_GetCustomerIDByOrderID", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = _DataHelper.Run(dt); // 105 /102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 105)
+                {
+
+                    OrderCustomer customer = new OrderCustomer();
+
+                    if (dt != null &&  dt.Rows.Count > 0)
+                    {
+
+                        customer = (from model in dt.AsEnumerable()
+                                        select new OrderCustomer()
+                                        {
+                                             CustomerId = model.Field<int>("CustomerID"),
+                                            
+                                        }).FirstOrDefault();
+
+
+                        
+
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = customer };
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        
     }
 }

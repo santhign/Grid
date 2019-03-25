@@ -40,5 +40,17 @@ namespace Core.Models
 
     }
 
-   
+    [DataContract]
+    public class GridSystemConfig
+    {
+        [DataMember(Name = "DeliveryMarginInDays")]
+        public int DeliveryMarginInDays { get; set; }
+
+        [DataMember(Name = "FreeNumberListCount")]
+        public int FreeNumberListCount { get; set; }
+
+        [DataMember(Name = "PremiumNumberListCount")]
+        public int PremiumNumberListCount { get; set; }
+
+    }
 }

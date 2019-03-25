@@ -25,11 +25,76 @@ namespace OrderService.Controllers
         {
             _iconfiguration = configuration;
         }
+
+        /// <summary>
+        /// This will return Order details for specific ID passed 
+        /// </summary>
+        /// <param name="id">OrderID</param>
+        /// <returns>OperationsResponse</returns>
+        // GET: api/Orders/5
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Get([FromRoute] int id)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = StatusMessages.DomainValidationError,
+                        IsDomainValidationErrors = true
+                    });
+                }
+
+                OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+
+                DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderDetails(id);
+
+                if(orderDetailsResponse.ResponseCode==(int)DbReturnValue.RecordExists)
+                {
+                    return Ok(new ServerResponse
+                    {
+                        HasSucceeded = true,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.RecordExists),
+                        Result = orderDetailsResponse.Results
+
+                    });
+                }
+
+                else
+                {
+                    return Ok(new ServerResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.NotExists)
+                    });
+
+                }
+                
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+            }
+
+
+        }
+
+
         /// <summary>
         /// This will Create an order for the logged in customer with the bundle selected.
         /// </summary>
         /// <param name="request">CreateOrderRequest</param>
-         ///Body: 
+        ///Body: 
         ///{
         ///	"token" : "kfnsldfnksdnfefiu3r9882",
         ///	"BundleID" : "1",
@@ -103,9 +168,9 @@ namespace OrderService.Controllers
 
                                 DatabaseResponse serviceCAF = await _orderAccess.GetBSSServiceCategoryAndFee(ServiceTypes.Free.ToString());
 
-                                DatabaseResponse requestIdRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.GetAssets.ToString(), aTokenResp.CustomerID); 
+                                DatabaseResponse requestIdRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.GetAssets.ToString(), aTokenResp.CustomerID); 
 
-                                ResponseObject res = await helper.GetAssetInventory(config, ((ServiceFees)serviceCAF.Results).ServiceCode, ((BSSAssetRequest)requestIdRes.Results).request_id);
+                                ResponseObject res = await helper.GetAssetInventory(config, (((List<ServiceFees>)serviceCAF.Results)).FirstOrDefault().ServiceCode, ((BSSAssetRequest)requestIdRes.Results).request_id);
 
                                 string AssetToSubscribe = helper.GetAssetId(res);
 
@@ -114,7 +179,7 @@ namespace OrderService.Controllers
 
                                     //Block number                                    
 
-                                    DatabaseResponse requestIdToUpdateRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.UpdateAssetStatus.ToString(), aTokenResp.CustomerID);
+                                    DatabaseResponse requestIdToUpdateRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), aTokenResp.CustomerID);
 
                                     BSSUpdateResponseObject bssUpdateResponse = await helper.UpdateAssetBlockNumber(config, ((BSSAssetRequest)requestIdToUpdateRes.Results).request_id, AssetToSubscribe,false);
 
@@ -129,9 +194,9 @@ namespace OrderService.Controllers
 
                                         DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails(((OrderInit)createOrderRresponse.Results).OrderID);
 
-                                        //Start Remove while going live
-
-                                        DatabaseResponse requestIdToUpdateUnblock = await _orderAccess.GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.UpdateAssetStatus.ToString(), aTokenResp.CustomerID);
+                                        //Start Remove while going live -- only for testing
+                                        // Unblock blocked number 
+                                        DatabaseResponse requestIdToUpdateUnblock = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), aTokenResp.CustomerID);
 
                                         BSSUpdateResponseObject bssUnblockUpdateResponse = await helper.UpdateAssetBlockNumber(config, ((BSSAssetRequest)requestIdToUpdateRes.Results).request_id, AssetToSubscribe,true);
 
@@ -243,6 +308,175 @@ namespace OrderService.Controllers
 
             }
         }
-      
+
+        /// <summary>
+        /// This will Update subscribers existing number with new number selected.
+        /// </summary>
+        /// <param name="request">
+        /// body{
+        /// "OrderID" :1,
+        /// "OldMobileNumber" :"97854562",
+        /// "NewMobileNumber" :"97854572",
+        /// "DisplayName" : "shortname"       
+        /// }
+        /// </param>
+        /// <returns>OperationResponse</returns>       
+        [HttpPost]
+        [Route("UpdateSubscriberNumber")]
+        public async Task<IActionResult> UpdateSubscriberNumber([FromBody] UpdateSubscriberNumberRequest request)
+        {
+
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                                                 .SelectMany(x => x.Errors)
+                                                 .Select(x => x.ErrorMessage))
+                    };
+                }
+
+                OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+
+                BSSAPIHelper helper = new BSSAPIHelper();
+                //Block number       
+
+                OrderCustomer customer = new OrderCustomer();
+
+                DatabaseResponse customerResponse= await _orderAccess.GetCustomerIdFromOrderId(request.OrderID);
+
+                if (customerResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                {
+                    customer = (OrderCustomer)customerResponse.Results;
+
+
+                    DatabaseResponse requestIdToUpdateUnblock = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customer.CustomerId);
+
+                    DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
+
+                    GridBSSConfi config = helper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
+
+                    // Unblock
+                    BSSUpdateResponseObject bssUnblockUpdateResponse = await helper.UpdateAssetBlockNumber(config, ((BSSAssetRequest)requestIdToUpdateUnblock.Results).request_id, request.OldMobileNumber, true);
+
+                  
+
+                    if (helper.GetResponseCode(bssUnblockUpdateResponse) == "0")
+                    {
+                        //Block
+
+                        DatabaseResponse requestIdToUpdateBlock = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customer.CustomerId);
+
+                        BSSUpdateResponseObject bssUpdateResponse = await helper.UpdateAssetBlockNumber(config, ((BSSAssetRequest)requestIdToUpdateBlock.Results).request_id, request.NewNumber.MobileNumber, false);
+
+                        if (helper.GetResponseCode(bssUnblockUpdateResponse) == "0")
+                        {
+                            //update subscription
+                            DatabaseResponse updateSubscriberResponse = await _orderAccess.UpdateSubscriberNumber(request);
+
+                            if(updateSubscriberResponse.ResponseCode==(int)DbReturnValue.UpdateSuccess)
+                            {
+                                // Get Order Basic Details
+
+                                DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails(request.OrderID);
+
+                               if( orderDetailsResponse.ResponseCode== (int) DbReturnValue.RecordExists)
+                                {
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = true,
+                                        Message = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess),
+                                        IsDomainValidationErrors = false,
+                                        ReturnedObject = orderDetailsResponse.Results
+                                    });
+                                }
+
+                                else
+                                {
+                                    //subscription updated, but details not returned
+                                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToLocateUpdatedSubscription));
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = true,
+                                        Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
+                                        IsDomainValidationErrors = false,                                        
+                                    });
+                                }
+                               
+                            }
+                            else
+                            {
+                                LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateSubscriptionFailed));
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = false,
+                                    Message = EnumExtensions.GetDescription(DbReturnValue.UpdationFailed),
+                                    IsDomainValidationErrors = false
+                                });
+                            }
+                            
+                        }
+
+                        else
+                        {
+                            // blocking failed
+
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateAssetBlockingFailed));
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.BlockingFailed),
+                                IsDomainValidationErrors = false
+                            });
+                        }                        
+
+                    }
+
+                    else
+                    {
+                        // unblocking failed
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateAssetUnBlockingFailed));
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.UnBlockingFailed),
+                            IsDomainValidationErrors = false
+                        });
+                    }
+                 
+                }
+
+                else
+                {
+                    // failed to locate customer
+                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToGetCustomer));
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.UnBlockingFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
+
     }
 }
