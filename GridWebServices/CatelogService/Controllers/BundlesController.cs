@@ -109,7 +109,7 @@ namespace CatelogService.Controllers
                     return Ok(new ServerResponse
                     {
                         HasSucceeded = false,
-                        Message = StatusMessages.NoRecordsFound,
+                        Message = StatusMessages.InvalidMessage,
                         Result = returnObj.FirstOrDefault()
                     });
                 }
@@ -168,7 +168,7 @@ namespace CatelogService.Controllers
                     return Ok(new ServerResponse
                     {
                         HasSucceeded = false,
-                        Message = StatusMessages.NoRecordsFound,
+                        Message = StatusMessages.InvalidMessage,
                         Result = returnObj.FirstOrDefault()
                     });
                 }

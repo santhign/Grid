@@ -19,6 +19,8 @@ namespace Core.Models
 
         public static string NoRecordsFound = "No records found for request";
 
+        public static string InvalidMessage = "Invalid";
+
 
     }
 }
