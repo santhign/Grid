@@ -17,6 +17,8 @@ namespace Core.Models
 
         public static string MissingRequiredFields = "Required field missing";
 
+        public static string NoRecordsFound = "No records found for request";
+
 
     }
 }
