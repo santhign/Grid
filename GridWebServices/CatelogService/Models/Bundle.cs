@@ -20,6 +20,7 @@ namespace CatelogService.Models
         public double ActualServiceFee { get; set; }
         public double ApplicableServiceFee { get; set; }
         public string ServiceName { get; set; }
+        public string PromotionText { get; set; }
     }
 
     public class CreateBundleRequest
