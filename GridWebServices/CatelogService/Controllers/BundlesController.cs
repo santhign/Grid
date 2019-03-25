@@ -38,15 +38,26 @@ namespace CatelogService.Controllers
         {
             try
             {
-                BundleDataAccess _bundleAccess = new BundleDataAccess(_iconfiguration);              
-                return Ok(new ServerResponse
+                BundleDataAccess _bundleAccess = new BundleDataAccess(_iconfiguration);
+                List<Bundle> returnObj = await _bundleAccess.GetBundleList();
+                if (returnObj.Count > 0)
                 {
-                    HasSucceeded = true,
-                    Message = StatusMessages.SuccessMessage,
-                    Result = await _bundleAccess.GetBundleList()
-
-                });
-              
+                    return Ok(new ServerResponse
+                    {
+                        HasSucceeded = true,
+                        Message = StatusMessages.SuccessMessage,
+                        Result = returnObj
+                    });
+                }
+                else
+                {
+                    return Ok(new ServerResponse
+                    {
+                        HasSucceeded = false,
+                        Message = StatusMessages.NoRecordsFound,
+                        Result = returnObj
+                    });
+                }
             }
             catch (Exception ex)
             {
@@ -83,14 +94,25 @@ namespace CatelogService.Controllers
                 }
 
                 BundleDataAccess _bundleAccess = new BundleDataAccess(_iconfiguration);
-
-                return Ok(new ServerResponse
+                List<Bundle> returnObj = await _bundleAccess.GetBundleById(id);
+                if (returnObj.Count > 0)
                 {
-                    HasSucceeded = true,
-                    Message = StatusMessages.SuccessMessage,
-                    Result = (await _bundleAccess.GetBundleById(id)).FirstOrDefault()
-
-                });
+                    return Ok(new ServerResponse
+                    {
+                        HasSucceeded = true,
+                        Message = StatusMessages.SuccessMessage,
+                        Result = returnObj.FirstOrDefault()
+                    });
+                }
+                else
+                {
+                    return Ok(new ServerResponse
+                    {
+                        HasSucceeded = false,
+                        Message = StatusMessages.InvalidMessage,
+                        Result = returnObj.FirstOrDefault()
+                    });
+                }
             }
 
             catch (Exception ex)
@@ -131,14 +153,25 @@ namespace CatelogService.Controllers
                 }
 
                 BundleDataAccess _bundleAccess = new BundleDataAccess(_iconfiguration);
-
-                return Ok(new ServerResponse
+                List<Bundle> returnObj = await _bundleAccess.GetBundleByPromocode(id, promocode);
+                if (returnObj.Count > 0)
                 {
-                    HasSucceeded = true,
-                    Message = StatusMessages.SuccessMessage,
-                    Result = (await _bundleAccess.GetBundleByPromocode(id,promocode)).FirstOrDefault()
-
-                });
+                    return Ok(new ServerResponse
+                    {
+                        HasSucceeded = true,
+                        Message = StatusMessages.SuccessMessage,
+                        Result = returnObj.FirstOrDefault()
+                    });
+                }
+                else
+                {
+                    return Ok(new ServerResponse
+                    {
+                        HasSucceeded = false,
+                        Message = StatusMessages.InvalidMessage,
+                        Result = returnObj.FirstOrDefault()
+                    });
+                }
             }
 
             catch (Exception ex)

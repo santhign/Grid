@@ -24,12 +24,13 @@ namespace CatelogService.Controllers
         {
             _iconfiguration = configuration;
         }
-
+ 
         /// <summary>
         /// Get banner details
         /// </summary>
         /// <param name="request"></param>
-        /// <returns></returns>
+        /// <returns>banner details</returns> 
+        /// 
         [HttpPost]
         [Route("BannerDetails")]
         public async Task<IActionResult> BannerDetails([FromBody] BannerDetailsRequest request)

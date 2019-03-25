@@ -21,6 +21,12 @@ namespace AdminService.Controllers
             _iconfiguration = configuration;
         }
 
+        /// <summary>
+        /// Get Lookup details
+        /// </summary>
+        /// <param name="lookupType"></param>
+        /// <returns>Lookup details</returns> 
+        /// 
         [HttpGet("{lookupType}")]
         public async Task<IActionResult> GetLookup([FromRoute] string lookupType)
         {

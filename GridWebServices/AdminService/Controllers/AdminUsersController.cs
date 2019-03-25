@@ -54,13 +54,10 @@ namespace AdminService.Controllers
                         Message = StatusMessages.MissingRequiredFields,
                         IsDomainValidationErrors = true
                     });
-
                 }
 
-
                 AdminUsersDataAccess _AdminUsersDataAccess = new AdminUsersDataAccess(_iconfiguration);
-
-
+                 
                 return Ok(new ServerResponse
                 {
                     HasSucceeded = true,
@@ -87,7 +84,7 @@ namespace AdminService.Controllers
         /// <summary>
         /// This will create new admin user
         /// </summary>
-        /// <param name="userdetails"></param>
+        /// <param name="adminuser"></param>
         /// <returns>created user details</returns>
         /// POST: api/Create
         ///Body: 
@@ -158,6 +155,12 @@ namespace AdminService.Controllers
         }
 
 
+        /// <summary>
+        /// This will  get admin user details based on specific id supplied
+        /// </summary>
+        /// <param name="id">1</param>
+        /// <returns>get user details with specific id</returns>  
+        /// 
         // GET: api/GetAdminUser/1
         [HttpGet]
         [Route("{id}")]
@@ -220,7 +223,12 @@ namespace AdminService.Controllers
             }
         }
 
-
+        /// <summary>
+        /// This will get all admin users
+        /// </summary>
+        /// <param></param>
+        /// <returns>get all user details</returns> 
+        /// 
         // GET: api/GetAdminusers
         [HttpGet]
         public async Task<IActionResult> GetAdminusers()
