@@ -12,7 +12,11 @@ namespace Core.Enums
 
         [EnumMember(Value = "BSS")]
         [Description("BSS API Configuration")]
-        BSS = 2
+        BSS = 2,
+
+        [EnumMember(Value = "AWS")]
+        [Description("AWS API Configuration")]
+        AWS = 3
     }
 
     public enum OrderStatus

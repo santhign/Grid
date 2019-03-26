@@ -12,6 +12,7 @@ using Core.Extensions;
 using InfrastructureService;
 using Microsoft.Extensions.Configuration;
 using CustomerService.DataAccess;
+using Newtonsoft.Json;
 
 namespace CustomerService.Controllers
 {   
@@ -202,13 +203,16 @@ namespace CustomerService.Controllers
                 }
                 else
                 {
+                    //Pushed to message queue
+                    var publisher = new InfrastructureService.MessageQueue.Publisher(_iconfiguration, ConfigHelper.GetValueByKey("SNS_Topic_CreateCustomer", _iconfiguration).Results.ToString().Trim());
+                    await publisher.PublishAsync(response.Results, ConfigHelper.GetValueByKey("SNS_Subject_CreateCustomer", _iconfiguration).Results.ToString().Trim());
+
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = true,
                         Message = EnumExtensions.GetDescription(DbReturnValue.CreateSuccess),
                         IsDomainValidationErrors = false,
                         ReturnedObject = response.Results
-
                     });
                 }
             }
