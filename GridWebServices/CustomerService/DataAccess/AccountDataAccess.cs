@@ -39,38 +39,38 @@ namespace CustomerService.DataAccess
                 };
 
                 parameters[0].Value = request.Email;
-                parameters[1].Value = new Sha2().Hash(request.Password);               
- 
-               _DataHelper =  new DataAccessHelper("Customer_AuthenticateCustomer", parameters, _configuration);
+                parameters[1].Value = new Sha2().Hash(request.Password);
+
+                _DataHelper = new DataAccessHelper("Customer_AuthenticateCustomer", parameters, _configuration);
 
                 DataTable dt = new DataTable();
 
-                int result=  _DataHelper.Run(dt);
+                int result = _DataHelper.Run(dt);
 
                 Customer customer = new Customer();
 
-                if (dt!=null && dt.Rows.Count > 0)
+                if (dt != null && dt.Rows.Count > 0)
                 {
 
                     customer = (from model in dt.AsEnumerable()
                                 select new Customer()
                                 {
-                                   CustomerID = model.Field<int>("CustomerID"),
-                                   Email =  model.Field<string>("Email"),
-                                   Password= model.Field<string>("Password"),
-                                   MobileNumber = model.Field<string>("MobileNumber"),
+                                    CustomerID = model.Field<int>("CustomerID"),
+                                    Email = model.Field<string>("Email"),
+                                    Password = model.Field<string>("Password"),
+                                    MobileNumber = model.Field<string>("MobileNumber"),
                                     ReferralCode = model.Field<string>("ReferralCode"),
                                     Nationality = model.Field<string>("Nationality"),
                                     Gender = model.Field<string>("Gender"),
                                     SMSSubscription = model.Field<string>("SMSSubscription"),
                                     EmailSubscription = model.Field<string>("EmailSubscription"),
                                     Status = model.Field<string>("Status")
-                                }).FirstOrDefault();                    
+                                }).FirstOrDefault();
                 }
 
 
-                    return  new DatabaseResponse {   ResponseCode=result, Results= customer };
-                
+                return new DatabaseResponse { ResponseCode = result, Results = customer };
+
             }
 
             catch (Exception ex)
@@ -78,7 +78,7 @@ namespace CustomerService.DataAccess
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 throw ex;
-                
+
             }
             finally
             {
