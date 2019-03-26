@@ -53,4 +53,21 @@ namespace Core.Models
         public int PremiumNumberListCount { get; set; }
 
     }
+
+    [DataContract]
+    public class GridAWSS3Config
+    {
+        [DataMember(Name = "AWSAccessKey")]
+        public string AWSAccessKey { get; set; }
+
+        [DataMember(Name = "AWSSecretKey")]
+        public string AWSSecretKey { get; set; }
+
+        [DataMember(Name = "AWSBucketName")]
+        public string AWSBucketName { get; set; }
+
+        [DataMember(Name = "AWSUser")]
+        public string AWSUser { get; set; }
+
+    }
 }

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.IO;
+using Microsoft.AspNetCore.Http;
 using Core.Models;
 using System.ComponentModel.DataAnnotations;
 
@@ -28,7 +30,7 @@ namespace OrderService.Models
         public string MobileNumber { get; set; }
         public string DisplayName { get; set; }
     }
-			
+
     public class CreateOrder
     {
         [Required(ErrorMessage = "CustomerID is required")]
@@ -36,11 +38,11 @@ namespace OrderService.Models
 
         [Required(ErrorMessage = "BundleID is required")]
         public int BundleID { get; set; }
-        
-        public string ReferralCode { get; set; }        
-       
+
+        public string ReferralCode { get; set; }
+
         public string PromotionCode { get; set; }
-        
+
     }
 
     public class CreateOrderRequest
@@ -66,13 +68,29 @@ namespace OrderService.Models
 
         [MaxLength(8, ErrorMessage = "Maximum 8 characters allowed")]
         [Required(ErrorMessage = "MobileNumber is required")]
-        public string MobileNumber { get; set; }       
+        public string MobileNumber { get; set; }
         public string PromotionCode { get; set; }
     }
 
-    
+
 
     public class UpdateSubscriberNumber
+    {
+        [Required(ErrorMessage = "OrderID is required")]
+        public int OrderID { get; set; }
+
+        [MaxLength(8, ErrorMessage = "Maximum 8 characters allowed")]
+        [Required(ErrorMessage = "OldMobileNumber is required")]
+        public string OldMobileNumber { get; set; }
+        public NewNumber NewNumber { get; set; }
+
+        [Required(ErrorMessage = "DisplayName is required")]
+        public string DisplayName { get; set; }
+
+    }
+
+
+    public class UpdateSubscriberPortingNumberRequest
     {
         [Required(ErrorMessage = "OrderID is required")]
         public int OrderID { get; set; }
@@ -88,25 +106,17 @@ namespace OrderService.Models
         [Required(ErrorMessage = "DisplayName is required")]
         public string DisplayName { get; set; }
 
-        [Required(ErrorMessage = "PremiumType SericeCode is required")]
-        public int? PremiumTypeServiceCode { get; set; }
+        [Required(ErrorMessage = "IsOwnNumber is required")]
+        public int IsOwnNumber { get; set; }
+
+        [Required(ErrorMessage = "Donor Provider is required")]
+        public string DonorProvider { get; set; }
+        public IFormFile PortedNumberTransferForm { get; set; }
+        public string PortedNumberOwnedBy { get; set; }
+        public string PortedNumberOwnerRegistrationID { get; set; }
 
     }
 
-    public class UpdateSubscriberNumberRequest
-    {
-        [Required(ErrorMessage = "OrderID is required")]
-        public int OrderID { get; set; }
-
-        [MaxLength(8, ErrorMessage = "Maximum 8 characters allowed")]
-        [Required(ErrorMessage = "OldMobileNumber is required")]
-        public string OldMobileNumber { get; set; }        
-        public NewNumber NewNumber { get; set; }
-
-        [Required(ErrorMessage = "DisplayName is required")]
-        public string DisplayName { get; set; }     
-
-    }
     public class UpdateSubscriberPortingNumber
     {
         [Required(ErrorMessage = "OrderID is required")]
@@ -128,14 +138,8 @@ namespace OrderService.Models
 
         [Required(ErrorMessage = "Donor Provider is required")]
         public string DonorProvider { get; set; }
-
-        [Required(ErrorMessage = "Ported Number Transfer Form is required")]
         public string PortedNumberTransferForm { get; set; }
-
-        [Required(ErrorMessage = "PortedN umber OwnedBy is required")]
         public string PortedNumberOwnedBy { get; set; }
-
-        [Required(ErrorMessage = "Ported Number Owner RegistrationID is required")]
         public string PortedNumberOwnerRegistrationID { get; set; }
 
     }
@@ -144,7 +148,5 @@ namespace OrderService.Models
         public int CustomerID { get; set; }
         public DateTime CreatedOn { get; set; }
     }
-
-   
 
 }

@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AWSSDK.S3" Version="3.3.100.1" />
     <PackageReference Include="AWSSDK.SimpleNotificationService" Version="3.3.100.1" />
     <PackageReference Include="AWSSDK.SQS" Version="3.3.100.1" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />

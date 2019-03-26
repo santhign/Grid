@@ -52,7 +52,7 @@
             }
              <returns>OperationResponse</returns>
         </member>
-        <member name="M:OrderService.Controllers.OrdersController.UpdateSubscriberNumber(OrderService.Models.UpdateSubscriberNumberRequest)">
+        <member name="M:OrderService.Controllers.OrdersController.UpdateSubscriberNumber(OrderService.Models.UpdateSubscriberNumber)">
             <summary>
             This will Update subscribers existing number with new number selected.
             </summary>
@@ -60,8 +60,31 @@
             body{
             "OrderID" :1,
             "OldMobileNumber" :"97854562",
-            "NewMobileNumber" :"97854572",
-            "DisplayName" : ""       
+            "NewNumber" :{
+                        "MobileNumber":"97854572",
+                        "ServiceCode" :39
+                        },
+            "DisplayName" : "shortname"       
+            }
+            </param>
+            <returns>OperationResponse</returns>       
+        </member>
+        <member name="M:OrderService.Controllers.OrdersController.PortingNumber(OrderService.Models.UpdateSubscriberPortingNumberRequest)">
+            <summary>
+            This will Update subscribers existing number with new number selected.
+            </summary>
+            <param name="request">
+            body{
+            "OrderID" :1,
+            "OldMobileNumber" :"97854562",
+            "NewMobileNumber":"97854572",
+            "DisplayName" : "shortname",
+            "IsOwnNumber" : 1,
+            "DonorProvider":"",
+            "PortedNumberTransferForm":"", //optional
+            "PortedNumberOwnedBy":"", //optional
+            "PortedNumberOwnerRegistrationID":"", //optional
+            
             }
             </param>
             <returns>OperationResponse</returns>       

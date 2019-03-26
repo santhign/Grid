@@ -61,7 +61,7 @@ namespace OrderService.DataAccess
 
                 OrderInit orderCreated = new OrderInit();
 
-                if(dt!=null && dt.Rows.Count > 0)
+                if (dt != null && dt.Rows.Count > 0)
                 {
                     orderCreated = (from model in dt.AsEnumerable()
                                     select new OrderInit()
@@ -72,7 +72,7 @@ namespace OrderService.DataAccess
 
                 }
 
-                return new DatabaseResponse { ResponseCode = result, Results=orderCreated};
+                return new DatabaseResponse { ResponseCode = result, Results = orderCreated };
             }
 
             catch (Exception ex)
@@ -97,14 +97,14 @@ namespace OrderService.DataAccess
                     new SqlParameter( "@OrderID",  SqlDbType.Int ),
                     new SqlParameter( "@BundleID",  SqlDbType.Int ),
                     new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar),
-                    new SqlParameter( "@PromotionCode",  SqlDbType.NVarChar) 
+                    new SqlParameter( "@PromotionCode",  SqlDbType.NVarChar)
                 };
 
                 parameters[0].Value = subscriber.OrderID;
                 parameters[1].Value = subscriber.BundleID;
                 parameters[2].Value = subscriber.MobileNumber;
                 parameters[3].Value = subscriber.PromotionCode;
-              
+
 
                 _DataHelper = new DataAccessHelper("Order_CreateSubscriber", parameters, _configuration);
 
@@ -112,7 +112,7 @@ namespace OrderService.DataAccess
 
                 int result = _DataHelper.Run();    // 100 / 107 
 
-                return new DatabaseResponse { ResponseCode = result};
+                return new DatabaseResponse { ResponseCode = result };
             }
 
             catch (Exception ex)
@@ -134,11 +134,11 @@ namespace OrderService.DataAccess
 
                 SqlParameter[] parameters =
                {
-                    new SqlParameter( "@OrderID",  SqlDbType.Int )                   
+                    new SqlParameter( "@OrderID",  SqlDbType.Int )
 
                 };
 
-                parameters[0].Value = orderId;              
+                parameters[0].Value = orderId;
 
                 _DataHelper = new DataAccessHelper("Order_GetOrderBasicDetails", parameters, _configuration);
 
@@ -149,38 +149,38 @@ namespace OrderService.DataAccess
                 DatabaseResponse response = new DatabaseResponse();
 
                 if (result == 105)
-                {              
-
-                OrderBasicDetails orderDetails = new OrderBasicDetails();
-
-                if(ds!=null && ds.Tables[0] !=null && ds.Tables[0].Rows.Count>0)
                 {
 
-                    orderDetails = (from model in ds.Tables[0].AsEnumerable()
+                    OrderBasicDetails orderDetails = new OrderBasicDetails();
+
+                    if (ds != null && ds.Tables[0] != null && ds.Tables[0].Rows.Count > 0)
+                    {
+
+                        orderDetails = (from model in ds.Tables[0].AsEnumerable()
                                         select new OrderBasicDetails()
                                         {
                                             OrderID = model.Field<int>("OrderID"),
                                             OrderNumber = model.Field<string>("OrderNumber"),
-                                            OrderDate =model.Field<DateTime>("OrderDate"),
+                                            OrderDate = model.Field<DateTime>("OrderDate"),
                                         }).FirstOrDefault();
 
-                   List<OrderSubscription> subscriptions = new List<OrderSubscription>();
+                        List<OrderSubscription> subscriptions = new List<OrderSubscription>();
 
-                    if (ds.Tables[1].Rows.Count > 0)
-                    {
+                        if (ds.Tables[1].Rows.Count > 0)
+                        {
 
-                        subscriptions = (from model in ds.Tables[1].AsEnumerable()
-                                        select new OrderSubscription()
-                                        {
-                                             BundleID = model.Field<int>("BundleID"),
-                                             DisplayName = model.Field<string>("DisplayName"),
-                                             MobileNumber = model.Field<string>("MobileNumber"),
-                                        }).ToList();
+                            subscriptions = (from model in ds.Tables[1].AsEnumerable()
+                                             select new OrderSubscription()
+                                             {
+                                                 BundleID = model.Field<int>("BundleID"),
+                                                 DisplayName = model.Field<string>("DisplayName"),
+                                                 MobileNumber = model.Field<string>("MobileNumber"),
+                                             }).ToList();
 
-                        orderDetails.OrderSubscriptions = subscriptions;
+                            orderDetails.OrderSubscriptions = subscriptions;
 
+                        }
                     }
-                }
 
                     response = new DatabaseResponse { ResponseCode = result, Results = orderDetails };
 
@@ -213,10 +213,10 @@ namespace OrderService.DataAccess
 
                 SqlParameter[] parameters =
                {
-                    new SqlParameter( "@Source",  SqlDbType.NVarChar ), 
+                    new SqlParameter( "@Source",  SqlDbType.NVarChar ),
                     new SqlParameter( "@APIName",  SqlDbType.NVarChar ),
                     new SqlParameter( "@CustomerID",  SqlDbType.Int ),
-                }; 
+                };
 
                 parameters[0].Value = source;
                 parameters[1].Value = apiName;
@@ -230,27 +230,27 @@ namespace OrderService.DataAccess
 
                 BSSAssetRequest assetRequest = new BSSAssetRequest();
 
-                DatabaseResponse response = new DatabaseResponse();                
+                DatabaseResponse response = new DatabaseResponse();
 
-                        if (dt.Rows.Count > 0)
-                        {
+                if (dt.Rows.Count > 0)
+                {
 
-                        assetRequest = (from model in dt.AsEnumerable()
+                    assetRequest = (from model in dt.AsEnumerable()
                                     select new BSSAssetRequest()
                                     {
                                         request_id = model.Field<string>("RequestID")
 
-                                    }).FirstOrDefault();                          
+                                    }).FirstOrDefault();
 
-                        }
-                   
+                }
 
-	
-                    response = new DatabaseResponse { Results = assetRequest };
 
-              
 
-               
+                response = new DatabaseResponse { Results = assetRequest };
+
+
+
+
                 return response;
             }
 
@@ -292,17 +292,17 @@ namespace OrderService.DataAccess
 
                     ServiceFees serviceFee = new ServiceFees();
 
-                    if (dt != null  && dt.Rows.Count > 0)
+                    if (dt != null && dt.Rows.Count > 0)
                     {
 
                         serviceFee = (from model in dt.AsEnumerable()
-                                        select new ServiceFees()
-                                        {
-                                             ServiceCode = model.Field<int>("ServiceCode"),
+                                      select new ServiceFees()
+                                      {
+                                          ServiceCode = model.Field<int>("ServiceCode"),
 
-                                             ServiceFee = model.Field<double>("ServiceFee")
-                                           
-                                        }).FirstOrDefault();
+                                          ServiceFee = model.Field<double>("ServiceFee")
+
+                                      }).FirstOrDefault();
                     }
 
                     response = new DatabaseResponse { ResponseCode = result, Results = serviceFee };
@@ -360,14 +360,14 @@ namespace OrderService.DataAccess
                     {
 
                         tokenResponse = (from model in dt.AsEnumerable()
-                                      select new AuthTokenResponse()
-                                      {
-                                           CustomerID = model.Field<int>("CustomerID"),
+                                         select new AuthTokenResponse()
+                                         {
+                                             CustomerID = model.Field<int>("CustomerID"),
 
-                                           CreatedOn = model.Field<DateTime>("CreatedOn")
+                                             CreatedOn = model.Field<DateTime>("CreatedOn")
 
 
-                                      }).FirstOrDefault();
+                                         }).FirstOrDefault();
                     }
 
                     response = new DatabaseResponse { ResponseCode = result, Results = tokenResponse };
@@ -392,9 +392,9 @@ namespace OrderService.DataAccess
             {
                 _DataHelper.Dispose();
             }
-        }  
+        }
 
-        public async Task<DatabaseResponse> UpdateSubscriberNumber(UpdateSubscriberNumberRequest subscriber)
+        public async Task<DatabaseResponse> UpdateSubscriberNumber(UpdateSubscriberNumber subscriber)
         {
             try
             {
@@ -404,7 +404,7 @@ namespace OrderService.DataAccess
                     new SqlParameter( "@OrderID",  SqlDbType.Int ),
                     new SqlParameter( "@OldMobileNumber",  SqlDbType.NVarChar ),
                     new SqlParameter( "@NewMobileNumber",  SqlDbType.NVarChar),
-                    new SqlParameter( "@DisplayName",  SqlDbType.NVarChar), 
+                    new SqlParameter( "@DisplayName",  SqlDbType.NVarChar),
                     new SqlParameter( "@PremiumTypeSericeCode",  SqlDbType.Int)
                 };
 
@@ -540,7 +540,7 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
-        
+
         public async Task<DatabaseResponse> GetBSSServiceCategoryAndFee(string serviceType)
         {
             try
@@ -565,22 +565,22 @@ namespace OrderService.DataAccess
                 if (result == 105)
                 {
 
-                   List< ServiceFees> serviceFees = new List<ServiceFees>();
+                    List<ServiceFees> serviceFees = new List<ServiceFees>();
 
                     if (dt != null && dt.Rows.Count > 0)
                     {
 
                         serviceFees = (from model in dt.AsEnumerable()
 
-                                      select new ServiceFees()
-                                      {
-                                          PortalServiceName = model.Field<string>("PortalServiceName"),
+                                       select new ServiceFees()
+                                       {
+                                           PortalServiceName = model.Field<string>("PortalServiceName"),
 
-                                          ServiceCode = model.Field<int>("ServiceCode"),
+                                           ServiceCode = model.Field<int>("ServiceCode"),
 
-                                          ServiceFee = model.Field<double>("ServiceFee")
+                                           ServiceFee = model.Field<double>("ServiceFee")
 
-                                      }).ToList();
+                                       }).ToList();
                     }
 
                     response = new DatabaseResponse { ResponseCode = result, Results = serviceFees };
@@ -642,7 +642,7 @@ namespace OrderService.DataAccess
                                         {
                                             OrderID = model.Field<int>("OrderID"),
                                             OrderNumber = model.Field<string>("OrderNumber"),
-                                            OrderDate = model.Field<DateTime>("OrderDate"),                                            
+                                            OrderDate = model.Field<DateTime>("OrderDate"),
                                             BillingUnit = model.Field<string>("BillingUnit"),
                                             BillingFloor = model.Field<string>("BillingFloor"),
                                             BillingBuildingNumber = model.Field<string>("BillingBuildingNumber"),
@@ -671,37 +671,37 @@ namespace OrderService.DataAccess
                                             SlotFromTime = model.Field<TimeSpan?>("SlotFromTime"),
                                             SlotToTime = model.Field<TimeSpan?>("SlotToTime"),
                                             ScheduledDate = model.Field<DateTime?>("ScheduledDate"),
-                                            ServiceFee = model.Field<double?>("ServiceFee")                                           
+                                            ServiceFee = model.Field<double?>("ServiceFee")
                                         }).FirstOrDefault();
 
                         List<Bundle> orderBundles = new List<Bundle>();
 
-                        if (ds.Tables[1]!=null && ds.Tables[1].Rows.Count > 0)
+                        if (ds.Tables[1] != null && ds.Tables[1].Rows.Count > 0)
                         {
 
                             orderBundles = (from model in ds.Tables[1].AsEnumerable()
-                                             select new Bundle()
-                                             {
-                                                 BundleID = model.Field<int>("BundleID"),
-                                                 DisplayName = model.Field<string>("DisplayName"),
-                                                 MobileNumber = model.Field<string>("MobileNumber"), 
-                                                 IsPrimaryNumber = model.Field<int>("IsPrimaryNumber"),
-                                                 PlanMarketingName = model.Field<string>("PlanMarketingName"),
-                                                 PortalDescription = model.Field<string>("PortalDescription"),
-                                                 TotalData = model.Field<string>("TotalData"),
-                                                 TotalSMS = model.Field<double?>("TotalSMS"),
-                                                 TotalVoice = model.Field<double?>("TotalVoice"),
-                                                 ApplicableSubscriptionFee = model.Field<double?>("ApplicableSubscriptionFee"),
-                                                 ServiceName = model.Field<string>("ServiceName"),
-                                                 ApplicableServiceFee = model.Field<double?>("ApplicableServiceFee"),
-                                                 PremiumType = model.Field<int>("PremiumType"),
-                                                 IsPorted = model.Field<int>("IsPorted"),
-                                                 IsOwnNumber = model.Field<int>("IsOwnNumber"),
-                                                 DonorProvider = model.Field<string>("DonorProvider"),
-                                                 PortedNumberTransferForm = model.Field<string>("PortedNumberTransferForm"),
-                                                 PortedNumberOwnedBy = model.Field<string>("PortedNumberOwnedBy"),
-                                                 PortedNumberOwnerRegistrationID = model.Field<string>("PortedNumberOwnerRegistrationID"),
-                                             }).ToList();
+                                            select new Bundle()
+                                            {
+                                                BundleID = model.Field<int>("BundleID"),
+                                                DisplayName = model.Field<string>("DisplayName"),
+                                                MobileNumber = model.Field<string>("MobileNumber"),
+                                                IsPrimaryNumber = model.Field<int>("IsPrimaryNumber"),
+                                                PlanMarketingName = model.Field<string>("PlanMarketingName"),
+                                                PortalDescription = model.Field<string>("PortalDescription"),
+                                                TotalData = model.Field<string>("TotalData"),
+                                                TotalSMS = model.Field<double?>("TotalSMS"),
+                                                TotalVoice = model.Field<double?>("TotalVoice"),
+                                                ApplicableSubscriptionFee = model.Field<double?>("ApplicableSubscriptionFee"),
+                                                ServiceName = model.Field<string>("ServiceName"),
+                                                ApplicableServiceFee = model.Field<double?>("ApplicableServiceFee"),
+                                                PremiumType = model.Field<int>("PremiumType"),
+                                                IsPorted = model.Field<int>("IsPorted"),
+                                                IsOwnNumber = model.Field<int>("IsOwnNumber"),
+                                                DonorProvider = model.Field<string>("DonorProvider"),
+                                                PortedNumberTransferForm = model.Field<string>("PortedNumberTransferForm"),
+                                                PortedNumberOwnedBy = model.Field<string>("PortedNumberOwnedBy"),
+                                                PortedNumberOwnerRegistrationID = model.Field<string>("PortedNumberOwnerRegistrationID"),
+                                            }).ToList();
 
                             orderDetails.Bundles = orderBundles;
 
@@ -758,18 +758,18 @@ namespace OrderService.DataAccess
 
                     OrderCustomer customer = new OrderCustomer();
 
-                    if (dt != null &&  dt.Rows.Count > 0)
+                    if (dt != null && dt.Rows.Count > 0)
                     {
 
                         customer = (from model in dt.AsEnumerable()
-                                        select new OrderCustomer()
-                                        {
-                                             CustomerId = model.Field<int>("CustomerID"),
-                                            
-                                        }).FirstOrDefault();
+                                    select new OrderCustomer()
+                                    {
+                                        CustomerId = model.Field<int>("CustomerID"),
+
+                                    }).FirstOrDefault();
 
 
-                        
+
 
                     }
 
@@ -796,6 +796,6 @@ namespace OrderService.DataAccess
             }
         }
 
-        
+
     }
 }

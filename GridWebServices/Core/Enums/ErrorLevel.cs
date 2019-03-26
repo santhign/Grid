@@ -52,5 +52,13 @@ namespace Core.Enums
         [EnumMember(Value = "Failed To Get Order Customer")]
         [Description("Failed To Get Order Customer")]
         FailedToGetCustomer = 8,
+
+        [EnumMember(Value = "Failed To Get Configuration")]
+        [Description("Failed To Get Configuration")]
+        FailedToGetConfiguration = 9,
+
+        [EnumMember(Value = "S3 Upload Failed")]
+        [Description("AWS S3 Upload Failed")]
+        S3UploadFailed = 10,
     }
 }
