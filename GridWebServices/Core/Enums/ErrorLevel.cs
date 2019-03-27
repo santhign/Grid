@@ -42,7 +42,7 @@ namespace Core.Enums
         UpdateAssetUnBlockingFailed = 5,
 
         [EnumMember(Value = "UpdateSubscriptionFailed")]
-        [Description("Update Subscription Failed for unblocking number")]
+        [Description("Update Subscription Failed")]
         UpdateSubscriptionFailed = 6,
 
         [EnumMember(Value = "Failed To Locate Updated Subscription")]
@@ -60,5 +60,33 @@ namespace Core.Enums
         [EnumMember(Value = "S3 Upload Failed")]
         [Description("AWS S3 Upload Failed")]
         S3UploadFailed = 10,
+
+        [EnumMember(Value = "CreateSubscriptionFailed")]
+        [Description("Create Subscription Failed")]
+        CreateSubscriptionFailed = 11,
+
+        [EnumMember(Value = "Failed To Locate Created Subscription")]
+        [Description("Failed ToLocate Created Subscription")]
+        FailedToLocateCreatedSubscription =12,
+
+        [EnumMember(Value = "No Delivery Slot Exists")]
+        [Description("No Delivery Slot Exists")]
+        DeliverySlotNotExists = 13,
+
+        [EnumMember(Value = "Update Personal Details Failed")]
+        [Description("Personal Details Updation Failed")]
+        FailedUpdatePersonalDetails = 14,
+
+        [EnumMember(Value = "Update Billing Details Failed")]
+        [Description("Billing Details Updation Failed")]
+        FailedUpdateBillingDetails = 15,
+
+        [EnumMember(Value = "Update Shipping Details Failed")]
+        [Description("Shipping Details Updation Failed")]
+        FailedUpdateShippingDetails = 16,
+
+        [EnumMember(Value = "Update LOA Details Failed")]
+        [Description("LOA Details Updation Failed")]
+        FailedUpdateLOADetails = 17,
     }
 }
