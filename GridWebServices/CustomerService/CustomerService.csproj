@@ -18,6 +18,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="bin\Debug\netcoreapp2.2\MailChimp.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.0" />
@@ -28,6 +32,16 @@
   <ItemGroup>
     <ProjectReference Include="..\Core\Core.csproj" />
     <ProjectReference Include="..\InfrastructureService\InfrastructureService.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="bin\Release\netcoreapp2.2\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="MailChimp">
+      <HintPath>bin\Debug\netcoreapp2.2\MailChimp.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>
