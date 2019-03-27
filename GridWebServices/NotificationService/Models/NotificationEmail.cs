@@ -9,13 +9,8 @@ namespace NotificationService.Models
     public class NotificationEmail
     {
         public string Subject { get; set; }
-        public string Content { get; set; }
-        public string FromEmail { get; set; }
-        public string FromName { get; set; }
-        public string ReplyEmail { get; set; }
-        public string ReplyName { get; set; }
-        public string BccAddress { get; set; }
-        public string emailTags { get; set; }
+        public string Content { get; set; } 
+        public string BccAddress { get; set; }       
         public List<EmailDetails> EmailDetails { get; set; }
     }
     public class EmailDetails
