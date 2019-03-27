@@ -12,6 +12,7 @@ using Core.Enums;
 using Core.Extensions;
 using InfrastructureService;
 using Core.Helpers;
+using System.IO;
 
 
 namespace OrderService.Controllers
@@ -86,10 +87,7 @@ namespace OrderService.Controllers
                     IsDomainValidationErrors = false
                 });
             }
-
-
         }
-
 
         /// <summary>
         /// This will Create an order for the logged in customer with the bundle selected.
@@ -293,8 +291,6 @@ namespace OrderService.Controllers
                     });
                 }
 
-
-
             }
             catch (Exception ex)
             {
@@ -315,6 +311,7 @@ namespace OrderService.Controllers
         /// </summary>
         /// <param name="request">
         /// body{
+        /// "Token" :"Auth token",
         /// "OrderID" :1,
         /// "OldMobileNumber" :"97854562",
         /// "NewNumber" :{
@@ -346,78 +343,114 @@ namespace OrderService.Controllers
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
 
-                BSSAPIHelper helper = new BSSAPIHelper();
+                DatabaseResponse tokenAuthResponse = await _orderAccess.AuthenticateCustomerToken(request.Token);
 
-
-                OrderCustomer customer = new OrderCustomer();
-
-                DatabaseResponse customerResponse = await _orderAccess.GetCustomerIdFromOrderId(request.OrderID);
-
-                if (customerResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
-                    customer = (OrderCustomer)customerResponse.Results;
+                    AuthTokenResponse aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
 
-
-                    DatabaseResponse requestIdToUpdateUnblock = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customer.CustomerId);
-
-                    DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
-
-                    GridBSSConfi config = helper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
-
-                    // Unblock
-                    BSSUpdateResponseObject bssUnblockUpdateResponse = await helper.UpdateAssetBlockNumber(config, ((BSSAssetRequest)requestIdToUpdateUnblock.Results).request_id, request.OldMobileNumber, true);
-
-
-                    if (helper.GetResponseCode(bssUnblockUpdateResponse) == "0")
+                    if (!(aTokenResp.CreatedOn < DateTime.UtcNow.AddDays(-7)))
                     {
-                        //Block
+                        BSSAPIHelper helper = new BSSAPIHelper();
 
-                        DatabaseResponse requestIdToUpdateBlock = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customer.CustomerId);
+                        OrderCustomer customer = new OrderCustomer();
 
-                        BSSUpdateResponseObject bssUpdateResponse = await helper.UpdateAssetBlockNumber(config, ((BSSAssetRequest)requestIdToUpdateBlock.Results).request_id, request.NewNumber.MobileNumber, false);
+                        DatabaseResponse customerResponse = await _orderAccess.GetCustomerIdFromOrderId(request.OrderID);
 
-                        if (helper.GetResponseCode(bssUnblockUpdateResponse) == "0")
+                        if (customerResponse.ResponseCode == (int)DbReturnValue.RecordExists)
                         {
-                            //update subscription
-                            DatabaseResponse updateSubscriberResponse = await _orderAccess.UpdateSubscriberNumber(request);
+                            customer = (OrderCustomer)customerResponse.Results;
 
-                            if (updateSubscriberResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
+
+                            DatabaseResponse requestIdToUpdateUnblock = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customer.CustomerId);
+
+                            DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
+
+                            GridBSSConfi config = helper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
+
+                            // Unblock
+                            BSSUpdateResponseObject bssUnblockUpdateResponse = await helper.UpdateAssetBlockNumber(config, ((BSSAssetRequest)requestIdToUpdateUnblock.Results).request_id, request.OldMobileNumber, true);
+
+
+                            if (helper.GetResponseCode(bssUnblockUpdateResponse) == "0")
                             {
-                                // Get Order Basic Details
+                                //Block
 
-                                DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails(request.OrderID);
+                                DatabaseResponse requestIdToUpdateBlock = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customer.CustomerId);
 
-                                if (orderDetailsResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                                BSSUpdateResponseObject bssUpdateResponse = await helper.UpdateAssetBlockNumber(config, ((BSSAssetRequest)requestIdToUpdateBlock.Results).request_id, request.NewNumber.MobileNumber, false);
+
+                                if (helper.GetResponseCode(bssUnblockUpdateResponse) == "0")
                                 {
-                                    return Ok(new OperationResponse
+                                    //update subscription
+                                    DatabaseResponse updateSubscriberResponse = await _orderAccess.UpdateSubscriberNumber(request);
+
+                                    if (updateSubscriberResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
                                     {
-                                        HasSucceeded = true,
-                                        Message = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess),
-                                        IsDomainValidationErrors = false,
-                                        ReturnedObject = orderDetailsResponse.Results
-                                    });
+                                        // Get Order Basic Details
+
+                                        DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails(request.OrderID);
+
+                                        if (orderDetailsResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                                        {
+                                            return Ok(new OperationResponse
+                                            {
+                                                HasSucceeded = true,
+                                                Message = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess),
+                                                IsDomainValidationErrors = false,
+                                                ReturnedObject = orderDetailsResponse.Results
+                                            });
+                                        }
+
+                                        else
+                                        {
+                                            //subscription updated, but details not returned
+                                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToLocateUpdatedSubscription));
+                                            return Ok(new OperationResponse
+                                            {
+                                                HasSucceeded = true,
+                                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
+                                                IsDomainValidationErrors = false,
+                                            });
+                                        }
+
+                                    }
+                                    else
+                                    {
+                                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateSubscriptionFailed));
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = false,
+                                            Message = EnumExtensions.GetDescription(DbReturnValue.UpdationFailed),
+                                            IsDomainValidationErrors = false
+                                        });
+                                    }
+
                                 }
 
                                 else
                                 {
-                                    //subscription updated, but details not returned
-                                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToLocateUpdatedSubscription));
+                                    // blocking failed
+
+                                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateAssetBlockingFailed));
                                     return Ok(new OperationResponse
                                     {
-                                        HasSucceeded = true,
-                                        Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
-                                        IsDomainValidationErrors = false,
+                                        HasSucceeded = false,
+                                        Message = EnumExtensions.GetDescription(DbReturnValue.BlockingFailed),
+                                        IsDomainValidationErrors = false
                                     });
                                 }
 
                             }
+
                             else
                             {
-                                LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateSubscriptionFailed));
+                                // unblocking failed
+                                LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateAssetUnBlockingFailed));
                                 return Ok(new OperationResponse
                                 {
                                     HasSucceeded = false,
-                                    Message = EnumExtensions.GetDescription(DbReturnValue.UpdationFailed),
+                                    Message = EnumExtensions.GetDescription(DbReturnValue.UnBlockingFailed),
                                     IsDomainValidationErrors = false
                                 });
                             }
@@ -426,44 +459,45 @@ namespace OrderService.Controllers
 
                         else
                         {
-                            // blocking failed
-
-                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateAssetBlockingFailed));
+                            // failed to locate customer
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToGetCustomer));
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = false,
-                                Message = EnumExtensions.GetDescription(DbReturnValue.BlockingFailed),
+                                Message = EnumExtensions.GetDescription(DbReturnValue.UnBlockingFailed),
                                 IsDomainValidationErrors = false
                             });
                         }
-
                     }
 
                     else
                     {
-                        // unblocking failed
-                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateAssetUnBlockingFailed));
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
                         return Ok(new OperationResponse
                         {
                             HasSucceeded = false,
-                            Message = EnumExtensions.GetDescription(DbReturnValue.UnBlockingFailed),
-                            IsDomainValidationErrors = false
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
                         });
+
                     }
-
                 }
-
                 else
                 {
-                    // failed to locate customer
-                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToGetCustomer));
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
-                        Message = EnumExtensions.GetDescription(DbReturnValue.UnBlockingFailed),
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
                         IsDomainValidationErrors = false
                     });
                 }
+
 
 
             }
@@ -485,7 +519,8 @@ namespace OrderService.Controllers
         /// This will Update subscribers existing number with new number selected.
         /// </summary>
         /// <param name="request">
-        /// body{
+        /// Form{
+        /// "Token" :"Auth token",
         /// "OrderID" :1,
         /// "OldMobileNumber" :"97854562",
         /// "NewMobileNumber":"97854572",
@@ -498,8 +533,7 @@ namespace OrderService.Controllers
         /// 
         /// }
         /// </param>
-        /// <returns>OperationResponse</returns>       
-        [HttpPost]
+        /// <returns>OperationResponse</returns> 
         [Route("PortingNumber")]
         [HttpPost, DisableRequestSizeLimit]
         public async Task<IActionResult> PortingNumber([FromForm] UpdateSubscriberPortingNumberRequest request)
@@ -519,149 +553,368 @@ namespace OrderService.Controllers
                     };
                 }
 
-                // var files = Request.Form.Files;
-
-                IFormFile file = request.PortedNumberTransferForm;
-
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
 
-                BSSAPIHelper helper = new BSSAPIHelper();
+                DatabaseResponse tokenAuthResponse = await _orderAccess.AuthenticateCustomerToken(request.Token);
 
-                MiscHelper configHelper = new MiscHelper();
-
-                UpdateSubscriberPortingNumber portingRequest = new UpdateSubscriberPortingNumber
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
-                    OrderID = request.OrderID,
-                    OldMobileNumber = request.OldMobileNumber,
-                    NewMobileNumber = request.NewMobileNumber,
-                    DisplayName = request.DisplayName,
-                    DonorProvider = request.DonorProvider,
-                    IsOwnNumber = request.IsOwnNumber,
-                    PortedNumberOwnedBy = request.PortedNumberOwnedBy,
-                    PortedNumberTransferForm = "",
-                    PortedNumberOwnerRegistrationID = request.PortedNumberOwnerRegistrationID
-                };
+                    AuthTokenResponse aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
 
-                //process file if uploaded - non null
-
-                if (file != null)
-                {
-                    DatabaseResponse awsConfigResponse = await _orderAccess.GetConfiguration(ConfiType.AWS.ToString());
-
-                    if (awsConfigResponse != null && awsConfigResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                    if (!(aTokenResp.CreatedOn < DateTime.UtcNow.AddDays(-7)))
                     {
-                        GridAWSS3Config awsConfig = configHelper.GetGridAwsConfig((List<Dictionary<string, string>>)awsConfigResponse.Results);
+                        IFormFile file = request.PortedNumberTransferForm;                       
 
-                        AmazonS3 s3Helper = new AmazonS3(awsConfig);
+                        BSSAPIHelper helper = new BSSAPIHelper();
 
-                        UploadResponse s3UploadResponse = await s3Helper.UploadFile(file);
+                        MiscHelper configHelper = new MiscHelper();
 
-                        if (s3UploadResponse.HasSucceed)
+                        UpdateSubscriberPortingNumber portingRequest = new UpdateSubscriberPortingNumber
                         {
-                            portingRequest.PortedNumberTransferForm = s3UploadResponse.FileName;
-                        }
-                        else
+                            OrderID = request.OrderID,
+                            OldMobileNumber = request.OldMobileNumber,
+                            NewMobileNumber = request.NewMobileNumber,
+                            DisplayName = request.DisplayName,
+                            DonorProvider = request.DonorProvider,
+                            IsOwnNumber = request.IsOwnNumber,
+                            PortedNumberOwnedBy = request.PortedNumberOwnedBy,
+                            PortedNumberTransferForm = "",
+                            PortedNumberOwnerRegistrationID = request.PortedNumberOwnerRegistrationID
+                        };
+
+                        //process file if uploaded - non null
+
+                        if (file != null)
                         {
-                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.S3UploadFailed));
-                        }
-                    }
-                    else
-                    {
-                        // unable to get aws config
-                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToGetConfiguration));
+                            DatabaseResponse awsConfigResponse = await _orderAccess.GetConfiguration(ConfiType.AWS.ToString());
 
-                    }
-                }
-
-                OrderCustomer customer = new OrderCustomer();
-
-                DatabaseResponse customerResponse = await _orderAccess.GetCustomerIdFromOrderId(request.OrderID);
-
-                if (customerResponse.ResponseCode == (int)DbReturnValue.RecordExists)
-                {
-                    customer = (OrderCustomer)customerResponse.Results;
-
-                    DatabaseResponse requestIdToUpdateUnblock = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customer.CustomerId);
-
-                    DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
-
-                    GridBSSConfi config = helper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
-
-                    // Unblock
-                    BSSUpdateResponseObject bssUnblockUpdateResponse = await helper.UpdateAssetBlockNumber(config, ((BSSAssetRequest)requestIdToUpdateUnblock.Results).request_id, request.OldMobileNumber, true);
-
-                    if (helper.GetResponseCode(bssUnblockUpdateResponse) == "0")
-                    {
-                        //update subscription porting
-                        DatabaseResponse updateSubscriberResponse = await _orderAccess.UpdateSubscriberPortingNumber(portingRequest);
-
-                        if (updateSubscriberResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
-                        {
-                            // Get Order Basic Details
-
-                            DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails(request.OrderID);
-
-                            if (orderDetailsResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                            if (awsConfigResponse != null && awsConfigResponse.ResponseCode == (int)DbReturnValue.RecordExists)
                             {
-                                return Ok(new OperationResponse
+                                GridAWSS3Config awsConfig = configHelper.GetGridAwsConfig((List<Dictionary<string, string>>)awsConfigResponse.Results);
+
+                                AmazonS3 s3Helper = new AmazonS3(awsConfig);
+
+                                string fileName = "Grid_PNTF_" + portingRequest.OrderID + "_" + DateTime.UtcNow.ToString("yyyymmddhhmmss") + Path.GetExtension(file.FileName);
+
+                                UploadResponse s3UploadResponse = await s3Helper.UploadFile(file, fileName);
+
+                                if (s3UploadResponse.HasSucceed)
                                 {
-                                    HasSucceeded = true,
-                                    Message = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess),
-                                    IsDomainValidationErrors = false,
-                                    ReturnedObject = orderDetailsResponse.Results
-                                });
+                                    portingRequest.PortedNumberTransferForm = s3UploadResponse.FileName;
+                                }
+                                else
+                                {
+                                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.S3UploadFailed));
+                                }
+                            }
+                            else
+                            {
+                                // unable to get aws config
+                                LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToGetConfiguration));
+
+                            }
+                        }
+
+                        OrderCustomer customer = new OrderCustomer();
+
+                        DatabaseResponse customerResponse = await _orderAccess.GetCustomerIdFromOrderId(request.OrderID);
+
+                        if (customerResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                        {
+                            customer = (OrderCustomer)customerResponse.Results;
+
+                            DatabaseResponse requestIdToUpdateUnblock = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customer.CustomerId);
+
+                            DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
+
+                            GridBSSConfi config = helper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
+
+                            // Unblock
+                            BSSUpdateResponseObject bssUnblockUpdateResponse = await helper.UpdateAssetBlockNumber(config, ((BSSAssetRequest)requestIdToUpdateUnblock.Results).request_id, request.OldMobileNumber, true);
+
+                            if (helper.GetResponseCode(bssUnblockUpdateResponse) == "0")
+                            {
+                                //update subscription porting
+                                DatabaseResponse updateSubscriberResponse = await _orderAccess.UpdateSubscriberPortingNumber(portingRequest);
+
+                                if (updateSubscriberResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
+                                {
+                                    // Get Order Basic Details
+
+                                    DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails(request.OrderID);
+
+                                    if (orderDetailsResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                                    {
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = true,
+                                            Message = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess),
+                                            IsDomainValidationErrors = false,
+                                            ReturnedObject = orderDetailsResponse.Results
+                                        });
+                                    }
+
+                                    else
+                                    {
+                                        //subscription porting updated, but details not returned
+                                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToLocateUpdatedSubscription));
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = true,
+                                            Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
+                                            IsDomainValidationErrors = false,
+                                        });
+                                    }
+
+                                }
+                                else
+                                {
+                                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateSubscriptionFailed));
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = false,
+                                        Message = EnumExtensions.GetDescription(DbReturnValue.UpdationFailed),
+                                        IsDomainValidationErrors = false
+                                    });
+                                }
                             }
 
                             else
                             {
-                                //subscription porting updated, but details not returned
-                                LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToLocateUpdatedSubscription));
+                                // unblocking failed
+                                LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateAssetUnBlockingFailed));
                                 return Ok(new OperationResponse
                                 {
-                                    HasSucceeded = true,
-                                    Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
-                                    IsDomainValidationErrors = false,
+                                    HasSucceeded = false,
+                                    Message = EnumExtensions.GetDescription(DbReturnValue.UnBlockingFailed),
+                                    IsDomainValidationErrors = false
                                 });
                             }
 
                         }
+
                         else
                         {
-                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateSubscriptionFailed));
+                            // failed to locate customer
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToGetCustomer));
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = false,
-                                Message = EnumExtensions.GetDescription(DbReturnValue.UpdationFailed),
+                                Message = EnumExtensions.GetDescription(DbReturnValue.UnBlockingFailed),
                                 IsDomainValidationErrors = false
                             });
                         }
+
                     }
 
                     else
                     {
-                        // unblocking failed
-                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateAssetUnBlockingFailed));
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
                         return Ok(new OperationResponse
                         {
                             HasSucceeded = false,
-                            Message = EnumExtensions.GetDescription(DbReturnValue.UnBlockingFailed),
-                            IsDomainValidationErrors = false
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
                         });
+
+                    }
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
+
+        /// <summary>
+        /// This will create an additional subscriber for the orderID input with the selected Bundle
+        /// </summary>
+        /// <param name="request">
+        /// body
+        /// {
+        ///  "Token":"auth token",
+        /// "OrderID" :1,
+        /// "BundleID" :"1"        
+        /// }
+        /// </param>
+        /// <returns>OperationResponse</returns>
+        [HttpPost]
+        [Route("CreateSubscriber")]
+        public async Task<IActionResult> CreateSubscriber([FromBody] AdditionalSubscriberRequest request)
+        {
+
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                                                 .SelectMany(x => x.Errors)
+                                                 .Select(x => x.ErrorMessage))
+                    };
+                }
+
+                OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await _orderAccess.AuthenticateCustomerToken(request.Token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+
+                    AuthTokenResponse aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
+
+                    if (!(aTokenResp.CreatedOn < DateTime.UtcNow.AddDays(-7)))
+                    {      
+                                // call GetAssets BSSAPI
+
+                                BSSAPIHelper helper = new BSSAPIHelper();
+
+                                DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
+
+                                GridBSSConfi config = helper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
+
+                                DatabaseResponse serviceCAF = await _orderAccess.GetBSSServiceCategoryAndFee(ServiceTypes.Free.ToString());
+
+                                DatabaseResponse requestIdRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.GetAssets.ToString(), aTokenResp.CustomerID);
+
+                                ResponseObject res = await helper.GetAssetInventory(config, (((List<ServiceFees>)serviceCAF.Results)).FirstOrDefault().ServiceCode, ((BSSAssetRequest)requestIdRes.Results).request_id);
+
+                                string AssetToSubscribe = helper.GetAssetId(res);
+
+                                if (res != null && (int.Parse(res.Response.asset_details.total_record_count) > 0))
+                                {
+                                    //Block number                                    
+
+                                    DatabaseResponse requestIdToUpdateRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), aTokenResp.CustomerID);
+
+                                    BSSUpdateResponseObject bssUpdateResponse = await helper.UpdateAssetBlockNumber(config, ((BSSAssetRequest)requestIdToUpdateRes.Results).request_id, AssetToSubscribe, false);
+
+                                    if (helper.GetResponseCode(bssUpdateResponse) == "0")
+                                    {
+                                        // create subscription
+                                        CreateSubscriber subscriberToCreate = new CreateSubscriber { BundleID = request.BundleID, OrderID = request.OrderID, MobileNumber = AssetToSubscribe, PromotionCode = "" }; 
+
+                                        DatabaseResponse createSubscriberResponse = await _orderAccess.CreateSubscriber(subscriberToCreate);
+
+                                         if (createSubscriberResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
+                                         {
+                                             // Get Order Basic Details
+
+                                                DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails(request.OrderID);
+                                     
+                                                return Ok(new OperationResponse
+                                                {
+                                                 HasSucceeded = true,
+                                                 Message = EnumExtensions.GetDescription(DbReturnValue.CreateSuccess),
+                                                IsDomainValidationErrors = false,
+                                                ReturnedObject = orderDetailsResponse.Results
+                                                });
+
+                                        }
+
+                                        else
+                                        {
+                                            // Create subscriber failed
+                                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.CreateSubscriptionFailed));
+
+                                            return Ok(new OperationResponse
+                                            {
+                                            HasSucceeded = true,
+                                            Message = EnumExtensions.GetDescription(DbReturnValue.CreationFailed),
+                                            IsDomainValidationErrors = false                                       
+
+                                            });
+                                    }
+
+                                        
+                                    }
+                                    else
+                                    {
+                                        //blocking failed
+
+                                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateAssetBlockingFailed));
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = false,
+                                            Message = EnumExtensions.GetDescription(DbReturnValue.BlockingFailed),
+                                            IsDomainValidationErrors = false
+                                        });
+                                    }
+
+                                }
+                                else
+                                {
+                                    // no assets returned
+
+                                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.GetAssetFailed));
+
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = false,
+                                        Message = EnumExtensions.GetDescription(DbReturnValue.GetAssetsFailed),
+                                        IsDomainValidationErrors = false
+                                    });
+
+                                }                       
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
                     }
 
                 }
 
                 else
                 {
-                    // failed to locate customer
-                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToGetCustomer));
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
-                        Message = EnumExtensions.GetDescription(DbReturnValue.UnBlockingFailed),
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
                         IsDomainValidationErrors = false
                     });
                 }
+
 
 
             }
@@ -679,5 +932,608 @@ namespace OrderService.Controllers
             }
         }
 
+        /// <summary>
+        /// This will returns a set of available delivery slots
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns>OperationResponse</returns>
+
+        [HttpGet]
+        [Route("GetAvailableSlots")]
+        public async Task<IActionResult> GetAvailableSlots(string token)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                                                 .SelectMany(x => x.Errors)
+                                                 .Select(x => x.ErrorMessage))
+                    };
+                }
+
+                OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await _orderAccess.AuthenticateCustomerToken(token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    AuthTokenResponse aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
+
+                    if (!(aTokenResp.CreatedOn < DateTime.UtcNow.AddDays(-7)))
+                    {                     
+
+                        DatabaseResponse deliveryDetailsResponse = await _orderAccess.GetAvailableSlots();
+
+                        if (deliveryDetailsResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                        {
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = true,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.RecordExists),
+                                Result = deliveryDetailsResponse.Results
+
+                            });
+                        }
+
+                        else
+                        {
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.DeliverySlotNotExists));
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists)
+                            });
+
+                        }
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+            }
+        }
+
+        /// <summary>
+        /// This will update personal details of the customer for the order
+        /// </summary>
+        /// <param name="request">
+        /// Form{
+        /// "Token":"Auth token"
+        /// "OrderID" :1,
+        /// "IDType" :"PAN",
+        /// "IDNumber":"P23FD",
+        /// "ID" : FileInput,
+        /// "NameInNRIC" : "Name as in NRIC",
+        /// "Gender":"Male",
+        /// "DOB":"15/12/2000", //dd/MM/yyyy
+        /// "ContactNumber":"95421232", 
+        /// "Nationality":"singaporean",
+        /// 
+        /// }
+        /// </param>
+        /// <returns>OperationResponse</returns>
+        [Route("updateorderpersonaldetails")]
+        [HttpPost, DisableRequestSizeLimit]
+        public async Task<IActionResult> UpdateOrderPersonalDetails([FromForm] UpdateOrderPersonalDetailsRequest request)
+        {
+            try
+            {
+               
+                if (!ModelState.IsValid)
+                {
+                    new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                                                 .SelectMany(x => x.Errors)
+                                                 .Select(x => x.ErrorMessage))
+                    };
+                }
+
+                OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await _orderAccess.AuthenticateCustomerToken(request.Token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    AuthTokenResponse aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
+
+                    if (!(aTokenResp.CreatedOn < DateTime.UtcNow.AddDays(-7)))
+                    {
+                        IFormFile file = request.ID;
+
+                        BSSAPIHelper helper = new BSSAPIHelper();
+
+                        MiscHelper configHelper = new MiscHelper();
+
+                        UpdateOrderPersonalDetails personalDetails = new UpdateOrderPersonalDetails
+                        {
+                            OrderID = request.OrderID,
+                            ContactNumber = request.ContactNumber,
+                            DOB = request.DOB,
+                            Gender = request.Gender,
+                            IDNumber = request.IDNumber,
+                            IDType = request.IDType,
+                            NameInNRIC = request.NameInNRIC,
+                            Nationality = request.Nationality
+                        };
+
+                        //process file if uploaded - non null
+
+                        if (file != null)
+                        {
+                            DatabaseResponse awsConfigResponse = await _orderAccess.GetConfiguration(ConfiType.AWS.ToString());
+
+                            if (awsConfigResponse != null && awsConfigResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                            {
+                                GridAWSS3Config awsConfig = configHelper.GetGridAwsConfig((List<Dictionary<string, string>>)awsConfigResponse.Results);
+
+                                AmazonS3 s3Helper = new AmazonS3(awsConfig);
+
+                                string fileName = "Grid_IDNUMBER_" + DateTime.UtcNow.ToString("yyyymmddhhmmss") + Path.GetExtension(file.FileName); //Grid_IDNUMBER_yyyymmddhhmmss.extension
+
+                                UploadResponse s3UploadResponse = await s3Helper.UploadFile(file, fileName);
+
+                                if (s3UploadResponse.HasSucceed)
+                                {
+                                    personalDetails.IDImageUrl = s3UploadResponse.FileName;
+                                }
+                                else
+                                {
+                                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.S3UploadFailed));
+                                }
+                            }
+                            else
+                            {
+                                // unable to get aws config
+                                LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToGetConfiguration));
+
+                            }
+                        }    //file                     
+
+                        //update personal details
+                        DatabaseResponse updatePersoanDetailsResponse = await _orderAccess.UpdateOrderPersonalDetails(personalDetails);
+
+                        if (updatePersoanDetailsResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
+                        { 
+                             return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = true,
+                                    Message = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess),
+                                    IsDomainValidationErrors = false                                   
+                                });  
+                        }
+                        else
+                        {
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedUpdatePersonalDetails));
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.UpdationFailed),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
+
+        /// <summary>
+        /// This will update personal details of the customer for the order
+        /// </summary>
+        /// <param name="request">
+        /// Form{
+        /// "Token":"Auth token"
+        /// "OrderID" :1,
+        /// "Postcode" :"4563",
+        /// "BlockNumber":"P23FD",
+        /// "Unit" : "",
+        /// "Floor" : "Name as in NRIC",
+        /// "BuildingName":"Male",
+        /// "StreetName":"", 
+        /// "ContactNumber":"95421232", 
+        /// }
+        /// </param>
+        /// <returns>OperationResponse</returns>
+        [Route("updateorderbillingdetails")]
+        [HttpPost]
+        public async Task<IActionResult> UpdateOrderBillingDetails([FromBody] UpdateOrderBillingDetailsRequest request)
+        {
+            try
+            {
+
+                if (!ModelState.IsValid)
+                {
+                    new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                                                 .SelectMany(x => x.Errors)
+                                                 .Select(x => x.ErrorMessage))
+                    };
+                }
+
+                OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await _orderAccess.AuthenticateCustomerToken(request.Token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    AuthTokenResponse aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
+
+                    if (!(aTokenResp.CreatedOn < DateTime.UtcNow.AddDays(-7)))
+                    { 
+                        //update billing details
+                        DatabaseResponse updatePersoanDetailsResponse = await _orderAccess.UpdateOrderBillingDetails(request);
+
+                        if (updatePersoanDetailsResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = true,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                        else
+                        {
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedUpdateBillingDetails));
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.UpdationFailed),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
+
+        /// <summary>
+        /// This will update personal details of the customer for the order
+        /// </summary>
+        /// <param name="request">
+        /// Form{
+        /// "Token":"Auth token"
+        /// "OrderID" :1,
+        /// "Postcode" :"4563",
+        /// "BlockNumber":"P23FD",
+        /// "Unit" : "",
+        /// "Floor" : "Name as in NRIC",
+        /// "BuildingName":"Male",
+        /// "StreetName":"", 
+        /// "ContactNumber":"95421232", 
+        /// "IsBillingSame":1, 
+        /// "PortalSlotID":"12dfsf", 
+        /// }
+        /// </param>
+        /// <returns>OperationResponse</returns>
+        [Route("updateordershippingdetails")]
+        [HttpPost]
+        public async Task<IActionResult> UpdateOrderShippingDetails([FromBody] UpdateOrderShippingDetailsRequest request)
+        {
+            try
+            {
+
+                if (!ModelState.IsValid)
+                {
+                    new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                                                 .SelectMany(x => x.Errors)
+                                                 .Select(x => x.ErrorMessage))
+                    };
+                }
+
+                OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await _orderAccess.AuthenticateCustomerToken(request.Token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    AuthTokenResponse aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
+
+                    if (!(aTokenResp.CreatedOn < DateTime.UtcNow.AddDays(-7)))
+                    {
+                        //update shipping details
+                        DatabaseResponse updatePersoanDetailsResponse = await _orderAccess.UpdateOrderShippingDetails(request);
+
+                        if (updatePersoanDetailsResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = true,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                        else
+                        {
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedUpdateShippingDetails));
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.UpdationFailed),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
+
+        /// <summary>
+        /// This will update personal details of the customer for the order
+        /// </summary>
+        /// <param name="request">
+        /// Form{
+        /// "Token":"Auth token"
+        /// "OrderID" :1,
+        /// "RecipientName" :"4563",
+        /// "IDType":"P23FD",
+        /// "IDNumber" : "",      
+        /// "ContactNumber":"95421232", 
+        /// "EmailAdddress":"",        
+        /// }
+        /// </param>
+        /// <returns>OperationResponse</returns>
+        [Route("updateorderloadetails")]
+        [HttpPost]
+        public async Task<IActionResult> UpdateOrderLOADetails([FromBody] UpdateOrderLOADetailsRequest request)
+        {
+            try
+            {
+
+                if (!ModelState.IsValid)
+                {
+                    new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                                                 .SelectMany(x => x.Errors)
+                                                 .Select(x => x.ErrorMessage))
+                    };
+                }
+
+                OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await _orderAccess.AuthenticateCustomerToken(request.Token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    AuthTokenResponse aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
+
+                    if (!(aTokenResp.CreatedOn < DateTime.UtcNow.AddDays(-7)))
+                    {
+                        //update shipping details
+                        DatabaseResponse updatePersoanDetailsResponse = await _orderAccess.UpdateOrderLOADetails(request);
+
+                        if (updatePersoanDetailsResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = true,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                        else
+                        {
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedUpdateLOADetails));
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.UpdationFailed),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
     }
 }

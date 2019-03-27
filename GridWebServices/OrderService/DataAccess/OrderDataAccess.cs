@@ -796,6 +796,250 @@ namespace OrderService.DataAccess
             }
         }
 
+        public async Task<DatabaseResponse> GetAvailableSlots()
+        {
+            try
+            {
+                _DataHelper = new DataAccessHelper("Orders_GetAvailableSlots",  _configuration);
 
+                DataTable dt = new DataTable();
+
+                int result = _DataHelper.Run(dt); // 105 /102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 105)
+                {
+
+                  List<DeliverySlot> deliverySlots = new List<DeliverySlot>();
+
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+
+                        deliverySlots = (from model in dt.AsEnumerable()
+                                         select new DeliverySlot()
+                                         {
+                                              PortalSlotID = model.Field<string>("PortalSlotID"),
+                                              SlotDate = model.Field<DateTime>("SlotDate"),
+                                              SlotFromTime = model.Field<TimeSpan>("SlotFromTime"),
+                                              SlotToTime = model.Field<TimeSpan>("SlotToTime"),
+                                              Slot = model.Field<string>("Slot"),
+                                              AdditionalCharge = model.Field<double>("AdditionalCharge"),
+
+                                         }).ToList();
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = deliverySlots };
+
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> UpdateOrderPersonalDetails(UpdateOrderPersonalDetails personalDetails)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@OrderID",  SqlDbType.Int ),
+                    new SqlParameter( "@IDType",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@IDNumber",  SqlDbType.NVarChar),
+                    new SqlParameter( "@IDImageUrl",  SqlDbType.NVarChar),
+                    new SqlParameter( "@NameInNRIC",  SqlDbType.NVarChar),
+                    new SqlParameter( "@Gender",  SqlDbType.NVarChar),
+                    new SqlParameter( "@DOB",  SqlDbType.Date),
+                    new SqlParameter( "@ContactNumber",  SqlDbType.NVarChar),
+                    new SqlParameter( "@Nationality",  SqlDbType.NVarChar),
+                };
+
+
+
+                parameters[0].Value = personalDetails.OrderID;
+                parameters[1].Value = personalDetails.IDType;
+                parameters[2].Value = personalDetails.IDNumber;
+                parameters[3].Value = personalDetails.IDImageUrl;
+                parameters[4].Value = personalDetails.NameInNRIC;
+                parameters[5].Value = personalDetails.Gender;
+                parameters[6].Value = personalDetails.DOB;
+                parameters[7].Value = personalDetails.ContactNumber;
+                parameters[8].Value = personalDetails.Nationality;
+
+                _DataHelper = new DataAccessHelper("Orders_UpdateOrderBasicDetails", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = _DataHelper.Run();    // 101 / 109 
+
+                return new DatabaseResponse { ResponseCode = result };
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> UpdateOrderBillingDetails(UpdateOrderBillingDetailsRequest billingDetails)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@OrderID",  SqlDbType.Int ),
+                    new SqlParameter( "@Postcode",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@BlockNumber",  SqlDbType.NVarChar),
+                    new SqlParameter( "@Unit",  SqlDbType.NVarChar),
+                    new SqlParameter( "@Floor",  SqlDbType.NVarChar),
+                    new SqlParameter( "@BuildingName",  SqlDbType.NVarChar),
+                    new SqlParameter( "@StreetName",  SqlDbType.NVarChar),
+                    new SqlParameter( "@ContactNumber",  SqlDbType.NVarChar)                    
+                };
+
+                parameters[0].Value = billingDetails.OrderID;
+                parameters[1].Value = billingDetails.Postcode;
+                parameters[2].Value = billingDetails.BlockNumber;
+                parameters[3].Value = billingDetails.Unit;
+                parameters[4].Value = billingDetails.Floor;
+                parameters[5].Value = billingDetails.BuildingName;
+                parameters[6].Value = billingDetails.StreetName;
+                parameters[7].Value = billingDetails.ContactNumber;               
+
+                _DataHelper = new DataAccessHelper("Orders_UpdateOrderBillingDetails", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = _DataHelper.Run();    // 101 / 109 
+
+                return new DatabaseResponse { ResponseCode = result };
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> UpdateOrderShippingDetails(UpdateOrderShippingDetailsRequest shippingDetails)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@OrderID",  SqlDbType.Int ),
+                    new SqlParameter( "@Postcode",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@BlockNumber",  SqlDbType.NVarChar),
+                    new SqlParameter( "@Unit",  SqlDbType.NVarChar),
+                    new SqlParameter( "@Floor",  SqlDbType.NVarChar),
+                    new SqlParameter( "@BuildingName",  SqlDbType.NVarChar),
+                    new SqlParameter( "@StreetName",  SqlDbType.NVarChar),
+                    new SqlParameter( "@ContactNumber",  SqlDbType.NVarChar),
+                    new SqlParameter( "@IsBillingSame",  SqlDbType.Int),
+                    new SqlParameter( "@PortalSlotID",  SqlDbType.NVarChar)
+                };
+
+                parameters[0].Value = shippingDetails.OrderID;
+                parameters[1].Value = shippingDetails.Postcode;
+                parameters[2].Value = shippingDetails.BlockNumber;
+                parameters[3].Value = shippingDetails.Unit;
+                parameters[4].Value = shippingDetails.Floor;
+                parameters[5].Value = shippingDetails.BuildingName;
+                parameters[6].Value = shippingDetails.StreetName;
+                parameters[7].Value = shippingDetails.ContactNumber;
+                parameters[8].Value = shippingDetails.IsBillingSame;
+                parameters[9].Value = shippingDetails.PortalSlotID;
+
+                _DataHelper = new DataAccessHelper("Orders_UpdateOrderShippingDetails", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = _DataHelper.Run();    // 101 / 109 
+
+                return new DatabaseResponse { ResponseCode = result };
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> UpdateOrderLOADetails(UpdateOrderLOADetailsRequest loaDetails)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@OrderID",  SqlDbType.Int ),
+                    new SqlParameter( "@RecipientName",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@IDType",  SqlDbType.NVarChar),
+                    new SqlParameter( "@IDNumber",  SqlDbType.NVarChar),
+                    new SqlParameter( "@ContactNumber",  SqlDbType.NVarChar),
+                    new SqlParameter( "@EmailAdddress",  SqlDbType.NVarChar)                  
+                };
+
+                parameters[0].Value = loaDetails.OrderID;
+                parameters[1].Value = loaDetails.RecipientName;
+                parameters[2].Value = loaDetails.IDType;
+                parameters[3].Value = loaDetails.IDNumber;
+                parameters[4].Value = loaDetails.ContactNumber;
+                parameters[5].Value = loaDetails.EmailAdddress;
+              
+
+                _DataHelper = new DataAccessHelper("Orders_UpdateOrderLOADetails", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = _DataHelper.Run();    // 101 / 109 
+
+                return new DatabaseResponse { ResponseCode = result };
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
     }
 }

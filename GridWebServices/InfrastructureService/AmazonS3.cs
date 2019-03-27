@@ -22,7 +22,7 @@ namespace InfrastructureService
         private static String bucket { get; set; }
 
 
-        public  async Task<UploadResponse> UploadFile(IFormFile file)
+        public  async Task<UploadResponse> UploadFile(IFormFile file,string fileName)
         {
             try
             {
@@ -34,7 +34,7 @@ namespace InfrastructureService
                 file.OpenReadStream().Read(fileBytes, 0, Int32.Parse(file.Length.ToString()));
 
                 // create unique file name
-                var fileName = Guid.NewGuid() + Path.GetExtension( file.FileName);
+              //  var fileName = Guid.NewGuid() + Path.GetExtension( file.FileName);
 
                 PutObjectResponse response = null;
 
