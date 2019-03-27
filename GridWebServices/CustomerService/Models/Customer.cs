@@ -52,4 +52,17 @@ namespace CustomerService.Models
         public int CustomerID { get; set; }
         public DateTime CreatedOn { get; set; }
     }
+
+    public class ValidateReferralCodeRequest
+    {
+        public string Token { get; set; }
+        public string ReferralCode { get; set; }
+    }
+
+    public class ValidateReferralCodeResponse
+    {
+        public int CustomerID { get; set; }
+        public bool IsReferralCodeValid { get; set; }
+    }
+
 }
