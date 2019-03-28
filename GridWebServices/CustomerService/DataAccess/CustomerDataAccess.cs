@@ -10,7 +10,7 @@ using Core.Models;
 using Core.Enums;
 using CustomerService.Models;
 using InfrastructureService;
-
+using Swashbuckle.AspNetCore.Swagger;
 
 namespace CustomerService.DataAccess
 {
@@ -285,6 +285,69 @@ namespace CustomerService.DataAccess
                     }
 
                     response = new DatabaseResponse { ResponseCode = result, Results = vrcResponse };
+
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> GetSubscribers(int customerId)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+
+                };
+
+                parameters[0].Value = customerId;
+                _DataHelper = new DataAccessHelper("Customers_GetSubscribers", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = _DataHelper.Run(dt); // 105 /119
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 105)
+                {
+
+                    Subscriber subscriber = new Subscriber();
+
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+
+                        subscriber = (from model in dt.AsEnumerable()
+                                      select new Subscriber()
+                                      {
+                                          MobileNumber = model.Field<string>("MobileNumber"),
+                                          DisplayName = model.Field<string>("DisplayName"),
+                                          SIMID = model.Field<string>("SIMID"),
+                                          PremiumType = model.Field<string>("PremiumType"),
+                                          ActivatedOn = model.Field<DateTime>("ActivatedOn"),
+                                          IsPrimary = model.Field<bool>("Subscribers.IsPrimary")
+                                      }).FirstOrDefault();
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = subscriber };
 
                 }
 

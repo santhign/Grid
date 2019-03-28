@@ -64,5 +64,14 @@ namespace CustomerService.Models
         public int CustomerID { get; set; }
         public bool IsReferralCodeValid { get; set; }
     }
+    public class Subscriber
+    {
+        public string MobileNumber { get; set; }
+        public string DisplayName { get; set; }
+        public string SIMID { get; set; }
+        public string PremiumType { get; set; }
+        public DateTime ActivatedOn { get; set; }
+        public bool IsPrimary { get; set; }
+    }
 
 }
