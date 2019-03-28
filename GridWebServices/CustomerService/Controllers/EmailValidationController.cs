@@ -15,6 +15,7 @@ using Core.Extensions;
 using Core.Helpers;
 using InfrastructureService;
 using Serilog;
+using System.Collections.Generic;
 
 namespace CustomerService.Controllers
 {
@@ -34,13 +35,12 @@ namespace CustomerService.Controllers
 
         /// <summary>
         /// This will validate the email id
-        /// </summary>
-        /// <param name="apikey">abcdxyz</param>
+        /// </summary> 
         ///<param name="emailid">abcd@gmail.com</param>
         /// <returns>validation result</returns> 
         [HttpGet]
-        [Route("GetEmailValidation/{apikey}/{emailid}")]
-        public async Task<IActionResult> GetEmailValidation([FromRoute] string apikey,string emailid )
+        [Route("GetEmailValidation/{emailid}")]
+        public async Task<IActionResult> GetEmailValidation([FromRoute] string emailid )
         {
 
             try
@@ -57,13 +57,17 @@ namespace CustomerService.Controllers
                                             .Select(x => x.ErrorMessage))
                     };
                 }
-                 
+
+                DatabaseResponse configResponseEmail = ConfigHelper.GetValue("EmailValidate", _iconfiguration);
+
+                List<Dictionary<string, string>> _result = ((List<Dictionary<string, string>>)configResponseEmail.Results);
+ 
                 EmailValidationHelper helper = new EmailValidationHelper();
                 EmailConfig objEmailConfig = new EmailConfig();
-                objEmailConfig.key = apikey;
+                objEmailConfig.key = _result.Single(x => x["key"] == "NeverbouceKey").Select(x => x.Value).ToString();  
                 objEmailConfig.Email = emailid;
-                objEmailConfig.EmailAPIUrl = "https://api.neverbounce.com/v4/single/check";
-                 
+                objEmailConfig.EmailAPIUrl = _result.Single(x => x["key"] == "Emailurl").Select(x => x.Value).ToString();
+
 
                 ResponseObject configResponse = await helper.GetEmailValidation(objEmailConfig);
 

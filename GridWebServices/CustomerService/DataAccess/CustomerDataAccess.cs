@@ -29,16 +29,16 @@ namespace CustomerService.DataAccess
             _configuration = configuration;
         }
 
-        public async Task<DatabaseResponse> CreateCustomer( RegisterCustomer customer)
+        public async Task<DatabaseResponse> CreateCustomer(RegisterCustomer customer)
         {
             try
-            {               
+            {
 
                 SqlParameter[] parameters =
                {
                     new SqlParameter( "@Email",  SqlDbType.NVarChar ),
                     new SqlParameter( "@Password",  SqlDbType.NVarChar ),
-                    new SqlParameter( "@ReferralCode",  SqlDbType.NVarChar)                   
+                    new SqlParameter( "@ReferralCode",  SqlDbType.NVarChar)
                 };
 
                 parameters[0].Value = customer.Email;
@@ -57,19 +57,19 @@ namespace CustomerService.DataAccess
                 {
 
                     newCustomer = (from model in dt.AsEnumerable()
-                                select new Customer()
-                                {
-                                    CustomerID = model.Field<int>("CustomerID"),
-                                    Email = model.Field<string>("Email"),
-                                    Password = model.Field<string>("Password"),
-                                    MobileNumber = model.Field<string>("MobileNumber"),
-                                    ReferralCode = model.Field<string>("ReferralCode"),
-                                    Nationality = model.Field<string>("Nationality"),
-                                    Gender = model.Field<string>("Gender"),
-                                    SMSSubscription = model.Field<string>("SMSSubscription"),
-                                    EmailSubscription = model.Field<string>("EmailSubscription"),
-                                    Status = model.Field<string>("Status")
-                                }).FirstOrDefault();
+                                   select new Customer()
+                                   {
+                                       CustomerID = model.Field<int>("CustomerID"),
+                                       Email = model.Field<string>("Email"),
+                                       Password = model.Field<string>("Password"),
+                                       MobileNumber = model.Field<string>("MobileNumber"),
+                                       ReferralCode = model.Field<string>("ReferralCode"),
+                                       Nationality = model.Field<string>("Nationality"),
+                                       Gender = model.Field<string>("Gender"),
+                                       SMSSubscription = model.Field<string>("SMSSubscription"),
+                                       EmailSubscription = model.Field<string>("EmailSubscription"),
+                                       Status = model.Field<string>("Status")
+                                   }).FirstOrDefault();
                 }
 
                 return new DatabaseResponse { ResponseCode = result, Results = customer };
@@ -103,20 +103,20 @@ namespace CustomerService.DataAccess
                 if (dt.Rows.Count > 0)
                 {
 
-                    customerList  = (from model in dt.AsEnumerable()
-                                     select new Customer()
-                                     {
-                                         CustomerID = model.Field<int>("CustomerID"),
-                                         Email = model.Field<string>("Email"),
-                                         Password = model.Field<string>("Password"),
-                                         MobileNumber = model.Field<string>("MobileNumber"),
-                                         ReferralCode = model.Field<string>("ReferralCode"),
-                                         Nationality = model.Field<string>("Nationality"),
-                                         Gender = model.Field<string>("Gender"),
-                                         SMSSubscription = model.Field<string>("SMSSubscription"),
-                                         EmailSubscription = model.Field<string>("EmailSubscription"),
-                                         Status = model.Field<string>("Status")
-                                     }).ToList();
+                    customerList = (from model in dt.AsEnumerable()
+                                    select new Customer()
+                                    {
+                                        CustomerID = model.Field<int>("CustomerID"),
+                                        Email = model.Field<string>("Email"),
+                                        Password = model.Field<string>("Password"),
+                                        MobileNumber = model.Field<string>("MobileNumber"),
+                                        ReferralCode = model.Field<string>("ReferralCode"),
+                                        Nationality = model.Field<string>("Nationality"),
+                                        Gender = model.Field<string>("Gender"),
+                                        SMSSubscription = model.Field<string>("SMSSubscription"),
+                                        EmailSubscription = model.Field<string>("EmailSubscription"),
+                                        Status = model.Field<string>("Status")
+                                    }).ToList();
                 }
 
                 return customerList;
@@ -151,22 +151,149 @@ namespace CustomerService.DataAccess
                 {
 
                     customer = (from model in dt.AsEnumerable()
-                                    select new Customer()
-                                    {
-                                        CustomerID = model.Field<int>("CustomerID"),
-                                        Email = model.Field<string>("Email"),
-                                        Password = model.Field<string>("Password"),
-                                        MobileNumber = model.Field<string>("MobileNumber"),
-                                        ReferralCode = model.Field<string>("ReferralCode"),
-                                        Nationality = model.Field<string>("Nationality"),
-                                        Gender = model.Field<string>("Gender"),
-                                        SMSSubscription = model.Field<string>("SMSSubscription"),
-                                        EmailSubscription = model.Field<string>("EmailSubscription"),
-                                        Status = model.Field<string>("Status")
-                                    }).Where(c=>c.CustomerID==customerId).FirstOrDefault();
+                                select new Customer()
+                                {
+                                    CustomerID = model.Field<int>("CustomerID"),
+                                    Email = model.Field<string>("Email"),
+                                    Password = model.Field<string>("Password"),
+                                    MobileNumber = model.Field<string>("MobileNumber"),
+                                    ReferralCode = model.Field<string>("ReferralCode"),
+                                    Nationality = model.Field<string>("Nationality"),
+                                    Gender = model.Field<string>("Gender"),
+                                    SMSSubscription = model.Field<string>("SMSSubscription"),
+                                    EmailSubscription = model.Field<string>("EmailSubscription"),
+                                    Status = model.Field<string>("Status")
+                                }).Where(c => c.CustomerID == customerId).FirstOrDefault();
                 }
 
                 return customer;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> AuthenticateCustomerToken(string token)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@Token",  SqlDbType.NVarChar )
+
+                };
+
+                parameters[0].Value = token;
+
+                _DataHelper = new DataAccessHelper("Customer_AuthenticateToken", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = _DataHelper.Run(dt); // 111 /109
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 111)
+                {
+
+                    AuthTokenResponse tokenResponse = new AuthTokenResponse();
+
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+
+                        tokenResponse = (from model in dt.AsEnumerable()
+                                         select new AuthTokenResponse()
+                                         {
+                                             CustomerID = model.Field<int>("CustomerID"),
+
+                                             CreatedOn = model.Field<DateTime>("CreatedOn")
+
+
+                                         }).FirstOrDefault();
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = tokenResponse };
+
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> ValidateReferralCode(int customerId, string referralCode)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+                    new SqlParameter( "@ReferralCode",  SqlDbType.NVarChar )
+                };
+
+                parameters[0].Value = customerId;
+                parameters[1].Value = referralCode;
+
+                _DataHelper = new DataAccessHelper("Customers_ValidateReferralCode", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = _DataHelper.Run(dt); // 105 /119
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 105)
+                {
+
+                    ValidateReferralCodeResponse vrcResponse = new ValidateReferralCodeResponse();
+
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+
+                        vrcResponse = (from model in dt.AsEnumerable()
+                                       select new ValidateReferralCodeResponse()
+                                       {
+                                           CustomerID = model.Field<int>("CustomerID"),
+                                           IsReferralCodeValid = true
+
+                                       }).FirstOrDefault();
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = vrcResponse };
+
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
             }
 
             catch (Exception ex)

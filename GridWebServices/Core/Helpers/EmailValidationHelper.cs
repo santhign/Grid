@@ -11,25 +11,25 @@ namespace Core.Helpers
     public class EmailValidationHelper
     {
         List<RequestParam> paramList = new List<RequestParam>();
-        public async Task<ResponseObject> GetEmailValidation(EmailConfig confi)
+        public async Task<ResponseObject> GetEmailValidation(EmailConfig config)
         {
-            ApiClient client = new ApiClient(new Uri(confi.EmailAPIUrl));
+            ApiClient client = new ApiClient(new Uri(config.EmailAPIUrl));
 
-            RequestParam req1 = new RequestParam();
-            req1.id = "key";
-            req1.value = confi.key;
-            paramList.Add(req1);
+            RequestParam _requestParam = new RequestParam();
+            _requestParam.id = "key";
+            _requestParam.value = config.key;
+            paramList.Add(_requestParam);
 
-            req1 = new RequestParam();
-            req1.id = "email";
-            req1.value = confi.Email;
-            paramList.Add(req1);
+            _requestParam = new RequestParam();
+            _requestParam.id = "email";
+            _requestParam.value = config.Email;
+            paramList.Add(_requestParam);
 
             SetParam param = new SetParam();
 
             RequestObject req = new RequestObject();
 
-            var requestUrl = GetRequestUrl(confi.EmailAPIUrl, ref client);
+            var requestUrl = GetRequestUrl(config.EmailAPIUrl, ref client);
 
             param.param = paramList;
 

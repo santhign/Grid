@@ -58,6 +58,7 @@
             </summary>
             <param name="request">
             body{
+            "Token" :"Auth token",
             "OrderID" :1,
             "OldMobileNumber" :"97854562",
             "NewNumber" :{
@@ -74,7 +75,8 @@
             This will Update subscribers existing number with new number selected.
             </summary>
             <param name="request">
-            body{
+            Form{
+            "Token" :"Auth token",
             "OrderID" :1,
             "OldMobileNumber" :"97854562",
             "NewMobileNumber":"97854572",
@@ -87,7 +89,106 @@
             
             }
             </param>
-            <returns>OperationResponse</returns>       
+            <returns>OperationResponse</returns> 
+        </member>
+        <member name="M:OrderService.Controllers.OrdersController.CreateSubscriber(OrderService.Models.AdditionalSubscriberRequest)">
+            <summary>
+            This will create an additional subscriber for the orderID input with the selected Bundle
+            </summary>
+            <param name="request">
+            body
+            {
+             "Token":"auth token",
+            "OrderID" :1,
+            "BundleID" :"1"        
+            }
+            </param>
+            <returns>OperationResponse</returns>
+        </member>
+        <member name="M:OrderService.Controllers.OrdersController.GetAvailableSlots(System.String)">
+            <summary>
+            This will returns a set of available delivery slots
+            </summary>
+            <param name="token"></param>
+            <returns>OperationResponse</returns>
+        </member>
+        <member name="M:OrderService.Controllers.OrdersController.UpdateOrderPersonalDetails(OrderService.Models.UpdateOrderPersonalDetailsRequest)">
+            <summary>
+            This will update personal details of the customer for the order
+            </summary>
+            <param name="request">
+            Form{
+            "Token":"Auth token"
+            "OrderID" :1,
+            "IDType" :"PAN",
+            "IDNumber":"P23FD",
+            "ID" : FileInput,
+            "NameInNRIC" : "Name as in NRIC",
+            "Gender":"Male",
+            "DOB":"15/12/2000", //dd/MM/yyyy
+            "ContactNumber":"95421232", 
+            "Nationality":"singaporean",
+            
+            }
+            </param>
+            <returns>OperationResponse</returns>
+        </member>
+        <member name="M:OrderService.Controllers.OrdersController.UpdateOrderBillingDetails(OrderService.Models.UpdateOrderBillingDetailsRequest)">
+            <summary>
+            This will update personal details of the customer for the order
+            </summary>
+            <param name="request">
+            Form{
+            "Token":"Auth token"
+            "OrderID" :1,
+            "Postcode" :"4563",
+            "BlockNumber":"P23FD",
+            "Unit" : "",
+            "Floor" : "Name as in NRIC",
+            "BuildingName":"Male",
+            "StreetName":"", 
+            "ContactNumber":"95421232", 
+            }
+            </param>
+            <returns>OperationResponse</returns>
+        </member>
+        <member name="M:OrderService.Controllers.OrdersController.UpdateOrderShippingDetails(OrderService.Models.UpdateOrderShippingDetailsRequest)">
+            <summary>
+            This will update personal details of the customer for the order
+            </summary>
+            <param name="request">
+            Form{
+            "Token":"Auth token"
+            "OrderID" :1,
+            "Postcode" :"4563",
+            "BlockNumber":"P23FD",
+            "Unit" : "",
+            "Floor" : "Name as in NRIC",
+            "BuildingName":"Male",
+            "StreetName":"", 
+            "ContactNumber":"95421232", 
+            "IsBillingSame":1, 
+            "PortalSlotID":"12dfsf", 
+            }
+            </param>
+            <returns>OperationResponse</returns>
+        </member>
+        <member name="M:OrderService.Controllers.OrdersController.UpdateOrderLOADetails(OrderService.Models.UpdateOrderLOADetailsRequest)">
+            <summary>
+            This will update personal details of the customer for the order
+            </summary>
+            <param name="request">
+            Form{
+            "Token":"Auth token"
+            "OrderID" :1,
+            "RecipientName" :"4563",
+            "IDType":"P23FD",
+            "IDNumber" : "",      
+            "ContactNumber":"95421232", 
+            "EmailAdddress":"",        
+            }
+            </param>
+            <returns>OperationResponse</returns>
         </member>
         <member name="M:OrderService.DataAccess.OrderDataAccess.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
             <summary>

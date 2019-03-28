@@ -69,4 +69,15 @@ namespace OrderService.Models
     {
         public int CustomerId { get; set; }
     }
+
+    public class DeliverySlot
+    {
+        public string PortalSlotID { get; set; }
+        public DateTime SlotDate { get; set; }
+        public TimeSpan SlotFromTime { get; set; }
+        public TimeSpan SlotToTime { get; set; }
+        public string Slot { get; set; }
+        public double AdditionalCharge { get; set; }
+    }
+
 }

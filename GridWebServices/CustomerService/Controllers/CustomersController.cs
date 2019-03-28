@@ -15,7 +15,7 @@ using CustomerService.DataAccess;
 using Newtonsoft.Json;
 
 namespace CustomerService.Controllers
-{   
+{
     [Route("api/[controller]")]
     [ApiController]
     public class CustomersController : ControllerBase
@@ -25,21 +25,21 @@ namespace CustomerService.Controllers
         public CustomersController(IConfiguration configuration)
         {
             _iconfiguration = configuration;
-        }      
+        }
         // GET: api/Customers
         [HttpGet]
         public async Task<IActionResult> GetCustomers()
         {
             try
             {
-               // throw new Exception("test");
+                // throw new Exception("test");
                 CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
 
                 List<Customer> customerList = new List<Customer>();
 
                 customerList = await _customerAccess.GetCustomers();
 
-                if (customerList == null || customerList.Count==0)
+                if (customerList == null || customerList.Count == 0)
                 {
                     return Ok(new ServerResponse
                     {
@@ -73,7 +73,7 @@ namespace CustomerService.Controllers
                 });
 
             }
-         
+
         }
 
         // GET: api/Customers/5
@@ -91,19 +91,19 @@ namespace CustomerService.Controllers
                         Message = string.Join("; ", ModelState.Values
                                             .SelectMany(x => x.Errors)
                                             .Select(x => x.ErrorMessage))
-                    };                   
+                    };
                 }
 
                 CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
 
-                Customer customer= await _customerAccess.GetCustomer(id);
+                Customer customer = await _customerAccess.GetCustomer(id);
 
                 if (customer == null)
                 {
                     return Ok(new ServerResponse
                     {
                         HasSucceeded = false,
-                        Message = EnumExtensions.GetDescription(DbReturnValue.NotExists)                      
+                        Message = EnumExtensions.GetDescription(DbReturnValue.NotExists)
 
                     });
                 }
@@ -117,10 +117,10 @@ namespace CustomerService.Controllers
 
                     });
                 }
-               
+
 
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
@@ -170,7 +170,7 @@ namespace CustomerService.Controllers
         //}
 
         // POST: api/Customers
-        [HttpPost]            
+        [HttpPost]
         public async Task<IActionResult> Create([FromBody] RegisterCustomer customer)
         {
             try
@@ -216,7 +216,7 @@ namespace CustomerService.Controllers
                     });
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
@@ -255,6 +255,85 @@ namespace CustomerService.Controllers
         //{
         //    return _context.Customers.Any(e => e.CustomerID == id);
         //}  
-       
+
+        /// <summary>
+        /// Validate customer's referral code.
+        /// Return success or failure flag with message
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns>LoggedInPrinciple</returns>
+        [HttpPost("ValidateReferralCode")]
+        public async Task<IActionResult> ValidateReferralCode([FromBody]ValidateReferralCodeRequest request)
+        {
+            try
+            {
+
+                if (!ModelState.IsValid)
+                {
+                    new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                                            .SelectMany(x => x.Errors)
+                                            .Select(x => x.ErrorMessage))
+                    };
+                }
+
+                CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
+                DatabaseResponse tokenAuthResponse = await _customerAccess.AuthenticateCustomerToken(request.Token);
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    AuthTokenResponse aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
+                    var validationResponse = await _customerAccess.ValidateReferralCode(aTokenResp.CustomerID, request.ReferralCode);
+                    if (validationResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                    {
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = true,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.RecordExists),
+                            IsDomainValidationErrors = false,
+                            ReturnedObject = validationResponse.Results
+                        });
+                    }
+                    else
+                    {
+                        //Unable to validate the referral code
+                        LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.NoRecords));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.NoRecords),
+                            IsDomainValidationErrors = false
+                        });
+                    }
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
     }
 }
