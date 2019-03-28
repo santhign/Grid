@@ -72,7 +72,7 @@ namespace CustomerService.DataAccess
                                    }).FirstOrDefault();
                 }
 
-                return new DatabaseResponse { ResponseCode = result, Results = customer };
+                return new DatabaseResponse { ResponseCode = result, Results = newCustomer };
             }
 
             catch (Exception ex)
