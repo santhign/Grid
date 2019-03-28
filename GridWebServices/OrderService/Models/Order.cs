@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace OrderService.Models
-{ 
+{
     public class Order
     {
         public int OrderID { get; set; }
@@ -79,7 +79,10 @@ namespace OrderService.Models
         public string Slot { get; set; }
         public double AdditionalCharge { get; set; }
     }
-
-    
-
+    public class OrderPending
+    {
+        public int OrderID { get; set; }
+        public string OrderNumber { get; set; }
+        public DateTime OrderDate { get; set; }
+ }
 }

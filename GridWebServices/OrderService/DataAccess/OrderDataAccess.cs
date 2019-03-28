@@ -1161,9 +1161,61 @@ namespace OrderService.DataAccess
             }
         }
 
+        public async Task<DatabaseResponse> GetPendingOrderDetails(int customerId)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                     new SqlParameter( "@CustomerID",  SqlDbType.Int )
+                };
 
+                parameters[0].Value = customerId;
 
+                _DataHelper = new DataAccessHelper("Orders_GetPendingOrderDetails", parameters, _configuration);
 
-     
+                DataTable dt = new DataTable();
+
+                int result = _DataHelper.Run(dt);    // 105 / 119 
+                DatabaseResponse response = new DatabaseResponse();
+                if (result == 105)
+                {
+                    OrderPending pendingOrderDetails = new OrderPending();
+                   
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+
+                        pendingOrderDetails = (from model in dt.AsEnumerable()
+                                               select new OrderPending()
+                                        {
+                                            OrderID = model.Field<int>("OrderID"),
+                                            OrderNumber = model.Field<string>("OrderNumber"),
+                                            OrderDate = model.Field<DateTime>("OrderDate")
+                                           }).FirstOrDefault();
+
+                      }
+                    
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = pendingOrderDetails };
+                }
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
     }
 }
