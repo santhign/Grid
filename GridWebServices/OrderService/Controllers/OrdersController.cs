@@ -192,15 +192,7 @@ namespace OrderService.Controllers
                                         // Get Order Basic Details
 
                                         DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails(((OrderInit)createOrderRresponse.Results).OrderID);
-
-                                        //Start Remove while going live -- only for testing
-                                        // Unblock blocked number 
-                                        DatabaseResponse requestIdToUpdateUnblock = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), aTokenResp.CustomerID);
-
-                                        BSSUpdateResponseObject bssUnblockUpdateResponse = await helper.UpdateAssetBlockNumber(config, ((BSSAssetRequest)requestIdToUpdateRes.Results).request_id, AssetToSubscribe, true);
-
-                                        // end remove
-
+                                          
                                         return Ok(new OperationResponse
                                         {
                                             HasSucceeded = true,
@@ -1201,10 +1193,10 @@ namespace OrderService.Controllers
         }
 
         /// <summary>
-        /// This will update personal details of the customer for the order
+        /// This will update billing details of the customer for the order
         /// </summary>
         /// <param name="request">
-        /// Form{
+        /// body{
         /// "Token":"Auth token"
         /// "OrderID" :1,
         /// "Postcode" :"4563",
@@ -1313,10 +1305,10 @@ namespace OrderService.Controllers
         }
 
         /// <summary>
-        /// This will update personal details of the customer for the order
+        /// This will update Shipping details of the customer for the order
         /// </summary>
         /// <param name="request">
-        /// Form{
+        /// body{
         /// "Token":"Auth token"
         /// "OrderID" :1,
         /// "Postcode" :"4563",
@@ -1427,10 +1419,10 @@ namespace OrderService.Controllers
         }
 
         /// <summary>
-        /// This will update personal details of the customer for the order
+        /// This will update LOA details of the customer for the order
         /// </summary>
         /// <param name="request">
-        /// Form{
+        /// body{
         /// "Token":"Auth token"
         /// "OrderID" :1,
         /// "RecipientName" :"4563",
@@ -1535,5 +1527,326 @@ namespace OrderService.Controllers
 
             }
         }
+
+        /// <summary>
+        /// This will validate referral code for the order
+        /// </summary>
+        /// <param name="request">
+        /// body{
+        /// "Token":"Auth token"
+        /// "OrderID" :1,
+        /// "ReferralCode" :"A4EDFE23",       
+        /// }
+        /// </param>
+        /// <returns>OperationResponse</returns>
+        [Route("validateorderreferralcode")]
+        [HttpPost]
+        public async Task<IActionResult> ValidateOrderReferralCode([FromBody] ValidateOrderReferralCodeRequest request)
+        {
+            try
+            {
+
+                if (!ModelState.IsValid)
+                {
+                    new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                                                 .SelectMany(x => x.Errors)
+                                                 .Select(x => x.ErrorMessage))
+                    };
+                }
+
+                OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await _orderAccess.AuthenticateCustomerToken(request.Token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    AuthTokenResponse aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
+
+                    if (!(aTokenResp.CreatedOn < DateTime.UtcNow.AddDays(-7)))
+                    {
+                        //validate referral code
+                        DatabaseResponse validateResponse = await _orderAccess.ValidateOrderReferralCode(request);
+
+                        if (validateResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = true,
+                                Message = EnumExtensions.GetDescription(CommonErrors.ReferralCodeExists),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                        else
+                        {
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ReferralCodeNotExists));
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(CommonErrors.ReferralCodeNotExists),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
+        /// <summary>
+        /// This will return all subscriptions/numbers for the given OrderID
+        /// </summary>
+        /// <param name="request">
+        /// body{
+        /// "Token":"Auth token"
+        /// "OrderID" :1             
+        /// }
+        /// </param>
+        /// <returns>OperationResponse</returns>
+        
+        [Route("getorderednumbers")]
+        [HttpPost]
+        public async Task<IActionResult> GetOrderedNumbers([FromBody] OrderedNumberRequest request)
+        {
+            try
+            {
+
+                if (!ModelState.IsValid)
+                {
+                    new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                                                 .SelectMany(x => x.Errors)
+                                                 .Select(x => x.ErrorMessage))
+                    };
+                }
+
+                OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await _orderAccess.AuthenticateCustomerToken(request.Token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    AuthTokenResponse aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
+
+                    if (!(aTokenResp.CreatedOn < DateTime.UtcNow.AddDays(-7)))
+                    {
+                        //get ordered numbers
+                        DatabaseResponse numberResponse = await _orderAccess.GetOrderedNumbers(request);
+
+                        if (numberResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = true,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.RecordExists),
+                                IsDomainValidationErrors = false,
+                                ReturnedObject = numberResponse.Results
+                            });
+                        }
+                        else
+                        {
+                            LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.NoRecords));
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.NoRecords),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
+
+        /// <summary>
+        /// This will update Order subscription details
+        /// </summary>
+        /// <param name="request">
+        /// body{
+        /// "Token":"Auth token"
+        /// "OrderID" :1,
+        /// "ContactNumber" :"95421232", // optional
+        /// "Terms":"1",
+        /// "PaymentSubscription" : "1",      
+        /// "PromotionMessage":"1",             
+        /// }
+        /// </param>
+        /// <returns>OperationResponse</returns>
+        [Route("updateordersubscriptiondetails")]
+        [HttpPost]
+        public async Task<IActionResult> UpdateOrderSubscriptionDetails([FromBody] UpdateOrderSubcriptionDetailsRequest request)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                                                 .SelectMany(x => x.Errors)
+                                                 .Select(x => x.ErrorMessage))
+                    };
+                }
+
+                OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await _orderAccess.AuthenticateCustomerToken(request.Token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    AuthTokenResponse aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
+
+                    if (!(aTokenResp.CreatedOn < DateTime.UtcNow.AddDays(-7)))
+                    {
+                        //update shipping details
+                        DatabaseResponse updatePersoanDetailsResponse = await _orderAccess.UpdateOrderSubcriptionDetails(request);
+
+                        if (updatePersoanDetailsResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = true,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                        else
+                        {
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToUpdatedSubscriptionDetails));
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.UpdationFailed),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
+
     }
 }

@@ -309,4 +309,49 @@ namespace OrderService.Models
         public string EmailAdddress { get; set; }
       
     }
+
+    public class ValidateOrderReferralCodeRequest
+    {
+        [Required(ErrorMessage = "Token required")]
+        public string Token { get; set; }
+
+        [Required(ErrorMessage = "OrderID is required")]
+        public int OrderID { get; set; }
+
+        [Required(ErrorMessage = "RecipientName is required")]
+        public string ReferralCode { get; set; }
+
+    }
+
+    public class OrderedNumberRequest
+    {
+        [Required(ErrorMessage = "Token required")]
+        public string Token { get; set; }
+
+        [Required(ErrorMessage = "OrderID is required")]
+        public int OrderID { get; set; }      
+
+    }
+
+
+    public class UpdateOrderSubcriptionDetailsRequest
+    {
+        [Required(ErrorMessage = "Token required")]
+        public string Token { get; set; }
+
+        [Required(ErrorMessage = "OrderID is required")]
+        public int OrderID { get; set; }
+        
+        [MaxLength(8, ErrorMessage = "Maximum 8 characters allowed")]      
+        public string ContactNumber { get; set; }
+       
+        [Required(ErrorMessage = "Terms is required")]
+        public int Terms { get; set; }
+
+        [Required(ErrorMessage = "PaymentSubscription is required")]
+        public int PaymentSubscription { get; set; }
+
+        [Required(ErrorMessage = "PromotionMessage is required")]
+        public int PromotionMessage { get; set; }
+    }
 }

@@ -882,9 +882,7 @@ namespace OrderService.DataAccess
                 parameters[7].Value = personalDetails.ContactNumber;
                 parameters[8].Value = personalDetails.Nationality;
 
-                _DataHelper = new DataAccessHelper("Orders_UpdateOrderBasicDetails", parameters, _configuration);
-
-                DataTable dt = new DataTable();
+                _DataHelper = new DataAccessHelper("Orders_UpdateOrderBasicDetails", parameters, _configuration);               
 
                 int result = _DataHelper.Run();    // 101 / 109 
 
@@ -928,9 +926,7 @@ namespace OrderService.DataAccess
                 parameters[6].Value = billingDetails.StreetName;
                 parameters[7].Value = billingDetails.ContactNumber;               
 
-                _DataHelper = new DataAccessHelper("Orders_UpdateOrderBillingDetails", parameters, _configuration);
-
-                DataTable dt = new DataTable();
+                _DataHelper = new DataAccessHelper("Orders_UpdateOrderBillingDetails", parameters, _configuration);              
 
                 int result = _DataHelper.Run();    // 101 / 109 
 
@@ -978,9 +974,7 @@ namespace OrderService.DataAccess
                 parameters[8].Value = shippingDetails.IsBillingSame;
                 parameters[9].Value = shippingDetails.PortalSlotID;
 
-                _DataHelper = new DataAccessHelper("Orders_UpdateOrderShippingDetails", parameters, _configuration);
-
-                DataTable dt = new DataTable();
+                _DataHelper = new DataAccessHelper("Orders_UpdateOrderShippingDetails", parameters, _configuration);               
 
                 int result = _DataHelper.Run();    // 101 / 109 
 
@@ -1021,9 +1015,7 @@ namespace OrderService.DataAccess
                 parameters[5].Value = loaDetails.EmailAdddress;
               
 
-                _DataHelper = new DataAccessHelper("Orders_UpdateOrderLOADetails", parameters, _configuration);
-
-                DataTable dt = new DataTable();
+                _DataHelper = new DataAccessHelper("Orders_UpdateOrderLOADetails", parameters, _configuration);              
 
                 int result = _DataHelper.Run();    // 101 / 109 
 
@@ -1041,5 +1033,137 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+
+        public async Task<DatabaseResponse> ValidateOrderReferralCode(ValidateOrderReferralCodeRequest order)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@OrderID",  SqlDbType.Int ),
+                    new SqlParameter( "@ReferralCode",  SqlDbType.NVarChar )                   
+                };
+
+                parameters[0].Value = order.OrderID;
+
+                parameters[1].Value = order.ReferralCode;   
+
+                _DataHelper = new DataAccessHelper("Orders_ValidateReferralCode", parameters, _configuration);               
+
+                int result = _DataHelper.Run();    // 105 / 109 
+
+                return new DatabaseResponse { ResponseCode = result };
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+        
+        public async Task<DatabaseResponse> GetOrderedNumbers(OrderedNumberRequest order)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@OrderID",  SqlDbType.Int )
+
+                };
+
+                parameters[0].Value = order.OrderID;
+
+                _DataHelper = new DataAccessHelper("Orders_GetOrderSubscribers", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = _DataHelper.Run(dt);    // 105 / 109 
+                DatabaseResponse response = new DatabaseResponse();
+                if (result == 105)
+                {
+                    List<FreeNumber> numbers = new List<FreeNumber>();
+
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+                        numbers = (from model in dt.AsEnumerable()
+                                         select new FreeNumber()
+                                         {
+                                              MobileNumber = model.Field<string>("MobileNumber")                                            
+
+                                         }).ToList();
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = numbers };
+                }
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result};
+                }
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> UpdateOrderSubcriptionDetails(UpdateOrderSubcriptionDetailsRequest subscriptionDetails)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@OrderID",  SqlDbType.Int ),
+                    new SqlParameter( "@ContactNumber",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@Terms",  SqlDbType.Int),
+                    new SqlParameter( "@PaymentSubscription",  SqlDbType.Int),
+                    new SqlParameter( "@PromotionMessage",  SqlDbType.Int)
+                  
+                };   
+
+                parameters[0].Value = subscriptionDetails.OrderID;
+                parameters[1].Value = subscriptionDetails.ContactNumber;
+                parameters[2].Value = subscriptionDetails.Terms;
+                parameters[3].Value = subscriptionDetails.PaymentSubscription;
+                parameters[4].Value = subscriptionDetails.PromotionMessage;
+              
+
+
+                _DataHelper = new DataAccessHelper("Orders_UpdateOrderSubscriptions", parameters, _configuration);
+
+                int result = _DataHelper.Run();    // 101 / 109 
+
+                return new DatabaseResponse { ResponseCode = result };
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+
+
+
+     
     }
 }
