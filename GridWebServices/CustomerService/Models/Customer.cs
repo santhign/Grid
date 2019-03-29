@@ -73,4 +73,15 @@ namespace CustomerService.Models
         public bool IsPrimary { get; set; }
     }
 
+    public class CustomerSearch
+    {
+        public int CustomerId { get; set; }
+        public string CustomerName { get; set; }
+        public string PhoneNumber { get; set; }
+        public string Plan { get; set; }
+        public int AdditionalLines { get; set; }
+        public DateTime JoinedOn { get; set; }
+        public string Status { get; set; }
+    }
+
 }

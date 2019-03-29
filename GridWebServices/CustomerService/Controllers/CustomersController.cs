@@ -13,6 +13,7 @@ using InfrastructureService;
 using Microsoft.Extensions.Configuration;
 using CustomerService.DataAccess;
 using Newtonsoft.Json;
+using Serilog;
 
 namespace CustomerService.Controllers
 {
@@ -341,8 +342,8 @@ namespace CustomerService.Controllers
         /// </summary>
         /// <param name="token"></param>
         /// <returns>OperationResponse</returns>
-        [HttpGet("GetSubscribers/{token}")]
-        public async Task<IActionResult> GetSubscribers([FromRoute]string token)
+        [HttpGet("Subscribers/{token}")]
+        public async Task<IActionResult> Subscribers([FromRoute]string token)
         {
             try
             {
@@ -415,6 +416,132 @@ namespace CustomerService.Controllers
             }
         }
 
+        // GET: api/Customers/SearchCustomer/abc@gmail.com
+        [HttpGet("SearchCustomer/{SearchValue}")]
+        public async Task<IActionResult> SearchCustomer([FromRoute] string SearchValue)
+        {
 
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                                            .SelectMany(x => x.Errors)
+                                            .Select(x => x.ErrorMessage))
+                    };
+                }
+
+                CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
+
+                List<CustomerSearch> customersearchlist = await _customerAccess.GetSearchCustomers(SearchValue);
+
+                if (customersearchlist == null || customersearchlist.Count == 0)
+                {
+                    return Ok(new ServerResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.NotExists)
+
+                    });
+                }
+                else
+                {
+                    return Ok(new ServerResponse
+                    {
+                        HasSucceeded = true,
+                        Message = StatusMessages.SuccessMessage,
+                        Result = customersearchlist
+
+                    });
+                }
+
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+
+        }
+
+
+
+        /// <summary>
+        /// This will send forget password mail
+        /// </summary> 
+        ///<param name="emailid">abcd@gmail.com</param>
+        /// <returns>Customer Id and Token key</returns>
+        [HttpGet]
+        [Route("ForgetPassword/{emailid}")]
+        public async Task<IActionResult> ForgetPassword([FromRoute] string emailid)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    Log.Error(StatusMessages.DomainValidationError);
+                    new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                                            .SelectMany(x => x.Errors)
+                                            .Select(x => x.ErrorMessage))
+                    };
+                }
+
+
+                EmailDataAccess _emailDataAccess = new EmailDataAccess(_iconfiguration);
+
+                Emails _emails = new Emails();
+                _emails.EmailId = emailid;
+                ForgetPassword _forgetPassword = await _emailDataAccess.GetForgetPassword(_emails);
+
+                if (_forgetPassword == null)
+                {
+                    return Ok(new ServerResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.NotExists)
+
+                    });
+                }
+                else
+                {
+                    return Ok(new ServerResponse
+                    {
+                        HasSucceeded = true,
+                        Message = StatusMessages.SuccessMessage,
+                        Result = _forgetPassword
+
+                    });
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
     }
 }
