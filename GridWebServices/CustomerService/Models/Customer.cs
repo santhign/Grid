@@ -55,7 +55,6 @@ namespace CustomerService.Models
 
     public class ValidateReferralCodeRequest
     {
-        public string Token { get; set; }
         public string ReferralCode { get; set; }
     }
 

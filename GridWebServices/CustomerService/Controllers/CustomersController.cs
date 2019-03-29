@@ -263,7 +263,7 @@ namespace CustomerService.Controllers
         /// <param name="request"></param>
         /// <returns>LoggedInPrinciple</returns>
         [HttpPost("ValidateReferralCode")]
-        public async Task<IActionResult> ValidateReferralCode([FromBody]ValidateReferralCodeRequest request)
+        public async Task<IActionResult> ValidateReferralCode([FromHeader]string Token, [FromBody]ValidateReferralCodeRequest request)
         {
             try
             {
@@ -281,7 +281,7 @@ namespace CustomerService.Controllers
                 }
 
                 CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
-                DatabaseResponse tokenAuthResponse = await _customerAccess.AuthenticateCustomerToken(request.Token);
+                DatabaseResponse tokenAuthResponse = await _customerAccess.AuthenticateCustomerToken(Token);
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
                     AuthTokenResponse aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;

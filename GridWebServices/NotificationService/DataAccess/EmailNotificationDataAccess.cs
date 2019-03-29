@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using MailChimp;
-using MailChimp.Types;
+using Mandrill;
+//using MailChimp.Types;
 using NotificationService.Models;
 using Core.Helpers;
 using Microsoft.Extensions.Configuration;
@@ -28,7 +28,7 @@ namespace NotificationService.DataAccess
         {
             _configuration = configuration;
         }
-        public async Task<List<Mandrill.Messages.SendResult>> SendEmail(NotificationEmail emailSubscribers)
+        public async Task<IList<Mandrill.Model.MandrillSendMessageResponse>> SendEmail(NotificationEmail emailSubscribers)
         {
             try
             {
@@ -44,54 +44,94 @@ namespace NotificationService.DataAccess
 
 
 
-                MailChimp.MandrillApi api = new MandrillApi(_apiKey);
+                MandrillApi api = new MandrillApi(_apiKey);
 
-                Mandrill.Messages.Message eMsg = new Mandrill.Messages.Message();
+                Mandrill.Model.MandrillMessage eMsg = new Mandrill.Model.MandrillMessage();
                 eMsg.Html = emailSubscribers.Content;
                 eMsg.Subject = emailSubscribers.Subject;
                 eMsg.FromEmail = _fromEmail;
                 eMsg.FromName = _fromName;
                 eMsg.BccAddress = emailSubscribers.BccAddress;
-                Mandrill.Messages.Header.Create("Reply-To");
-                MCDict<Mandrill.Messages.Header> mc = new MCDict<Mandrill.Messages.Header>();
+                Dictionary<string, object> mc = new Dictionary<string, object>();
                 mc.Add("Reply-To", _replyEmail);
                 eMsg.Headers = mc; 
                 eMsg.PreserveRecipients = false; 
                 eMsg.TrackClicks = true;           
                 eMsg.Merge = true;
                 int recipientCount = emailSubscribers.EmailDetails.Count();
-                Mandrill.Messages.Recipient[] recipientList = new Mandrill.Messages.Recipient[recipientCount];  
-                Mandrill.Messages.MergeVars[] mergeVarList = new Mandrill.Messages.MergeVars[recipientCount];    
-                Mandrill.NameContentList<string> content = new Mandrill.NameContentList<string>();
+                List<Mandrill.Model.MandrillMailAddress> recipientList = new List<Mandrill.Model.MandrillMailAddress>();
+                List < Mandrill.Model.MandrillRcptMergeVar> mergeVarList = new List<Mandrill.Model.MandrillRcptMergeVar>();    
+                //Mandrill.NameContentList<string> content = new Mandrill.NameContentList<string>();
 
                 for (int counter = 0; counter < recipientCount; counter++)
                 {
-                     
-                    recipientList[counter] = new Mandrill.Messages.Recipient(emailSubscribers.EmailDetails[counter].EMAIL, emailSubscribers.EmailDetails[counter].FName);
+                   recipientList.Add(new Mandrill.Model.MandrillMailAddress(emailSubscribers.EmailDetails[counter].EMAIL, emailSubscribers.EmailDetails[counter].FName));
 
-                     
-                    var mergeVars = new Mandrill.NameContentList<string>();
-                    mergeVars.Add("EMAIL", emailSubscribers.EmailDetails[counter].EMAIL.ToString());
-                    mergeVars.Add("NAME", emailSubscribers.EmailDetails[counter].FName.ToString());
-                    mergeVars.Add("PARAM1", emailSubscribers.EmailDetails[counter].Param1.ToString());
-                    mergeVars.Add("PARAM2", emailSubscribers.EmailDetails[counter].Param2.ToString());
-                    mergeVars.Add("PARAM3", emailSubscribers.EmailDetails[counter].Param3.ToString());
-                    mergeVars.Add("PARAM4", emailSubscribers.EmailDetails[counter].Param4.ToString());
-                    mergeVars.Add("PARAM5", emailSubscribers.EmailDetails[counter].Param5.ToString());
-                    mergeVars.Add("PARAM6", emailSubscribers.EmailDetails[counter].Param6.ToString());
-                    mergeVars.Add("PARAM7", emailSubscribers.EmailDetails[counter].Param7.ToString());
-                    mergeVars.Add("PARAM8", emailSubscribers.EmailDetails[counter].Param8.ToString());
-                    mergeVars.Add("PARAM9", emailSubscribers.EmailDetails[counter].Param9.ToString());
-                    mergeVars.Add("PARAM10", emailSubscribers.EmailDetails[counter].Param10.ToString());
-                    mergeVars.Add("UNIQUEID", emailSubscribers.EmailDetails[counter].Userid.ToString());
-                    mergeVarList[counter] = new Mandrill.Messages.MergeVars(emailSubscribers.EmailDetails[counter].EMAIL, mergeVars);
+                    //mergeVarList.Add()
+                    List<Mandrill.Model.MandrillMergeVar> mergeVars = new List<Mandrill.Model.MandrillMergeVar>();
+                    Mandrill.Model.MandrillMergeVar mergevar = new Mandrill.Model.MandrillMergeVar();
+                    mergevar.Name = "EMAIL";
+                    mergevar.Content = emailSubscribers.EmailDetails[counter].EMAIL.ToString();
+                    mergeVars.Add(mergevar);
+                    mergevar = new Mandrill.Model.MandrillMergeVar();
+                    mergevar.Name = "NAME";
+                    mergevar.Content = emailSubscribers.EmailDetails[counter].FName.ToString();
+                    mergeVars.Add(mergevar);
+                    mergevar = new Mandrill.Model.MandrillMergeVar();
+                    mergevar.Name = "PARAM1";
+                    mergevar.Content = emailSubscribers.EmailDetails[counter].Param1.ToString();
+                    mergeVars.Add(mergevar);
+                    mergevar = new Mandrill.Model.MandrillMergeVar();
+                    mergevar.Name = "PARAM2";
+                    mergevar.Content = emailSubscribers.EmailDetails[counter].Param2.ToString();
+                    mergeVars.Add(mergevar);
+                    mergevar = new Mandrill.Model.MandrillMergeVar();
+                    mergevar.Name = "PARAM3";
+                    mergevar.Content = emailSubscribers.EmailDetails[counter].Param3.ToString();
+                    mergeVars.Add(mergevar);
+                    mergevar = new Mandrill.Model.MandrillMergeVar();
+                    mergevar.Name = "PARAM4";
+                    mergevar.Content = emailSubscribers.EmailDetails[counter].Param4.ToString();
+                    mergeVars.Add(mergevar);
+                    mergevar = new Mandrill.Model.MandrillMergeVar();
+                    mergevar.Name = "PARAM5";
+                    mergevar.Content = emailSubscribers.EmailDetails[counter].Param5.ToString();
+                    mergeVars.Add(mergevar);
+                    mergevar = new Mandrill.Model.MandrillMergeVar();
+                    mergevar.Name = "PARAM6";
+                    mergevar.Content = emailSubscribers.EmailDetails[counter].Param6.ToString();
+                    mergeVars.Add(mergevar);
+                    mergevar = new Mandrill.Model.MandrillMergeVar();
+                    mergevar.Name = "PARAM7";
+                    mergevar.Content = emailSubscribers.EmailDetails[counter].Param7.ToString();
+                    mergeVars.Add(mergevar);
+                    mergevar = new Mandrill.Model.MandrillMergeVar();
+                    mergevar.Name = "PARAM8";
+                    mergevar.Content = emailSubscribers.EmailDetails[counter].Param8.ToString();
+                    mergeVars.Add(mergevar);
+                    mergevar = new Mandrill.Model.MandrillMergeVar();
+                    mergevar.Name = "PARAM9";
+                    mergevar.Content = emailSubscribers.EmailDetails[counter].Param9.ToString();
+                    mergeVars.Add(mergevar);
+                    mergevar = new Mandrill.Model.MandrillMergeVar();
+                    mergevar.Name = "PARAM10";
+                    mergevar.Content = emailSubscribers.EmailDetails[counter].Param10.ToString();
+                    mergeVars.Add(mergevar);
+                    mergevar = new Mandrill.Model.MandrillMergeVar();
+                    mergevar.Name = "UNIQUEID";
+                    mergevar.Content = emailSubscribers.EmailDetails[counter].Userid.ToString();
+                    mergeVars.Add(mergevar);
+                    Mandrill.Model.MandrillRcptMergeVar rcptMergeVar = new Mandrill.Model.MandrillRcptMergeVar();
+                    rcptMergeVar.Rcpt = emailSubscribers.EmailDetails[counter].EMAIL;
+                    rcptMergeVar.Vars = mergeVars;
+                    mergeVarList.Add(rcptMergeVar);
                 }
 
                 eMsg.To = recipientList;
                 eMsg.MergeVars = mergeVarList;
-                MVList<Mandrill.Messages.SendResult> result = new MVList<Mandrill.Messages.SendResult>();
-                result = api.Send(eMsg);
-                return result;
+                Task<IList<Mandrill.Model.MandrillSendMessageResponse>> result;
+                result = api.Messages.SendAsync(eMsg);
+                return await result;
             }
             catch (Exception ex)
             {
