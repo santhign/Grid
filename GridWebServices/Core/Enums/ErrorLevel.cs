@@ -88,5 +88,18 @@ namespace Core.Enums
         [EnumMember(Value = "Update LOA Details Failed")]
         [Description("LOA Details Updation Failed")]
         FailedUpdateLOADetails = 17,
+
+        [EnumMember(Value = "Referral Code Exists")]
+        [Description("Referral Code Exists")]
+        ReferralCodeExists = 18,
+
+        [EnumMember(Value = "Referral Code Not Exists")]
+        [Description("Referral Code Not Exists")]
+        ReferralCodeNotExists = 19,
+
+        [EnumMember(Value = "Failed To Updated Order Subscription Details")]
+        [Description("Failed To Update Subscription")]
+        FailedToUpdatedSubscriptionDetails = 20,
+
     }
 }

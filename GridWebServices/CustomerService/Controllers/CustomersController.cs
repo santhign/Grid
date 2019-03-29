@@ -335,5 +335,86 @@ namespace CustomerService.Controllers
 
             }
         }
+
+        /// <summary>
+        /// Return Subscribers api with MobileNumber, DisplayName, SIMID, PremiumType, ActivatedOn, IsPrimary
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns>OperationResponse</returns>
+        [HttpGet("GetSubscribers/{token}")]
+        public async Task<IActionResult> GetSubscribers([FromRoute]string token)
+        {
+            try
+            {
+
+                if (!ModelState.IsValid)
+                {
+                    new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                                            .SelectMany(x => x.Errors)
+                                            .Select(x => x.ErrorMessage))
+                    };
+                }
+
+                CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
+                DatabaseResponse tokenAuthResponse = await _customerAccess.AuthenticateCustomerToken(token);
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    AuthTokenResponse aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
+                    var getSubscriber = await _customerAccess.GetSubscribers(aTokenResp.CustomerID);
+                    if (getSubscriber.ResponseCode == (int)DbReturnValue.RecordExists)
+                    {
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = true,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.RecordExists),
+                            IsDomainValidationErrors = false,
+                            ReturnedObject = getSubscriber.Results
+                        });
+                    }
+                    else
+                    {
+                        //Unable to validate the referral code
+                        LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.NoRecords));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.NoRecords),
+                            IsDomainValidationErrors = false
+                        });
+                    }
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
+
+
     }
 }

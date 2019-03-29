@@ -135,10 +135,10 @@
         </member>
         <member name="M:OrderService.Controllers.OrdersController.UpdateOrderBillingDetails(OrderService.Models.UpdateOrderBillingDetailsRequest)">
             <summary>
-            This will update personal details of the customer for the order
+            This will update billing details of the customer for the order
             </summary>
             <param name="request">
-            Form{
+            body{
             "Token":"Auth token"
             "OrderID" :1,
             "Postcode" :"4563",
@@ -154,10 +154,10 @@
         </member>
         <member name="M:OrderService.Controllers.OrdersController.UpdateOrderShippingDetails(OrderService.Models.UpdateOrderShippingDetailsRequest)">
             <summary>
-            This will update personal details of the customer for the order
+            This will update Shipping details of the customer for the order
             </summary>
             <param name="request">
-            Form{
+            body{
             "Token":"Auth token"
             "OrderID" :1,
             "Postcode" :"4563",
@@ -175,10 +175,10 @@
         </member>
         <member name="M:OrderService.Controllers.OrdersController.UpdateOrderLOADetails(OrderService.Models.UpdateOrderLOADetailsRequest)">
             <summary>
-            This will update personal details of the customer for the order
+            This will update LOA details of the customer for the order
             </summary>
             <param name="request">
-            Form{
+            body{
             "Token":"Auth token"
             "OrderID" :1,
             "RecipientName" :"4563",
@@ -186,6 +186,47 @@
             "IDNumber" : "",      
             "ContactNumber":"95421232", 
             "EmailAdddress":"",        
+            }
+            </param>
+            <returns>OperationResponse</returns>
+        </member>
+        <member name="M:OrderService.Controllers.OrdersController.ValidateOrderReferralCode(OrderService.Models.ValidateOrderReferralCodeRequest)">
+            <summary>
+            This will validate referral code for the order
+            </summary>
+            <param name="request">
+            body{
+            "Token":"Auth token"
+            "OrderID" :1,
+            "ReferralCode" :"A4EDFE23",       
+            }
+            </param>
+            <returns>OperationResponse</returns>
+        </member>
+        <member name="M:OrderService.Controllers.OrdersController.GetOrderedNumbers(OrderService.Models.OrderedNumberRequest)">
+            <summary>
+            This will return all subscriptions/numbers for the given OrderID
+            </summary>
+            <param name="request">
+            body{
+            "Token":"Auth token"
+            "OrderID" :1             
+            }
+            </param>
+            <returns>OperationResponse</returns>
+        </member>
+        <member name="M:OrderService.Controllers.OrdersController.UpdateOrderSubscriptionDetails(OrderService.Models.UpdateOrderSubcriptionDetailsRequest)">
+            <summary>
+            This will update Order subscription details
+            </summary>
+            <param name="request">
+            body{
+            "Token":"Auth token"
+            "OrderID" :1,
+            "ContactNumber" :"95421232", // optional
+            "Terms":"1",
+            "PaymentSubscription" : "1",      
+            "PromotionMessage":"1",             
             }
             </param>
             <returns>OperationResponse</returns>
