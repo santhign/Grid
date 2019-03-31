@@ -18,6 +18,7 @@ namespace Core.Helpers
             config.AWSBucketName = configDict.Single(x => x["key"] == "AWSBucketName")["value"];
             config.AWSUser = configDict.Single(x => x["key"] == "AWSUser")["value"];
             return config;
-        }
+        }       
+        
     }
 }

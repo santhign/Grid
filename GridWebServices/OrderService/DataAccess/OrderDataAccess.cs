@@ -1012,8 +1012,7 @@ namespace OrderService.DataAccess
                 parameters[2].Value = loaDetails.IDType;
                 parameters[3].Value = loaDetails.IDNumber;
                 parameters[4].Value = loaDetails.ContactNumber;
-                parameters[5].Value = loaDetails.EmailAdddress;
-              
+                parameters[5].Value = loaDetails.EmailAdddress;              
 
                 _DataHelper = new DataAccessHelper("Orders_UpdateOrderLOADetails", parameters, _configuration);              
 
@@ -1217,5 +1216,178 @@ namespace OrderService.DataAccess
             }
         }
 
+        public async Task<DatabaseResponse> GetCheckoutRequestDetails(CheckOutRequestDBUpdateModel checkOutRequest)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                     new SqlParameter( "@Source",  SqlDbType.NVarChar ),
+                     new SqlParameter( "@SourceID",  SqlDbType.Int ),
+                     new SqlParameter( "@MPGSOrderID",  SqlDbType.NVarChar ),
+                     new SqlParameter( "@CheckOutSessionID",  SqlDbType.NVarChar ),
+                     new SqlParameter( "@SuccessIndicator",  SqlDbType.NVarChar ),
+                     new SqlParameter( "@CheckoutVersion",  SqlDbType.NVarChar ),
+                };
+
+                parameters[0].Value = checkOutRequest.Source;
+                parameters[1].Value = checkOutRequest.SourceID;
+                parameters[2].Value = checkOutRequest.MPGSOrderID;
+                parameters[3].Value = checkOutRequest.CheckOutSessionID;
+                parameters[4].Value = checkOutRequest.SuccessIndicator;
+                parameters[5].Value = checkOutRequest.CheckoutVersion;
+
+                _DataHelper = new DataAccessHelper("Orders_GetCheckoutRequestDetails", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = _DataHelper.Run(dt);    // 105 / 102
+                DatabaseResponse response = new DatabaseResponse();
+                if (result == 105)
+                {
+                    Checkout checkOut = new  Checkout();
+
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+
+                        checkOut = (from model in dt.AsEnumerable()
+                                               select new Checkout()
+                                               {
+                                                  Amount= model.Field<double>("Amount"),
+                                               }).FirstOrDefault();
+
+                    }
+
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = checkOut };
+                }
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> UpdateCheckOutResponse(CheckOutResponseUpdate checkOutResponse)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                     new SqlParameter( "@MPGSOrderID",  SqlDbType.NVarChar ),
+                     new SqlParameter( "@Status",  SqlDbType.NVarChar )                   
+                };
+   
+                parameters[0].Value = checkOutResponse.MPGSOrderID;
+
+                parameters[1].Value = checkOutResponse.Result;              
+
+               _DataHelper = new DataAccessHelper("Orders_UpdateCheckoutResponse", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = _DataHelper.Run();    // 105 / 102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                response = new DatabaseResponse { ResponseCode = result };              
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> UpdateCheckOutReceipt(TransactionResponseModel transactionModel)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                     new SqlParameter("@MPGSOrderID",  SqlDbType.NVarChar ),
+                     new SqlParameter("@TransactionID",  SqlDbType.NVarChar ),
+                     new SqlParameter("@PaymentRequest",  SqlDbType.NVarChar ),
+                     new SqlParameter("@PaymentResponse",  SqlDbType.NVarChar ),
+                     new SqlParameter("@Amount",  SqlDbType.Float ),
+                     new SqlParameter("@MaskedCardNumber",  SqlDbType.NVarChar ),
+                     new SqlParameter("@CardFundMethod",  SqlDbType.NVarChar ),
+                     new SqlParameter("@CardBrand",  SqlDbType.NVarChar ),
+                     new SqlParameter("@CardType",  SqlDbType.NVarChar ),
+                     new SqlParameter("@CardIssuer",  SqlDbType.NVarChar ),
+                     new SqlParameter("@CardHolderName",  SqlDbType.NVarChar ),
+                     new SqlParameter("@ExpiryYear",  SqlDbType.Int ),
+                     new SqlParameter("@ExpiryMonth",  SqlDbType.Int ),
+                     new SqlParameter("@Token",  SqlDbType.NVarChar ),
+                     new SqlParameter("@PaymentStatus",  SqlDbType.NVarChar ),
+                     new SqlParameter("@ApiResult",  SqlDbType.NVarChar ),
+                      new SqlParameter("@GatewayCode",  SqlDbType.NVarChar ),
+                     new SqlParameter("@CustomerIP",  SqlDbType.NVarChar ),
+                     new SqlParameter("@PaymentMethodSubscription",  SqlDbType.Int ),                    
+                };
+
+
+                parameters[0].Value = transactionModel.OrderId;
+                parameters[1].Value = transactionModel.TransactionID;
+                parameters[2].Value = null; // revice
+                parameters[3].Value = null;// revice
+                parameters[4].Value = transactionModel.OrderAmount;
+                parameters[5].Value = transactionModel.CardNumber;
+                parameters[6].Value = transactionModel.CardFundMethod;
+                parameters[7].Value = transactionModel.CardBrand;
+                parameters[8].Value = transactionModel.CardType;
+                parameters[9].Value = transactionModel.CardIssuer;
+                parameters[10].Value = transactionModel.CardHolderName;
+                parameters[11].Value = transactionModel.ExpiryYear;
+                parameters[12].Value = transactionModel.ExpiryMonth;
+                parameters[13].Value = transactionModel.Token;
+                parameters[14].Value = transactionModel.PaymentStatus;
+                parameters[15].Value = transactionModel.ApiResult;
+                parameters[16].Value = transactionModel.GatewayCode;
+                parameters[17].Value = transactionModel.CustomerIP;
+                parameters[18].Value = 0; // revice
+
+                _DataHelper = new DataAccessHelper("Orders_ProcessPayment", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = _DataHelper.Run();    // 105 / 102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                response = new DatabaseResponse { ResponseCode = result };
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
     }
 }

@@ -333,7 +333,6 @@ namespace OrderService.Models
 
     }
 
-
     public class UpdateOrderSubcriptionDetailsRequest
     {
         [Required(ErrorMessage = "Token required")]

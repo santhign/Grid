@@ -15,7 +15,6 @@ using Core.Extensions;
 using Core.Helpers;
 using InfrastructureService;
 
-
 namespace CustomerService.Controllers
 {
     [Route("api/[controller]")]

@@ -81,5 +81,13 @@ namespace Core.Enums
         [Description("No Records found in database")]
         NoRecords = 119,
 
+        [EnumMember(Value = "Transaction Success")]
+        [Description("Transaction tables Updated Successfully")]
+        TransactionSuccess = 120,
+
+        [EnumMember(Value = "Transaction Failed")]
+        [Description("Transaction tables updation Failed")]
+        TransactionFailed = 121,
+
     }
 }

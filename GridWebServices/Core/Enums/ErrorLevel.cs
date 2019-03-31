@@ -101,5 +101,9 @@ namespace Core.Enums
         [Description("Failed To Update Subscription")]
         FailedToUpdatedSubscriptionDetails = 20,
 
+        [EnumMember(Value = "Checkout Session Created")]
+        [Description("Checkout Session Created Successfully")]
+        CheckoutSessionCreated = 21,
+
     }
 }

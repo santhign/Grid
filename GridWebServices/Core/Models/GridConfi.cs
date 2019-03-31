@@ -70,4 +70,6 @@ namespace Core.Models
         public string AWSUser { get; set; }
 
     }
+
+  
 }

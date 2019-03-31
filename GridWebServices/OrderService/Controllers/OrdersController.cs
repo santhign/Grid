@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Mvc;
 using OrderService.Models;
 using OrderService.DataAccess;
+using OrderService.Helpers;
 using Core.Models;
 using Core.Enums;
 using Core.Extensions;
@@ -160,8 +161,7 @@ namespace OrderService.Controllers
                                 BSSAPIHelper helper = new BSSAPIHelper();
 
                                 DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
-
-                                //GridBSSConfi config = LinqExtensions.GeObjectFromDictionary<GridBSSConfi>((Dictionary<string, string>)configResponse.Results);
+                                
 
                                 GridBSSConfi config = helper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
 
@@ -1945,5 +1945,261 @@ namespace OrderService.Controllers
                 });
             }
         }
+         
+        /// <summary>
+        /// This will create a checkout session and returns the details to call MPGS 
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="orderId"></param>
+        /// <returns>OperationsResponse</returns>
+        [HttpGet("GetCheckOutDetails/{token}/{orderId}")]
+        public async Task<IActionResult> GetCheckOutDetails([FromRoute] string token, int orderId)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                                            .SelectMany(x => x.Errors)
+                                            .Select(x => x.ErrorMessage))
+                    };
+                }
+
+                OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await _orderAccess.AuthenticateCustomerToken(token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    AuthTokenResponse aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
+
+                    if (!(aTokenResp.CreatedOn < DateTime.UtcNow.AddDays(-7)))
+                    {
+                        // Call MPGS to create a checkout session and retuen details
+
+                        PaymentHelper gatewayHelper = new PaymentHelper();
+
+                        Checkout checkoutDetails = new Checkout();
+
+                        DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.MPGS.ToString());
+
+                        GridMPGSConfig gatewayConfig = gatewayHelper.GetGridMPGSConfig((List<Dictionary<string, string>>)configResponse.Results);
+
+                        checkoutDetails = gatewayHelper.CreateCheckoutSession(gatewayConfig);
+
+                        CheckOutRequestDBUpdateModel checkoutUpdateModel = new CheckOutRequestDBUpdateModel
+                        {
+                            Source = "Orders",
+
+                            SourceID =orderId,
+
+                            CheckOutSessionID =checkoutDetails.CheckoutSession.Id,
+
+                            CheckoutVersion =checkoutDetails.CheckoutSession.Version,
+
+                            SuccessIndicator =checkoutDetails.CheckoutSession.SuccessIndicator,
+
+                            MPGSOrderID =checkoutDetails.OrderId
+                        };
+
+                        //Update checkout details and return amount
+
+                        DatabaseResponse checkOutAmountResponse = await _orderAccess.GetCheckoutRequestDetails(checkoutUpdateModel);
+
+                        if (checkOutAmountResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                        {
+                            checkoutDetails.Amount = ((Checkout)checkOutAmountResponse.Results).Amount;
+
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = true,
+                                Message = EnumExtensions.GetDescription(CommonErrors.CheckoutSessionCreated),
+                                IsDomainValidationErrors = false,
+                                ReturnedObject = checkoutDetails
+                            });
+                        }
+                        else
+                        {
+                            LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.NoRecords));
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.NoRecords),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+            }
+        }
+
+        /// <summary>
+        /// This will update checkout response to database and retrieve checkout infor from gateway
+        /// </summary>
+        /// <param name="updateRequest">
+        /// body{
+        /// "Token":"Auth token"
+        /// "MPGSOrderID" :"f88bere0",
+        /// "CheckOutSessionID" :"SESSION0002391471348N70583782K8",
+        /// "Result":"Success"       
+        /// }
+        /// </param>
+        /// <returns>OperationResponse</returns>
+        [Route("UpdateCheckOutResponse")]
+        [HttpPost]
+        public async Task<IActionResult> UpdateCheckOutResponse([FromBody] CheckOutResponseUpdate updateRequest)
+        {
+            try
+            {
+
+                if (!ModelState.IsValid)
+                {
+                    new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                                                 .SelectMany(x => x.Errors)
+                                                 .Select(x => x.ErrorMessage))
+                    };
+                }
+
+                OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await _orderAccess.AuthenticateCustomerToken(updateRequest.Token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    AuthTokenResponse aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
+
+                    if (!(aTokenResp.CreatedOn < DateTime.UtcNow.AddDays(-7)))
+                    {
+                        //update checkout details
+                        DatabaseResponse updateCheckoutDetailsResponse = await _orderAccess.UpdateCheckOutResponse(updateRequest);
+
+                        // retrieve transaction details from MPGS
+
+                        DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.MPGS.ToString());
+
+                        PaymentHelper gatewayHelper = new PaymentHelper();
+
+                        GridMPGSConfig gatewayConfig = gatewayHelper.GetGridMPGSConfig((List<Dictionary<string, string>>)configResponse.Results);
+                         
+                        TransactionRetrieveResponseOperation transactionResponse = new TransactionRetrieveResponseOperation();
+
+                        transactionResponse = gatewayHelper.RetrieveCheckOutTransaction(gatewayConfig, updateRequest);
+
+                        // deside on the fields to update to database for payment processing and call SP to update
+
+                        DatabaseResponse paymentProcessingRespose = new DatabaseResponse();
+
+                        paymentProcessingRespose = await _orderAccess.UpdateCheckOutReceipt(transactionResponse.TrasactionResponse);
+
+                        if (paymentProcessingRespose.ResponseCode == (int)DbReturnValue.TransactionSuccess)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = true,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
+                                IsDomainValidationErrors = false,
+                                ReturnedObject = transactionResponse // check if need to return this data 
+                            });
+                        }
+                        else
+                        {
+                            LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TransactionFailed));
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.TransactionFailed),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
+
     }
 }

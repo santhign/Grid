@@ -16,7 +16,11 @@ namespace Core.Enums
 
         [EnumMember(Value = "AWS")]
         [Description("AWS API Configuration")]
-        AWS = 3
+        AWS = 3,
+
+        [EnumMember(Value = "MPGS")]
+        [Description("MPGS Gateway Configuration")]
+        MPGS = 4
     }
 
     public enum OrderStatus
