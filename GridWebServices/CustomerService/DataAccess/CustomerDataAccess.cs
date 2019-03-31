@@ -371,5 +371,59 @@ namespace CustomerService.DataAccess
             }
         }
 
+        public async Task<List<CustomerSearch>> GetSearchCustomers(string SearchValue)
+        {
+
+            try
+            {
+
+
+                SqlParameter[] parameters =
+                    {
+                    new SqlParameter("@SearchValue", SqlDbType.NVarChar)
+                    };
+
+                parameters[0].Value = SearchValue;
+                _DataHelper = new DataAccessHelper("Customer_SearchCustomers", parameters, _configuration);
+
+
+                DataTable dt = new DataTable();
+
+                _DataHelper.Run(dt);
+
+                List<CustomerSearch> customerList = new List<CustomerSearch>();
+
+                if (dt.Rows.Count > 0)
+                {
+
+                    customerList = (from model in dt.AsEnumerable()
+                                    select new CustomerSearch()
+                                    {
+                                        CustomerId = model.Field<int>("CustomerID"),
+                                        CustomerName = model.Field<string>("Name"),
+                                        PhoneNumber = model.Field<string>("MobileNumber"),
+                                        Plan = model.Field<string>("PlanName"),
+                                        AdditionalLines = model.Field<int>("AdditionalLines"),
+                                        JoinedOn = model.Field<DateTime>("JoinedOn"),
+                                        Status = model.Field<string>("Status")
+                                    }).ToList();
+                }
+
+                return customerList;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+
     }
 }

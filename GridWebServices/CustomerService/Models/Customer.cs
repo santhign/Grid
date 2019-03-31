@@ -55,7 +55,6 @@ namespace CustomerService.Models
 
     public class ValidateReferralCodeRequest
     {
-        public string Token { get; set; }
         public string ReferralCode { get; set; }
     }
 
@@ -72,6 +71,17 @@ namespace CustomerService.Models
         public string PremiumType { get; set; }
         public DateTime ActivatedOn { get; set; }
         public bool IsPrimary { get; set; }
+    }
+
+    public class CustomerSearch
+    {
+        public int CustomerId { get; set; }
+        public string CustomerName { get; set; }
+        public string PhoneNumber { get; set; }
+        public string Plan { get; set; }
+        public int AdditionalLines { get; set; }
+        public DateTime JoinedOn { get; set; }
+        public string Status { get; set; }
     }
 
 }

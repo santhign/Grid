@@ -31,7 +31,7 @@ namespace NotificationService.DataAccess
         }
 
 
-        public async Task<string> SendSMS(Sms _smsdata)
+        public async Task<ResponseObject> SendSMS(Sms _smsdata)
         {
             string _warningmsg;
             try
@@ -46,7 +46,7 @@ namespace NotificationService.DataAccess
                 {
                     _warningmsg = "Phone number should not be longer than 13 numbers.";
                     LogInfo.Warning(_warningmsg);
-                    throw new Exception(_warningmsg); 
+                    throw new Exception(_warningmsg);
                 }
 
                 long lPhoneNumber = 0;
@@ -71,40 +71,32 @@ namespace NotificationService.DataAccess
                 string _nexmoUserName = _result.Single(x => x["key"] == "NexmoUserName").Select(x => x.Value).ToString();
                 string _nexmoPassword = _result.Single(x => x["key"] == "NexmoPassword").Select(x => x.Value).ToString();
                 string _nexmoSmsSignature = _result.Single(x => x["key"] == "NexmoSmsSignature").Select(x => x.Value).ToString();
-                string _nexmoWebRequestUrl = _result.Single(x => x["key"] == "NexmoWebRequestUrl").Select(x => x.Value).ToString(); 
+                string _nexmoWebRequestUrl = _result.Single(x => x["key"] == "NexmoWebRequestUrl").Select(x => x.Value).ToString();
 
-                string username= _nexmoUserName;
-                string password = _nexmoPassword;
-                string from = _nexmoSmsSignature;
-                string to = _smsdata.PhoneNumber;
-                string type = "unicode";
-                string text = _smsdata.SMSText;
-                string postData = string.Empty; 
-                postData = string.Format("username={0}&password={1}&from={2}&to={3}&text={4}&status-report-req=1", username, password, from, to, text);
+                _smsdata.Username = _nexmoUserName;
+                _smsdata.Password = _nexmoPassword;
+                _smsdata.FromPhoneNumber = _nexmoSmsSignature;
+                _smsdata.ToPhoneNumber = _smsdata.PhoneNumber;
+                _smsdata.Type = "unicode";
+                _smsdata.PostData = string.Empty;
+                _smsdata.PostData = string.Format("username={0}&password={1}&from={2}&to={3}&text={4}&status-report-req=1", _smsdata.Username, _smsdata.Password, _smsdata.FromPhoneNumber, _smsdata.ToPhoneNumber, _smsdata.SMSText);
                 byte[] buffer;
 
                 if (ContainsUnicodeCharacter(_smsdata.SMSText))
                 {
-                    postData = string.Format("username={0}&password={1}&from={2}&to={3}&type={4}&text={5}&status-report-req=1", username, password, from, to, type, text);
-                    buffer = Encoding.UTF8.GetBytes(postData);
+                    _smsdata.PostData = string.Format("username={0}&password={1}&from={2}&to={3}&type={4}&text={5}&status-report-req=1", _smsdata.Username, _smsdata.Password, _smsdata.FromPhoneNumber, _smsdata.ToPhoneNumber, _smsdata.Type, _smsdata.SMSText);
+                    buffer = Encoding.UTF8.GetBytes(_smsdata.PostData);
                 }
                 else
                 {
-                    postData = string.Format("username={0}&password={1}&from={2}&to={3}&text={4}&status-report-req=1", username, password, from, to, text);
-                    buffer = Encoding.ASCII.GetBytes(postData);
+                    _smsdata.PostData = string.Format("username={0}&password={1}&from={2}&to={3}&text={4}&status-report-req=1", _smsdata.Username, _smsdata.Password, _smsdata.FromPhoneNumber, _smsdata.ToPhoneNumber, _smsdata.SMSText);
+                    _smsdata.buffer = Encoding.ASCII.GetBytes(_smsdata.PostData);
                 }
 
+
                 System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
-                HttpWebRequest myRequest = (HttpWebRequest)WebRequest.Create(_nexmoWebRequestUrl.Trim().ToString ());
-                myRequest.Method = "POST";
-                myRequest.ContentType = "application/x-www-form-urlencoded";
-                myRequest.ContentLength = buffer.Length;
-                Stream newStream = myRequest.GetRequestStream();
-                newStream.Write(buffer, 0, buffer.Length);
-                newStream.Close();
-                HttpWebResponse myHttpWebResponse = (HttpWebResponse)myRequest.GetResponse();
-                string Respones = myHttpWebResponse.StatusCode.ToString() + " - " + myHttpWebResponse.StatusDescription.ToString();
-                return Respones;
+                ApiClient client = new ApiClient(new Uri(_nexmoWebRequestUrl)); 
+                return await client.PostAsync<ResponseObject, Sms>(new Uri(_nexmoWebRequestUrl), _smsdata);
 
             }
             catch (Exception ex)
@@ -125,6 +117,6 @@ namespace NotificationService.DataAccess
             const int MaxAnsiCode = 255;
             return input.Any(c => c > MaxAnsiCode);
         }
-    } 
+    }
 }
 

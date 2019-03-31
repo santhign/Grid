@@ -11,7 +11,7 @@ namespace Core.Helpers
     public class EmailValidationHelper
     {
         List<RequestParam> paramList = new List<RequestParam>();
-        public async Task<ResponseObject> GetEmailValidation(EmailConfig config)
+        public async Task<ResponseObject> EmailValidation(EmailConfig config)
         {
             ApiClient client = new ApiClient(new Uri(config.EmailAPIUrl));
 
