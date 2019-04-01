@@ -512,9 +512,7 @@ namespace OrderService.DataAccess
 
                     if (dt != null && dt.Rows.Count > 0)
                     {
-
                         configDictionary = LinqExtensions.GetDictionary(dt);
-
                     }
 
                     response = new DatabaseResponse { ResponseCode = result, Results = configDictionary };
@@ -1389,5 +1387,86 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+
+        public async Task<DatabaseResponse> RemoveAdditionalLine(RemoveAdditionalLineRequest removeRequest)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@OrderID",  SqlDbType.Int ),
+                     new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar )
+
+                };
+
+                parameters[0].Value = removeRequest.OrderID;
+                parameters[1].Value = removeRequest.MobileNumber;
+
+                _DataHelper = new DataAccessHelper("Orders_RemoveAdditionalSubscriber", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = _DataHelper.Run();    // 104 /103/ 109 
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                response = new DatabaseResponse { ResponseCode = result };
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+
+        }
+
+        public async Task<DatabaseResponse> AssignNewNumber(AssignNewNumber newNumberRequest)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@OrderID",  SqlDbType.Int ),
+                     new SqlParameter( "@OldMobileNumber",  SqlDbType.NVarChar ),
+                      new SqlParameter( "@NewMobileNumber",  SqlDbType.NVarChar )
+
+                };
+
+                parameters[0].Value = newNumberRequest.OrderID;
+                parameters[1].Value = newNumberRequest.OldNumber;
+                parameters[2].Value = newNumberRequest.NewNumber;
+
+                _DataHelper = new DataAccessHelper("Orders_UpdateSubscriberNumber ", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = _DataHelper.Run();    // 104 /103/ 109 
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                response = new DatabaseResponse { ResponseCode = result };
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+
+        }
+
     }
 }

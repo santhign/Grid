@@ -105,5 +105,21 @@ namespace Core.Enums
         [Description("Checkout Session Created Successfully")]
         CheckoutSessionCreated = 21,
 
+        [EnumMember(Value = "Line Delete Failed")]
+        [Description("Failed to delete additional line")]
+        LineDeleteFailed = 22,
+
+        [EnumMember(Value = "Line Deleted Successfully")]
+        [Description("Successfully deleted additional line")]
+        LineDeleteSuccess = 23,
+
+        [EnumMember(Value = "Assign New Number Faild")]
+        [Description("Failed to assign New Number")]
+        AssignNewNumberFailed = 24,
+
+        [EnumMember(Value = "New Number Assign Success")]
+        [Description("Successfully Assigned New Number")]
+        AssignNuewNumberSuccess = 25,
+
     }
 }

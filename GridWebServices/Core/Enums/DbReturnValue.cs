@@ -89,5 +89,13 @@ namespace Core.Enums
         [Description("Transaction tables updation Failed")]
         TransactionFailed = 121,
 
+        [EnumMember(Value = "Primary Try Delete")]
+        [Description("Primary Number can not be deleted")]
+        PrimaryTryDelete = 122,
+
+        [EnumMember(Value = "Order completed Try Delete")]
+        [Description("Order completed, Number can not be deleted")]
+        CompletedOrderDelete = 123,
+
     }
 }

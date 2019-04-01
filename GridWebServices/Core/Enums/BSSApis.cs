@@ -73,6 +73,19 @@ namespace Core.Enums
 
 
     }
+
+    public enum ConnectionTypes
+    {
+        [EnumMember(Value = "Prepaid")]
+        [Description("Prepaid")]
+        Prepaid = 1,
+
+        [EnumMember(Value = "Postpaid")]
+        [Description("Postpaid")]
+        Postpaid = 2       
+    }
+    
+
     public enum AssetStatus
     {
         [EnumMember(Value = "New")]

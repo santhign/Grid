@@ -458,5 +458,102 @@ namespace OrderService.Controllers
             }
 
         }
+
+        [HttpGet("{token}/{mobileNumber}")]
+        public async Task<IActionResult> GetUsageHistory([FromRoute] string token, string mobileNumber)
+        {
+            try
+            {
+
+                BSSAPIHelper helper = new BSSAPIHelper();
+
+                OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await _orderAccess.AuthenticateCustomerToken(token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    AuthTokenResponse aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
+
+                    if (!(aTokenResp.CreatedOn < DateTime.UtcNow.AddDays(-7)))
+                    {
+
+                        DatabaseResponse systemConfigResponse = await _orderAccess.GetConfiguration(ConfiType.System.ToString());
+
+                        DatabaseResponse bssConfigResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
+
+                        GridBSSConfi bssConfig = helper.GetGridConfig((List<Dictionary<string, string>>)bssConfigResponse.Results);
+
+                        GridSystemConfig systemConfig = helper.GetGridSystemConfig((List<Dictionary<string, string>>)systemConfigResponse.Results);
+
+                        DatabaseResponse serviceCAF = await _orderAccess.GetBSSServiceCategoryAndFee(ServiceTypes.Free.ToString());
+
+                        DatabaseResponse requestIdRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.GetAssets.ToString(), aTokenResp.CustomerID);
+
+                        BSSQueryPlanResponse numbers = new BSSQueryPlanResponse();
+
+                        object usageHistory = await helper.GetUsageHistory(bssConfig,mobileNumber,  ((BSSAssetRequest)requestIdRes.Results).request_id);
+
+                        BSSQueryPlanResponse res = helper.GetQueryPlan(usageHistory);
+
+                        //  if (helper.GetResponseCode(usageHistory) == "0")
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = true,
+                            IsDomainValidationErrors = false,
+                            ReturnedObject = res
+                        });
+
+
+
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+
+                }
+
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+
+
+
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+            }
+
+        }
+
     }
 }

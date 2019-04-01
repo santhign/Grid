@@ -5,6 +5,11 @@ using System.Threading.Tasks;
 using Core.Models;
 using Core.Enums;
 using System.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Net.Http;
+
+
 
 
 
@@ -280,5 +285,95 @@ namespace Core.Helpers
 
             return numbers;
         }
+
+        public async Task<object> GetUsageHistory(GridBSSConfi confi, string mobileNumber, string requestId)
+        {
+            ApiClient client = new ApiClient(new Uri(confi.BSSAPIUrl));
+
+            BSSQueryPlanRequest request = new BSSQueryPlanRequest();
+
+            QueryPlanRequestObject req = new QueryPlanRequestObject();
+
+            QueryPlanDataset dataset = new QueryPlanDataset();
+
+            var requestUrl = GetRequestUrl(confi.BSSAPIUrl, ref client);
+
+            SetParamsForUsageRequest(confi, mobileNumber);
+
+            dataset.param = paramList;
+
+            List<string> filters = new List<string>();
+
+            filters.Add("base_plan / addon");
+
+            dataset.filters = filters;
+
+            request.request_id = requestId;
+
+            request.request_timestamp = DateTime.Now.ToString("ddmmyyyyhhmmss");
+
+            request.action = BSSApis.QueryPlan.ToString();
+
+            request.userid = confi.GridId.ToString();
+
+            request.username = confi.GridUserName;
+
+            request.source_node = confi.GridSourceNode;
+
+            request.dataset = dataset;
+
+            req.Request = request;
+
+            return await client.PostAsync<object, QueryPlanRequestObject>(requestUrl, req);
+        }
+
+        private void SetParamsForUsageRequest(GridBSSConfi confi, string mobileNumber)
+        {
+            paramList = new List<RequestParam>();
+
+            BSSParams bssParams = new BSSParams();
+
+            AddParam(bssParams.ServiceId, mobileNumber);           
+
+            AddParam(bssParams.ConnectionType, ((int) ConnectionTypes.Prepaid).ToString());                
+
+            AddParam(bssParams.EntityId, confi.GridEntityId.ToString());
+        }
+
+        public  BSSQueryPlanResponse GetQueryPlan(object response)
+        {
+            BSSQueryPlanResponse plan = new BSSQueryPlanResponse();
+
+            var json = JsonConvert.SerializeObject(response, MicrosoftDateFormatSettings);  
+            JObject jObject = JObject.Parse(json);
+            var queryPlan = jObject["Response"];
+            plan.request_id = queryPlan["request_id"].ToObject<String>();
+            plan.request_timestamp =queryPlan["request_timestamp"].ToObject<String>();
+            plan.response_timestamp = queryPlan["response_timestamp"].ToObject<String>();
+            plan.result_code = queryPlan["result_code"].ToObject<String>();
+            plan.source_node = queryPlan["source_node"].ToObject<String>();        
+            plan.action = queryPlan["action"].ToObject<String>();
+            plan.result_desc= queryPlan["result_desc"].ToObject<String>();
+            plan.dataSet = queryPlan["dataSet"].ToObject<QueryPlanDataset>();
+
+            if (plan.result_code == "SC0000")
+            {                
+                plan.bundles = queryPlan["bundles"].ToObject<List<BSSBundle>>();               
+            }
+
+            return plan;
+        }
+
+        public static JsonSerializerSettings MicrosoftDateFormatSettings
+        {
+            get
+            {
+                return new JsonSerializerSettings
+                {
+                    DateFormatHandling = DateFormatHandling.MicrosoftDateFormat
+                };
+            }
+        }
+
     }
 }
