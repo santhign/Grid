@@ -16,7 +16,6 @@ using System.IO;
 using Microsoft.Extensions.Configuration;
 using InfrastructureService;
 using OrderService.Helpers;
-using Core.Helpers;
 using OrderService.DataAccess;
 
 namespace OrderService.Controllers

@@ -41,7 +41,7 @@ namespace OrderService.Helpers
             }
             catch (IOException ex)
             {
-                 LogInfo.Error( $": {EnumExtensions.GetDescription(MPGSAPIResponse.WebhookNotificationFolderError) + " : " +  GatewayApiConfig.WEBHOOKS_NOTIFICATION_FOLDER}");
+                 LogInfo.Fatal(ex,  $": {EnumExtensions.GetDescription(MPGSAPIResponse.WebhookNotificationFolderError) + " : " +  GatewayApiConfig.WEBHOOKS_NOTIFICATION_FOLDER}");
             }
         }
 
@@ -56,7 +56,7 @@ namespace OrderService.Helpers
             }
             catch (IOException ex)
             {
-                LogInfo.Error($" {EnumExtensions.GetDescription(MPGSAPIResponse.WebhookNotificationFolderDeleteError) + " : "+GatewayApiConfig.WEBHOOKS_NOTIFICATION_FOLDER}");
+                LogInfo.Fatal(ex, $" {EnumExtensions.GetDescription(MPGSAPIResponse.WebhookNotificationFolderDeleteError) + " : "+GatewayApiConfig.WEBHOOKS_NOTIFICATION_FOLDER}");
             }
         }
         public Checkout CreateCheckoutSession(GridMPGSConfig mpgsConfig)
