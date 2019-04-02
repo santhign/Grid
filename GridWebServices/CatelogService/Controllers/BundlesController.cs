@@ -273,7 +273,7 @@ namespace CatelogService.Controllers
             catch (Exception ex)
             {
                 //to do Logging
-
+                LogInfo.Fatal(ex, "Error while creating the bundle configuration");
                 return Ok(new OperationResponse
                 {
                     HasSucceeded = false,

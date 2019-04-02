@@ -57,7 +57,7 @@ namespace AdminService.Controllers
                 }
 
                 AdminUsersDataAccess _AdminUsersDataAccess = new AdminUsersDataAccess(_iconfiguration);
-                 
+
                 return Ok(new ServerResponse
                 {
                     HasSucceeded = true,
@@ -281,5 +281,63 @@ namespace AdminService.Controllers
 
         }
 
+
+        [HttpPost]
+        [Route("UpdateAdminUser")]
+        public async Task<IActionResult> UpdateAdminUser([FromBody] AdminProfile adminuser)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    Log.Error(StatusMessages.DomainValidationError);
+                    new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                                                 .SelectMany(x => x.Errors)
+                                                 .Select(x => x.ErrorMessage))
+                    };
+                }
+
+                AdminUsersDataAccess _adminUsersDataAccess = new AdminUsersDataAccess(_iconfiguration);
+
+                DatabaseResponse response = await _adminUsersDataAccess.UpdateAdminUser(adminuser);
+
+                if (response.ResponseCode == ((int)DbReturnValue.EmailNotExists))
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.EmailNotExists),
+                        IsDomainValidationErrors = true
+                    });
+                }
+                else
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = true,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.CreateSuccess),
+                        IsDomainValidationErrors = false,
+                        ReturnedObject = response.Results
+
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
     }
 }
