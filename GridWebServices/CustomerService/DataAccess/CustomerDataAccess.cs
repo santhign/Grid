@@ -207,7 +207,7 @@ namespace CustomerService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                //await _DataHelper.RunAsync(dt);
+                
                 await _DataHelper.RunAsync(dt);
 
                 var customerPlans = new List<CustomerPlans>();
@@ -408,7 +408,10 @@ namespace CustomerService.DataAccess
                                           SIMID = model.Field<string>("SIMID"),
                                           PremiumType = model.Field<string>("PremiumType"),
                                           ActivatedOn = model.Field<DateTime>("ActivatedOn"),
-                                          IsPrimary = model.Field<bool>("Subscribers.IsPrimary")
+                                          IsPrimary = model.Field<bool>("Subscribers.IsPrimary"),
+                                          LinkedMobileNumber = model.Field<string>("LinkedMobileNumber"),
+                                          AccountType = model.Field<string>("AccountType"),
+                                          LinkedDisplayName = model.Field<string>("LinkedDisplayName")
                                       }).FirstOrDefault();
                     }
 

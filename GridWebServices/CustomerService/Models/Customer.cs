@@ -222,6 +222,30 @@ namespace CustomerService.Models
     public class Subscriber
     {
         /// <summary>
+        /// Gets or sets the linked  mobile number.
+        /// </summary>
+        /// <value>
+        /// The linked mobile number.
+        /// </value>
+        public string LinkedMobileNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Linked Display Name.
+        /// </summary>
+        /// <value>
+        /// The Linked Display Name.
+        /// </value>
+        public string LinkedDisplayName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Account Type.
+        /// </summary>
+        /// <value>
+        /// The Account Type.
+        /// </value>
+        public string AccountType { get; set; }
+
+        /// <summary>
         /// Gets or sets the mobile number.
         /// </summary>
         /// <value>
