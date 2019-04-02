@@ -84,4 +84,9 @@ namespace CustomerService.Models
         public string Status { get; set; }
     }
 
+    public class CustomerProfile
+    { 
+        public string ReferralCode { get; set; }
+    }
+
 }

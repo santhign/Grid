@@ -543,5 +543,78 @@ namespace CustomerService.Controllers
 
             }
         }
+
+        [HttpPost("UpdateReferralCode")]
+        public async Task<IActionResult> UpdateReferralCode([FromHeader] string Token, [FromBody]CustomerProfile customerprofie)
+        {
+            try
+            { 
+                if (!ModelState.IsValid)
+                {
+                    new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                                            .SelectMany(x => x.Errors)
+                                            .Select(x => x.ErrorMessage))
+                    };
+                }
+
+                CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
+                DatabaseResponse tokenAuthResponse = await _customerAccess.AuthenticateCustomerToken(Token);
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    AuthTokenResponse aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
+                    var validationResponse = await _customerAccess.UpdateReferralCode (aTokenResp.CustomerID, customerprofie.ReferralCode);
+                    if (validationResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                    {
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = true,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.RecordExists),
+                            IsDomainValidationErrors = false,
+                            ReturnedObject = validationResponse.Results
+                        });
+                    }
+                    else
+                    {
+                        //Unable to validate the referral code
+                        LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.NoRecords));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.NoRecords),
+                            IsDomainValidationErrors = false
+                        });
+                    }
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
     }
 }
