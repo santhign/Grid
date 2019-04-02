@@ -181,6 +181,71 @@ namespace CustomerService.DataAccess
             }
         }
 
+        /// <summary>Gets the customer plans.</summary>
+        /// <param name="customerId">The customer identifier.</param>
+        /// <param name="MobileNumber">Mobile Number</param>
+        /// <param name="PlanType">Plan Type</param>
+        /// <returns>List of plan asscociated with Customers along with all subscribers</returns>
+        public async Task<List<CustomerPlans>> GetCustomerPlans(int customerId, string MobileNumber, int ? PlanType)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+                    new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@PlanType",  SqlDbType.Int )
+                };
+
+                parameters[0].Value = customerId;
+                if (!string.IsNullOrEmpty(MobileNumber))
+                    parameters[1].Value = MobileNumber;
+                if (PlanType != null)
+                    parameters[2].Value = PlanType;
+
+                _DataHelper = new DataAccessHelper("Customers_GetPlans", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                //await _DataHelper.RunAsync(dt);
+                await _DataHelper.RunAsync(dt);
+
+                var customerPlans = new List<CustomerPlans>();
+
+                if (dt.Rows.Count > 0)
+                {
+
+
+                    customerPlans = (from model in dt.AsEnumerable()
+                                     select new CustomerPlans()
+                                     {
+                                         CustomerID = model.Field<int>("CustomerID"),
+                                         PlanId = model.Field<int>("PlanId"),
+                                         PlanMarketingName = model.Field<string>("PlanMarketingName"),
+                                         MobileNumber = model.Field<string>("MobileNumber"),
+                                         SubscriptionType = model.Field<string>("SubscriptionType"),
+                                         IsRecurring = model.Field<int>("IsRecurring"),
+                                        
+                                            ExpiryDate = model.Field<DateTime?>("ExpiryDate"),
+
+                                     }).ToList();
+                }
+
+                return customerPlans;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
         public async Task<DatabaseResponse> AuthenticateCustomerToken(string token)
         {
             try

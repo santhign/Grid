@@ -57,6 +57,22 @@ namespace Core.Enums
         Free = 3,        
     }
 
+    /// <summary>Different PlanType </summary>
+    public enum PlanType
+    {
+        [EnumMember(Value = "Generic")]
+        [Description("Grid Generic")]
+        Generic = 0,
+
+        [EnumMember(Value = "VAS")]
+        [Description("VAS Plan")]
+        VAS = 1,
+
+        [EnumMember(Value = "Shared_VAS")]
+        [Description("Shared VAS")]
+        Shared_VAS = 2,
+    }
+
     public enum PremiumTypes
     {
         [EnumMember(Value = "Gold")]
