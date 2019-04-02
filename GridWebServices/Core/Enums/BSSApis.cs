@@ -60,9 +60,9 @@ namespace Core.Enums
     /// <summary>Different PlanType </summary>
     public enum PlanType
     {
-        [EnumMember(Value = "Generic")]
-        [Description("Grid Generic")]
-        Generic = 0,
+        [EnumMember(Value = "Base")]
+        [Description("Base")]
+        Base = 0,
 
         [EnumMember(Value = "VAS")]
         [Description("VAS Plan")]
