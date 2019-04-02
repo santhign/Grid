@@ -9,6 +9,9 @@ using Core.Helpers;
 using Core.Enums;
 using Core.Extensions;
 using Newtonsoft.Json;
+using Core.Models;
+using Microsoft.Extensions.Configuration;
+using OrderService.DataAccess;
 
 namespace OrderService.Helpers
 {
@@ -121,7 +124,7 @@ namespace OrderService.Helpers
 
                 GatewayApiConfig config = new GatewayApiConfig(mpgsConfig);             
 
-                if (responseUpdate.Result == MPGSAPIResponse.SUCCESS.ToString())
+                if (responseUpdate.Result == MPGSAPIResponse.SUCCESS.ToString() || responseUpdate.Result == MPGSAPIResponse.CAPTURED.ToString())
                 {
                     GatewayApiRequest gatewayApiRequest = new GatewayApiRequest(config)
                     {
@@ -178,9 +181,7 @@ namespace OrderService.Helpers
 
                 throw ex;
             }
-
         }
-
         public GridMPGSConfig GetGridMPGSConfig(List<Dictionary<string, string>> configDict)
         {
             GridMPGSConfig config = new GridMPGSConfig();
@@ -191,6 +192,6 @@ namespace OrderService.Helpers
             config.Currency = configDict.Single(x => x["key"] == "GatewayGridCurrency")["value"];
             config.WebhooksNotificationSecret = configDict.Single(x => x["key"] == "GatewayGridWebhookSecret")["value"];
             return config;
-        }
+        }        
     }
 }
