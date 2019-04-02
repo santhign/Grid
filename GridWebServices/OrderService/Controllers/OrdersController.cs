@@ -2201,5 +2201,365 @@ namespace OrderService.Controllers
             }
         }
 
+        [Route("RemoveAdditionalLine")]
+        [HttpPost]
+        public async Task<IActionResult> RemoveAdditionalLine([FromBody] RemoveAdditionalLineRequest request)
+        {
+            try
+            {
+
+                if (!ModelState.IsValid)
+                {
+                    new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                                                 .SelectMany(x => x.Errors)
+                                                 .Select(x => x.ErrorMessage))
+                    };
+                }
+
+                OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await _orderAccess.AuthenticateCustomerToken(request.Token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    AuthTokenResponse aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
+
+                    if (!(aTokenResp.CreatedOn < DateTime.UtcNow.AddDays(-7)))
+                    {
+                        //remove additional line
+                        DatabaseResponse removeLineResponse = await _orderAccess.RemoveAdditionalLine(request);
+
+                        if (removeLineResponse.ResponseCode == (int)DbReturnValue.DeleteSuccess)
+                        {
+                            // call bss api to release/unblock the number
+
+                            OrderCustomer customer = new OrderCustomer();
+
+                            DatabaseResponse customerResponse = await _orderAccess.GetCustomerIdFromOrderId(request.OrderID);
+
+                            if (customerResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                            {
+                                customer = (OrderCustomer)customerResponse.Results;
+
+                                BSSAPIHelper helper = new BSSAPIHelper();
+
+                                MiscHelper configHelper = new MiscHelper();
+
+                                DatabaseResponse requestIdToUpdateUnblock = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customer.CustomerId);
+
+                                DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
+
+                                GridBSSConfi config = helper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
+
+                                // Unblock
+                                BSSUpdateResponseObject bssUnblockUpdateResponse = await helper.UpdateAssetBlockNumber(config, ((BSSAssetRequest)requestIdToUpdateUnblock.Results).request_id, request.MobileNumber, true);
+
+                                if (helper.GetResponseCode(bssUnblockUpdateResponse) == "0")
+                                {
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = true,
+                                        Message = EnumExtensions.GetDescription(CommonErrors.LineDeleteSuccess),
+                                        IsDomainValidationErrors = false
+                                    });
+
+                                }
+
+                                else
+                                {
+                                    /*
+                                     revice - check if revert the line deleted in database in case number releasing failed in BSS
+                                     */
+
+                                    // unblocking failed -  
+                                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateAssetUnBlockingFailed));
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = false,
+                                        Message = EnumExtensions.GetDescription(DbReturnValue.UnBlockingFailed),
+                                        IsDomainValidationErrors = false
+                                    });
+                                }
+
+                            }
+
+                            else
+                            {
+                                // failed to locate customer
+                                LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToGetCustomer));
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = false,
+                                    Message = EnumExtensions.GetDescription(DbReturnValue.UnBlockingFailed),
+                                    IsDomainValidationErrors = false
+                                });
+                            }
+
+                        }
+                       
+                        else if (removeLineResponse.ResponseCode == (int)DbReturnValue.ActiveTryDelete)
+                        {
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.LineDeleteFailed));
+
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.ActiveTryDelete),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+
+                        else if (removeLineResponse.ResponseCode == (int)DbReturnValue.PrimaryTryDelete)
+                        {
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.LineDeleteFailed));
+
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.PrimaryTryDelete),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+
+                        else if (removeLineResponse.ResponseCode == (int)DbReturnValue.CompletedOrderDelete)
+                        {
+                            LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.CompletedOrderDelete));
+
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.CompletedOrderDelete),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                        else 
+                        {
+                            LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.NotExists));
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
+
+        [Route("AssignNewNumberToSubscriber")]
+        [HttpPost]
+        public async Task<IActionResult> AssignNewNumberToSubscriber([FromBody] AssignNewNumberRequest request)
+        {
+           try
+                {
+                    if (!ModelState.IsValid)
+                    {
+                        new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            IsDomainValidationErrors = true,
+                            Message = string.Join("; ", ModelState.Values
+                                                     .SelectMany(x => x.Errors)
+                                                     .Select(x => x.ErrorMessage))
+                        };
+                    }
+
+                    OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+
+                    DatabaseResponse tokenAuthResponse = await _orderAccess.AuthenticateCustomerToken(request.Token);
+
+                    if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                    {
+
+                        AuthTokenResponse aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
+
+                        if (!(aTokenResp.CreatedOn < DateTime.UtcNow.AddDays(-7)))
+                        {
+                            // call GetAssets BSSAPI
+
+                            BSSAPIHelper helper = new BSSAPIHelper();
+
+                            DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
+
+                            GridBSSConfi config = helper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
+
+                                config.GridDefaultAssetLimit = 1; // to get only on asset
+
+                            DatabaseResponse serviceCAF = await _orderAccess.GetBSSServiceCategoryAndFee(ServiceTypes.Free.ToString());
+
+                            DatabaseResponse requestIdRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.GetAssets.ToString(), aTokenResp.CustomerID);
+
+                            ResponseObject res = await helper.GetAssetInventory(config, (((List<ServiceFees>)serviceCAF.Results)).FirstOrDefault().ServiceCode, ((BSSAssetRequest)requestIdRes.Results).request_id);
+
+                            string NewNumber = helper.GetAssetId(res);
+
+                            if (res != null && (int.Parse(res.Response.asset_details.total_record_count) > 0))
+                            {
+                                //Block number                                    
+
+                                DatabaseResponse requestIdToUpdateRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), aTokenResp.CustomerID);
+
+                                BSSUpdateResponseObject bssUpdateResponse = await helper.UpdateAssetBlockNumber(config, ((BSSAssetRequest)requestIdToUpdateRes.Results).request_id, NewNumber, false);
+
+                                if (helper.GetResponseCode(bssUpdateResponse) == "0")
+                                {
+                                    // Assign Newnumber
+                                    AssignNewNumber newNumbertoAssign = new AssignNewNumber { OrderID = request.OrderID, OldNumber=request.OldNumber,NewNumber= NewNumber };
+
+                                    DatabaseResponse AssignNewNumberResponse = await _orderAccess.AssignNewNumber(newNumbertoAssign);
+
+                                    if (AssignNewNumberResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
+                                    {
+                                        // Get Order Basic Details
+
+                                        DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails(request.OrderID);
+
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = true,
+                                            Message = EnumExtensions.GetDescription(CommonErrors.AssignNuewNumberSuccess),
+                                            IsDomainValidationErrors = false,
+                                            ReturnedObject = orderDetailsResponse.Results
+                                        });
+
+                                    }
+
+                                    else
+                                    {
+                                        // Assign Newnumber failed
+                                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.AssignNewNumberFailed));
+
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = true,
+                                            Message = EnumExtensions.GetDescription(CommonErrors.AssignNewNumberFailed),
+                                            IsDomainValidationErrors = false
+
+                                        });
+                                    }
+
+
+                                }
+                                else
+                                {
+                                    //blocking failed
+
+                                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateAssetBlockingFailed));
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = false,
+                                        Message = EnumExtensions.GetDescription(DbReturnValue.BlockingFailed),
+                                        IsDomainValidationErrors = false
+                                    });
+                                }
+
+                            }
+                            else
+                            {
+                                // no assets returned
+
+                                LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.GetAssetFailed));
+
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = false,
+                                    Message = EnumExtensions.GetDescription(DbReturnValue.GetAssetsFailed),
+                                    IsDomainValidationErrors = false
+                                });
+
+                            }
+                        }
+
+                        else
+                        {
+                            //Token expired
+
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                                IsDomainValidationErrors = true
+                            });
+
+                        }
+
+                    }
+
+                    else
+                    {
+                        // token auth failure
+                        LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                            IsDomainValidationErrors = false
+                        });
+                    }
+
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
+
+
+
     }
 }

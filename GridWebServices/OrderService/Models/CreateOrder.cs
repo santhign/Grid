@@ -353,4 +353,41 @@ namespace OrderService.Models
         [Required(ErrorMessage = "PromotionMessage is required")]
         public int PromotionMessage { get; set; }
     }
+
+    public class RemoveAdditionalLineRequest
+    {
+        [Required(ErrorMessage = "Token required")]
+        public string Token { get; set; }
+
+        [Required(ErrorMessage = "OrderID is required")]
+        public int OrderID { get; set; }
+
+        [MaxLength(8, ErrorMessage = "Maximum 8 characters allowed in Mobile Number")]
+        [Required(ErrorMessage = "Mobile Number is required")]
+        public string MobileNumber { get; set; }
+        
+    }
+
+    public class AssignNewNumberRequest
+    {
+        [Required(ErrorMessage = "Token required")]
+        public string Token { get; set; }
+
+        [Required(ErrorMessage = "OrderID is required")]
+        public int OrderID { get; set; }
+
+        [MaxLength(8, ErrorMessage = "Maximum 8 characters allowed in Mobile Number")]
+        [Required(ErrorMessage = "Mobile Number is required")]
+        public string OldNumber { get; set; }
+
+    }
+
+    public class AssignNewNumber
+    {       
+        public string Token { get; set; }        
+        public int OrderID { get; set; }       
+        public string OldNumber { get; set; }        
+        public string NewNumber { get; set; }
+
+    }
 }

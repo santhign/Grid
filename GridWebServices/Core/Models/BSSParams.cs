@@ -33,7 +33,16 @@ namespace Core.Models
             EntityId = "entity_id";
 
             UnBlockAsset = "unblock_asset";
-           
+
+            ConnectionType = "connectionType";
+
+            AccountType = "accountType ";
+
+            ServiceId = "service_id";
+
+            GroupId = "group_Id";
+
+            GroupPlan = "groupPlan";
         }
         public string ProductType { get; set; }
         public string AssetStatus { get; set; }
@@ -47,6 +56,12 @@ namespace Core.Models
         public string CategoryId { get; set; }
         public string EntityId { get; set; }
         public string UnBlockAsset { get; set; }
+        public string ConnectionType { get; set; }
+        public string AccountType { get; set; }
+        public string ServiceId { get; set; }
+        public string GroupId { get; set; }
+        public string GroupPlan { get; set; }
+
     }
     
 }
