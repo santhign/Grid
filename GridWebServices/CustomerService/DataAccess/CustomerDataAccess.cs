@@ -492,6 +492,69 @@ namespace CustomerService.DataAccess
             }
         }
 
+       
+        public async Task<DatabaseResponse> UpdateReferralCode(int customerid,string ReferralCode)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int  ),
+                    new SqlParameter( "@ReferralCode",  SqlDbType.NVarChar )
+                };
+
+                parameters[0].Value = customerid;
+                parameters[1].Value = ReferralCode;
+
+                _DataHelper = new DataAccessHelper("Customers_UpdateReferralCode", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = _DataHelper.Run(dt); // 105 /119
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 105)
+                {
+
+                    ValidateReferralCodeResponse vrcResponse = new ValidateReferralCodeResponse();
+
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+
+                        vrcResponse = (from model in dt.AsEnumerable()
+                                       select new ValidateReferralCodeResponse()
+                                       {
+                                           CustomerID = model.Field<int>("CustomerID"),
+                                           IsReferralCodeValid = true
+
+                                       }).FirstOrDefault();
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = vrcResponse };
+
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
 
     }
 }

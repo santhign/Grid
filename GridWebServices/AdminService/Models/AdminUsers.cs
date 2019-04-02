@@ -35,4 +35,10 @@ namespace AdminService.Models
         public int RoleID { get; set; } 
     }
 
+    public class AdminProfile
+    {
+        public int AdminUserID { get; set; }
+        public string  ExistingPassword { get; set; }
+        public string  NewPassword { get; set; }
+    }
 }
