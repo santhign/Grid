@@ -3,6 +3,7 @@ using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace Core.Helpers
 {
@@ -111,6 +112,28 @@ namespace Core.Helpers
             dataAdapter.Fill(dataTable);
 
             return (int)command.Parameters["ReturnValue"].Value; 
+        }
+
+
+        public async Task<int> RunAsync(DataTable dataTable)
+        {
+
+            await Task.Run(() =>
+             {
+                //	Fill a DataTable with the result of executing this stored procedure.
+                if (command == null)
+                     throw new ObjectDisposedException(GetType().FullName);
+
+                 SqlDataAdapter dataAdapter = new SqlDataAdapter();
+
+                 dataAdapter.SelectCommand = command;
+                 dataAdapter.Fill(dataTable);
+
+                 return (int)command.Parameters["ReturnValue"].Value;
+             });
+
+            // It should never come to this line as it should get return 
+            return 0;
         }
 
 
