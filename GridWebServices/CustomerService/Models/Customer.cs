@@ -230,6 +230,30 @@ namespace CustomerService.Models
     public class Subscriber
     {
         /// <summary>
+        /// Gets or sets the linked  mobile number.
+        /// </summary>
+        /// <value>
+        /// The linked mobile number.
+        /// </value>
+        public string LinkedMobileNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Linked Display Name.
+        /// </summary>
+        /// <value>
+        /// The Linked Display Name.
+        /// </value>
+        public string LinkedDisplayName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Account Type.
+        /// </summary>
+        /// <value>
+        /// The Account Type.
+        /// </value>
+        public string AccountType { get; set; }
+
+        /// <summary>
         /// Gets or sets the mobile number.
         /// </summary>
         /// <value>
@@ -256,14 +280,14 @@ namespace CustomerService.Models
         /// <value>
         /// The type of the premium.
         /// </value>
-        public string PremiumType { get; set; }
+        public int PremiumType { get; set; }
         /// <summary>
         /// Gets or sets the activated on.
         /// </summary>
         /// <value>
         /// The activated on.
         /// </value>
-        public DateTime ActivatedOn { get; set; }
+        public DateTime ? ActivatedOn { get; set; }
         /// <summary>
         /// Gets or sets a value indicating whether this instance is primary.
         /// </summary>
