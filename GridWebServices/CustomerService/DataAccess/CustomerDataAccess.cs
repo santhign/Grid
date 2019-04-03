@@ -428,18 +428,18 @@ namespace CustomerService.DataAccess
                 parameters[0].Value = customerId;
                 _DataHelper = new DataAccessHelper("Customers_GetSubscribers", parameters, _configuration);
 
-                DataTable dt = new DataTable();
+                var dt = new DataTable();
 
-                int result = _DataHelper.Run(dt); // 105 /119
+                var result = await _DataHelper.RunAsync(dt); // 105 /119
 
-                DatabaseResponse response = new DatabaseResponse();
+                DatabaseResponse response;
 
                 if (result == 105)
                 {
 
-                    Subscriber subscriber = new Subscriber();
+                    var subscriber = new Subscriber();
 
-                    if (dt != null && dt.Rows.Count > 0)
+                    if (dt.Rows.Count > 0)
                     {
 
                         subscriber = (from model in dt.AsEnumerable()
@@ -473,7 +473,7 @@ namespace CustomerService.DataAccess
             {
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
-                throw(ex);
+                throw;
             }
             finally
             {

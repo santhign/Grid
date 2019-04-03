@@ -284,9 +284,9 @@ namespace CustomerService.Controllers
         }
 
         /// <summary>Gets the vas plans for customer.</summary>
-        /// <param name="customerId">The customer identifier.</param>
+        /// <param name="token">The customer identifier.</param>
         /// <param name="mobileNumber">The mobile number.</param>
-        /// <returns>List of VAS plan asscociated with Customers along with all subscribers</returns>
+        /// <returns>List of VAS plan associated with Customers along with all subscribers</returns>
         [HttpGet("GetVASPlansForCustomer/{token}")]
         public async Task<IActionResult> GetVasPlansForCustomer([FromRoute] string token, string mobileNumber)
         {
@@ -522,28 +522,29 @@ namespace CustomerService.Controllers
 
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        IsDomainValidationErrors = true,
-                        Message = string.Join("; ", ModelState.Values
-                                            .SelectMany(x => x.Errors)
-                                            .Select(x => x.ErrorMessage))
-                    };
+                    return StatusCode((int)HttpStatusCode.BadRequest,
+                        new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            IsDomainValidationErrors = true,
+                            Message = string.Join("; ", ModelState.Values
+                                .SelectMany(x => x.Errors)
+                                .Select(x => x.ErrorMessage))
+                        });
                 }
 
-                CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
-                DatabaseResponse tokenAuthResponse = await _customerAccess.AuthenticateCustomerToken(token);
+                var customerAccess = new CustomerDataAccess(_iconfiguration);
+                var tokenAuthResponse = await customerAccess.AuthenticateCustomerToken(token);
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
-                    AuthTokenResponse aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
-                    var getSubscriber = await _customerAccess.GetSubscribers(aTokenResp.CustomerID);
+                    var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
+                    var getSubscriber = await customerAccess.GetSubscribers(aTokenResp.CustomerID);
                     if (getSubscriber.ResponseCode == (int)DbReturnValue.RecordExists)
                     {
                         return Ok(new OperationResponse
                         {
                             HasSucceeded = true,
-                            Message = EnumExtensions.GetDescription(DbReturnValue.RecordExists),
+                            Message = DbReturnValue.RecordExists.GetDescription(),
                             IsDomainValidationErrors = false,
                             ReturnedObject = getSubscriber.Results
                         });
@@ -551,12 +552,12 @@ namespace CustomerService.Controllers
                     else
                     {
                         //Unable to validate the referral code
-                        LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.NoRecords));
+                        LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
 
                         return Ok(new OperationResponse
                         {
                             HasSucceeded = false,
-                            Message = EnumExtensions.GetDescription(DbReturnValue.NoRecords),
+                            Message = DbReturnValue.NoRecords.GetDescription(),
                             IsDomainValidationErrors = false
                         });
                     }
@@ -564,12 +565,12 @@ namespace CustomerService.Controllers
                 else
                 {
                     // token auth failure
-                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+                    LogInfo.Error(DbReturnValue.TokenAuthFailed.GetDescription());
 
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
-                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        Message = DbReturnValue.TokenAuthFailed.GetDescription(),
                         IsDomainValidationErrors = false
                     });
                 }
@@ -578,12 +579,8 @@ namespace CustomerService.Controllers
             {
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
-                return Ok(new OperationResponse
-                {
-                    HasSucceeded = false,
-                    Message = StatusMessages.ServerError,
-                    IsDomainValidationErrors = false
-                });
+                return StatusCode((int)HttpStatusCode.InternalServerError,
+                    "An error occurred, please try again or contact the administrator.");
 
             }
         }
