@@ -17,4 +17,9 @@
     <ProjectReference Include="..\InfrastructureService\InfrastructureService.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="DataAccess\" />
+    <Folder Include="Models\" />
+  </ItemGroup>
+
 </Project>

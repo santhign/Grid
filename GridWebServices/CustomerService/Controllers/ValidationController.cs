@@ -325,6 +325,254 @@ namespace CustomerService.Controllers
 
 
         /// <summary>
+        /// This will send email
+        /// </summary>
+        /// <param name="Token"></param>
+        /// <param name="emailSubscribers"></param>
+        /// <returns>send status</returns>
+        /// POST: api/AuthenticatedEmailSend
+        ///Body: 
+        ///{
+        ///  "Subject": "Email",
+        ///  "Content": "email notify",
+        ///  "BccAddress": "chinnu.rajan@gmail.com",
+        ///  "EmailDetails":[ {
+        ///        "Userid": 1,
+        ///        "FName": "Chinnu",
+        ///        "EMAIL": "chinnu.rajan@gmail.com",
+        ///        "Param1": "",
+        ///        "Param2": "",
+        ///        "Param3": "",
+        ///        "Param4": "",
+        ///        "Param5": "",
+        ///        "Param6": "",
+        ///        "Param7": "",
+        ///        "Param8": "",
+        ///        "Param9": "",
+        ///        "Param10": ""
+        ///    }]
+        ///    }
+        [HttpPost]
+        [Route("SendEmail")]
+        public async Task<IActionResult> AuthenticatedEmailSend([FromHeader] string Token, [FromBody]NotificationEmail emailSubscribers)
+        {
+            try
+            {
+
+                if (!ModelState.IsValid)
+                {
+                    Log.Error(StatusMessages.DomainValidationError);
+                    new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                                            .SelectMany(x => x.Errors)
+                                            .Select(x => x.ErrorMessage))
+                    };
+                }
+
+
+                DatabaseResponse configResponse = ConfigHelper.GetValue("Email", _iconfiguration);
+
+                CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
+                DatabaseResponse tokenAuthResponse = await _customerAccess.AuthenticateCustomerToken(Token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    List<Dictionary<string, string>> _result = ((List<Dictionary<string, string>>)configResponse.Results);
+                    string _apiKeytest = "";
+                    string _fromEmail = "";
+                    string _fromEmailtest = "";
+                    string _fromName = "";
+                    string _apiKey = "";
+                    string _fromNametest = "";
+                    string _replyEmail = "";
+                    string _replyEmailtest = "";
+
+
+                    foreach (Dictionary<string, string> author in _result)
+                    {
+                        foreach (KeyValuePair<string, string> response in author)
+                        {
+                            if ((response.Value == "MandrillKey") || (_apiKeytest == "MandrillKey"))
+                            {
+                                if (_apiKeytest.Trim().Length == 0)
+                                {
+                                    _apiKeytest = "MandrillKey";
+                                }
+                                else
+                                {
+                                    _apiKeytest = "";
+                                    _apiKey = response.Value;
+                                    break;
+                                }
+                            }
+                            if ((response.Value == "FromEmail") || (_fromEmailtest == "FromEmail"))
+                            {
+                                if (_fromEmailtest.Trim().Length == 0)
+                                {
+                                    _fromEmailtest = "FromEmail";
+                                }
+                                else
+                                {
+                                    _fromEmailtest = "";
+                                    _fromEmail = response.Value;
+                                    break;
+                                }
+                            }
+                            if ((response.Value == "FromName") || (_fromNametest == "FromName"))
+                            {
+                                if (_fromNametest.Trim().Length == 0)
+                                {
+                                    _fromNametest = "FromName";
+                                }
+                                else
+                                {
+                                    _fromNametest = "";
+                                    _fromName = response.Value;
+                                    break;
+                                }
+                            }
+                            if ((response.Value == "ReplyEmail") || (_replyEmailtest == "ReplyEmail"))
+                            {
+                                if (_replyEmailtest.Trim().Length == 0)
+                                {
+                                    _replyEmailtest = "ReplyEmail";
+                                }
+                                else
+                                {
+                                    _replyEmailtest = "";
+                                    _replyEmail = response.Value;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+
+                    MandrillApi api = new MandrillApi(_apiKey);
+
+                    Mandrill.Model.MandrillMessage eMsg = new Mandrill.Model.MandrillMessage();
+                    eMsg.Html = emailSubscribers.Content;
+                    eMsg.Subject = emailSubscribers.Subject;
+                    eMsg.FromEmail = _fromEmail;
+                    eMsg.FromName = _fromName;
+                    eMsg.BccAddress = emailSubscribers.BccAddress;
+                    Dictionary<string, object> mc = new Dictionary<string, object>();
+                    mc.Add("Reply-To", _replyEmail);
+                    eMsg.Headers = mc;
+                    eMsg.PreserveRecipients = false;
+                    eMsg.TrackClicks = true;
+                    eMsg.Merge = true;
+                    int recipientCount = emailSubscribers.EmailDetails.Count();
+                    List<Mandrill.Model.MandrillMailAddress> recipientList = new List<Mandrill.Model.MandrillMailAddress>();
+                    List<Mandrill.Model.MandrillRcptMergeVar> mergeVarList = new List<Mandrill.Model.MandrillRcptMergeVar>();
+                    //Mandrill.NameContentList<string> content = new Mandrill.NameContentList<string>();
+
+                    for (int counter = 0; counter < recipientCount; counter++)
+                    {
+                        recipientList.Add(new Mandrill.Model.MandrillMailAddress(emailSubscribers.EmailDetails[counter].EMAIL, emailSubscribers.EmailDetails[counter].FName));
+
+                        //mergeVarList.Add()
+                        List<Mandrill.Model.MandrillMergeVar> mergeVars = new List<Mandrill.Model.MandrillMergeVar>();
+                        Mandrill.Model.MandrillMergeVar mergevar = new Mandrill.Model.MandrillMergeVar();
+                        mergevar.Name = "EMAIL";
+                        mergevar.Content = emailSubscribers.EmailDetails[counter].EMAIL.ToString();
+                        mergeVars.Add(mergevar);
+                        mergevar = new Mandrill.Model.MandrillMergeVar();
+                        mergevar.Name = "NAME";
+                        mergevar.Content = emailSubscribers.EmailDetails[counter].FName.ToString();
+                        mergeVars.Add(mergevar);
+                        mergevar = new Mandrill.Model.MandrillMergeVar();
+                        mergevar.Name = "PARAM1";
+                        mergevar.Content = emailSubscribers.EmailDetails[counter].Param1.ToString();
+                        mergeVars.Add(mergevar);
+                        mergevar = new Mandrill.Model.MandrillMergeVar();
+                        mergevar.Name = "PARAM2";
+                        mergevar.Content = emailSubscribers.EmailDetails[counter].Param2.ToString();
+                        mergeVars.Add(mergevar);
+                        mergevar = new Mandrill.Model.MandrillMergeVar();
+                        mergevar.Name = "PARAM3";
+                        mergevar.Content = emailSubscribers.EmailDetails[counter].Param3.ToString();
+                        mergeVars.Add(mergevar);
+                        mergevar = new Mandrill.Model.MandrillMergeVar();
+                        mergevar.Name = "PARAM4";
+                        mergevar.Content = emailSubscribers.EmailDetails[counter].Param4.ToString();
+                        mergeVars.Add(mergevar);
+                        mergevar = new Mandrill.Model.MandrillMergeVar();
+                        mergevar.Name = "PARAM5";
+                        mergevar.Content = emailSubscribers.EmailDetails[counter].Param5.ToString();
+                        mergeVars.Add(mergevar);
+                        mergevar = new Mandrill.Model.MandrillMergeVar();
+                        mergevar.Name = "PARAM6";
+                        mergevar.Content = emailSubscribers.EmailDetails[counter].Param6.ToString();
+                        mergeVars.Add(mergevar);
+                        mergevar = new Mandrill.Model.MandrillMergeVar();
+                        mergevar.Name = "PARAM7";
+                        mergevar.Content = emailSubscribers.EmailDetails[counter].Param7.ToString();
+                        mergeVars.Add(mergevar);
+                        mergevar = new Mandrill.Model.MandrillMergeVar();
+                        mergevar.Name = "PARAM8";
+                        mergevar.Content = emailSubscribers.EmailDetails[counter].Param8.ToString();
+                        mergeVars.Add(mergevar);
+                        mergevar = new Mandrill.Model.MandrillMergeVar();
+                        mergevar.Name = "PARAM9";
+                        mergevar.Content = emailSubscribers.EmailDetails[counter].Param9.ToString();
+                        mergeVars.Add(mergevar);
+                        mergevar = new Mandrill.Model.MandrillMergeVar();
+                        mergevar.Name = "PARAM10";
+                        mergevar.Content = emailSubscribers.EmailDetails[counter].Param10.ToString();
+                        mergeVars.Add(mergevar);
+                        mergevar = new Mandrill.Model.MandrillMergeVar();
+                        mergevar.Name = "UNIQUEID";
+                        mergevar.Content = emailSubscribers.EmailDetails[counter].Userid.ToString();
+                        mergeVars.Add(mergevar);
+                        Mandrill.Model.MandrillRcptMergeVar rcptMergeVar = new Mandrill.Model.MandrillRcptMergeVar();
+                        rcptMergeVar.Rcpt = emailSubscribers.EmailDetails[counter].EMAIL;
+                        rcptMergeVar.Vars = mergeVars;
+                        mergeVarList.Add(rcptMergeVar);
+                    }
+
+                    eMsg.To = recipientList;
+                    eMsg.MergeVars = mergeVarList;
+                    Task<IList<Mandrill.Model.MandrillSendMessageResponse>> result;
+                    result = api.Messages.SendAsync(eMsg);
+
+                    return Ok(new ServerResponse
+                    {
+                        HasSucceeded = true,
+                        Message = StatusMessages.SuccessMessage
+                    });
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+            }
+        }
+
+
+        /// <summary>
         /// This will validate postcode
         /// </summary>
         /// <param name="_postcodedata"></param>
@@ -429,6 +677,130 @@ namespace CustomerService.Controllers
 
         }
 
+
+        /// <summary>
+        /// This will validate postcode
+        /// </summary>
+        /// <param name="Token"></param>
+        /// <param name="_postcodedata"></param>
+        /// <returns>validation status</returns>
+        /// POST: api/ValidateAuthenticatedPostcode
+        ///Body: 
+        ///{
+        ///  "APIKey":"xyz","APISecret":"abc","PostcodeNumber":"408600"
+        /// }
+        [HttpPost]
+        [Route("ValidatePostcode")]
+        public async Task<IActionResult> AuthenticatedPostcodeValidate([FromHeader] string Token, [FromBody]Postcode _postcodedata)
+        {
+            try
+            {
+
+                CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
+                DatabaseResponse tokenAuthResponse = await _customerAccess.AuthenticateCustomerToken(Token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    DatabaseResponse configResponse = ConfigHelper.GetValue("Postcode", _iconfiguration);
+
+                    List<Dictionary<string, string>> _result = ((List<Dictionary<string, string>>)configResponse.Results);
+
+                    string _APIKey = "";
+                    string _APIKeytest = "";
+                    string _APISecret = "";
+                    string _APISecrettest = "";
+                    string _Postcodeurl = "";
+                    string _Postcodeurltest = "";
+
+                    foreach (Dictionary<string, string> author in _result)
+                    {
+                        foreach (KeyValuePair<string, string> response in author)
+                        {
+                            if ((response.Value == "PostcodeApiKey") || (_APIKeytest == "PostcodeApiKey"))
+                            {
+                                if (_APIKeytest.Trim().Length == 0)
+                                {
+                                    _APIKeytest = "PostcodeApiKey";
+                                }
+                                else
+                                {
+                                    _APIKeytest = "";
+                                    _APIKey = response.Value;
+                                    break;
+                                }
+                            }
+                            if ((response.Value == "PostcodeSecret") || (_APISecrettest == "PostcodeSecret"))
+                            {
+                                if (_APISecrettest.Trim().Length == 0)
+                                {
+                                    _APISecrettest = "PostcodeSecret";
+                                }
+                                else
+                                {
+                                    _APISecrettest = "";
+                                    _APISecret = response.Value;
+                                    break;
+                                }
+                            }
+                            if ((response.Value == "Postcodeurl") || (_Postcodeurltest == "Postcodeurl"))
+                            {
+                                if (_Postcodeurltest.Trim().Length == 0)
+                                {
+                                    _Postcodeurltest = "Postcodeurl";
+                                }
+                                else
+                                {
+                                    _Postcodeurltest = "";
+                                    _Postcodeurl = response.Value;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    _postcodedata.APIKey = _APIKey;
+                    _postcodedata.APISecret = _APISecret;
+                    string Postcodeurl = _Postcodeurl;
+
+                    _postcodedata.PostData = string.Format("APIKey={0}&APISecret={1}&Postcode={2}", _postcodedata.APIKey, _postcodedata.APISecret, _postcodedata.PostcodeNumber);
+
+                    System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
+                    ApiClient client = new ApiClient(new Uri(Postcodeurl));
+                    await client.PostAsync<ResponseObject, Postcode>(new Uri(Postcodeurl), _postcodedata);
+
+                    return Ok(new ServerResponse
+                    {
+                        HasSucceeded = true,
+                        Message = StatusMessages.SuccessMessage
+
+                    });
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+            }
+
+        }
 
         /// <summary>
         /// This will send SMS
@@ -593,6 +965,188 @@ namespace CustomerService.Controllers
 
         }
 
+        /// <summary>
+        /// This will send SMS
+        /// </summary>
+        /// <param name="Token"></param>
+        /// <param name="_smsdata"></param>
+        /// <returns>send status</returns>
+        /// POST: api/AuthenticatedSMSSend
+        ///Body: 
+        ///{
+        ///  "PhoneNumber":"1234","SMSText":"Ok","ToPhoneNumber":"34567","PostData":"xyz"
+        /// }
+        [HttpPost]
+        [Route("SendSMS")]
+        public async Task<IActionResult> AuthenticatedSMSSend([FromHeader] string Token, [FromBody]Sms _smsdata)
+        {
+            string _warningmsg;
+
+            CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
+            DatabaseResponse tokenAuthResponse = await _customerAccess.AuthenticateCustomerToken(Token);
+
+            if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+            {
+                try
+                {
+                    if (_smsdata.PhoneNumber.Length < 10)
+                    {
+                        _warningmsg = "Phone number should be atleast 10 numbres long.";
+                        LogInfo.Warning(_warningmsg);
+                        throw new Exception(_warningmsg);
+                    }
+                    if (_smsdata.PhoneNumber.Length > 13)
+                    {
+                        _warningmsg = "Phone number should not be longer than 13 numbers.";
+                        LogInfo.Warning(_warningmsg);
+                        throw new Exception(_warningmsg);
+                    }
+
+                    long lPhoneNumber = 0;
+                    if (!long.TryParse(_smsdata.PhoneNumber, out lPhoneNumber))
+                    {
+                        _warningmsg = "Phone number should not be a fully qualified number.";
+                        LogInfo.Warning(_warningmsg);
+                        throw new Exception(_warningmsg);
+                    }
+                    if (_smsdata.SMSText.Length > 4000)
+                    {
+                        _warningmsg = "Maximum length of SMS text is 4000.";
+                        LogInfo.Warning(_warningmsg);
+                        throw new Exception(_warningmsg);
+                    }
+
+
+                    DatabaseResponse configResponse = ConfigHelper.GetValue("Nexmo", _iconfiguration);
+
+                    List<Dictionary<string, string>> _result = (List<Dictionary<string, string>>)configResponse.Results;
+
+                    string _nexmoUserName = "";
+                    string _nexmoUserNametest = "";
+                    string _nexmoPassword = "";
+                    string _nexmoPasswordtest = "";
+                    string _nexmoSmsSignature = "";
+                    string _nexmoSmsSignaturetest = "";
+                    string _nexmoWebRequestUrl = "";
+                    string _nexmoWebRequestUrltest = "";
+
+                    foreach (Dictionary<string, string> author in _result)
+                    {
+                        foreach (KeyValuePair<string, string> response in author)
+                        {
+                            if ((response.Value == "NexmoPassword") || (_nexmoPasswordtest == "NexmoUserName"))
+                            {
+                                if (_nexmoPasswordtest.Trim().Length == 0)
+                                {
+                                    _nexmoPasswordtest = "NexmoUserName";
+                                }
+                                else
+                                {
+                                    _nexmoPasswordtest = "";
+                                    _nexmoPassword = response.Value;
+                                    break;
+                                }
+                            }
+                            if ((response.Value == "NexmoUserName") || (_nexmoUserNametest == "NexmoPassword"))
+                            {
+                                if (_nexmoUserNametest.Trim().Length == 0)
+                                {
+                                    _nexmoUserNametest = "NexmoPassword";
+                                }
+                                else
+                                {
+                                    _nexmoUserNametest = "";
+                                    _nexmoUserName = response.Value;
+                                    break;
+                                }
+                            }
+                            if ((response.Value == "NexmoSmsSignature") || (_nexmoSmsSignaturetest == "NexmoSmsSignature"))
+                            {
+                                if (_nexmoSmsSignaturetest.Trim().Length == 0)
+                                {
+                                    _nexmoSmsSignaturetest = "NexmoSmsSignature";
+                                }
+                                else
+                                {
+                                    _nexmoSmsSignaturetest = "";
+                                    _nexmoSmsSignature = response.Value;
+                                    break;
+                                }
+                            }
+                            if ((response.Value == "NexmoWebRequestUrl") || (_nexmoWebRequestUrltest == "NexmoWebRequestUrl"))
+                            {
+                                if (_nexmoWebRequestUrltest.Trim().Length == 0)
+                                {
+                                    _nexmoWebRequestUrltest = "NexmoWebRequestUrl";
+                                }
+                                else
+                                {
+                                    _nexmoWebRequestUrltest = "";
+                                    _nexmoWebRequestUrl = response.Value;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    _smsdata.Username = _nexmoUserName;
+                    _smsdata.Password = _nexmoPassword;
+                    _smsdata.FromPhoneNumber = _nexmoSmsSignature;
+                    _smsdata.ToPhoneNumber = _smsdata.PhoneNumber;
+                    _smsdata.Type = "unicode";
+                    _smsdata.PostData = string.Empty;
+                    _smsdata.PostData = string.Format("username={0}&password={1}&from={2}&to={3}&text={4}&status-report-req=1", _smsdata.Username, _smsdata.Password, _smsdata.FromPhoneNumber, _smsdata.ToPhoneNumber, _smsdata.SMSText);
+                    byte[] buffer;
+
+                    if (ContainsUnicodeCharacter(_smsdata.SMSText))
+                    {
+                        _smsdata.PostData = string.Format("username={0}&password={1}&from={2}&to={3}&type={4}&text={5}&status-report-req=1", _smsdata.Username, _smsdata.Password, _smsdata.FromPhoneNumber, _smsdata.ToPhoneNumber, _smsdata.Type, _smsdata.SMSText);
+                        buffer = Encoding.UTF8.GetBytes(_smsdata.PostData);
+                    }
+                    else
+                    {
+                        _smsdata.PostData = string.Format("username={0}&password={1}&from={2}&to={3}&text={4}&status-report-req=1", _smsdata.Username, _smsdata.Password, _smsdata.FromPhoneNumber, _smsdata.ToPhoneNumber, _smsdata.SMSText);
+                        _smsdata.buffer = Encoding.ASCII.GetBytes(_smsdata.PostData);
+                    }
+
+
+                    System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
+                    ApiClient client = new ApiClient(new Uri(_nexmoWebRequestUrl));
+                    await client.PostAsync<ResponseObject, Sms>(new Uri(_nexmoWebRequestUrl), _smsdata);
+
+                    return Ok(new ServerResponse
+                    {
+                        HasSucceeded = true,
+                        Message = StatusMessages.SuccessMessage
+
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = StatusMessages.ServerError,
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+            else
+            {
+                // token auth failure
+                LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                    IsDomainValidationErrors = false
+                });
+            }
+        }
+
         private static bool ContainsUnicodeCharacter(string input)
         {
             const int MaxAnsiCode = 255;
@@ -603,7 +1157,7 @@ namespace CustomerService.Controllers
         /// <summary>
         /// This will check NRIC Validation
         /// </summary>
-        /// <param name="_smsdata"></param>
+        /// <param name="NRIC"></param>
         /// <returns>validtion result</returns>
         /// POST: api/NRICValidation/S1234567D 
         [HttpPost]
@@ -676,6 +1230,109 @@ namespace CustomerService.Controllers
                 {
                     HasSucceeded = false,
                     Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+            }
+
+        }
+
+
+        /// <summary>
+        /// This will check NRIC Validation
+        /// </summary>
+        /// <param name="Token"></param>s
+        /// <param name="NRIC"></param>
+        /// <returns>validtion result</returns>
+        /// POST: api/AuthenticatedNRICValidation/S1234567D 
+        [HttpPost]
+        [Route("NRICValidation/{NRIC}")]
+        public async Task<IActionResult> AuthenticatedNRICValidation([FromHeader] string Token, [FromRoute] string NRIC)
+        {
+
+            string _warningmsg;
+
+            CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
+            DatabaseResponse tokenAuthResponse = await _customerAccess.AuthenticateCustomerToken(Token);
+
+            if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+            {
+                try
+                {
+
+                    // Check any number is passed
+                    if (NRIC.Equals(string.Empty))
+                    {
+                        _warningmsg = "Please give an NRIC number";
+                        LogInfo.Warning(_warningmsg);
+                        throw new Exception(_warningmsg);
+                    }
+
+                    // Check length
+                    if (NRIC.Length != 9)
+                    {
+                        _warningmsg = "The length of NRIC should be 9";
+                        LogInfo.Warning(_warningmsg);
+                        throw new Exception(_warningmsg);
+                    }
+
+                    // Check the file letter
+                    if (!((NRIC[0].ToString().Equals("S"))
+                        || (NRIC[0].ToString().Equals("T"))
+                        || (NRIC[0].ToString().Equals("F"))
+                        || (NRIC[0].ToString().Equals("G"))))
+                    {
+                        _warningmsg = "First letter of NRIC should be S,T,F or G";
+                        LogInfo.Warning(_warningmsg);
+                        throw new Exception(_warningmsg);
+                    }
+
+                    // Check whether the NRIC is a number if first and last char are removed
+                    int NRIC_Internal_Number = 0;
+                    if (!int.TryParse(NRIC.Substring(1, 7), out NRIC_Internal_Number))
+                    {
+                        _warningmsg = "NRIC should be a number excluding the first and last characters";
+                        LogInfo.Warning(_warningmsg);
+                        throw new Exception(_warningmsg);
+                    }
+
+                    // Check the CheckSumNumber
+                    if (!IsValidCheckSum(NRIC))
+                    {
+                        _warningmsg = "Invalid NRIC checksum";
+                        LogInfo.Warning(_warningmsg);
+                        throw new Exception(_warningmsg);
+                    }
+
+                    return Ok(new ServerResponse
+                    {
+                        HasSucceeded = true,
+                        Message = StatusMessages.SuccessMessage
+
+                    });
+
+                }
+
+                catch (Exception ex)
+                {
+                    Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = StatusMessages.ServerError,
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+            else
+            {
+                // token auth failure
+                LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
                     IsDomainValidationErrors = false
                 });
             }
