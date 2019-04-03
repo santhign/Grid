@@ -681,7 +681,7 @@ namespace CustomerService.Controllers
         }
 
         [HttpPost("UpdateReferralCode")]
-        public async Task<IActionResult> UpdateReferralCode([FromHeader] string Token, [FromBody]CustomerProfile customerprofie)
+        public async Task<IActionResult> UpdateReferralCode([FromHeader] string Token, [FromBody]CustomerNewReferralCode customerReferralCode)
         {
             try
             { 
@@ -702,7 +702,7 @@ namespace CustomerService.Controllers
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
                     AuthTokenResponse aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
-                    var validationResponse = await _customerAccess.UpdateReferralCode (aTokenResp.CustomerID, customerprofie.ReferralCode);
+                    var validationResponse = await _customerAccess.UpdateReferralCode (aTokenResp.CustomerID, customerReferralCode.ReferralCode);
                     if (validationResponse.ResponseCode == (int)DbReturnValue.RecordExists)
                     {
                         return Ok(new OperationResponse

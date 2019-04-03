@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace InfrastructureService.MessageQueue
@@ -23,12 +24,27 @@ namespace InfrastructureService.MessageQueue
 
         public Publisher(IConfiguration _configuration, string topicName)
         {
-            DatabaseResponse configResponse = ConfigHelper.GetValue(ConfiType.AWS.ToString(), _configuration);
-            List<Dictionary<string, string>> _result = ((List<Dictionary<string, string>>)configResponse.Results);
-            var credentials = new BasicAWSCredentials(_result.Single(x => x["key"] == "AWSAccessKey")["value"], _result.Single(x => x["key"] == "AWSSecretKey")["value"]);
+            try
+            {
+                DatabaseResponse configResponse = ConfigHelper.GetValue(ConfiType.AWS.ToString(), _configuration);
+                List<Dictionary<string, string>> _result = ((List<Dictionary<string, string>>)configResponse.Results);
+                var credentials = new BasicAWSCredentials(_result.Single(x => x["key"] == "AWSAccessKey")["value"], _result.Single(x => x["key"] == "AWSSecretKey")["value"]);
 
-            _snsClient = new AmazonSimpleNotificationServiceClient(credentials, Amazon.RegionEndpoint.APSoutheast1);
-            _topicName = topicName;
+                _snsClient = new AmazonSimpleNotificationServiceClient(credentials, Amazon.RegionEndpoint.APSoutheast1);
+                _topicName = topicName;
+            }
+            catch (ArgumentNullException ex)
+            {
+                
+            }
+            catch (WebException ex)
+            {
+               
+            }
+            catch (Exception ex)
+            {
+                
+            }
         }
 
         public async Task Initialise()

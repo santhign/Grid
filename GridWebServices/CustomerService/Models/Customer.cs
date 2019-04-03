@@ -404,4 +404,19 @@ namespace CustomerService.Models
 
     }
 
+
+    /// <summary>
+    /// CustomerNewReferralCode class
+    /// </summary>
+    public class CustomerNewReferralCode
+    {
+        /// <summary>
+        /// Gets or sets the ReferralCode.
+        /// </summary>
+        /// <value>
+        /// The status.
+        /// </value>
+        public string ReferralCode { get; set; }
+    }
+
 }
