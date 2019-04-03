@@ -181,12 +181,50 @@ namespace CustomerService.DataAccess
             }
         }
 
+
+        public async Task<DatabaseResponse> UpdateCustomerProfile(CustomerProfile customer)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@CustomerID",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@Password",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar)
+                };
+
+                parameters[0].Value = customer.CustomerId;
+                parameters[1].Value = new Sha2().Hash(customer.Password);
+                parameters[2].Value = customer.MobileNumber;
+
+                _DataHelper = new DataAccessHelper("Customer_UpdateCustomerProfile", parameters, _configuration);
+
+                int result = await _DataHelper.RunAsync();
+
+                
+
+                return new DatabaseResponse { ResponseCode = result };
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw;
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
         /// <summary>Gets the customer plans.</summary>
         /// <param name="customerId">The customer identifier.</param>
-        /// <param name="MobileNumber">Mobile Number</param>
-        /// <param name="PlanType">Plan Type</param>
-        /// <returns>List of plan asscociated with Customers along with all subscribers</returns>
-        public async Task<List<CustomerPlans>> GetCustomerPlans(int customerId, string MobileNumber, int ? PlanType)
+        /// <param name="mobileNumber">Mobile Number</param>
+        /// <param name="planType">Plan Type</param>
+        /// <returns>List of plan associated with Customers along with all subscribers</returns>
+        public async Task<List<CustomerPlans>> GetCustomerPlans(int customerId, string mobileNumber, int ? planType)
         {
             try
             {
@@ -198,11 +236,15 @@ namespace CustomerService.DataAccess
                 };
 
                 parameters[0].Value = customerId;
-                if (!string.IsNullOrEmpty(MobileNumber))
-                    parameters[1].Value = MobileNumber;
-                if (PlanType != null)
-                    parameters[2].Value = PlanType;
-
+                if (!string.IsNullOrEmpty(mobileNumber))
+                    parameters[1].Value = mobileNumber;
+                else
+                    parameters[1].Value = DBNull.Value;
+                if (planType != null)
+                    parameters[2].Value = planType;
+                else
+                    parameters[2].Value = DBNull.Value;
+                
                 _DataHelper = new DataAccessHelper("Customers_GetPlans", parameters, _configuration);
 
                 DataTable dt = new DataTable();
@@ -238,7 +280,7 @@ namespace CustomerService.DataAccess
             {
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
-                throw (ex);
+                throw ex;
             }
             finally
             {
@@ -428,7 +470,7 @@ namespace CustomerService.DataAccess
             {
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
-                throw (ex);
+                throw(ex);
             }
             finally
             {

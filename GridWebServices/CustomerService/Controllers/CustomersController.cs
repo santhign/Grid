@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -134,141 +136,175 @@ namespace CustomerService.Controllers
 
             }
         }
-
-        // GET: api/Customers/5/6532432/1
-        [HttpGet("CustomerPlans/{customerId}")]
-        public async Task<IActionResult> GetCustomerPlans([FromRoute] int customerId, string mobileNumber, int ? PlanType)
+        
+        [HttpPut("UpdateCustomerProfile/{token}/{password}/{mobileNumber}")]
+        public async Task<IActionResult> UpdateCustomerProfile(string token, string password, string mobileNumber)
         {
             try
             {
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        IsDomainValidationErrors = true,
-                        Message = string.Join("; ", ModelState.Values
-                                            .SelectMany(x => x.Errors)
-                                            .Select(x => x.ErrorMessage))
-                    };
+
+                    return StatusCode((int) HttpStatusCode.BadRequest,
+                        new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            IsDomainValidationErrors = true,
+                            Message = string.Join("; ", ModelState.Values
+                                .SelectMany(x => x.Errors)
+                                .Select(x => x.ErrorMessage))
+                        });
                 }
-
-                CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
-
-                var  customerPlans = await _customerAccess.GetCustomerPlans(customerId, mobileNumber, PlanType);
-
-                if (customerPlans == null)
+                var customerAccess = new CustomerDataAccess(_iconfiguration);
+                var tokenAuthResponse = await customerAccess.AuthenticateCustomerToken(token);
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
-                    return Ok(new ServerResponse
-                    {
-                        HasSucceeded = false,
-                        Message = EnumExtensions.GetDescription(DbReturnValue.NotExists)
+                    var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
+                    var statusResponse = await customerAccess.UpdateCustomerProfile(new CustomerProfile
+                        { CustomerId = aTokenResp.CustomerID, MobileNumber = mobileNumber, Password = password });
 
-                    });
+                    if (statusResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
+                    {
+                        return Ok(new ServerResponse
+                        {
+                            HasSucceeded = true,
+                            Message = StatusMessages.SuccessMessage,
+                            Result = statusResponse
+                        });
+                    }
+                    else
+                    {
+                        return StatusCode((int)HttpStatusCode.InternalServerError, DbReturnValue.UpdationFailed.GetDescription());
+                    }
                 }
                 else
                 {
-                    return Ok(new ServerResponse
-                    {
-                        HasSucceeded = true,
-                        Message = StatusMessages.SuccessMessage,
-                        Result = customerPlans
+                    return StatusCode((int)HttpStatusCode.NotFound, "Customer does not exist!");
+                }
+                
 
+
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                return StatusCode((int) HttpStatusCode.InternalServerError,
+                    "An error occurred, please try again or contact the administrator.");
+
+            }
+        }
+
+        // GET: api/Customers/5/6532432/1
+        /// <summary>
+        /// This method will return all associated plans for that customer.
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="mobileNumber">Mobile Number</param>
+        /// <param name="planType">Plan Type</param>
+        /// <returns></returns>
+        [HttpGet("CustomerPlans/{token}")]
+        public async Task<IActionResult> GetCustomerPlans([FromRoute] string token, string mobileNumber, int ? planType)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return StatusCode((int)HttpStatusCode.BadRequest,
+                        new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            IsDomainValidationErrors = true,
+                            Message = string.Join("; ", ModelState.Values
+                                .SelectMany(x => x.Errors)
+                                .Select(x => x.ErrorMessage))
+                        });
+                }
+
+                var customerAccess = new CustomerDataAccess(_iconfiguration);
+                var tokenAuthResponse = await customerAccess.AuthenticateCustomerToken(token);
+                if (tokenAuthResponse.ResponseCode == (int) DbReturnValue.AuthSuccess)
+                {
+                    var aTokenResp = (AuthTokenResponse) tokenAuthResponse.Results;
+                    var customerPlans =
+                        await customerAccess.GetCustomerPlans(aTokenResp.CustomerID, mobileNumber, planType);
+
+                    if (customerPlans == null)
+                    {
+                        return StatusCode((int) HttpStatusCode.NotFound, "Record not found");
+                    }
+                    else
+                    {
+                        return Ok(new ServerResponse
+                        {
+                            HasSucceeded = true,
+                            Message = StatusMessages.SuccessMessage,
+                            Result = customerPlans
+
+                        });
+                    }
+                }
+                else
+                {
+                    return StatusCode((int) HttpStatusCode.NotFound, "Customer does not exist!");
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                return StatusCode((int) HttpStatusCode.InternalServerError,
+                    "An error occurred, please try again or contact the administrator.");
+
+            }
+        }
+
+        /// <summary>Gets the vas plans for customer.</summary>
+        /// <param name="customerId">The customer identifier.</param>
+        /// <param name="mobileNumber">The mobile number.</param>
+        /// <returns>List of VAS plan associated with Customers along with all subscribers</returns>
+        [HttpGet("GetSharedVASPlansForCustomer/{token}")]
+        public async Task<IActionResult> GetSharedVasPlansForCustomer([FromRoute] string token, string mobileNumber)
+        {
+
+            if (!ModelState.IsValid)
+            {
+                return StatusCode((int) HttpStatusCode.BadRequest,
+                    new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                            .SelectMany(x => x.Errors)
+                            .Select(x => x.ErrorMessage))
                     });
-                }
-
-
             }
-            catch (Exception ex)
-            {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
-                return Ok(new OperationResponse
-                {
-                    HasSucceeded = false,
-                    Message = StatusMessages.ServerError,
-                    IsDomainValidationErrors = false
-                });
-
-            }
+            return await GetCustomerPlans(token, mobileNumber, Convert.ToInt32(Core.Enums.PlanType.Shared_VAS));
         }
 
         /// <summary>Gets the vas plans for customer.</summary>
         /// <param name="customerId">The customer identifier.</param>
         /// <param name="mobileNumber">The mobile number.</param>
         /// <returns>List of VAS plan asscociated with Customers along with all subscribers</returns>
-        [HttpGet("GetSharedVASPlansForCustomer/{customerId}")]
-        public async Task<IActionResult> GetSharedVASPlansForCustomer([FromRoute] int customerId, string mobileNumber)
+        [HttpGet("GetVASPlansForCustomer/{token}")]
+        public async Task<IActionResult> GetVasPlansForCustomer([FromRoute] string token, string mobileNumber)
         {
-            try
+
+            if (!ModelState.IsValid)
             {
-                if (!ModelState.IsValid)
-                {
+                return StatusCode((int) HttpStatusCode.BadRequest,
                     new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
-                                            .SelectMany(x => x.Errors)
-                                            .Select(x => x.ErrorMessage))
-                    };
-                }
-
-               return await GetCustomerPlans(customerId, mobileNumber, Convert.ToInt32(Core.Enums.PlanType.Shared_VAS));
-
-
+                            .SelectMany(x => x.Errors)
+                            .Select(x => x.ErrorMessage))
+                    });
             }
-            catch (Exception ex)
-            {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
-                return Ok(new OperationResponse
-                {
-                    HasSucceeded = false,
-                    Message = StatusMessages.ServerError,
-                    IsDomainValidationErrors = false
-                });
-
-            }
-        }
-
-        /// <summary>Gets the vas plans for customer.</summary>
-        /// <param name="customerId">The customer identifier.</param>
-        /// <param name="mobileNumber">The mobile number.</param>
-        /// <returns>List of VAS plan asscociated with Customers along with all subscribers</returns>
-        [HttpGet("GetVASPlansForCustomer/{customerId}")]
-        public async Task<IActionResult> GetVASPlansForCustomer([FromRoute] int customerId, string mobileNumber)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        IsDomainValidationErrors = true,
-                        Message = string.Join("; ", ModelState.Values
-                                            .SelectMany(x => x.Errors)
-                                            .Select(x => x.ErrorMessage))
-                    };
-                }
-
-                return await GetCustomerPlans(customerId, mobileNumber, Convert.ToInt32(Core.Enums.PlanType.VAS));
-
-
-            }
-            catch (Exception ex)
-            {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-
-                return Ok(new OperationResponse
-                {
-                    HasSucceeded = false,
-                    Message = StatusMessages.ServerError,
-                    IsDomainValidationErrors = false
-                });
-
-            }
+            return await GetCustomerPlans(token, mobileNumber, Convert.ToInt32(Core.Enums.PlanType.VAS));
         }
 
         //// PUT: api/Customers/5

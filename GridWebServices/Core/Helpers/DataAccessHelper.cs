@@ -95,6 +95,21 @@ namespace Core.Helpers
             return (int)command.Parameters["ReturnValue"].Value;
         }
 
+        public async Task<int> RunAsync()
+        {
+            return await Task.Run(() =>
+            {
+                // Execute this stored procedure.  Int32 value returned by the stored procedure
+                if (command == null)
+                    throw new ObjectDisposedException(GetType().FullName);
+                command.ExecuteNonQuery();
+                return (int) command.Parameters["ReturnValue"].Value;
+            });
+
+            // It should never come to this line as it should get return from above
+            
+        }
+
         /// <summary>
         /// Run command  with data adapter: fill datatable 
         /// </summary>
@@ -118,22 +133,23 @@ namespace Core.Helpers
         public async Task<int> RunAsync(DataTable dataTable)
         {
 
-            await Task.Run(() =>
+            return await Task.Run(() =>
              {
                 //	Fill a DataTable with the result of executing this stored procedure.
                 if (command == null)
                      throw new ObjectDisposedException(GetType().FullName);
 
-                 SqlDataAdapter dataAdapter = new SqlDataAdapter();
-
-                 dataAdapter.SelectCommand = command;
+                 SqlDataAdapter dataAdapter = new SqlDataAdapter
+                 {
+                     SelectCommand = command
+                 };
                  dataAdapter.Fill(dataTable);
 
                  return (int)command.Parameters["ReturnValue"].Value;
              });
 
-            // It should never come to this line as it should get return 
-            return 0;
+                // It should never come to this line as it should get return from above
+            
         }
 
 

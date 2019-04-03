@@ -83,6 +83,14 @@ namespace CustomerService.Models
         public string Status { get; set; }
     }
 
+    public class CustomerProfile
+    {
+        public int CustomerId { get; set; }
+        public string Password { get; set; }
+        public string MobileNumber { get; set; }
+        
+    }
+
     /// <summary>
     /// RegisterCustomer class
     /// </summary>
