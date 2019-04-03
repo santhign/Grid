@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using CustomerService.Models;
 using Core.Enums;
 using Core.Helpers;
@@ -12,7 +12,6 @@ using Core.Extensions;
 using InfrastructureService;
 using Microsoft.Extensions.Configuration;
 using CustomerService.DataAccess;
-using Newtonsoft.Json;
 using Serilog;
 
 namespace CustomerService.Controllers
@@ -33,6 +32,18 @@ namespace CustomerService.Controllers
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return StatusCode((int)HttpStatusCode.OK,
+                        new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            IsDomainValidationErrors = true,
+                            Message = string.Join("; ", ModelState.Values
+                                            .SelectMany(x => x.Errors)
+                                            .Select(x => x.ErrorMessage))
+                        });
+                }
                 // throw new Exception("test");
                 CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
 
@@ -85,14 +96,15 @@ namespace CustomerService.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, 
+                        new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
                                             .SelectMany(x => x.Errors)
                                             .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
@@ -135,54 +147,148 @@ namespace CustomerService.Controllers
             }
         }
 
-        // GET: api/Customers/5/6532432/1
-        [HttpGet("CustomerPlans/{customerId}")]
-        public async Task<IActionResult> GetCustomerPlans([FromRoute] int customerId, string mobileNumber, int ? PlanType)
+        /// <summary>Updates the customer profile.</summary>
+        /// <param name="token">The token.</param>
+        /// <param name="password">The password.</param>
+        /// <param name="mobileNumber">The mobile number.</param>
+        /// <returns>Success or Failure status code</returns>
+        [HttpPut("UpdateCustomerProfile/{token}/{password}/{mobileNumber}")]
+        public async Task<IActionResult> UpdateCustomerProfile(string token, string password, string mobileNumber)
         {
             try
             {
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
-                                            .SelectMany(x => x.Errors)
-                                            .Select(x => x.ErrorMessage))
-                    };
-                }
-
-                CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
-
-                var  customerPlans = await _customerAccess.GetCustomerPlans(customerId, mobileNumber, PlanType);
-
-                if (customerPlans == null)
-                {
-                    return Ok(new ServerResponse
-                    {
-                        HasSucceeded = false,
-                        Message = EnumExtensions.GetDescription(DbReturnValue.NotExists)
-
+                            .SelectMany(x => x.Errors)
+                            .Select(x => x.ErrorMessage))
                     });
+                }
+                var customerAccess = new CustomerDataAccess(_iconfiguration);
+                var tokenAuthResponse = await customerAccess.AuthenticateCustomerToken(token);
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
+                    var statusResponse = await customerAccess.UpdateCustomerProfile(new CustomerProfile
+                        { CustomerId = aTokenResp.CustomerID, MobileNumber = mobileNumber, Password = password });
+
+                    if (statusResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
+                    {
+                        return Ok(new ServerResponse
+                        {
+                            HasSucceeded = true,
+                            Message = StatusMessages.SuccessMessage,
+                            Result = statusResponse
+                        });
+                    }
+                    else
+                    {
+                        LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = DbReturnValue.UpdationFailed.GetDescription(),
+                            IsDomainValidationErrors = false
+                        });
+                    }
                 }
                 else
                 {
-                    return Ok(new ServerResponse
-                    {
-                        HasSucceeded = true,
-                        Message = StatusMessages.SuccessMessage,
-                        Result = customerPlans
+                    LogInfo.Error(DbReturnValue.TokenAuthFailed.GetDescription());
 
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = DbReturnValue.TokenAuthFailed.GetDescription(),
+                        IsDomainValidationErrors = false
                     });
                 }
+                
 
 
             }
             catch (Exception ex)
             {
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
 
+            }
+        }
+
+        // GET: api/Customers/5/6532432/1
+        /// <summary>
+        /// This method will return all associated plans for that customer.
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="mobileNumber">Mobile Number</param>
+        /// <param name="planType">Plan Type</param>
+        /// <returns></returns>
+        [HttpGet("CustomerPlans/{token}")]
+        public async Task<IActionResult> GetCustomerPlans([FromRoute] string token, string mobileNumber, int ? planType)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return Ok(
+                        new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            IsDomainValidationErrors = true,
+                            Message = string.Join("; ", ModelState.Values
+                                .SelectMany(x => x.Errors)
+                                .Select(x => x.ErrorMessage))
+                        });
+                }
+
+                var customerAccess = new CustomerDataAccess(_iconfiguration);
+                var tokenAuthResponse = await customerAccess.AuthenticateCustomerToken(token);
+                if (tokenAuthResponse.ResponseCode == (int) DbReturnValue.AuthSuccess)
+                {
+                    var aTokenResp = (AuthTokenResponse) tokenAuthResponse.Results;
+                    var customerPlans =
+                        await customerAccess.GetCustomerPlans(aTokenResp.CustomerID, mobileNumber, planType);
+
+                    if (customerPlans == null)
+                    {
+                        return Ok(new OperationResponse
+                        {
+                            // I am marking HasSucceeded as true assuming that Customer can have 0 plan so its not an error.
+                            HasSucceeded = true,
+                            Message = DbReturnValue.NoRecords.GetDescription(),
+                            IsDomainValidationErrors = false
+                        });
+                    }
+                    else
+                    {
+                        return Ok(new ServerResponse
+                        {
+                            HasSucceeded = true,
+                            Message = StatusMessages.SuccessMessage,
+                            Result = customerPlans
+                        });
+                    }
+                }
+                else
+                {
+                    // Raising an exception as customer record was not found. So it is critical error.
+                    throw new Exception("Customer record not found for " + token + " token");
+                }
+
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
                 return Ok(new OperationResponse
                 {
                     HasSucceeded = false,
@@ -194,117 +300,50 @@ namespace CustomerService.Controllers
         }
 
         /// <summary>Gets the vas plans for customer.</summary>
-        /// <param name="customerId">The customer identifier.</param>
+        /// <param name="custtokenomerId">The customer token.</param>
         /// <param name="mobileNumber">The mobile number.</param>
-        /// <returns>List of VAS plan asscociated with Customers along with all subscribers</returns>
-        [HttpGet("GetSharedVASPlansForCustomer/{customerId}")]
-        public async Task<IActionResult> GetSharedVASPlansForCustomer([FromRoute] int customerId, string mobileNumber)
+        /// <returns>List of Shared VAS plan associated with Customers along with all subscribers</returns>
+        [HttpGet("GetSharedVASPlansForCustomer/{token}")]
+        public async Task<IActionResult> GetSharedVasPlansForCustomer([FromRoute] string token, string mobileNumber)
         {
-            try
+
+            if (!ModelState.IsValid)
             {
-                if (!ModelState.IsValid)
-                {
-                    new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        IsDomainValidationErrors = true,
-                        Message = string.Join("; ", ModelState.Values
-                                            .SelectMany(x => x.Errors)
-                                            .Select(x => x.ErrorMessage))
-                    };
-                }
-
-               return await GetCustomerPlans(customerId, mobileNumber, Convert.ToInt32(Core.Enums.PlanType.Shared_VAS));
-
-
-            }
-            catch (Exception ex)
-            {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-
                 return Ok(new OperationResponse
                 {
                     HasSucceeded = false,
-                    Message = StatusMessages.ServerError,
-                    IsDomainValidationErrors = false
+                    IsDomainValidationErrors = true,
+                    Message = string.Join("; ", ModelState.Values
+                        .SelectMany(x => x.Errors)
+                        .Select(x => x.ErrorMessage))
                 });
-
             }
+
+            return await GetCustomerPlans(token, mobileNumber, Convert.ToInt32(Core.Enums.PlanType.Shared_VAS));
         }
 
         /// <summary>Gets the vas plans for customer.</summary>
-        /// <param name="customerId">The customer identifier.</param>
+        /// <param name="token">The customer identifier.</param>
         /// <param name="mobileNumber">The mobile number.</param>
-        /// <returns>List of VAS plan asscociated with Customers along with all subscribers</returns>
-        [HttpGet("GetVASPlansForCustomer/{customerId}")]
-        public async Task<IActionResult> GetVASPlansForCustomer([FromRoute] int customerId, string mobileNumber)
+        /// <returns>List of VAS plan associated with Customers along with all subscribers</returns>
+        [HttpGet("GetVASPlansForCustomer/{token}")]
+        public async Task<IActionResult> GetVasPlansForCustomer([FromRoute] string token, string mobileNumber)
         {
-            try
+
+            if (!ModelState.IsValid)
             {
-                if (!ModelState.IsValid)
-                {
-                    new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        IsDomainValidationErrors = true,
-                        Message = string.Join("; ", ModelState.Values
-                                            .SelectMany(x => x.Errors)
-                                            .Select(x => x.ErrorMessage))
-                    };
-                }
-
-                return await GetCustomerPlans(customerId, mobileNumber, Convert.ToInt32(Core.Enums.PlanType.VAS));
-
-
-            }
-            catch (Exception ex)
-            {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-
                 return Ok(new OperationResponse
                 {
                     HasSucceeded = false,
-                    Message = StatusMessages.ServerError,
-                    IsDomainValidationErrors = false
+                    IsDomainValidationErrors = true,
+                    Message = string.Join("; ", ModelState.Values
+                        .SelectMany(x => x.Errors)
+                        .Select(x => x.ErrorMessage))
                 });
-
             }
+
+            return await GetCustomerPlans(token, mobileNumber, Convert.ToInt32(Core.Enums.PlanType.VAS));
         }
-
-        //// PUT: api/Customers/5
-        //[HttpPut("{id}")]
-        //public async Task<IActionResult> PutCustomer([FromRoute] int id, [FromBody] Customer customer)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
-
-        //    if (id != customer.CustomerID)
-        //    {
-        //        return BadRequest();
-        //    }
-
-        //    _context.Entry(customer).State = EntityState.Modified;
-
-        //    try
-        //    {
-        //        await _context.SaveChangesAsync();
-        //    }
-        //    catch (DbUpdateConcurrencyException ex)
-        //    {
-        //        if (!CustomerExists(id))
-        //        {
-        //            return NotFound();
-        //        }
-        //        else
-        //        {
-        //            LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-        //        }
-        //    }
-
-        //    return NoContent();
-        //}
 
         // POST: api/Customers
         [HttpPost]
@@ -314,14 +353,14 @@ namespace CustomerService.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
@@ -367,32 +406,6 @@ namespace CustomerService.Controllers
             }
         }
 
-        //// DELETE: api/Customers/5
-        //[HttpDelete("{id}")]
-        //public async Task<IActionResult> DeleteCustomer([FromRoute] int id)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
-
-        //    var customer = await _context.Customers.FindAsync(id);
-        //    if (customer == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    _context.Customers.Remove(customer);
-        //    await _context.SaveChangesAsync();
-
-        //    return Ok(customer);
-        //}
-
-        //private bool CustomerExists(int id)
-        //{
-        //    return _context.Customers.Any(e => e.CustomerID == id);
-        //}  
-
         /// <summary>
         /// Validate customer's referral code.
         /// Return success or failure flag with message
@@ -407,14 +420,14 @@ namespace CustomerService.Controllers
 
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
                                             .SelectMany(x => x.Errors)
                                             .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
@@ -476,7 +489,7 @@ namespace CustomerService.Controllers
         /// <summary>
         /// Return Subscribers api with MobileNumber, DisplayName, SIMID, PremiumType, ActivatedOn, IsPrimary
         /// </summary>
-        /// <param name="token"></param>
+        /// <param name="token">Customer token</param>
         /// <returns>OperationResponse</returns>
         [HttpGet("Subscribers/{token}")]
         public async Task<IActionResult> Subscribers([FromRoute]string token)
@@ -486,28 +499,28 @@ namespace CustomerService.Controllers
 
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
-                                            .SelectMany(x => x.Errors)
-                                            .Select(x => x.ErrorMessage))
-                    };
+                            .SelectMany(x => x.Errors)
+                            .Select(x => x.ErrorMessage))
+                    });
                 }
 
-                CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
-                DatabaseResponse tokenAuthResponse = await _customerAccess.AuthenticateCustomerToken(token);
+                var customerAccess = new CustomerDataAccess(_iconfiguration);
+                var tokenAuthResponse = await customerAccess.AuthenticateCustomerToken(token);
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
-                    AuthTokenResponse aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
-                    var getSubscriber = await _customerAccess.GetSubscribers(aTokenResp.CustomerID);
+                    var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
+                    var getSubscriber = await customerAccess.GetSubscribers(aTokenResp.CustomerID);
                     if (getSubscriber.ResponseCode == (int)DbReturnValue.RecordExists)
                     {
                         return Ok(new OperationResponse
                         {
                             HasSucceeded = true,
-                            Message = EnumExtensions.GetDescription(DbReturnValue.RecordExists),
+                            Message = DbReturnValue.RecordExists.GetDescription(),
                             IsDomainValidationErrors = false,
                             ReturnedObject = getSubscriber.Results
                         });
@@ -515,12 +528,12 @@ namespace CustomerService.Controllers
                     else
                     {
                         //Unable to validate the referral code
-                        LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.NoRecords));
+                        LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
 
                         return Ok(new OperationResponse
                         {
                             HasSucceeded = false,
-                            Message = EnumExtensions.GetDescription(DbReturnValue.NoRecords),
+                            Message = DbReturnValue.NoRecords.GetDescription(),
                             IsDomainValidationErrors = false
                         });
                     }
@@ -528,12 +541,12 @@ namespace CustomerService.Controllers
                 else
                 {
                     // token auth failure
-                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+                    LogInfo.Error(DbReturnValue.TokenAuthFailed.GetDescription());
 
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
-                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        Message = DbReturnValue.TokenAuthFailed.GetDescription(),
                         IsDomainValidationErrors = false
                     });
                 }
@@ -561,14 +574,14 @@ namespace CustomerService.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
                                             .SelectMany(x => x.Errors)
                                             .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
@@ -627,14 +640,14 @@ namespace CustomerService.Controllers
                 if (!ModelState.IsValid)
                 {
                     Log.Error(StatusMessages.DomainValidationError);
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
                                             .SelectMany(x => x.Errors)
                                             .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
 
@@ -687,14 +700,14 @@ namespace CustomerService.Controllers
             { 
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
                                             .SelectMany(x => x.Errors)
                                             .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
