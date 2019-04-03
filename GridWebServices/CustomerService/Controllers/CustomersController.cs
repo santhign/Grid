@@ -32,6 +32,18 @@ namespace CustomerService.Controllers
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return StatusCode((int)HttpStatusCode.OK,
+                        new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            IsDomainValidationErrors = true,
+                            Message = string.Join("; ", ModelState.Values
+                                            .SelectMany(x => x.Errors)
+                                            .Select(x => x.ErrorMessage))
+                        };
+                }
                 // throw new Exception("test");
                 CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
 
@@ -84,7 +96,8 @@ namespace CustomerService.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, 
+                        new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
@@ -332,41 +345,6 @@ namespace CustomerService.Controllers
             return await GetCustomerPlans(token, mobileNumber, Convert.ToInt32(Core.Enums.PlanType.VAS));
         }
 
-        //// PUT: api/Customers/5
-        //[HttpPut("{id}")]
-        //public async Task<IActionResult> PutCustomer([FromRoute] int id, [FromBody] Customer customer)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
-
-        //    if (id != customer.CustomerID)
-        //    {
-        //        return BadRequest();
-        //    }
-
-        //    _context.Entry(customer).State = EntityState.Modified;
-
-        //    try
-        //    {
-        //        await _context.SaveChangesAsync();
-        //    }
-        //    catch (DbUpdateConcurrencyException ex)
-        //    {
-        //        if (!CustomerExists(id))
-        //        {
-        //            return NotFound();
-        //        }
-        //        else
-        //        {
-        //            LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-        //        }
-        //    }
-
-        //    return NoContent();
-        //}
-
         // POST: api/Customers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] RegisterCustomer customer)
@@ -375,7 +353,7 @@ namespace CustomerService.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
@@ -427,32 +405,6 @@ namespace CustomerService.Controllers
 
             }
         }
-
-        //// DELETE: api/Customers/5
-        //[HttpDelete("{id}")]
-        //public async Task<IActionResult> DeleteCustomer([FromRoute] int id)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
-
-        //    var customer = await _context.Customers.FindAsync(id);
-        //    if (customer == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    _context.Customers.Remove(customer);
-        //    await _context.SaveChangesAsync();
-
-        //    return Ok(customer);
-        //}
-
-        //private bool CustomerExists(int id)
-        //{
-        //    return _context.Customers.Any(e => e.CustomerID == id);
-        //}  
 
         /// <summary>
         /// Validate customer's referral code.
@@ -622,7 +574,7 @@ namespace CustomerService.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
@@ -688,7 +640,7 @@ namespace CustomerService.Controllers
                 if (!ModelState.IsValid)
                 {
                     Log.Error(StatusMessages.DomainValidationError);
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
@@ -748,7 +700,7 @@ namespace CustomerService.Controllers
             { 
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
