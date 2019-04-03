@@ -118,7 +118,7 @@ namespace OrderService.Controllers
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -330,7 +330,7 @@ namespace OrderService.Controllers
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -542,7 +542,7 @@ namespace OrderService.Controllers
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -770,7 +770,7 @@ namespace OrderService.Controllers
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -945,7 +945,7 @@ namespace OrderService.Controllers
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -1062,7 +1062,7 @@ namespace OrderService.Controllers
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -1225,7 +1225,7 @@ namespace OrderService.Controllers
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -1339,7 +1339,7 @@ namespace OrderService.Controllers
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -1449,7 +1449,7 @@ namespace OrderService.Controllers
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -1555,7 +1555,7 @@ namespace OrderService.Controllers
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -1660,7 +1660,7 @@ namespace OrderService.Controllers
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -1769,7 +1769,7 @@ namespace OrderService.Controllers
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -1867,7 +1867,7 @@ namespace OrderService.Controllers
                         Message = string.Join("; ", ModelState.Values
                                             .SelectMany(x => x.Errors)
                                             .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -1966,7 +1966,7 @@ namespace OrderService.Controllers
                         Message = string.Join("; ", ModelState.Values
                                             .SelectMany(x => x.Errors)
                                             .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -2103,7 +2103,7 @@ namespace OrderService.Controllers
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -2217,7 +2217,7 @@ namespace OrderService.Controllers
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -2405,7 +2405,7 @@ namespace OrderService.Controllers
                             Message = string.Join("; ", ModelState.Values
                                                      .SelectMany(x => x.Errors)
                                                      .Select(x => x.ErrorMessage))
-                        };
+                        });
                     }
 
                     OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
