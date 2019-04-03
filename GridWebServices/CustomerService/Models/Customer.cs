@@ -272,14 +272,14 @@ namespace CustomerService.Models
         /// <value>
         /// The type of the premium.
         /// </value>
-        public string PremiumType { get; set; }
+        public int PremiumType { get; set; }
         /// <summary>
         /// Gets or sets the activated on.
         /// </summary>
         /// <value>
         /// The activated on.
         /// </value>
-        public DateTime ActivatedOn { get; set; }
+        public DateTime ? ActivatedOn { get; set; }
         /// <summary>
         /// Gets or sets a value indicating whether this instance is primary.
         /// </summary>
