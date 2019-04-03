@@ -395,7 +395,7 @@ namespace CustomerService.Controllers
 
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,

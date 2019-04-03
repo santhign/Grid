@@ -14,7 +14,7 @@ using Core.Extensions;
 using InfrastructureService;
 using Core.Helpers;
 using System.IO;
-
+using System.Net;
 
 namespace OrderService.Controllers
 {
@@ -111,7 +111,7 @@ namespace OrderService.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
@@ -323,7 +323,7 @@ namespace OrderService.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
@@ -535,7 +535,7 @@ namespace OrderService.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
@@ -763,7 +763,7 @@ namespace OrderService.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
@@ -938,7 +938,7 @@ namespace OrderService.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
@@ -1055,7 +1055,7 @@ namespace OrderService.Controllers
 
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
@@ -1218,7 +1218,7 @@ namespace OrderService.Controllers
 
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
@@ -1332,7 +1332,7 @@ namespace OrderService.Controllers
 
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
@@ -1442,7 +1442,7 @@ namespace OrderService.Controllers
 
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
@@ -1548,7 +1548,7 @@ namespace OrderService.Controllers
 
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
@@ -1653,7 +1653,7 @@ namespace OrderService.Controllers
 
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
@@ -1762,7 +1762,7 @@ namespace OrderService.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
@@ -1860,7 +1860,7 @@ namespace OrderService.Controllers
 
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
@@ -1959,7 +1959,7 @@ namespace OrderService.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
@@ -2096,7 +2096,7 @@ namespace OrderService.Controllers
 
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
@@ -2210,7 +2210,7 @@ namespace OrderService.Controllers
 
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
@@ -2398,7 +2398,7 @@ namespace OrderService.Controllers
                 {
                     if (!ModelState.IsValid)
                     {
-                        new OperationResponse
+                        return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                         {
                             HasSucceeded = false,
                             IsDomainValidationErrors = true,
