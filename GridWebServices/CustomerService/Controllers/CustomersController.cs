@@ -42,7 +42,7 @@ namespace CustomerService.Controllers
                             Message = string.Join("; ", ModelState.Values
                                             .SelectMany(x => x.Errors)
                                             .Select(x => x.ErrorMessage))
-                        };
+                        });
                 }
                 // throw new Exception("test");
                 CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
@@ -104,7 +104,7 @@ namespace CustomerService.Controllers
                         Message = string.Join("; ", ModelState.Values
                                             .SelectMany(x => x.Errors)
                                             .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
@@ -360,7 +360,7 @@ namespace CustomerService.Controllers
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
@@ -427,7 +427,7 @@ namespace CustomerService.Controllers
                         Message = string.Join("; ", ModelState.Values
                                             .SelectMany(x => x.Errors)
                                             .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
@@ -581,7 +581,7 @@ namespace CustomerService.Controllers
                         Message = string.Join("; ", ModelState.Values
                                             .SelectMany(x => x.Errors)
                                             .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
@@ -647,7 +647,7 @@ namespace CustomerService.Controllers
                         Message = string.Join("; ", ModelState.Values
                                             .SelectMany(x => x.Errors)
                                             .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
 
@@ -707,7 +707,7 @@ namespace CustomerService.Controllers
                         Message = string.Join("; ", ModelState.Values
                                             .SelectMany(x => x.Errors)
                                             .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
