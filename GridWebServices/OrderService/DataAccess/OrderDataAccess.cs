@@ -1468,5 +1468,61 @@ namespace OrderService.DataAccess
 
         }
 
+        public async Task<DatabaseResponse> GetCustomerBSSAccountNumber(int CustomerId)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int )                   
+                };
+
+                parameters[0].Value = CustomerId;               
+
+                _DataHelper = new DataAccessHelper("Order_GetBSSAccountNumberByCustomerId ", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = _DataHelper.Run(dt);    // 105 /102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 105)
+                {
+                    BSSAccount account = new BSSAccount();
+
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+
+                        account = (from model in dt.AsEnumerable()
+                                    select new BSSAccount()
+                                    {
+                                         AccountNumber = model.Field<string>("AccountName"),
+                                    }).FirstOrDefault();
+                    }
+
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = account };
+                }
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                } 
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+
+        }
+
     }
 }

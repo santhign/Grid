@@ -85,6 +85,9 @@ namespace OrderService.Models
         public string OrderNumber { get; set; }
         public DateTime OrderDate { get; set; }
  }
-
-    
+    public class BSSAccount
+    {
+        public int AccountID { get; set; }
+        public string AccountNumber { get; set; }        
+    }
 }

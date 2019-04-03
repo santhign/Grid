@@ -121,5 +121,9 @@ namespace Core.Enums
         [Description("Successfully Assigned New Number")]
         AssignNuewNumberSuccess = 25,
 
+        [EnumMember(Value = "Mandatory Record Empty")]
+        [Description("Mandatory RecordEmpty")]
+        MandatoryRecordEmpty = 26,
+
     }
 }

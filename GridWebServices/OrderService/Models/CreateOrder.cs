@@ -390,4 +390,12 @@ namespace OrderService.Models
         public string NewNumber { get; set; }
 
     }
+    public class CustomerBSSInvoiceRequest
+    {
+        [Required(ErrorMessage = "Token required")]
+        public string Token { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+
+    }
 }

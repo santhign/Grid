@@ -36,7 +36,12 @@ namespace Core.Models
         public int GridDefaultOffset { get; set; }
 
         [DataMember(Name = "GridDefaultLimit")]
-        public int GridDefaultLimit { get; set; }        
+        public int GridDefaultLimit { get; set; }
+
+        [DataMember(Name = "GridInvoiceRecordLimit")]
+        public int GridInvoiceRecordLimit { get; set; }
+
+        
 
     }
 

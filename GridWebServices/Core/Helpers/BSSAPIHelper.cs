@@ -97,7 +97,7 @@ namespace Core.Helpers
             config.GridProductId = int.Parse(configDict.Single(x => x["key"] == "GridProductId")["value"]);
             config.GridSourceNode = configDict.Single(x => x["key"] == "GridSourceNode")["value"];
             config.GridUserName = configDict.Single(x => x["key"] == "GridUserName")["value"];
-
+            config.GridInvoiceRecordLimit = int.Parse(configDict.Single(x => x["key"] == "GridInvoiceRecordLimit")["value"]);   
             return config;
         }
 
@@ -375,5 +375,54 @@ namespace Core.Helpers
             }
         }
 
+        public async Task<BSSInvoiceResponseObject> GetBSSCustomerInvoice(GridBSSConfi confi, string requestId, string accountNumber)
+        {
+            ApiClient client = new ApiClient(new Uri(confi.BSSAPIUrl));
+
+            BSSInvoiceRequest request = new BSSInvoiceRequest();
+
+            BSSInvoiceRequestObject req = new BSSInvoiceRequestObject();
+
+            SetParam dataset = new SetParam();
+
+            var requestUrl = GetRequestUrl(confi.BSSAPIUrl, ref client);
+
+            SetParamsForInvoiceRequest(confi, accountNumber);
+
+            dataset.param = paramList;                 
+
+            request.request_id = requestId;
+
+            request.request_timestamp = DateTime.Now.ToString("ddmmyyyyhhmmss");
+
+            request.action = BSSApis.GetInvoiceDetails.ToString();
+
+            request.userid = confi.GridId.ToString();
+
+            request.username = confi.GridUserName;
+
+            request.source_node = confi.GridSourceNode;
+
+            request.dataset = dataset;
+
+            req.Request = request;
+
+            return await client.PostAsync<BSSInvoiceResponseObject, BSSInvoiceRequestObject>(requestUrl, req);
+        }
+
+        private void SetParamsForInvoiceRequest(GridBSSConfi confi, string accountNumber)
+        {
+            paramList = new List<RequestParam>();
+
+            BSSParams bssParams = new BSSParams();
+
+            AddParam(bssParams.Limit, confi.GridInvoiceRecordLimit.ToString());
+
+            AddParam(bssParams.Status, ((int)Status.Confirm).ToString());  // verify whether status need to input at any time pending/confirm
+
+            AddParam(bssParams.AccountId, accountNumber);
+
+            AddParam(bssParams.EntityId, confi.GridEntityId.ToString());
+        }
     }
 }

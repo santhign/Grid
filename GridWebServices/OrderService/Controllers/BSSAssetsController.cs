@@ -26,7 +26,12 @@ namespace OrderService.Controllers
             _iconfiguration = configuration;
         }
 
-
+        /// <summary>
+        /// This will return BSS Assets by default limit in configuration
+        /// </summary>
+        /// <returns>
+        /// OperationsResponse
+        /// </returns>
         [HttpGet]
         public async Task<IActionResult> GetAssets()
         {
@@ -459,6 +464,13 @@ namespace OrderService.Controllers
 
         }
 
+
+        /// <summary>
+        /// This will return usage history of mobilenumber passed
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="mobileNumber"></param>
+        /// <returns>OperationsResponse</returns>
         [HttpGet("{token}/{mobileNumber}")]
         public async Task<IActionResult> GetUsageHistory([FromRoute] string token, string mobileNumber)
         {
@@ -555,5 +567,148 @@ namespace OrderService.Controllers
 
         }
 
+        /// <summary>
+        /// This will return Customer's BSS Invoice for the given date range, though optional
+        /// </summary>
+        /// <param name="request">
+        /// body{
+        /// "Token":"Auth token"
+        /// "StartDate" :"1/1/2019", //dd/MM/yyyy - optional
+        /// "EndDate" :"15/12/2019", //dd/MM/yyyy  - optional      
+        /// }
+        /// </param>
+        /// <returns>OperationsResponse</returns>
+        [Route("GetCustomerInvoice")]
+        [HttpPost]
+        public async Task<IActionResult> GetCustomerInvoice([FromBody] CustomerBSSInvoiceRequest request)
+        {
+            try
+            {
+                // clarify date range -- preferably need to send from UI
+
+                BSSAPIHelper helper = new BSSAPIHelper();
+
+                OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await _orderAccess.AuthenticateCustomerToken(request.Token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    AuthTokenResponse aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
+
+                    if (!(aTokenResp.CreatedOn < DateTime.UtcNow.AddDays(-7)))
+                    {
+                        DatabaseResponse systemConfigResponse = await _orderAccess.GetConfiguration(ConfiType.System.ToString());
+
+                        DatabaseResponse bssConfigResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
+
+                        GridBSSConfi bssConfig = helper.GetGridConfig((List<Dictionary<string, string>>)bssConfigResponse.Results);
+
+                        GridSystemConfig systemConfig = helper.GetGridSystemConfig((List<Dictionary<string, string>>)systemConfigResponse.Results);
+
+                        DatabaseResponse accountResponse = await _orderAccess.GetCustomerBSSAccountNumber(aTokenResp.CustomerID);
+
+                        if (accountResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                        {                            
+                            if (!string.IsNullOrEmpty(((BSSAccount)accountResponse.Results).AccountNumber))
+                            {
+                                DatabaseResponse requestIdRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.GetAssets.ToString(), aTokenResp.CustomerID);
+
+                                BSSInvoiceResponseObject invoiceResponse = await helper.GetBSSCustomerInvoice(bssConfig, ((BSSAssetRequest)requestIdRes.Results).request_id, ((BSSAccount)accountResponse.Results).AccountNumber);
+
+                                if (invoiceResponse.Response.result_code == "0")
+                                {
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = true,
+                                        IsDomainValidationErrors = false,
+                                        Message = invoiceResponse.Response.invoice_details.totalrecordcnt>0?  EnumExtensions.GetDescription(DbReturnValue.RecordExists) : EnumExtensions.GetDescription(DbReturnValue.NoRecords),
+                                        ReturnedObject = invoiceResponse.Response.invoice_details
+                                    });
+                                }
+
+                                else
+                                {
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = true,
+                                        IsDomainValidationErrors = false,
+                                        Message = EnumExtensions.GetDescription(DbReturnValue.NoRecords),
+
+                                    });
+                                }
+                            }
+
+                            else
+                            {
+                                // Account Number is empty
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = true,
+                                    IsDomainValidationErrors = false,
+                                    Message = EnumExtensions.GetDescription(CommonErrors.MandatoryRecordEmpty),
+
+                                });
+                            }
+                        }
+
+                        else
+                        {
+                            // No customer records in accounts table
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = true,
+                                IsDomainValidationErrors = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.NoRecords),
+
+                            });
+                        }
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+
+                }
+
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+
+
+
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+            }
+
+        }
     }
 }

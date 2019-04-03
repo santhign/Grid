@@ -196,7 +196,6 @@ namespace OrderService.Controllers
             return Ok(notifications);
         }
 
-
         [HttpPost("process-webhook-mq")]
         public async Task<IActionResult> ProcessWebhookMq([FromBody] WebhookNotificationModel notification, [FromHeader(Name = "X-Notification-Secret")] string notificationSecret)
         {
@@ -242,6 +241,7 @@ namespace OrderService.Controllers
 
                 System.IO.File.WriteAllText($@"{GatewayApiConfig.WEBHOOKS_NOTIFICATION_FOLDER}/WebHookNotifications_{notification.Timestamp}.json", json);
 
+                // need to change config settings here
                 Publisher mpgsWhNotificationPublisher = new Publisher(_iconfiguration, "WebhookNotification-Payment");
 
                  await  mpgsWhNotificationPublisher.PublishAsync(notification);
@@ -275,7 +275,7 @@ namespace OrderService.Controllers
         {
             try
             {
-                
+                //change the config settings here
                Subscriber mpgsWhNotificationPublisher = new Subscriber(_iconfiguration, "WebhookNotification-Payment", "OrderPayment");
 
                Action<object> MPGSOrderFinalProcessing = OrderPaymentSQSHandler.FinalProcessing;

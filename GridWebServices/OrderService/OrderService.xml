@@ -4,6 +4,14 @@
         <name>OrderService</name>
     </assembly>
     <members>
+        <member name="M:OrderService.Controllers.BSSAssetsController.GetAssets">
+            <summary>
+            This will return BSS Assets by default limit in configuration
+            </summary>
+            <returns>
+            OperationsResponse
+            </returns>
+        </member>
         <member name="M:OrderService.Controllers.BSSAssetsController.GetNumbers(System.String)">
             <summary>
             This will return a set of Mobile Numbers from BSS API
@@ -30,6 +38,27 @@
              ReturnedObject = {numbers} 
             }
             </returns>
+        </member>
+        <member name="M:OrderService.Controllers.BSSAssetsController.GetUsageHistory(System.String,System.String)">
+            <summary>
+            This will return usage history of mobilenumber passed
+            </summary>
+            <param name="token"></param>
+            <param name="mobileNumber"></param>
+            <returns>OperationsResponse</returns>
+        </member>
+        <member name="M:OrderService.Controllers.BSSAssetsController.GetCustomerInvoice(OrderService.Models.CustomerBSSInvoiceRequest)">
+            <summary>
+            This will return Customer's BSS Invoice for the given date range, though optional
+            </summary>
+            <param name="request">
+            body{
+            "Token":"Auth token"
+            "StartDate" :"1/1/2019", //dd/MM/yyyy - optional
+            "EndDate" :"15/12/2019", //dd/MM/yyyy  - optional      
+            }
+            </param>
+            <returns>OperationsResponse</returns>
         </member>
         <member name="M:OrderService.Controllers.OrdersController.Get(System.Int32)">
             <summary>

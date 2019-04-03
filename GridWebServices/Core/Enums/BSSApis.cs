@@ -100,7 +100,17 @@ namespace Core.Enums
         [Description("Postpaid")]
         Postpaid = 2       
     }
-    
+
+    public enum Status
+    {
+        [EnumMember(Value = "Pending")]
+        [Description("Pending")]
+        Pending = 0,
+
+        [EnumMember(Value = "Confirm")]
+        [Description("Confirm")]
+        Confirm = 3
+    }
 
     public enum AssetStatus
     {
@@ -112,9 +122,7 @@ namespace Core.Enums
         [Description("Number Out in Market")]
         OutInMarket = 2,
 
-        [EnumMember(Value = "Blocked")]
-        [Description("Blocked Number")]
-        Blocked = 3,
+       
 
         [EnumMember(Value = "Sold")]
         [Description("Sold Number")]
@@ -154,6 +162,10 @@ namespace Core.Enums
 
         [EnumMember(Value = "De-Activ")]
         [Description("De-Active Number")]
-        DeActiv = 13
+        DeActiv = 13,
+
+        [EnumMember(Value = "Blocked")]
+        [Description("Blocked Number")]
+        Blocked = 14,
     }
 }
