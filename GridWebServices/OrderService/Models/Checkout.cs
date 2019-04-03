@@ -103,6 +103,10 @@ namespace OrderService.Models
         [EnumMember(Value = "Webhook Notification Folder Delete Error")]
         [Description("Error Deleting Webhook notification folder")]
         WebhookNotificationFolderDeleteError = 8,
+
+        [EnumMember(Value = "CAPTURED")]
+        [Description("CAPTURED")]
+        CAPTURED = 9,
     }
    
 
