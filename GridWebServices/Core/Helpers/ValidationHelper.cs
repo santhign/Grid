@@ -43,7 +43,5 @@ namespace Core.Helpers
                 );
         }
 
-
-
     }
 }
