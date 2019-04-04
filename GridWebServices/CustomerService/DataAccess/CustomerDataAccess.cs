@@ -181,50 +181,12 @@ namespace CustomerService.DataAccess
             }
         }
 
-
-        public async Task<DatabaseResponse> UpdateCustomerProfile(CustomerProfile customer)
-        {
-            try
-            {
-
-                SqlParameter[] parameters =
-               {
-                    new SqlParameter( "@CustomerID",  SqlDbType.NVarChar ),
-                    new SqlParameter( "@Password",  SqlDbType.NVarChar ),
-                    new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar)
-                };
-
-                parameters[0].Value = customer.CustomerId;
-                parameters[1].Value = new Sha2().Hash(customer.Password);
-                parameters[2].Value = customer.MobileNumber;
-
-                _DataHelper = new DataAccessHelper("Customer_UpdateCustomerProfile", parameters, _configuration);
-
-                int result = await _DataHelper.RunAsync();
-
-                
-
-                return new DatabaseResponse { ResponseCode = result };
-            }
-
-            catch (Exception ex)
-            {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-
-                throw;
-            }
-            finally
-            {
-                _DataHelper.Dispose();
-            }
-        }
-
         /// <summary>Gets the customer plans.</summary>
         /// <param name="customerId">The customer identifier.</param>
-        /// <param name="mobileNumber">Mobile Number</param>
-        /// <param name="planType">Plan Type</param>
-        /// <returns>List of plan associated with Customers along with all subscribers</returns>
-        public async Task<List<CustomerPlans>> GetCustomerPlans(int customerId, string mobileNumber, int ? planType)
+        /// <param name="MobileNumber">Mobile Number</param>
+        /// <param name="PlanType">Plan Type</param>
+        /// <returns>List of plan asscociated with Customers along with all subscribers</returns>
+        public async Task<List<CustomerPlans>> GetCustomerPlans(int customerId, string MobileNumber, int ? PlanType)
         {
             try
             {
@@ -236,20 +198,16 @@ namespace CustomerService.DataAccess
                 };
 
                 parameters[0].Value = customerId;
-                if (!string.IsNullOrEmpty(mobileNumber))
-                    parameters[1].Value = mobileNumber;
-                else
-                    parameters[1].Value = DBNull.Value;
-                if (planType != null)
-                    parameters[2].Value = planType;
-                else
-                    parameters[2].Value = DBNull.Value;
-                
+                if (!string.IsNullOrEmpty(MobileNumber))
+                    parameters[1].Value = MobileNumber;
+                if (PlanType != null)
+                    parameters[2].Value = PlanType;
+
                 _DataHelper = new DataAccessHelper("Customers_GetPlans", parameters, _configuration);
 
                 DataTable dt = new DataTable();
 
-                
+                //await _DataHelper.RunAsync(dt);
                 await _DataHelper.RunAsync(dt);
 
                 var customerPlans = new List<CustomerPlans>();
@@ -280,7 +238,7 @@ namespace CustomerService.DataAccess
             {
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
-                throw ex;
+                throw (ex);
             }
             finally
             {
@@ -428,18 +386,18 @@ namespace CustomerService.DataAccess
                 parameters[0].Value = customerId;
                 _DataHelper = new DataAccessHelper("Customers_GetSubscribers", parameters, _configuration);
 
-                var dt = new DataTable();
+                DataTable dt = new DataTable();
 
-                var result = await _DataHelper.RunAsync(dt); // 105 /119
+                int result = _DataHelper.Run(dt); // 105 /119
 
-                DatabaseResponse response;
+                DatabaseResponse response = new DatabaseResponse();
 
                 if (result == 105)
                 {
 
-                    var subscriber = new Subscriber();
+                    Subscriber subscriber = new Subscriber();
 
-                    if (dt.Rows.Count > 0)
+                    if (dt != null && dt.Rows.Count > 0)
                     {
 
                         subscriber = (from model in dt.AsEnumerable()
@@ -448,12 +406,9 @@ namespace CustomerService.DataAccess
                                           MobileNumber = model.Field<string>("MobileNumber"),
                                           DisplayName = model.Field<string>("DisplayName"),
                                           SIMID = model.Field<string>("SIMID"),
-                                          PremiumType = model.Field<int>("PremiumType"),
-                                          ActivatedOn = model.Field<DateTime?>("ActivatedOn"),
-                                          IsPrimary = model.Field<bool>("IsPrimary"),
-                                          LinkedMobileNumber = model.Field<string>("LinkedMobileNumber"),
-                                          AccountType = model.Field<string>("AccountType"),
-                                          LinkedDisplayName = model.Field<string>("LinkedDisplayName")
+                                          PremiumType = model.Field<string>("PremiumType"),
+                                          ActivatedOn = model.Field<DateTime>("ActivatedOn"),
+                                          IsPrimary = model.Field<bool>("Subscribers.IsPrimary")
                                       }).FirstOrDefault();
                     }
 
@@ -473,7 +428,7 @@ namespace CustomerService.DataAccess
             {
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
-                throw;
+                throw (ex);
             }
             finally
             {
