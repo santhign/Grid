@@ -276,7 +276,7 @@ namespace CustomerService.Controllers
             return false;
         }
 
-        public Dictionary<int, string> GetSeries(string SeriesLetter)
+        private Dictionary<int, string> GetSeries(string SeriesLetter)
         {
             Dictionary<int, string> Series = new Dictionary<int, string>();
 
