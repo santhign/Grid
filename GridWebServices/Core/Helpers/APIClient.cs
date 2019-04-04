@@ -56,6 +56,18 @@ namespace Core.Helpers
             return JsonConvert.DeserializeObject<T1>(data);
         }
 
+        /// <summary>  
+        /// Common method for making form POST calls  
+        /// </summary>  
+        public async Task<T> PostAsync<T>(Uri requestUrl, T content, string format)
+        {
+            addHeaders();
+            var response = await _httpClient.PostAsync(requestUrl.ToString(), CreateHttpContent<T>(content));
+            response.EnsureSuccessStatusCode();
+            var data = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<T>(data);
+        }
+
         public Uri CreateRequestUri(string relativePath, string queryString = "")
         {
             var endpoint = new Uri(BaseEndpoint, relativePath);

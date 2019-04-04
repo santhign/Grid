@@ -21,6 +21,6 @@ namespace Core.Models
 
         public static string InvalidMessage = "Invalid";
 
-
+        public static string ValidMessage = "Valid";
     }
 }
