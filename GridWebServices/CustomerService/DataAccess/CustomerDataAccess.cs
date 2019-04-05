@@ -437,7 +437,7 @@ namespace CustomerService.DataAccess
                 if (result == 105)
                 {
 
-                    var subscriber = new Subscriber();
+                    var subscriber = new List<Subscriber>();
 
                     if (dt.Rows.Count > 0)
                     {
@@ -454,7 +454,7 @@ namespace CustomerService.DataAccess
                                           LinkedMobileNumber = model.Field<string>("LinkedMobileNumber"),
                                           AccountType = model.Field<string>("AccountType"),
                                           LinkedDisplayName = model.Field<string>("LinkedDisplayName")
-                                      }).FirstOrDefault();
+                                      }).ToList();
                     }
 
                     response = new DatabaseResponse { ResponseCode = result, Results = subscriber };
