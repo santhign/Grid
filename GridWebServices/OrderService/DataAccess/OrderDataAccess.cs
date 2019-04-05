@@ -330,6 +330,123 @@ namespace OrderService.DataAccess
         }
 
         /// <summary>
+        /// Sims the replacement request.
+        /// </summary>
+        /// <param name="customerId">The customer identifier.</param>
+        /// <param name="mobileNumber">The mobile number.</param>
+        /// <returns></returns>
+        public async Task<DatabaseResponse> SimReplacementRequest(int customerId, string mobileNumber)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@CustomerID",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar)
+                };
+
+                parameters[0].Value = customerId;
+                parameters[2].Value = mobileNumber;
+
+                _DataHelper = new DataAccessHelper("Order_SIMReplacementRequest", parameters, _configuration);
+
+                var result = await _DataHelper.RunAsync();
+
+                return new DatabaseResponse { ResponseCode = result };
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw;
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// Suspensions the request.
+        /// </summary>
+        /// <param name="customerId">The customer identifier.</param>
+        /// <param name="mobileNumber">The mobile number.</param>
+        /// <returns></returns>
+        public async Task<DatabaseResponse> SuspensionRequest(int customerId, string mobileNumber)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@CustomerID",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar)
+                };
+
+                parameters[0].Value = customerId;
+                parameters[2].Value = mobileNumber;
+
+                _DataHelper = new DataAccessHelper("Order_SuspensionRequest", parameters, _configuration);
+
+                var result = await _DataHelper.RunAsync();
+
+                return new DatabaseResponse { ResponseCode = result };
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw;
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// Terminations the request.
+        /// </summary>
+        /// <param name="customerId">The customer identifier.</param>
+        /// <param name="mobileNumber">The mobile number.</param>
+        /// <returns></returns>
+        public async Task<DatabaseResponse> TerminationRequest(int customerId, string mobileNumber)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@CustomerID",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar)
+                };
+
+                parameters[0].Value = customerId;
+                parameters[2].Value = mobileNumber;
+
+                _DataHelper = new DataAccessHelper("Order_TerminationRequest", parameters, _configuration);
+
+                var result = await _DataHelper.RunAsync();
+
+                return new DatabaseResponse { ResponseCode = result };
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw;
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        /// <summary>
         /// Removes the vas service.
         /// </summary>
         /// <param name="customerId">The customer identifier.</param>

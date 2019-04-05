@@ -219,6 +219,45 @@ namespace CustomerService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Changes the phone request.
+        /// </summary>
+        /// <param name="customerId">The customer identifier.</param>
+        /// <param name="mobileNumber">The mobile number.</param>
+        /// <returns></returns>
+        public async Task<DatabaseResponse> ChangePhoneRequest(int customerId, string mobileNumber)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@CustomerID",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar)
+                };
+
+                parameters[0].Value = customerId;
+                parameters[2].Value = mobileNumber;
+
+                _DataHelper = new DataAccessHelper("Customer_ChangePhoneRequest", parameters, _configuration);
+
+                var result = await _DataHelper.RunAsync();
+
+                return new DatabaseResponse { ResponseCode = result };
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw;
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
         /// <summary>Gets the customer plans.</summary>
         /// <param name="customerId">The customer identifier.</param>
         /// <param name="mobileNumber">Mobile Number</param>

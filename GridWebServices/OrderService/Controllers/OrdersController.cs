@@ -672,6 +672,267 @@ namespace OrderService.Controllers
             }
         }
 
+
+        /// <summary>
+        /// Subscribers the termination request.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="mobileNumber">The mobile number.</param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("SubscriberTerminationRequest/{token}/{mobileNumber}")]
+        public async Task<IActionResult> SubscriberTerminationRequest(string token, string mobileNumber)
+        {
+
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                                                 .SelectMany(x => x.Errors)
+                                                 .Select(x => x.ErrorMessage))
+                    });
+                }
+
+                var orderAccess = new OrderDataAccess(_iconfiguration);
+
+                var tokenAuthResponse = await orderAccess.AuthenticateCustomerToken(token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
+
+                    var statusResponse = await orderAccess.TerminationRequest(aTokenResp.CustomerID, mobileNumber);
+
+                    if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
+                    {
+                        return Ok(new ServerResponse
+                        {
+                            HasSucceeded = true,
+                            Message = StatusMessages.SuccessMessage,
+                            Result = statusResponse
+                        });
+                    }
+                    else
+                    {
+                        LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = DbReturnValue.UpdationFailed.GetDescription(),
+                            IsDomainValidationErrors = false
+                        });
+                    }
+
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(DbReturnValue.TokenAuthFailed.GetDescription());
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = DbReturnValue.TokenAuthFailed.GetDescription(),
+                        IsDomainValidationErrors = false
+                    });
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
+
+
+        /// <summary>
+        /// Subscribers the sim replacement request.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="mobileNumber">The mobile number.</param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("SubscriberSimReplacementRequest/{token}/{mobileNumber}")]
+        public async Task<IActionResult> SubscriberSimReplacementRequest(string token, string mobileNumber)
+        {
+
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                                                 .SelectMany(x => x.Errors)
+                                                 .Select(x => x.ErrorMessage))
+                    });
+                }
+
+                var orderAccess = new OrderDataAccess(_iconfiguration);
+
+                var tokenAuthResponse = await orderAccess.AuthenticateCustomerToken(token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
+
+                    var statusResponse = await orderAccess.SimReplacementRequest(aTokenResp.CustomerID, mobileNumber);
+
+                    if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
+                    {
+                        return Ok(new ServerResponse
+                        {
+                            HasSucceeded = true,
+                            Message = StatusMessages.SuccessMessage,
+                            Result = statusResponse
+                        });
+                    }
+                    else
+                    {
+                        LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = DbReturnValue.UpdationFailed.GetDescription(),
+                            IsDomainValidationErrors = false
+                        });
+                    }
+
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(DbReturnValue.TokenAuthFailed.GetDescription());
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = DbReturnValue.TokenAuthFailed.GetDescription(),
+                        IsDomainValidationErrors = false
+                    });
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
+
+        /// <summary>
+        /// Subscribers the suspension request.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="mobileNumber">The mobile number.</param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("SubscriberSuspensionRequest/{token}/{mobileNumber}")]
+        public async Task<IActionResult> SubscriberSuspensionRequest(string token, string mobileNumber)
+        {
+
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                                                 .SelectMany(x => x.Errors)
+                                                 .Select(x => x.ErrorMessage))
+                    });
+                }
+
+                var orderAccess = new OrderDataAccess(_iconfiguration);
+
+                var tokenAuthResponse = await orderAccess.AuthenticateCustomerToken(token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
+
+                    var statusResponse = await orderAccess.SuspensionRequest(aTokenResp.CustomerID, mobileNumber);
+
+                    if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
+                    {
+                        return Ok(new ServerResponse
+                        {
+                            HasSucceeded = true,
+                            Message = StatusMessages.SuccessMessage,
+                            Result = statusResponse
+                        });
+                    }
+                    else
+                    {
+                        LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = DbReturnValue.UpdationFailed.GetDescription(),
+                            IsDomainValidationErrors = false
+                        });
+                    }
+
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(DbReturnValue.TokenAuthFailed.GetDescription());
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = DbReturnValue.TokenAuthFailed.GetDescription(),
+                        IsDomainValidationErrors = false
+                    });
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
+        
+
         /// <summary>
         /// This will Update subscribers existing number with new number selected.
         /// </summary>
@@ -999,12 +1260,12 @@ namespace OrderService.Controllers
                                 else
                                 {
                                     // Create subscriber failed
-                                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.CreateSubscriptionFailed));
+                                    LogInfo.Error(CommonErrors.CreateSubscriptionFailed.GetDescription());
 
                                     return Ok(new OperationResponse
                                     {
                                         HasSucceeded = true,
-                                        Message = EnumExtensions.GetDescription(DbReturnValue.CreationFailed),
+                                        Message = DbReturnValue.CreationFailed.GetDescription(),
                                         IsDomainValidationErrors = false
 
                                     });

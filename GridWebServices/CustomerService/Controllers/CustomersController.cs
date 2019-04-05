@@ -225,6 +225,89 @@ namespace CustomerService.Controllers
             }
         }
 
+        /// <summary>
+        /// Subscribers the suspension request.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="mobileNumber">The mobile number.</param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("SubscriberSuspensionRequest/{token}/{mobileNumber}")]
+        public async Task<IActionResult> ChangePhoneNumberRequest(string token, string mobileNumber)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return StatusCode((int) HttpStatusCode.OK, new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                            .SelectMany(x => x.Errors)
+                            .Select(x => x.ErrorMessage))
+                    });
+                }
+
+                var customerDataAccess = new CustomerDataAccess(_iconfiguration);
+
+                var tokenAuthResponse = await customerDataAccess.AuthenticateCustomerToken(token);
+
+                if (tokenAuthResponse.ResponseCode == (int) DbReturnValue.AuthSuccess)
+                {
+                    var aTokenResp = (AuthTokenResponse) tokenAuthResponse.Results;
+
+                    var statusResponse =
+                        await customerDataAccess.ChangePhoneRequest(aTokenResp.CustomerID, mobileNumber);
+
+                    if (statusResponse.ResponseCode == (int) DbReturnValue.CreateSuccess)
+                    {
+                        return Ok(new ServerResponse
+                        {
+                            HasSucceeded = true,
+                            Message = StatusMessages.SuccessMessage,
+                            Result = statusResponse
+                        });
+                    }
+                    else
+                    {
+                        LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = DbReturnValue.UpdationFailed.GetDescription(),
+                            IsDomainValidationErrors = false
+                        });
+                    }
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(DbReturnValue.TokenAuthFailed.GetDescription());
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = DbReturnValue.TokenAuthFailed.GetDescription(),
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
+
         // GET: api/Customers/5/6532432/1
         /// <summary>
         /// This method will return all associated plans for that customer.
