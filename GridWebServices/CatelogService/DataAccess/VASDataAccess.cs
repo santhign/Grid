@@ -34,18 +34,17 @@ namespace CatelogService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                _DataHelper.Run(dt);
+                await _DataHelper.RunAsync(dt);
 
                 List<VAS> vasList = new List<VAS>();
 
                 if (dt.Rows.Count > 0)
                 {
 
-                    vasList = (from model in dt.AsEnumerable()
+                    vasList = (from model in dt.AsEnumerable() 
                                   select new VAS()
                                   {
                                       VASID = model.Field<int>("VASID"),
-                                       BSSPlanCode = model.Field<string>("BSSPlanCode"),
                                        PortalDescription = model.Field<string>("PortalDescription"),
                                        PlanMarketingName = model.Field<string>("PlanMarketingName"),
                                        PortalSummaryDescription = model.Field<string>("PortalSummaryDescription"),
@@ -53,7 +52,7 @@ namespace CatelogService.DataAccess
                                        SMS = model.Field<double>("SMS"),
                                        Voice = model.Field<double>("Voice"),
                                        SubscriptionFee = model.Field<double>("SubscriptionFee"),
-                                       IsRecurring = model.Field<int>("IsRecurring")                                     
+                                       IsRecurring = model.Field<string>("IsRecurring")                                     
                                   }).ToList();
                 }
 
