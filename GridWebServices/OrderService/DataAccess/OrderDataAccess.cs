@@ -329,7 +329,98 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Removes the vas service.
+        /// </summary>
+        /// <param name="customerId">The customer identifier.</param>
+        /// <param name="mobileNumber">The mobile number.</param>
+        /// <param name="planId">The plan identifier.</param>
+        /// <returns></returns>
+        public async Task<DatabaseResponse> RemoveVasService(int customerId, string mobileNumber, int planId)
+        {
+            try
+            {
 
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@customerId",  SqlDbType.Int ),
+                    new SqlParameter( "@OldMobileNumber",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@planId",  SqlDbType.Int)
+                };
+
+                parameters[0].Value = customerId;
+                parameters[1].Value = mobileNumber;
+                parameters[2].Value = planId;
+                
+
+                _DataHelper = new DataAccessHelper("ChangeRequests_InsertRemoveVAS", parameters, _configuration);
+
+                
+
+                var result = await _DataHelper.RunAsync();    // 101 / 102 
+
+                return new DatabaseResponse { ResponseCode = result };
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw;
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// Buys the vas service.
+        /// </summary>
+        /// <param name="customerId">The customer identifier.</param>
+        /// <param name="mobileNumber">The mobile number.</param>
+        /// <param name="planId">The plan identifier.</param>
+        /// <param name="quantity">The quantity.</param>
+        /// <returns></returns>
+        public async Task<DatabaseResponse> BuyVasService(int customerId, string mobileNumber, int planId, int quantity)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@CustomerId",  SqlDbType.Int ),
+                    new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@PlanId",  SqlDbType.Int),
+                    new SqlParameter( "@Quantity",  SqlDbType.Int)
+                };
+
+                parameters[0].Value = customerId;
+                parameters[1].Value = mobileNumber;
+                parameters[2].Value = planId;
+                parameters[3].Value = quantity;
+
+
+                _DataHelper = new DataAccessHelper("ChangeRequests_BuyVAS", parameters, _configuration);
+
+
+
+                var result = await _DataHelper.RunAsync();    // 101 / 102 
+
+                return new DatabaseResponse { ResponseCode = result };
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw;
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
         public async Task<DatabaseResponse> AuthenticateCustomerToken(string token)
         {
             try

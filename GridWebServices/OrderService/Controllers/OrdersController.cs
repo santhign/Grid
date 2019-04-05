@@ -299,6 +299,171 @@ namespace OrderService.Controllers
         }
 
         /// <summary>
+        /// Removes the vas service.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="mobileNumber">The mobile number.</param>
+        /// <param name="planId">The plan identifier.</param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("RemoveVasService")]
+        public async Task<IActionResult> RemoveVasService(string token, string mobileNumber, int planId)
+        {
+
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return StatusCode((int) HttpStatusCode.OK, new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                            .SelectMany(x => x.Errors)
+                            .Select(x => x.ErrorMessage))
+                    });
+                }
+
+                var orderAccess = new OrderDataAccess(_iconfiguration);
+                var tokenAuthResponse = await orderAccess.AuthenticateCustomerToken(token);
+                if (tokenAuthResponse.ResponseCode == (int) DbReturnValue.AuthSuccess)
+                {
+                    var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
+                    var statusResponse =
+                        await orderAccess.RemoveVasService(aTokenResp.CustomerID, mobileNumber, planId);
+
+                    if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
+                    {
+                        return Ok(new ServerResponse
+                        {
+                            HasSucceeded = true,
+                            Message = StatusMessages.SuccessMessage,
+                            Result = statusResponse
+                        });
+                    }
+                    else
+                    {
+                        LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = DbReturnValue.UpdationFailed.GetDescription(),
+                            IsDomainValidationErrors = false
+                        });
+                    }
+                }
+                else
+                {
+                    //Token expired
+                    LogInfo.Error(CommonErrors.ExpiredToken.GetDescription());
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = DbReturnValue.TokenExpired.GetDescription(),
+                        IsDomainValidationErrors = true
+                    });
+
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
+
+        /// <summary>
+        /// Buys the vas service.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="mobileNumber">The mobile number.</param>
+        /// <param name="planId">The plan identifier.</param>
+        /// <param name="quantity">The quantity.</param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("BuyVasService")]
+        public async Task<IActionResult> BuyVasService(string token, string mobileNumber, int planId, int quantity)
+        {
+
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                            .SelectMany(x => x.Errors)
+                            .Select(x => x.ErrorMessage))
+                    });
+                }
+
+                var orderAccess = new OrderDataAccess(_iconfiguration);
+                var tokenAuthResponse = await orderAccess.AuthenticateCustomerToken(token);
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
+                    var statusResponse =
+                        await orderAccess.BuyVasService(aTokenResp.CustomerID, mobileNumber, planId, quantity);
+
+                    if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
+                    {
+                        return Ok(new ServerResponse
+                        {
+                            HasSucceeded = true,
+                            Message = StatusMessages.SuccessMessage,
+                            Result = statusResponse
+                        });
+                    }
+                    else
+                    {
+                        LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = DbReturnValue.UpdationFailed.GetDescription(),
+                            IsDomainValidationErrors = false
+                        });
+                    }
+                }
+                else
+                {
+                    //Token expired
+                    LogInfo.Error(CommonErrors.ExpiredToken.GetDescription());
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = DbReturnValue.TokenExpired.GetDescription(),
+                        IsDomainValidationErrors = true
+                    });
+
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
+
+        /// <summary>
         /// This will Update subscribers existing number with new number selected.
         /// </summary>
         /// <param name="request">
