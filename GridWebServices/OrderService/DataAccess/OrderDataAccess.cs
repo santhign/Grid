@@ -460,9 +460,9 @@ namespace OrderService.DataAccess
 
                 SqlParameter[] parameters =
                 {
-                    new SqlParameter( "@customerId",  SqlDbType.Int ),
+                    new SqlParameter( "@CustomerId",  SqlDbType.Int ),
                     new SqlParameter( "@OldMobileNumber",  SqlDbType.NVarChar ),
-                    new SqlParameter( "@planId",  SqlDbType.Int)
+                    new SqlParameter( "@PlanId",  SqlDbType.Int)
                 };
 
                 parameters[0].Value = customerId;
@@ -470,7 +470,7 @@ namespace OrderService.DataAccess
                 parameters[2].Value = planId;
                 
 
-                _DataHelper = new DataAccessHelper("ChangeRequests_InsertRemoveVAS", parameters, _configuration);
+                _DataHelper = new DataAccessHelper("Orders_CR_InsertRemoveVAS", parameters, _configuration);
 
                 
 
@@ -496,10 +496,10 @@ namespace OrderService.DataAccess
         /// </summary>
         /// <param name="customerId">The customer identifier.</param>
         /// <param name="mobileNumber">The mobile number.</param>
-        /// <param name="planId">The plan identifier.</param>
+        /// <param name="bundleId">The bundle identifier.</param>
         /// <param name="quantity">The quantity.</param>
         /// <returns></returns>
-        public async Task<DatabaseResponse> BuyVasService(int customerId, string mobileNumber, int planId, int quantity)
+        public async Task<DatabaseResponse> BuyVasService(int customerId, string mobileNumber, int bundleId, int quantity)
         {
             try
             {
@@ -508,17 +508,17 @@ namespace OrderService.DataAccess
                 {
                     new SqlParameter( "@CustomerId",  SqlDbType.Int ),
                     new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar ),
-                    new SqlParameter( "@PlanId",  SqlDbType.Int),
+                    new SqlParameter( "@BundleID",  SqlDbType.Int),
                     new SqlParameter( "@Quantity",  SqlDbType.Int)
                 };
 
                 parameters[0].Value = customerId;
                 parameters[1].Value = mobileNumber;
-                parameters[2].Value = planId;
+                parameters[2].Value = bundleId;
                 parameters[3].Value = quantity;
 
 
-                _DataHelper = new DataAccessHelper("ChangeRequests_BuyVAS", parameters, _configuration);
+                _DataHelper = new DataAccessHelper("Orders_CR_BuyVAS", parameters, _configuration);
 
 
 

@@ -385,12 +385,12 @@ namespace OrderService.Controllers
         /// </summary>
         /// <param name="token">The token.</param>
         /// <param name="mobileNumber">The mobile number.</param>
-        /// <param name="planId">The plan identifier.</param>
+        /// <param name="bundleId">The bundle identifier.</param>
         /// <param name="quantity">The quantity.</param>
         /// <returns></returns>
         [HttpPost]
         [Route("BuyVasService")]
-        public async Task<IActionResult> BuyVasService(string token, string mobileNumber, int planId, int quantity)
+        public async Task<IActionResult> BuyVasService(string token, string mobileNumber, int bundleId, int quantity)
         {
 
             try
@@ -413,7 +413,7 @@ namespace OrderService.Controllers
                 {
                     var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
                     var statusResponse =
-                        await orderAccess.BuyVasService(aTokenResp.CustomerID, mobileNumber, planId, quantity);
+                        await orderAccess.BuyVasService(aTokenResp.CustomerID, mobileNumber, bundleId, quantity);
 
                     if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                     {
