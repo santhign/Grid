@@ -427,7 +427,7 @@ namespace OrderService.DataAccess
                 parameters[0].Value = customerId;
                 parameters[2].Value = mobileNumber;
 
-                _DataHelper = new DataAccessHelper("Order_TerminationRequest", parameters, _configuration);
+                _DataHelper = new DataAccessHelper("Orders_CR_TerminationRequest", parameters, _configuration);
 
                 var result = await _DataHelper.RunAsync();
 
