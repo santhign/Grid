@@ -19,7 +19,7 @@ namespace OrderService.DataAccess
     {
         internal DataAccessHelper _DataHelper = null;
 
-        private IConfiguration _configuration;
+        private readonly IConfiguration _configuration;
 
         /// <summary>
         /// Constructor setting configuration
@@ -342,14 +342,16 @@ namespace OrderService.DataAccess
 
                 SqlParameter[] parameters =
                 {
-                    new SqlParameter( "@CustomerID",  SqlDbType.NVarChar ),
-                    new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar)
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+                    new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar),
+                    new SqlParameter( "@RequestType",  SqlDbType.NVarChar)
                 };
 
                 parameters[0].Value = customerId;
-                parameters[2].Value = mobileNumber;
-
-                _DataHelper = new DataAccessHelper("Order_SIMReplacementRequest", parameters, _configuration);
+                parameters[1].Value = mobileNumber;
+                parameters[2].Value = Core.Enums.RequestType.ChangeSim.GetDescription();
+                    
+                _DataHelper = new DataAccessHelper("Order_CR_SIMReplacementRequest", parameters, _configuration);
 
                 var result = await _DataHelper.RunAsync();
 
@@ -380,7 +382,7 @@ namespace OrderService.DataAccess
         {
             try
             {
-
+                DataSet ds = new DataSet();
                 SqlParameter[] parameters =
                 {
                     new SqlParameter( "@CustomerID",  SqlDbType.Int ),
@@ -396,9 +398,35 @@ namespace OrderService.DataAccess
 
                 _DataHelper = new DataAccessHelper("Orders_CR_RaiseRequest", parameters, _configuration);
 
-                var result = await _DataHelper.RunAsync();
+                var result = await _DataHelper.RunAsync(ds);
 
-                return new DatabaseResponse { ResponseCode = result };
+                if (result != (int) Core.Enums.DbReturnValue.CreateSuccess)
+                    return new DatabaseResponse {ResponseCode = result};
+
+                var TorSresponse = new TerminationOrSuspensionResponse();
+
+                if (ds.Tables.Count > 0)
+                {
+                    TorSresponse = (from model in ds.Tables[0].AsEnumerable()
+                        select new TerminationOrSuspensionResponse()
+                        {
+                            ChangeRequestId = model.Field<int>("ChangeRequestId"),
+                            OrderNumber = model.Field<string>("OrderNumber"),
+                            RequestOn = model.Field<DateTime>("RequestOn"),
+                            RequestTypeDescription = model.Field<string>("RequestTypeDescription")
+                        }).FirstOrDefault();
+
+                    if (TorSresponse != null)
+                        TorSresponse.TerminationOrSuspensionChargesList = (from model in ds.Tables[1].AsEnumerable()
+                            select new TerminationOrSuspensionCharges()
+                            {
+                                PortalServiceName = model.Field<string>("PortalServiceName"),
+                                ServiceFee = model.Field<double>("ServiceFee")
+                            }).ToList();
+                }
+
+                var response = new DatabaseResponse { ResponseCode = result, Results = TorSresponse };
+                return response;
             }
 
             catch (Exception ex)

@@ -24,6 +24,34 @@ namespace OrderService.Models
         public List<OrderSubscription> OrderSubscriptions { get; set; }
     }
 
+    /// <summary>
+    /// Termination and Suspension Response 
+    /// </summary>
+    public class TerminationOrSuspensionResponse
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TerminationOrSuspensionResponse"/> class.
+        /// </summary>
+        public TerminationOrSuspensionResponse()
+        {
+            TerminationOrSuspensionChargesList  = new List<TerminationOrSuspensionCharges>();
+        }
+        /// <summary>Gets or sets the change request identifier.</summary>
+        /// <value>The change request identifier.</value>
+        public int ChangeRequestId { get; set; }
+        public string OrderNumber { get; set; }
+        public DateTime RequestOn { get; set; }
+        public string RequestTypeDescription { get; set; }
+
+        public IList<TerminationOrSuspensionCharges> TerminationOrSuspensionChargesList;
+    }
+
+    public class TerminationOrSuspensionCharges
+    {
+        public string PortalServiceName { get; set; }
+        public double ServiceFee { get; set; }
+    }
+
     public class OrderSubscription
     {
         public int BundleID { get; set; }
@@ -57,6 +85,8 @@ namespace OrderService.Models
         public string PromotionCode { get; set; }
 
     }
+
+
 
     public class CreateSubscriber
     {

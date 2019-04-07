@@ -152,6 +152,29 @@ namespace Core.Helpers
             
         }
 
+        /// <summary>
+        /// Runs the asynchronous to fetch the Data from DB.
+        /// </summary>
+        /// <param name="dataSet">The data set.</param>
+        /// <returns></returns>
+        public async Task<int> RunAsync(DataSet dataSet)
+        {
+            return await Task.Run(() =>
+            {
+                //	Fill a DataTable with the result of executing this stored procedure.
+                if (command == null)
+                    throw new ObjectDisposedException(GetType().FullName);
+
+                var dataAdapter = new SqlDataAdapter
+                {
+                    SelectCommand = command
+                };
+                dataAdapter.Fill(dataSet);
+
+                return (int)command.Parameters["ReturnValue"].Value;
+            });
+        }
+
 
         /// <summary>
         /// Run command  with data adapter: fill dataset
