@@ -8,27 +8,42 @@ using Microsoft.Extensions.Configuration;
 using Core.Helpers;
 using Core.Models;
 using Core.Enums;
+using Core.Extensions;
 using CustomerService.Models;
 using InfrastructureService;
 using Swashbuckle.AspNetCore.Swagger;
 
 namespace CustomerService.DataAccess
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class CustomerDataAccess
     {
+        /// <summary>
+        /// The data helper
+        /// </summary>
         internal DataAccessHelper _DataHelper = null;
 
+        /// <summary>
+        /// The configuration
+        /// </summary>
         private IConfiguration _configuration;
 
         /// <summary>
         /// Constructor setting configuration
         /// </summary>
-        /// <param name="configuration"></param>
+        /// <param name="configuration">The configuration.</param>
         public CustomerDataAccess(IConfiguration configuration)
         {
             _configuration = configuration;
         }
 
+        /// <summary>
+        /// Creates the customer.
+        /// </summary>
+        /// <param name="customer">The customer.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> CreateCustomer(RegisterCustomer customer)
         {
             try
@@ -87,6 +102,10 @@ namespace CustomerService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the customers.
+        /// </summary>
+        /// <returns></returns>
         public async Task<List<Customer>> GetCustomers()
         {
             try
@@ -134,6 +153,11 @@ namespace CustomerService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the customer.
+        /// </summary>
+        /// <param name="customerId">The customer identifier.</param>
+        /// <returns></returns>
         public async Task<Customer> GetCustomer(int customerId)
         {
             try
@@ -182,6 +206,11 @@ namespace CustomerService.DataAccess
         }
 
 
+        /// <summary>
+        /// Updates the customer profile.
+        /// </summary>
+        /// <param name="customer">The customer.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> UpdateCustomerProfile(CustomerProfile customer)
         {
             try
@@ -233,15 +262,22 @@ namespace CustomerService.DataAccess
                 SqlParameter[] parameters =
                 {
                     new SqlParameter( "@CustomerID",  SqlDbType.NVarChar ),
-                    new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar)
+                    new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar),
+                    new SqlParameter( "@NewMobileNumber",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@RequestTypeDescription",  SqlDbType.NVarChar)
                 };
 
                 parameters[0].Value = customerId;
+                parameters[1].Value = mobileNumber;
+                // need to change or remove the same.
                 parameters[2].Value = mobileNumber;
+                parameters[3].Value = Core.Enums.RequestType.ChangeNumber.GetDescription();
 
-                _DataHelper = new DataAccessHelper("Customer_ChangePhoneRequest", parameters, _configuration);
+                _DataHelper = new DataAccessHelper("Customer_CR_ChangePhoneRequest", parameters, _configuration);
 
-                var result = await _DataHelper.RunAsync();
+                var ds = new DataSet();
+
+                var result = await _DataHelper.RunAsync(ds);
 
                 return new DatabaseResponse { ResponseCode = result };
             }
@@ -258,11 +294,15 @@ namespace CustomerService.DataAccess
             }
         }
 
-        /// <summary>Gets the customer plans.</summary>
+        /// <summary>
+        /// Gets the customer plans.
+        /// </summary>
         /// <param name="customerId">The customer identifier.</param>
         /// <param name="mobileNumber">Mobile Number</param>
         /// <param name="planType">Plan Type</param>
-        /// <returns>List of plan associated with Customers along with all subscribers</returns>
+        /// <returns>
+        /// List of plan associated with Customers along with all subscribers
+        /// </returns>
         public async Task<List<CustomerPlans>> GetCustomerPlans(int customerId, string mobileNumber, int ? planType)
         {
             try
@@ -327,6 +367,11 @@ namespace CustomerService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Authenticates the customer token.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> AuthenticateCustomerToken(string token)
         {
             try
@@ -391,6 +436,12 @@ namespace CustomerService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Validates the referral code.
+        /// </summary>
+        /// <param name="customerId">The customer identifier.</param>
+        /// <param name="referralCode">The referral code.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> ValidateReferralCode(int customerId, string referralCode)
         {
             try
@@ -454,6 +505,11 @@ namespace CustomerService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the subscribers.
+        /// </summary>
+        /// <param name="customerId">The customer identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetSubscribers(int customerId)
         {
             try
@@ -520,6 +576,11 @@ namespace CustomerService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the search customers.
+        /// </summary>
+        /// <param name="SearchValue">The search value.</param>
+        /// <returns></returns>
         public async Task<List<CustomerSearch>> GetSearchCustomers(string SearchValue)
         {
 
@@ -573,7 +634,13 @@ namespace CustomerService.DataAccess
             }
         }
 
-       
+
+        /// <summary>
+        /// Updates the referral code.
+        /// </summary>
+        /// <param name="customerid">The customerid.</param>
+        /// <param name="ReferralCode">The referral code.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> UpdateReferralCode(int customerid,string ReferralCode)
         {
             try

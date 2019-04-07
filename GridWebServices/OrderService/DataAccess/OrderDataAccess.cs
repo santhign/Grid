@@ -15,16 +15,25 @@ using Core.Extensions;
 
 namespace OrderService.DataAccess
 {
+    /// <summary>
+    /// Order Data Access class
+    /// </summary>
     public class OrderDataAccess
     {
+        /// <summary>
+        /// The data helper
+        /// </summary>
         internal DataAccessHelper _DataHelper = null;
 
+        /// <summary>
+        /// The configuration
+        /// </summary>
         private readonly IConfiguration _configuration;
 
         /// <summary>
         /// Constructor setting configuration
         /// </summary>
-        /// <param name="configuration"></param>
+        /// <param name="configuration">The configuration.</param>
         public OrderDataAccess(IConfiguration configuration)
         {
             _configuration = configuration;
@@ -33,7 +42,7 @@ namespace OrderService.DataAccess
         /// <summary>
         /// This method will create a new order for createOrder endpoint
         /// </summary>
-        /// <param name="order"></param>
+        /// <param name="order">The order.</param>
         /// <returns></returns>
         public async Task<DatabaseResponse> CreateOrder(CreateOrder order)
         {
@@ -87,6 +96,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Creates the subscriber.
+        /// </summary>
+        /// <param name="subscriber">The subscriber.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> CreateSubscriber(CreateSubscriber subscriber)
         {
             try
@@ -127,6 +141,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the order basic details.
+        /// </summary>
+        /// <param name="orderId">The order identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetOrderBasicDetails(int orderId)
         {
             try
@@ -206,6 +225,13 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the BSS API request identifier.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="apiName">Name of the API.</param>
+        /// <param name="customerId">The customer identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetBssApiRequestId(string source, string apiName, int customerId)
         {
             try
@@ -266,6 +292,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the service fee.
+        /// </summary>
+        /// <param name="serviceCode">The service code.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetServiceFee(int serviceCode)
         {
             try
@@ -339,7 +370,7 @@ namespace OrderService.DataAccess
         {
             try
             {
-
+                var ds = new DataSet();
                 SqlParameter[] parameters =
                 {
                     new SqlParameter( "@CustomerID",  SqlDbType.Int ),
@@ -353,9 +384,53 @@ namespace OrderService.DataAccess
                     
                 _DataHelper = new DataAccessHelper("Order_CR_SIMReplacementRequest", parameters, _configuration);
 
-                var result = await _DataHelper.RunAsync();
+                var result = await _DataHelper.RunAsync(ds);
 
-                return new DatabaseResponse { ResponseCode = result };
+                if (result != (int)Core.Enums.DbReturnValue.CreateSuccess)
+                    return new DatabaseResponse { ResponseCode = result };
+
+                var TorSresponse = new ChangeSimResponse();
+
+                if (ds.Tables.Count > 0)
+                {
+                    TorSresponse = (from model in ds.Tables[0].AsEnumerable()
+                        select new ChangeSimResponse()
+                        {
+                            ChangeRequestId = model.Field<int>("ChangeRequestId"),
+                            OrderNumber = model.Field<string>("OrderNumber"),
+                            RequestOn = model.Field<DateTime>("RequestOn"),
+                            RequestTypeDescription = model.Field<string>("RequestTypeDescription"),
+                            BillingUnit = model.Field<string>("BillingUnit"),
+                            BillingFloor = model.Field<string>("BillingFloor"),
+                            BillingBuildingNumber = model.Field<string>("BillingBuildingNumber"),
+                            BillingStreetName = model.Field<string>("BillingStreetName"),
+                            BillingPostCode = model.Field<string>("BillingPostCode"),
+                            BillingContactNumber = model.Field<string>("BillingContactNumber"),
+                            Name = model.Field<string>("Name"),
+                            Email = model.Field<string>("Email"),
+                            //IsSameAsBilling = model.Field<string>("IsSameAsBilling"),
+                            ShippingUnit = model.Field<string>("ShippingUnit"),
+                            ShippingFloor = model.Field<string>("ShippingFloor"),
+                            ShippingBuildingNumber = model.Field<string>("ShippingBuildingNumber"),
+                            ShippingStreetName = model.Field<string>("ShippingStreetName"),
+                            ShippingPostCode = model.Field<string>("ShippingPostCode"),
+                            ShippingContactNumber = model.Field<string>("ShippingContactNumber")//,
+                            
+                        }).FirstOrDefault();
+
+                    if (TorSresponse != null)
+                        TorSresponse.ChangeRequestChargesList = (from model in ds.Tables[1].AsEnumerable()
+                            select new ChangeRequestCharges()
+                            {
+                                PortalServiceName = model.Field<string>("PortalServiceName"),
+                                ServiceFee = model.Field<double>("ServiceFee"),
+                                IsRecurring = model.Field<bool>("IsRecurring"),
+                                IsGstIncluded = model.Field<bool>("IsGSTIncluded")
+                            }).ToList();
+                }
+
+                var response = new DatabaseResponse { ResponseCode = result, Results = TorSresponse };
+                return response;
             }
 
             catch (Exception ex)
@@ -382,7 +457,7 @@ namespace OrderService.DataAccess
         {
             try
             {
-                DataSet ds = new DataSet();
+                var ds = new DataSet();
                 SqlParameter[] parameters =
                 {
                     new SqlParameter( "@CustomerID",  SqlDbType.Int ),
@@ -417,8 +492,8 @@ namespace OrderService.DataAccess
                         }).FirstOrDefault();
 
                     if (TorSresponse != null)
-                        TorSresponse.TerminationOrSuspensionChargesList = (from model in ds.Tables[1].AsEnumerable()
-                            select new TerminationOrSuspensionCharges()
+                        TorSresponse.ChangeRequestChargesList = (from model in ds.Tables[1].AsEnumerable()
+                            select new ChangeRequestCharges()
                             {
                                 PortalServiceName = model.Field<string>("PortalServiceName"),
                                 ServiceFee = model.Field<double>("ServiceFee")
@@ -533,6 +608,11 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+        /// <summary>
+        /// Authenticates the customer token.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> AuthenticateCustomerToken(string token)
         {
             try
@@ -597,6 +677,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Updates the subscriber number.
+        /// </summary>
+        /// <param name="subscriber">The subscriber.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> UpdateSubscriberNumber(UpdateSubscriberNumber subscriber)
         {
             try
@@ -638,6 +723,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Updates the subscriber porting number.
+        /// </summary>
+        /// <param name="portingNumber">The porting number.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> UpdateSubscriberPortingNumber(UpdateSubscriberPortingNumber portingNumber)
         {
             try
@@ -687,6 +777,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the configuration.
+        /// </summary>
+        /// <param name="configType">Type of the configuration.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetConfiguration(string configType)
         {
             try
@@ -742,6 +837,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the BSS service category and fee.
+        /// </summary>
+        /// <param name="serviceType">Type of the service.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetBSSServiceCategoryAndFee(string serviceType)
         {
             try
@@ -809,6 +909,11 @@ namespace OrderService.DataAccess
         }
 
 
+        /// <summary>
+        /// Gets the order details.
+        /// </summary>
+        /// <param name="orderId">The order identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetOrderDetails(int orderId)
         {
             try
@@ -933,6 +1038,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the customer identifier from order identifier.
+        /// </summary>
+        /// <param name="orderId">The order identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetCustomerIdFromOrderId(int orderId)
         {
             try
@@ -997,6 +1107,10 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the available slots.
+        /// </summary>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetAvailableSlots()
         {
             try
@@ -1054,6 +1168,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Updates the order personal details.
+        /// </summary>
+        /// <param name="personalDetails">The personal details.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> UpdateOrderPersonalDetails(UpdateOrderPersonalDetails personalDetails)
         {
             try
@@ -1102,6 +1221,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Updates the order billing details.
+        /// </summary>
+        /// <param name="billingDetails">The billing details.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> UpdateOrderBillingDetails(UpdateOrderBillingDetailsRequest billingDetails)
         {
             try
@@ -1146,6 +1270,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Updates the order shipping details.
+        /// </summary>
+        /// <param name="shippingDetails">The shipping details.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> UpdateOrderShippingDetails(UpdateOrderShippingDetailsRequest shippingDetails)
         {
             try
@@ -1194,6 +1323,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Updates the order loa details.
+        /// </summary>
+        /// <param name="loaDetails">The loa details.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> UpdateOrderLOADetails(UpdateOrderLOADetailsRequest loaDetails)
         {
             try
@@ -1234,6 +1368,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Validates the order referral code.
+        /// </summary>
+        /// <param name="order">The order.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> ValidateOrderReferralCode(ValidateOrderReferralCodeRequest order)
         {
             try
@@ -1266,7 +1405,12 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
-        
+
+        /// <summary>
+        /// Gets the ordered numbers.
+        /// </summary>
+        /// <param name="order">The order.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetOrderedNumbers(OrderedNumberRequest order)
         {
             try
@@ -1320,6 +1464,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Updates the order subcription details.
+        /// </summary>
+        /// <param name="subscriptionDetails">The subscription details.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> UpdateOrderSubcriptionDetails(UpdateOrderSubcriptionDetailsRequest subscriptionDetails)
         {
             try
@@ -1361,6 +1510,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the pending order details.
+        /// </summary>
+        /// <param name="customerId">The customer identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetPendingOrderDetails(int customerId)
         {
             try
@@ -1417,6 +1571,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the checkout request details.
+        /// </summary>
+        /// <param name="checkOutRequest">The check out request.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetCheckoutRequestDetails(CheckOutRequestDBUpdateModel checkOutRequest)
         {
             try
@@ -1481,6 +1640,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Updates the check out response.
+        /// </summary>
+        /// <param name="checkOutResponse">The check out response.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> UpdateCheckOutResponse(CheckOutResponseUpdate checkOutResponse)
         {
             try
@@ -1519,6 +1683,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Updates the check out receipt.
+        /// </summary>
+        /// <param name="transactionModel">The transaction model.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> UpdateCheckOutReceipt(TransactionResponseModel transactionModel)
         {
             try
@@ -1591,6 +1760,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Removes the additional line.
+        /// </summary>
+        /// <param name="removeRequest">The remove request.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> RemoveAdditionalLine(RemoveAdditionalLineRequest removeRequest)
         {
             try
@@ -1630,6 +1804,11 @@ namespace OrderService.DataAccess
 
         }
 
+        /// <summary>
+        /// Assigns the new number.
+        /// </summary>
+        /// <param name="newNumberRequest">The new number request.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> AssignNewNumber(AssignNewNumber newNumberRequest)
         {
             try
@@ -1671,6 +1850,11 @@ namespace OrderService.DataAccess
 
         }
 
+        /// <summary>
+        /// Gets the customer BSS account number.
+        /// </summary>
+        /// <param name="CustomerId">The customer identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetCustomerBSSAccountNumber(int CustomerId)
         {
             try
