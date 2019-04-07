@@ -16,17 +16,32 @@ using Serilog;
 
 namespace CustomerService.Controllers
 {
+    /// <summary>
+    /// Customers Controller class
+    /// </summary>
+    /// <seealso cref="Microsoft.AspNetCore.Mvc.ControllerBase" />
     [Route("api/[controller]")]
     [ApiController]
     public class CustomersController : ControllerBase
     {
+        /// <summary>
+        /// The iconfiguration
+        /// </summary>
         IConfiguration _iconfiguration;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CustomersController"/> class.
+        /// </summary>
+        /// <param name="configuration">The configuration.</param>
         public CustomersController(IConfiguration configuration)
         {
             _iconfiguration = configuration;
         }
         // GET: api/Customers
+        /// <summary>
+        /// Gets the customers.
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public async Task<IActionResult> GetCustomers()
         {
@@ -89,6 +104,11 @@ namespace CustomerService.Controllers
         }
 
         // GET: api/Customers/5
+        /// <summary>
+        /// Gets the customer.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
         [HttpGet("{id}")]
         public async Task<IActionResult> GetCustomer([FromRoute] int id)
         {
@@ -147,11 +167,15 @@ namespace CustomerService.Controllers
             }
         }
 
-        /// <summary>Updates the customer profile.</summary>
+        /// <summary>
+        /// Updates the customer profile.
+        /// </summary>
         /// <param name="token">The token.</param>
         /// <param name="password">The password.</param>
         /// <param name="mobileNumber">The mobile number.</param>
-        /// <returns>Success or Failure status code</returns>
+        /// <returns>
+        /// Success or Failure status code
+        /// </returns>
         [HttpPut("UpdateCustomerProfile/{token}/{password}/{mobileNumber}")]
         public async Task<IActionResult> UpdateCustomerProfile(string token, string password, string mobileNumber)
         {
@@ -226,14 +250,14 @@ namespace CustomerService.Controllers
         }
 
         /// <summary>
-        /// Subscribers the suspension request.
+        /// Changes the phone number request.
         /// </summary>
         /// <param name="token">The token.</param>
-        /// <param name="mobileNumber">The mobile number.</param>
+        /// <param name="request">The request.</param>
         /// <returns></returns>
         [HttpPost]
-        [Route("SubscriberSuspensionRequest/{token}/{mobileNumber}")]
-        public async Task<IActionResult> ChangePhoneNumberRequest(string token, string mobileNumber)
+        [Route("ChangePhoneNumberRequest")]
+        public async Task<IActionResult> ChangePhoneNumberRequest([FromRoute]string token, [FromBody]ChangePhoneRequest request)
         {
             try
             {
@@ -256,9 +280,9 @@ namespace CustomerService.Controllers
                 if (tokenAuthResponse.ResponseCode == (int) DbReturnValue.AuthSuccess)
                 {
                     var aTokenResp = (AuthTokenResponse) tokenAuthResponse.Results;
-
+                    request.CustomerId = aTokenResp.CustomerID;
                     var statusResponse =
-                        await customerDataAccess.ChangePhoneRequest(aTokenResp.CustomerID, mobileNumber);
+                        await customerDataAccess.ChangePhoneRequest(request);
 
                     if (statusResponse.ResponseCode == (int) DbReturnValue.CreateSuccess)
                     {
@@ -312,10 +336,11 @@ namespace CustomerService.Controllers
         /// <summary>
         /// This method will return all associated plans for that customer.
         /// </summary>
-        /// <param name="token"></param>
+        /// <param name="token">The token.</param>
         /// <param name="mobileNumber">Mobile Number</param>
         /// <param name="planType">Plan Type</param>
         /// <returns></returns>
+        /// <exception cref="Exception">Customer record not found for " + token + " token</exception>
         [HttpGet("CustomerPlans/{token}")]
         public async Task<IActionResult> GetCustomerPlans([FromRoute] string token, string mobileNumber, int ? planType)
         {
@@ -382,10 +407,14 @@ namespace CustomerService.Controllers
             }
         }
 
-        /// <summary>Gets the vas plans for customer.</summary>
-        /// <param name="custtokenomerId">The customer token.</param>
+        /// <summary>
+        /// Gets the vas plans for customer.
+        /// </summary>
+        /// <param name="token">The token.</param>
         /// <param name="mobileNumber">The mobile number.</param>
-        /// <returns>List of Shared VAS plan associated with Customers along with all subscribers</returns>
+        /// <returns>
+        /// List of Shared VAS plan associated with Customers along with all subscribers
+        /// </returns>
         [HttpGet("GetSharedVASPlansForCustomer/{token}")]
         public async Task<IActionResult> GetSharedVasPlansForCustomer([FromRoute] string token, string mobileNumber)
         {
@@ -405,10 +434,14 @@ namespace CustomerService.Controllers
             return await GetCustomerPlans(token, mobileNumber, Convert.ToInt32(Core.Enums.PlanType.Shared_VAS));
         }
 
-        /// <summary>Gets the vas plans for customer.</summary>
+        /// <summary>
+        /// Gets the vas plans for customer.
+        /// </summary>
         /// <param name="token">The customer identifier.</param>
         /// <param name="mobileNumber">The mobile number.</param>
-        /// <returns>List of VAS plan associated with Customers along with all subscribers</returns>
+        /// <returns>
+        /// List of VAS plan associated with Customers along with all subscribers
+        /// </returns>
         [HttpGet("GetVASPlansForCustomer/{token}")]
         public async Task<IActionResult> GetVasPlansForCustomer([FromRoute] string token, string mobileNumber)
         {
@@ -429,6 +462,11 @@ namespace CustomerService.Controllers
         }
 
         // POST: api/Customers
+        /// <summary>
+        /// Creates the specified customer.
+        /// </summary>
+        /// <param name="customer">The customer.</param>
+        /// <returns></returns>
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] RegisterCustomer customer)
         {
@@ -493,8 +531,11 @@ namespace CustomerService.Controllers
         /// Validate customer's referral code.
         /// Return success or failure flag with message
         /// </summary>
-        /// <param name="request"></param>
-        /// <returns>LoggedInPrinciple</returns>
+        /// <param name="Token">The token.</param>
+        /// <param name="request">The request.</param>
+        /// <returns>
+        /// LoggedInPrinciple
+        /// </returns>
         [HttpPost("ValidateReferralCode")]
         public async Task<IActionResult> ValidateReferralCode([FromHeader]string Token, [FromBody]ValidateReferralCodeRequest request)
         {
@@ -573,7 +614,9 @@ namespace CustomerService.Controllers
         /// Return Subscribers api with MobileNumber, DisplayName, SIMID, PremiumType, ActivatedOn, IsPrimary
         /// </summary>
         /// <param name="token">Customer token</param>
-        /// <returns>OperationResponse</returns>
+        /// <returns>
+        /// OperationResponse
+        /// </returns>
         [HttpGet("Subscribers/{token}")]
         public async Task<IActionResult> Subscribers([FromRoute]string token)
         {
@@ -649,6 +692,11 @@ namespace CustomerService.Controllers
         }
 
         // GET: api/Customers/SearchCustomer/abc@gmail.com
+        /// <summary>
+        /// Searches the customer.
+        /// </summary>
+        /// <param name="SearchValue">The search value.</param>
+        /// <returns></returns>
         [HttpGet("SearchCustomer/{SearchValue}")]
         public async Task<IActionResult> SearchCustomer([FromRoute] string SearchValue)
         {
@@ -711,9 +759,11 @@ namespace CustomerService.Controllers
 
         /// <summary>
         /// This will send forget password mail
-        /// </summary> 
-        ///<param name="emailid">abcd@gmail.com</param>
-        /// <returns>Customer Id and Token key</returns>
+        /// </summary>
+        /// <param name="emailid">abcd@gmail.com</param>
+        /// <returns>
+        /// Customer Id and Token key
+        /// </returns>
         [HttpGet]
         [Route("ForgetPassword/{emailid}")]
         public async Task<IActionResult> ForgetPassword([FromRoute] string emailid)
@@ -776,6 +826,12 @@ namespace CustomerService.Controllers
             }
         }
 
+        /// <summary>
+        /// Updates the referral code.
+        /// </summary>
+        /// <param name="Token">The token.</param>
+        /// <param name="customerReferralCode">The customer referral code.</param>
+        /// <returns></returns>
         [HttpPost("UpdateReferralCode")]
         public async Task<IActionResult> UpdateReferralCode([FromHeader] string Token, [FromBody]CustomerNewReferralCode customerReferralCode)
         {

@@ -83,12 +83,40 @@ namespace CustomerService.Models
         public string Status { get; set; }
     }
 
+    /// <summary></summary>
     public class CustomerProfile
     {
         public int CustomerId { get; set; }
         public string Password { get; set; }
         public string MobileNumber { get; set; }
         
+    }
+
+    /// <summary>Change Phone Request</summary>
+    public class ChangePhoneRequest
+    {
+        /// <summary>Gets or sets the customer identifier.</summary>
+        /// <value>The customer identifier.</value>
+        public int ? CustomerId { get; set; }
+        /// <summary>Gets or sets the mobile number.</summary>
+        /// <value>The mobile number.</value>
+        public string MobileNumber { get; set; }
+        /// <summary>Creates new mobile number.</summary>
+        /// <value>The new mobile number.</value>
+        public string NewMobileNumber { get; set; }
+        /// <summary>Gets or sets the type of the premium.</summary>
+        /// <value>The type of the premium.</value>
+        public int PremiumType { get; set; }
+        /// <summary>Gets or sets the ported number transfer form.</summary>
+        /// <value>The ported number transfer form.</value>
+        public string PortedNumberTransferForm { get; set; }
+        /// <summary>Gets or sets the ported number owned by.</summary>
+        /// <value>The ported number owned by.</value>
+        public string PortedNumberOwnedBy { get; set; }
+        /// <summary>Gets or sets the ported number owner registration identifier.</summary>
+        /// <value>The ported number owner registration identifier.</value>
+        public string PortedNumberOwnerRegistrationId { get; set; }
+
     }
 
     /// <summary>

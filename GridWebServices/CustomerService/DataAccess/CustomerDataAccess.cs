@@ -16,7 +16,7 @@ using Swashbuckle.AspNetCore.Swagger;
 namespace CustomerService.DataAccess
 {
     /// <summary>
-    /// 
+    /// Customer Data Access class
     /// </summary>
     public class CustomerDataAccess
     {
@@ -251,10 +251,9 @@ namespace CustomerService.DataAccess
         /// <summary>
         /// Changes the phone request.
         /// </summary>
-        /// <param name="customerId">The customer identifier.</param>
-        /// <param name="mobileNumber">The mobile number.</param>
+        /// <param name="changePhone">The change phone.</param>
         /// <returns></returns>
-        public async Task<DatabaseResponse> ChangePhoneRequest(int customerId, string mobileNumber)
+        public async Task<DatabaseResponse> ChangePhoneRequest(ChangePhoneRequest changePhone)
         {
             try
             {
@@ -264,20 +263,26 @@ namespace CustomerService.DataAccess
                     new SqlParameter( "@CustomerID",  SqlDbType.NVarChar ),
                     new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar),
                     new SqlParameter( "@NewMobileNumber",  SqlDbType.NVarChar ),
-                    new SqlParameter( "@RequestTypeDescription",  SqlDbType.NVarChar)
+                    new SqlParameter( "@RequestTypeDescription",  SqlDbType.NVarChar),
+                    new SqlParameter( "@PremiumType",  SqlDbType.Int),
+                    new SqlParameter( "@PortedNumberTransferForm",  SqlDbType.NVarChar),
+                    new SqlParameter( "@PortedNumberOwnedBy",  SqlDbType.NVarChar),
+                    new SqlParameter( "@PortedNumberOwnerRegistrationID",  SqlDbType.NVarChar)
+                    
                 };
 
-                parameters[0].Value = customerId;
-                parameters[1].Value = mobileNumber;
-                // need to change or remove the same.
-                parameters[2].Value = mobileNumber;
+                parameters[0].Value = changePhone.CustomerId;
+                parameters[1].Value = changePhone.MobileNumber;
+                parameters[2].Value = changePhone.NewMobileNumber;
                 parameters[3].Value = Core.Enums.RequestType.ChangeNumber.GetDescription();
+                parameters[4].Value = changePhone.PremiumType;
+                parameters[5].Value = changePhone.PortedNumberTransferForm;
+                parameters[6].Value = changePhone.PortedNumberOwnedBy;
+                parameters[7].Value = changePhone.PortedNumberOwnerRegistrationId;
 
                 _DataHelper = new DataAccessHelper("Customer_CR_ChangePhoneRequest", parameters, _configuration);
 
-                var ds = new DataSet();
-
-                var result = await _DataHelper.RunAsync(ds);
+                var result = await _DataHelper.RunAsync();
 
                 return new DatabaseResponse { ResponseCode = result };
             }

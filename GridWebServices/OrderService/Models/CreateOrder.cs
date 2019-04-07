@@ -10,7 +10,7 @@ using System.ComponentModel.DataAnnotations;
 namespace OrderService.Models
 {
     /// <summary>
-    /// 
+    /// Order Init class
     /// </summary>
     public class OrderInit
     {
@@ -32,7 +32,7 @@ namespace OrderService.Models
     }
 
     /// <summary>
-    /// 
+    /// Order Basic Details class
     /// </summary>
     public class OrderBasicDetails
     {
