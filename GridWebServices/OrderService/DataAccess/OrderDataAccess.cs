@@ -369,65 +369,32 @@ namespace OrderService.DataAccess
         }
 
         /// <summary>
-        /// Suspensions the request.
+        /// Terminations the or suspension request.
         /// </summary>
         /// <param name="customerId">The customer identifier.</param>
         /// <param name="mobileNumber">The mobile number.</param>
+        /// <param name="request">The request.</param>
+        /// <param name="remark">The remark.</param>
         /// <returns></returns>
-        public async Task<DatabaseResponse> SuspensionRequest(int customerId, string mobileNumber)
+        public async Task<DatabaseResponse> TerminationOrSuspensionRequest(int customerId, string mobileNumber, string request, string remark)
         {
             try
             {
 
                 SqlParameter[] parameters =
                 {
-                    new SqlParameter( "@CustomerID",  SqlDbType.NVarChar ),
-                    new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar)
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+                    new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar),
+                    new SqlParameter( "@RequestTypeDescription",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@Remarks",  SqlDbType.NVarChar)
                 };
 
                 parameters[0].Value = customerId;
-                parameters[2].Value = mobileNumber;
+                parameters[1].Value = mobileNumber;
+                parameters[2].Value = request;
+                parameters[3].Value = remark;
 
-                _DataHelper = new DataAccessHelper("Order_SuspensionRequest", parameters, _configuration);
-
-                var result = await _DataHelper.RunAsync();
-
-                return new DatabaseResponse { ResponseCode = result };
-            }
-
-            catch (Exception ex)
-            {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-
-                throw;
-            }
-            finally
-            {
-                _DataHelper.Dispose();
-            }
-        }
-
-        /// <summary>
-        /// Terminations the request.
-        /// </summary>
-        /// <param name="customerId">The customer identifier.</param>
-        /// <param name="mobileNumber">The mobile number.</param>
-        /// <returns></returns>
-        public async Task<DatabaseResponse> TerminationRequest(int customerId, string mobileNumber)
-        {
-            try
-            {
-
-                SqlParameter[] parameters =
-                {
-                    new SqlParameter( "@CustomerID",  SqlDbType.NVarChar ),
-                    new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar)
-                };
-
-                parameters[0].Value = customerId;
-                parameters[2].Value = mobileNumber;
-
-                _DataHelper = new DataAccessHelper("Orders_CR_TerminationRequest", parameters, _configuration);
+                _DataHelper = new DataAccessHelper("Orders_CR_RaiseRequest", parameters, _configuration);
 
                 var result = await _DataHelper.RunAsync();
 

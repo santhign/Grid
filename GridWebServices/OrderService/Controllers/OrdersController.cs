@@ -678,10 +678,11 @@ namespace OrderService.Controllers
         /// </summary>
         /// <param name="token">The token.</param>
         /// <param name="mobileNumber">The mobile number.</param>
+        /// <param name="remark">The remark.</param>
         /// <returns></returns>
         [HttpPost]
         [Route("SubscriberTerminationRequest/{token}/{mobileNumber}")]
-        public async Task<IActionResult> SubscriberTerminationRequest(string token, string mobileNumber)
+        public async Task<IActionResult> SubscriberTerminationRequest(string token, string mobileNumber, string remark)
         {
 
             try
@@ -706,7 +707,7 @@ namespace OrderService.Controllers
                 {
                     var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
 
-                    var statusResponse = await orderAccess.TerminationRequest(aTokenResp.CustomerID, mobileNumber);
+                    var statusResponse = await orderAccess.TerminationOrSuspensionRequest(aTokenResp.CustomerID, mobileNumber,Core.Enums.RequestType.Termination.GetDescription(), remark);
 
                     if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                     {
@@ -851,10 +852,11 @@ namespace OrderService.Controllers
         /// </summary>
         /// <param name="token">The token.</param>
         /// <param name="mobileNumber">The mobile number.</param>
+        /// <param name="remark">The remark.</param>
         /// <returns></returns>
         [HttpPost]
         [Route("SubscriberSuspensionRequest/{token}/{mobileNumber}")]
-        public async Task<IActionResult> SubscriberSuspensionRequest(string token, string mobileNumber)
+        public async Task<IActionResult> SubscriberSuspensionRequest(string token, string mobileNumber, string remark)
         {
 
             try
@@ -879,7 +881,7 @@ namespace OrderService.Controllers
                 {
                     var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
 
-                    var statusResponse = await orderAccess.SuspensionRequest(aTokenResp.CustomerID, mobileNumber);
+                    var statusResponse = await orderAccess.TerminationOrSuspensionRequest(aTokenResp.CustomerID, mobileNumber, Core.Enums.RequestType.Suspension.GetDescription(), remark);
 
                     if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                     {
