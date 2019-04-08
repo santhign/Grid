@@ -1563,5 +1563,96 @@ namespace OrderService.DataAccess
             }
         }
 
+        public async Task<DatabaseResponse> RollBackOrder(int orderId)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@OrderID",  SqlDbType.Int )
+
+                };
+
+                parameters[0].Value = orderId;
+
+                _DataHelper = new DataAccessHelper("Orders_RollBackOldUnfinishedOrder", parameters, _configuration);
+              
+
+                int result = _DataHelper.Run(); // 103 /104
+
+                return new DatabaseResponse { ResponseCode = result };
+                 
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> GetBssApiRequestIdAndSubscriberSession(string source, string apiName, int customerId,  string mobileNumber)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@Source",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@APIName",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),                   
+                    new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar),
+                };
+
+                parameters[0].Value = source;
+                parameters[1].Value = apiName;
+                parameters[2].Value = customerId;               
+                parameters[3].Value = mobileNumber;
+
+                _DataHelper = new DataAccessHelper("Admin_GetBSSRequestIDAndSubscriberSession", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                _DataHelper.Run(dt);
+
+                BSSAssetRequest assetRequest = new BSSAssetRequest();
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (dt.Rows.Count > 0)
+                {
+                    assetRequest = (from model in dt.AsEnumerable()
+                                    select new BSSAssetRequest()
+                                    {
+                                        request_id = model.Field<string>("RequestID"),
+                                        userid = model.Field<string>("UserID"),
+                                        BSSCallLogID = model.Field<int>("BSSCallLogID"),
+
+                                    }).FirstOrDefault();
+                }
+
+                response = new DatabaseResponse { Results = assetRequest };
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
     }
 }
