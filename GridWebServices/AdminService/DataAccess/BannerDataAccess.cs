@@ -49,7 +49,7 @@ namespace AdminService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                _DataHelper.Run(dt);
+                await _DataHelper.RunAsync(dt);
 
                 List<Banners> statusList = new List<Banners>();
 
