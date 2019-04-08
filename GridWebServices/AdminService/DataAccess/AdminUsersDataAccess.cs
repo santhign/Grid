@@ -42,7 +42,7 @@ namespace AdminService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                _DataHelper.Run(dt);
+                await _DataHelper.RunAsync(dt);
 
                 List<AdminUsers> adminuser = new List<AdminUsers>();
 
@@ -100,7 +100,7 @@ namespace AdminService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                int result = _DataHelper.Run(dt);
+                int result = await _DataHelper.RunAsync(dt);
 
                 AdminUsers newCustomer = new AdminUsers();
 
@@ -148,7 +148,7 @@ namespace AdminService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                _DataHelper.Run(dt);
+                await _DataHelper.RunAsync(dt);
 
                 AdminUsers adminuser = new AdminUsers();
 
@@ -190,7 +190,7 @@ namespace AdminService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                _DataHelper.Run(dt);
+                await _DataHelper.RunAsync(dt);
 
                 List<AdminUsers> adminusersList = new List<AdminUsers>();
 
@@ -243,7 +243,7 @@ namespace AdminService.DataAccess
                 _DataHelper = new DataAccessHelper("Admin_UpdateProfile", parameters, _configuration);
                 DataTable dt = new DataTable();
 
-                int result = _DataHelper.Run(dt); 
+                int result = await _DataHelper.RunAsync(dt); 
 
                 return new DatabaseResponse { ResponseCode = result, Results = adminuser };
             }

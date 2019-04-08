@@ -39,7 +39,7 @@ namespace AdminService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                _DataHelper.Run(dt);
+                await _DataHelper.RunAsync(dt);
 
                 List<FaqPages> FaqPagesList = new List<FaqPages>(); 
 

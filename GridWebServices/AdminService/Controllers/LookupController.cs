@@ -6,7 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Core.Models;
 using Core.Helpers;
 using Core.Enums;
-using Serilog;
+using InfrastructureService;
 
 namespace AdminService.Controllers
 {
@@ -55,7 +55,7 @@ namespace AdminService.Controllers
             }
             catch (Exception ex)
             {
-                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 return Ok(new OperationResponse
                 {
