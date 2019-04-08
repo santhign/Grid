@@ -346,7 +346,7 @@ namespace CustomerService.DataAccess
                                      select new CustomerPlans()
                                      {
                                          CustomerID = model.Field<int>("CustomerID"),
-                                         PlanId = model.Field<int>("PlanId"),
+                                         PlanId = model.Field<int>("PlanID"),
                                          PlanMarketingName = model.Field<string>("PlanMarketingName"),
                                          MobileNumber = model.Field<string>("MobileNumber"),
                                          SubscriptionType = model.Field<string>("SubscriptionType"),
