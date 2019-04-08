@@ -13,13 +13,13 @@ namespace Core.Models
         public string request_id { get; set; }
 
         [DataMember(Name = "request_timestamp")]
-        public string request_timestamp { get; set; } 
+        public string request_timestamp { get; set; }
 
         [DataMember(Name = "action")]
         public string action { get; set; }
 
         [DataMember(Name = "userid")]
-        public int userid { get; set; }
+        public string userid { get; set; }
 
         [DataMember(Name = "username")]
         public string username { get; set; }
@@ -30,6 +30,8 @@ namespace Core.Models
 
         [DataMember(Name = "dataset")]
         public SetParam dataset { get; set; }
+
+        public int BSSCallLogID { get; set; }
 
     }
 
@@ -57,6 +59,6 @@ namespace Core.Models
         [DataMember(Name = "Request")]
         public BSSAssetRequest Request { get; set; }
 
-       
+
     }
 }

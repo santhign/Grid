@@ -173,22 +173,25 @@ namespace OrderService.Models
 
         [Required(ErrorMessage = "OrderID is required")]
         public int OrderID { get; set; }
-        
+
         [Required(ErrorMessage = "IDType is required")]
         public string IDType { get; set; }
 
         [Required(ErrorMessage = "IDNumber is required")]
         public string IDNumber { get; set; }
 
-        [Required(ErrorMessage = "ID Image is required")]
-        public IFormFile ID { get; set; }
+        [Required(ErrorMessage = "IDImageFront Image is required")]
+        public IFormFile IDImageFront { get; set; }
+
+        [Required(ErrorMessage = "IDImageBack Image is required")]
+        public IFormFile IDImageBack { get; set; }
 
         [Required(ErrorMessage = "NameInNRIC is required")]
         public string NameInNRIC { get; set; }
 
         [Required(ErrorMessage = "Gender is required")]
         public string Gender { get; set; }
-        
+
         [Required(ErrorMessage = "DOB is required")]
         public DateTime DOB { get; set; }
 
@@ -201,15 +204,16 @@ namespace OrderService.Models
     }
 
     public class UpdateOrderPersonalDetails
-    {        
-        public int OrderID { get; set; }        
-        public string IDType { get; set; }      
-        public string IDNumber { get; set; }      
-        public string IDImageUrl { get; set; }       
-        public string NameInNRIC { get; set; }      
-        public string Gender { get; set; }        
-        public DateTime DOB { get; set; }       
-        public string ContactNumber { get; set; }       
+    {
+        public int OrderID { get; set; }
+        public string IDType { get; set; }
+        public string IDNumber { get; set; }
+        public string IDFrontImageUrl { get; set; }
+        public string IDBackImageUrl { get; set; }
+        public string NameInNRIC { get; set; }
+        public string Gender { get; set; }
+        public DateTime DOB { get; set; }
+        public string ContactNumber { get; set; }
         public string Nationality { get; set; }
 
     }
@@ -242,11 +246,11 @@ namespace OrderService.Models
 
         [MaxLength(8, ErrorMessage = "Maximum 8 characters allowed")]
         [Required(ErrorMessage = "ContactNumber is required")]
-        public string ContactNumber { get; set; }       
+        public string ContactNumber { get; set; }
 
     }
 
-    public class UpdateOrderShippingDetailsRequest 
+    public class UpdateOrderShippingDetailsRequest
     {
         [Required(ErrorMessage = "Token required")]
         public string Token { get; set; }
@@ -279,7 +283,7 @@ namespace OrderService.Models
         public int IsBillingSame { get; set; }
 
         [Required(ErrorMessage = "PortalSlotID is required")]
-        public string PortalSlotID { get; set; }     
+        public string PortalSlotID { get; set; }
 
     }
 
@@ -304,10 +308,10 @@ namespace OrderService.Models
         [Required(ErrorMessage = "ContactNumber is required")]
         public string ContactNumber { get; set; }
 
-        [EmailAddress(ErrorMessage ="Enter Valid Email Address")]
+        [EmailAddress(ErrorMessage = "Enter Valid Email Address")]
         [Required(ErrorMessage = "EmailAdddress is required")]
         public string EmailAdddress { get; set; }
-      
+
     }
 
     public class ValidateOrderReferralCodeRequest
@@ -329,7 +333,7 @@ namespace OrderService.Models
         public string Token { get; set; }
 
         [Required(ErrorMessage = "OrderID is required")]
-        public int OrderID { get; set; }      
+        public int OrderID { get; set; }
 
     }
 
@@ -340,10 +344,10 @@ namespace OrderService.Models
 
         [Required(ErrorMessage = "OrderID is required")]
         public int OrderID { get; set; }
-        
-        [MaxLength(8, ErrorMessage = "Maximum 8 characters allowed")]      
+
+        [MaxLength(8, ErrorMessage = "Maximum 8 characters allowed")]
         public string ContactNumber { get; set; }
-       
+
         [Required(ErrorMessage = "Terms is required")]
         public int Terms { get; set; }
 
@@ -365,7 +369,7 @@ namespace OrderService.Models
         [MaxLength(8, ErrorMessage = "Maximum 8 characters allowed in Mobile Number")]
         [Required(ErrorMessage = "Mobile Number is required")]
         public string MobileNumber { get; set; }
-        
+
     }
 
     public class AssignNewNumberRequest
@@ -383,10 +387,10 @@ namespace OrderService.Models
     }
 
     public class AssignNewNumber
-    {       
-        public string Token { get; set; }        
-        public int OrderID { get; set; }       
-        public string OldNumber { get; set; }        
+    {
+        public string Token { get; set; }
+        public int OrderID { get; set; }
+        public string OldNumber { get; set; }
         public string NewNumber { get; set; }
 
     }
@@ -396,6 +400,22 @@ namespace OrderService.Models
         public string Token { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
+
+    }
+
+    public class BSSRequestAssets
+    {
+        [Required(ErrorMessage = "Token required")]
+        public string Token { get; set; }
+
+    }
+
+    public class BSSRequestMore
+    {
+        [Required(ErrorMessage = "Token required")]
+        public string Token { get; set; }
+
+        public int Type { get; set; }
 
     }
 }
