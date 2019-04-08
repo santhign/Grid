@@ -67,9 +67,7 @@ namespace OrderService.Models
     }
 
 
-    /// <summary>
-    /// Response class for Change Sim
-    /// </summary>
+    /// <summary>Response class for Change Sim</summary>
     public class ChangeSimResponse
     {
         /// <summary>
@@ -149,6 +147,20 @@ namespace OrderService.Models
         /// The billing contact number.
         /// </value>
         public string BillingContactNumber { get; set; }
+        /// <summary>
+        /// Gets or sets the type of the identity card.
+        /// </summary>
+        /// <value>
+        /// The type of the identity card.
+        /// </value>
+        public string IdentityCardType { get; set; }
+        /// <summary>
+        /// Gets or sets the identity card number.
+        /// </summary>
+        /// <value>
+        /// The identity card number.
+        /// </value>
+        public string IdentityCardNumber { get; set; }
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
