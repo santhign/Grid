@@ -256,7 +256,7 @@ namespace CustomerService.Controllers
         /// <param name="request">The request.</param>
         /// <returns></returns>
         [HttpPost]
-        [Route("ChangePhoneNumberRequest")]
+        [Route("ChangePhoneNumberRequest/{token}")]
         public async Task<IActionResult> ChangePhoneNumberRequest([FromRoute]string token, [FromBody]ChangePhoneRequest request)
         {
             try

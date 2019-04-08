@@ -265,9 +265,9 @@ namespace CustomerService.DataAccess
                     new SqlParameter( "@NewMobileNumber",  SqlDbType.NVarChar ),
                     new SqlParameter( "@RequestTypeDescription",  SqlDbType.NVarChar),
                     new SqlParameter( "@PremiumType",  SqlDbType.Int),
-                    new SqlParameter( "@PortedNumberTransferForm",  SqlDbType.NVarChar),
-                    new SqlParameter( "@PortedNumberOwnedBy",  SqlDbType.NVarChar),
-                    new SqlParameter( "@PortedNumberOwnerRegistrationID",  SqlDbType.NVarChar)
+                    //new SqlParameter( "@PortedNumberTransferForm",  SqlDbType.NVarChar),
+                    //new SqlParameter( "@PortedNumberOwnedBy",  SqlDbType.NVarChar),
+                    //new SqlParameter( "@PortedNumberOwnerRegistrationID",  SqlDbType.NVarChar)
                     
                 };
 
@@ -276,9 +276,9 @@ namespace CustomerService.DataAccess
                 parameters[2].Value = changePhone.NewMobileNumber;
                 parameters[3].Value = Core.Enums.RequestType.ChangeNumber.GetDescription();
                 parameters[4].Value = changePhone.PremiumType;
-                parameters[5].Value = changePhone.PortedNumberTransferForm;
-                parameters[6].Value = changePhone.PortedNumberOwnedBy;
-                parameters[7].Value = changePhone.PortedNumberOwnerRegistrationId;
+                //parameters[5].Value = changePhone.PortedNumberTransferForm;
+                //parameters[6].Value = changePhone.PortedNumberOwnedBy;
+                //parameters[7].Value = changePhone.PortedNumberOwnerRegistrationId;
 
                 _DataHelper = new DataAccessHelper("Customer_CR_ChangePhoneRequest", parameters, _configuration);
 

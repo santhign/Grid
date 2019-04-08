@@ -397,8 +397,8 @@ namespace OrderService.DataAccess
                         select new ChangeSimResponse()
                         {
                             ChangeRequestId = model.Field<int>("ChangeRequestId"),
-                            OrderNumber = model.Field<string>("OrderNumber"),
-                            RequestOn = model.Field<DateTime>("RequestOn"),
+                            //OrderNumber = model.Field<string>("OrderNumber"),
+                            //RequestOn = model.Field<DateTime>("RequestOn"),
                             RequestTypeDescription = model.Field<string>("RequestTypeDescription"),
                             BillingUnit = model.Field<string>("BillingUnit"),
                             BillingFloor = model.Field<string>("BillingFloor"),
