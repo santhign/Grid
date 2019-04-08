@@ -17,7 +17,7 @@ namespace Core.Models
             public string action { get; set; }
 
             [DataMember(Name = "userid")]
-            public string userid { get; set; }
+            public int userid { get; set; }
 
             [DataMember(Name = "username")]
             public string username { get; set; }

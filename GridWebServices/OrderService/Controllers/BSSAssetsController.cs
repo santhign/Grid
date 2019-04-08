@@ -9,7 +9,6 @@ using OrderService.Models;
 using OrderService.DataAccess;
 using Core.Models;
 using Core.Enums;
-using OrderService.Enums;
 using Core.Extensions;
 using InfrastructureService;
 using Core.Helpers;
@@ -30,11 +29,11 @@ namespace OrderService.Controllers
         /// <summary>
         /// This will return BSS Assets by default limit in configuration
         /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        [Route("GetAssets")]
-        [HttpPost]
-        public async Task<IActionResult> GetAssets([FromBody] BSSRequestAssets request)
+        /// <returns>
+        /// OperationsResponse
+        /// </returns>
+        [HttpGet]
+        public async Task<IActionResult> GetAssets()
         {
             try
             {
@@ -42,67 +41,23 @@ namespace OrderService.Controllers
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
 
-                DatabaseResponse tokenAuthResponse = await _orderAccess.AuthenticateCustomerToken(request.Token);
+                DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());               
 
-                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                GridBSSConfi config = helper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
+
+                DatabaseResponse serviceCAF= await _orderAccess.GetBSSServiceCategoryAndFee(ServiceTypes.Free.ToString());
+
+                DatabaseResponse requestIdRes= await _orderAccess.GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.GetAssets.ToString(),30); // need to pass customer_id here
+                 
+                ResponseObject res= await  helper.GetAssetInventory(config, ((List<ServiceFees>) serviceCAF.Results).FirstOrDefault().ServiceCode, ((BSSAssetRequest)requestIdRes.Results).request_id);
+
+                return Ok(new OperationResponse
                 {
-                    AuthTokenResponse aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
+                    HasSucceeded = true,                   
+                    IsDomainValidationErrors = false,
+                    ReturnedObject= res
+                });
 
-                    if (!(aTokenResp.CreatedOn < DateTime.UtcNow.AddDays(-7)))
-                    {
-                        DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
-
-                        GridBSSConfi config = helper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
-
-                        DatabaseResponse serviceCAF = await _orderAccess.GetBSSServiceCategoryAndFee(ServiceTypes.Free.ToString());
-
-                        DatabaseResponse requestIdRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.GetAssets.ToString(), aTokenResp.CustomerID, (int)BSSCalls.NewSession, "");
-
-                        ResponseObject res = await helper.GetAssetInventory(config, ((List<ServiceFees>)serviceCAF.Results).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdRes.Results);
-
-                        BSSNumbers receivedNumbers = new BSSNumbers();
-
-                        receivedNumbers.FreeNumbers = helper.GetFreeNumbers(res);
-
-                        string json = helper.GetJsonString(receivedNumbers.FreeNumbers); // json insert
-
-                        DatabaseResponse updateBssCallFeeNumbers = await _orderAccess.UpdateBSSCallNumbers(json, ((BSSAssetRequest)requestIdRes.Results).userid, ((BSSAssetRequest)requestIdRes.Results).BSSCallLogID);
-
-                        return Ok(new OperationResponse
-                        {
-                            HasSucceeded = true,
-                            IsDomainValidationErrors = false,
-                            ReturnedObject = res
-                        });
-                    }
-
-                    else
-                    {
-                        //Token expired
-
-                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
-
-                        return Ok(new OperationResponse
-                        {
-                            HasSucceeded = false,
-                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
-                            IsDomainValidationErrors = true
-                        });
-                    }
-                }
-
-                else
-                {
-                    // token auth failure
-                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
-
-                    return Ok(new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
-                        IsDomainValidationErrors = false
-                    });
-                }
             }
             catch (Exception ex)
             {
@@ -114,6 +69,7 @@ namespace OrderService.Controllers
                     IsDomainValidationErrors = false
                 });
             }
+
         }
 
         /// <summary>
@@ -131,8 +87,7 @@ namespace OrderService.Controllers
         // GET: api/Orders/token
 
         [HttpGet("{token}")]
-
-        public async Task<IActionResult> GetNumbers([FromRoute] string token)
+        public async Task<IActionResult> GetNumbers([FromRoute] string  token)
         {
             try
             {
@@ -158,10 +113,10 @@ namespace OrderService.Controllers
 
                         DatabaseResponse serviceCAF = await _orderAccess.GetBSSServiceCategoryAndFee(ServiceTypes.Free.ToString());
 
-                        DatabaseResponse requestIdResForFreeNumber = await _orderAccess.GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.GetAssets.ToString(), aTokenResp.CustomerID, (int)BSSCalls.ExistingSession, "");
+                        DatabaseResponse requestIdResForFreeNumber = await _orderAccess.GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.GetAssets.ToString(), aTokenResp.CustomerID);
 
                         //Getting FreeNumbers
-                        ResponseObject res = await helper.GetAssetInventory(bssConfig, ((List<ServiceFees>)serviceCAF.Results).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdResForFreeNumber.Results, systemConfig.FreeNumberListCount);
+                        ResponseObject res = await helper.GetAssetInventory(bssConfig, ((List<ServiceFees>)serviceCAF.Results).FirstOrDefault().ServiceCode, ((BSSAssetRequest)requestIdResForFreeNumber.Results).request_id, systemConfig.FreeNumberListCount);
 
                         BSSNumbers numbers = new BSSNumbers();
 
@@ -169,95 +124,77 @@ namespace OrderService.Controllers
                         {
                             numbers.FreeNumbers = helper.GetFreeNumbers(res);
 
-                            //insert these number into database
-                            string json = helper.GetJsonString(numbers.FreeNumbers); // json insert
+                            // get Premium Numbers
 
-                            DatabaseResponse updateBssCallFeeNumbers = await _orderAccess.UpdateBSSCallNumbers(json, ((BSSAssetRequest)requestIdResForFreeNumber.Results).userid, ((BSSAssetRequest)requestIdResForFreeNumber.Results).BSSCallLogID);
+                            DatabaseResponse serviceCAFPremium = await _orderAccess.GetBSSServiceCategoryAndFee(ServiceTypes.Premium.ToString());
 
-                            if (updateBssCallFeeNumbers.ResponseCode == (int)DbReturnValue.CreateSuccess)
+                            if (serviceCAFPremium != null && serviceCAFPremium.ResponseCode == (int)DbReturnValue.RecordExists)
                             {
-                                // get Premium Numbers
+                                List<ServiceFees> premiumServiceFeeList = new List<ServiceFees>();
 
-                                DatabaseResponse serviceCAFPremium = await _orderAccess.GetBSSServiceCategoryAndFee(ServiceTypes.Premium.ToString());
+                                premiumServiceFeeList = (List<ServiceFees>)serviceCAFPremium.Results;
 
-                                if (serviceCAFPremium != null && serviceCAFPremium.ResponseCode == (int)DbReturnValue.RecordExists)
+                                int countPerPremium = (systemConfig.PremiumNumberListCount / premiumServiceFeeList.Count);
+
+                                int countBalance = systemConfig.PremiumNumberListCount % premiumServiceFeeList.Count;
+
+                                if (countBalance > 0)
                                 {
-                                    List<ServiceFees> premiumServiceFeeList = new List<ServiceFees>();
-
-                                    premiumServiceFeeList = (List<ServiceFees>)serviceCAFPremium.Results;
-
-                                    int countPerPremium = (systemConfig.PremiumNumberListCount / premiumServiceFeeList.Count);
-
-                                    int countBalance = systemConfig.PremiumNumberListCount % premiumServiceFeeList.Count;
-
-                                    if (countBalance > 0)
-                                    {
-                                        countPerPremium = countPerPremium + countBalance;
-                                    }
-
-                                    int loopCount = premiumServiceFeeList.Count;
-
-                                    int iterator = 0;
-
-                                    foreach (ServiceFees fee in premiumServiceFeeList)
-                                    {
-                                        //get code and call premum 
-                                        //  fee.PortalServiceName
-
-                                        DatabaseResponse requestIdResForPremium = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.GetAssets.ToString(), aTokenResp.CustomerID, (int)BSSCalls.ExistingSession, numbers.FreeNumbers.FirstOrDefault().MobileNumber);
-
-                                        ResponseObject premumResponse = await helper.GetAssetInventory(bssConfig, fee.ServiceCode, (BSSAssetRequest)requestIdResForPremium.Results, countPerPremium);
-
-                                        if (premumResponse != null && premumResponse.Response.asset_details != null)
-                                        {
-                                            List<PremiumNumbers> premiumNumbers = helper.GetPremiumNumbers(premumResponse, fee);
-
-                                            List<FreeNumber> premiumToLogNumbers = helper.GetFreeNumbers(premumResponse);
-
-                                            string jsonPremium = helper.GetJsonString(premiumToLogNumbers);
-
-                                            DatabaseResponse updateBssCallPremiumNumbers = await _orderAccess.UpdateBSSCallNumbers(jsonPremium, ((BSSAssetRequest)requestIdResForPremium.Results).userid, ((BSSAssetRequest)requestIdResForPremium.Results).BSSCallLogID);
-
-                                            foreach (PremiumNumbers premium in premiumNumbers)
-                                            {
-                                                numbers.PremiumNumbers.Add(premium);
-                                            }
-
-                                        }
-                                        else
-                                        {
-                                            //failed to get premium
-
-                                            if (iterator == 0)
-                                            {
-                                                countPerPremium = (systemConfig.PremiumNumberListCount / (premiumServiceFeeList.Count - 1));
-                                            }
-                                            else if (iterator == 1)
-                                            {
-                                                if (numbers.PremiumNumbers.Count < countPerPremium * (iterator + 1))
-
-                                                    countPerPremium = (systemConfig.PremiumNumberListCount / (premiumServiceFeeList.Count - 2));
-                                                else
-                                                    countPerPremium = (systemConfig.PremiumNumberListCount / (premiumServiceFeeList.Count - 1));
-                                            }
-                                        }
-
-                                        iterator++;
-
-                                    }  // for
-
-                                    if (numbers.PremiumNumbers.Count > systemConfig.PremiumNumberListCount)
-                                    {
-                                        int extrPremiumCount = numbers.PremiumNumbers.Count - systemConfig.PremiumNumberListCount;
-
-                                        numbers.PremiumNumbers.RemoveRange(numbers.PremiumNumbers.Count - (extrPremiumCount + 1), extrPremiumCount);
-                                    }
+                                    countPerPremium = countPerPremium + countBalance;
                                 }
 
-                            }
-                            else
-                            {
-                                //failded to update BSS call numbers so returning
+                                int loopCount = premiumServiceFeeList.Count;
+
+                                int iterator = 0;
+
+                                foreach (ServiceFees fee in premiumServiceFeeList)
+                                {
+                                    //get code and call premum 
+                                    //  fee.PortalServiceName
+
+                                    DatabaseResponse requestIdResForPremium = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.GetAssets.ToString(), aTokenResp.CustomerID);
+
+                                    ResponseObject premumResponse = await helper.GetAssetInventory(bssConfig, fee.ServiceCode, ((BSSAssetRequest)requestIdResForPremium.Results).request_id, countPerPremium);
+
+                                    if (premumResponse != null && premumResponse.Response.asset_details != null)
+                                    {
+                                        List<PremiumNumbers> premiumNumbers = helper.GetPremiumNumbers(premumResponse, fee);
+
+                                        foreach (PremiumNumbers premium in premiumNumbers)
+                                        {
+                                            numbers.PremiumNumbers.Add(premium);
+                                        }
+
+                                    }
+                                    else
+                                    {
+                                        //failed to get premium
+
+                                        if (iterator == 0)
+                                        {
+                                            countPerPremium = (systemConfig.PremiumNumberListCount / (premiumServiceFeeList.Count - 1));
+                                        }
+                                        else if (iterator == 1)
+                                        {
+                                            if (numbers.PremiumNumbers.Count < countPerPremium * (iterator + 1))
+
+                                                countPerPremium = (systemConfig.PremiumNumberListCount / (premiumServiceFeeList.Count - 2));
+                                            else
+                                                countPerPremium = (systemConfig.PremiumNumberListCount / (premiumServiceFeeList.Count - 1));
+                                        }
+
+                                    }
+
+                                    iterator++;
+
+                                }  // for
+
+                                if (numbers.PremiumNumbers.Count > systemConfig.PremiumNumberListCount)
+                                {
+                                    int extrPremiumCount = numbers.PremiumNumbers.Count - systemConfig.PremiumNumberListCount;
+
+                                    numbers.PremiumNumbers.RemoveRange(numbers.PremiumNumbers.Count - (extrPremiumCount + 1), extrPremiumCount);
+                                }
                             }
 
                         }
@@ -289,7 +226,7 @@ namespace OrderService.Controllers
                         });
 
                     }
-
+                    
                 }
 
                 else
@@ -333,8 +270,8 @@ namespace OrderService.Controllers
         ///  ReturnedObject = {numbers} 
         /// }
         /// </returns>
-        [HttpPost]
-        public async Task<IActionResult> GetMoreNumbers(BSSRequestMore request)
+        [HttpGet("{token}/{type}")]
+        public async Task<IActionResult> GetMoreNumbers([FromRoute] string token, int type)
         {
             try
             {
@@ -343,7 +280,7 @@ namespace OrderService.Controllers
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
 
-                DatabaseResponse tokenAuthResponse = await _orderAccess.AuthenticateCustomerToken(request.Token);
+                DatabaseResponse tokenAuthResponse = await _orderAccess.AuthenticateCustomerToken(token);
 
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
@@ -351,7 +288,7 @@ namespace OrderService.Controllers
 
                     if (!(aTokenResp.CreatedOn < DateTime.UtcNow.AddDays(-7)))
                     {
-
+                       
                         DatabaseResponse systemConfigResponse = await _orderAccess.GetConfiguration(ConfiType.System.ToString());
 
                         DatabaseResponse bssConfigResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
@@ -362,22 +299,18 @@ namespace OrderService.Controllers
 
                         DatabaseResponse serviceCAF = await _orderAccess.GetBSSServiceCategoryAndFee(ServiceTypes.Free.ToString());
 
-                        DatabaseResponse requestIdResForFreeNumber = await _orderAccess.GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.GetAssets.ToString(), aTokenResp.CustomerID, (int)BSSCalls.ExistingSession, "");
+                        DatabaseResponse requestIdResForFreeNumber = await _orderAccess.GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.GetAssets.ToString(), aTokenResp.CustomerID);
 
                         BSSNumbers numbers = new BSSNumbers();
 
-                        if (request.Type == 1) // free numbers
+                        if (type == 1) // free numbers
                         {
-                            ResponseObject res = await helper.GetAssetInventory(bssConfig, ((List<ServiceFees>)serviceCAF.Results).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdResForFreeNumber.Results, systemConfig.FreeNumberListCount);
+                            ResponseObject res = await helper.GetAssetInventory(bssConfig, ((List<ServiceFees>)serviceCAF.Results).FirstOrDefault().ServiceCode, ((BSSAssetRequest)requestIdResForFreeNumber.Results).request_id, systemConfig.FreeNumberListCount);
 
                             if (res != null)
                             {
-                                numbers.FreeNumbers = helper.GetFreeNumbers(res);
+                                numbers.FreeNumbers = helper.GetFreeNumbers(res); 
 
-                                //insert these number into database
-                                string json = helper.GetJsonString(numbers.FreeNumbers); // json insert
-
-                                DatabaseResponse updateBssCallFeeNumbers = await _orderAccess.UpdateBSSCallNumbers(json, ((BSSAssetRequest)requestIdResForFreeNumber.Results).userid, ((BSSAssetRequest)requestIdResForFreeNumber.Results).BSSCallLogID);
                             }
                             else
                             {
@@ -414,22 +347,13 @@ namespace OrderService.Controllers
                                     //get code and call premum 
                                     //  fee.PortalServiceName
 
-                                    DatabaseResponse requestIdResForPremium = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.GetAssets.ToString(), aTokenResp.CustomerID, (int)BSSCalls.ExistingSession, "");
+                                    DatabaseResponse requestIdResForPremium = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.GetAssets.ToString(), aTokenResp.CustomerID);
 
-                                    ResponseObject premumResponse = await helper.GetAssetInventory(bssConfig, fee.ServiceCode, (BSSAssetRequest)requestIdResForPremium.Results, countPerPremium);
+                                    ResponseObject premumResponse = await helper.GetAssetInventory(bssConfig, fee.ServiceCode, ((BSSAssetRequest)requestIdResForPremium.Results).request_id, countPerPremium);
 
                                     if (premumResponse != null && premumResponse.Response.asset_details != null)
                                     {
                                         List<PremiumNumbers> premiumNumbers = helper.GetPremiumNumbers(premumResponse, fee);
-
-                                        BSSNumbers bssPremium = new BSSNumbers();
-
-                                        bssPremium.FreeNumbers = helper.GetFreeNumbers(premumResponse);
-
-                                        //insert these number into database
-                                        string json = helper.GetJsonString(bssPremium.FreeNumbers); // json insert
-
-                                        DatabaseResponse updateBssCallFeeNumbers = await _orderAccess.UpdateBSSCallNumbers(json, ((BSSAssetRequest)requestIdResForPremium.Results).userid, ((BSSAssetRequest)requestIdResForPremium.Results).BSSCallLogID);
 
                                         foreach (PremiumNumbers premium in premiumNumbers)
                                         {
@@ -469,7 +393,7 @@ namespace OrderService.Controllers
                             }
                         }
 
-                        if (request.Type == 1)
+                        if(type==1)
                         {
                             return Ok(new OperationResponse
                             {
@@ -490,7 +414,7 @@ namespace OrderService.Controllers
 
                             });
                         }
-
+                        
 
                     }
 
@@ -540,16 +464,15 @@ namespace OrderService.Controllers
 
         }
 
+
         /// <summary>
         /// This will return usage history of mobilenumber passed
         /// </summary>
         /// <param name="token"></param>
         /// <param name="mobileNumber"></param>
         /// <returns>OperationsResponse</returns>
-
-
         [HttpGet("{token}/{mobileNumber}")]
-        public async Task<IActionResult> GetUsageHistory([FromRoute] string token, [FromRoute] string mobileNumber)
+        public async Task<IActionResult> GetUsageHistory([FromRoute] string token, string mobileNumber)
         {
             try
             {
@@ -577,11 +500,11 @@ namespace OrderService.Controllers
 
                         DatabaseResponse serviceCAF = await _orderAccess.GetBSSServiceCategoryAndFee(ServiceTypes.Free.ToString());
 
-                        DatabaseResponse requestIdRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.GetAssets.ToString(), aTokenResp.CustomerID, (int)BSSCalls.NoSession, "");
+                        DatabaseResponse requestIdRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.GetAssets.ToString(), aTokenResp.CustomerID);
 
                         BSSQueryPlanResponse numbers = new BSSQueryPlanResponse();
 
-                        object usageHistory = await helper.GetUsageHistory(bssConfig, mobileNumber, ((BSSAssetRequest)requestIdRes.Results).request_id);
+                        object usageHistory = await helper.GetUsageHistory(bssConfig,mobileNumber,  ((BSSAssetRequest)requestIdRes.Results).request_id);
 
                         BSSQueryPlanResponse res = helper.GetQueryPlan(usageHistory);
 
@@ -686,10 +609,10 @@ namespace OrderService.Controllers
                         DatabaseResponse accountResponse = await _orderAccess.GetCustomerBSSAccountNumber(aTokenResp.CustomerID);
 
                         if (accountResponse.ResponseCode == (int)DbReturnValue.RecordExists)
-                        {
+                        {                            
                             if (!string.IsNullOrEmpty(((BSSAccount)accountResponse.Results).AccountNumber))
                             {
-                                DatabaseResponse requestIdRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.GetInvoiceDetails.ToString(), aTokenResp.CustomerID, 0, "");
+                                DatabaseResponse requestIdRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.GetAssets.ToString(), aTokenResp.CustomerID);
 
                                 BSSInvoiceResponseObject invoiceResponse = await helper.GetBSSCustomerInvoice(bssConfig, ((BSSAssetRequest)requestIdRes.Results).request_id, ((BSSAccount)accountResponse.Results).AccountNumber);
 
@@ -699,7 +622,7 @@ namespace OrderService.Controllers
                                     {
                                         HasSucceeded = true,
                                         IsDomainValidationErrors = false,
-                                        Message = invoiceResponse.Response.invoice_details.totalrecordcnt > 0 ? EnumExtensions.GetDescription(DbReturnValue.RecordExists) : EnumExtensions.GetDescription(DbReturnValue.NoRecords),
+                                        Message = invoiceResponse.Response.invoice_details.totalrecordcnt>0?  EnumExtensions.GetDescription(DbReturnValue.RecordExists) : EnumExtensions.GetDescription(DbReturnValue.NoRecords),
                                         ReturnedObject = invoiceResponse.Response.invoice_details
                                     });
                                 }

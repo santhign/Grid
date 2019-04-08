@@ -14,8 +14,7 @@ using Core.Extensions;
 using InfrastructureService;
 using Core.Helpers;
 using System.IO;
-using OrderService.Enums;
-
+using System.Net;
 
 namespace OrderService.Controllers
 {
@@ -29,6 +28,7 @@ namespace OrderService.Controllers
         {
             _iconfiguration = configuration;
         }
+
         /// <summary>
         /// This will return Order details for specific ID passed 
         /// </summary>
@@ -111,14 +111,14 @@ namespace OrderService.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -161,46 +161,33 @@ namespace OrderService.Controllers
                                 BSSAPIHelper helper = new BSSAPIHelper();
 
                                 DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
-
+                                
 
                                 GridBSSConfi config = helper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
 
                                 DatabaseResponse serviceCAF = await _orderAccess.GetBSSServiceCategoryAndFee(ServiceTypes.Free.ToString());
 
-                                DatabaseResponse requestIdRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.GetAssets.ToString(), aTokenResp.CustomerID, (int)BSSCalls.NewSession, "");
+                                DatabaseResponse requestIdRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.GetAssets.ToString(), aTokenResp.CustomerID);
 
-                                ResponseObject res = await helper.GetAssetInventory(config, (((List<ServiceFees>)serviceCAF.Results)).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdRes.Results);
+                                ResponseObject res = await helper.GetAssetInventory(config, (((List<ServiceFees>)serviceCAF.Results)).FirstOrDefault().ServiceCode, ((BSSAssetRequest)requestIdRes.Results).request_id);
 
                                 string AssetToSubscribe = helper.GetAssetId(res);
-
-
-                                if (res != null)
-                                {
-                                    BSSNumbers numbers = new BSSNumbers();
-
-                                    numbers.FreeNumbers = helper.GetFreeNumbers(res);
-
-                                    //insert these number into database
-                                    string json = helper.GetJsonString(numbers.FreeNumbers); // json insert
-
-                                    DatabaseResponse updateBssCallFeeNumbers = await _orderAccess.UpdateBSSCallNumbers(json, ((BSSAssetRequest)requestIdRes.Results).userid, ((BSSAssetRequest)requestIdRes.Results).BSSCallLogID);
-                                }
 
                                 if (res != null && (int.Parse(res.Response.asset_details.total_record_count) > 0))
                                 {
 
                                     //Block number                                    
 
-                                    DatabaseResponse requestIdToUpdateRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), aTokenResp.CustomerID, (int)BSSCalls.ExistingSession, AssetToSubscribe);
+                                    DatabaseResponse requestIdToUpdateRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), aTokenResp.CustomerID);
 
-                                    BSSUpdateResponseObject bssUpdateResponse = await helper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateRes.Results, AssetToSubscribe, false);
+                                    BSSUpdateResponseObject bssUpdateResponse = await helper.UpdateAssetBlockNumber(config, ((BSSAssetRequest)requestIdToUpdateRes.Results).request_id, AssetToSubscribe, false);
 
                                     if (helper.GetResponseCode(bssUpdateResponse) == "0")
                                     {
                                         // create subscription
                                         CreateSubscriber subscriberToCreate = new CreateSubscriber { BundleID = request.BundleID, OrderID = ((OrderInit)createOrderRresponse.Results).OrderID, MobileNumber = AssetToSubscribe, PromotionCode = request.PromotionCode }; // verify isPrimary
 
-                                        DatabaseResponse createSubscriberResponse = await _orderAccess.CreateSubscriber(subscriberToCreate, ((BSSAssetRequest)requestIdToUpdateRes.Results).userid);
+                                        DatabaseResponse createSubscriberResponse = await _orderAccess.CreateSubscriber(subscriberToCreate);
 
                                         // Get Order Basic Details
 
@@ -501,14 +488,14 @@ namespace OrderService.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -532,22 +519,23 @@ namespace OrderService.Controllers
                             customer = (OrderCustomer)customerResponse.Results;
 
 
-                            DatabaseResponse requestIdToUpdateUnblock = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customer.CustomerId, (int)BSSCalls.ExistingSession, request.OldMobileNumber);
+                            DatabaseResponse requestIdToUpdateUnblock = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customer.CustomerId);
 
                             DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
 
                             GridBSSConfi config = helper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
 
                             // Unblock
-                            BSSUpdateResponseObject bssUnblockUpdateResponse = await helper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateUnblock.Results, request.OldMobileNumber, true);
+                            BSSUpdateResponseObject bssUnblockUpdateResponse = await helper.UpdateAssetBlockNumber(config, ((BSSAssetRequest)requestIdToUpdateUnblock.Results).request_id, request.OldMobileNumber, true);
+
 
                             if (helper.GetResponseCode(bssUnblockUpdateResponse) == "0")
                             {
                                 //Block
 
-                                DatabaseResponse requestIdToUpdateBlock = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customer.CustomerId, (int)BSSCalls.ExistingSession, request.NewNumber.MobileNumber);
+                                DatabaseResponse requestIdToUpdateBlock = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customer.CustomerId);
 
-                                BSSUpdateResponseObject bssUpdateResponse = await helper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateBlock.Results, request.NewNumber.MobileNumber, false);
+                                BSSUpdateResponseObject bssUpdateResponse = await helper.UpdateAssetBlockNumber(config, ((BSSAssetRequest)requestIdToUpdateBlock.Results).request_id, request.NewNumber.MobileNumber, false);
 
                                 if (helper.GetResponseCode(bssUnblockUpdateResponse) == "0")
                                 {
@@ -975,14 +963,14 @@ namespace OrderService.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -1055,14 +1043,14 @@ namespace OrderService.Controllers
                         {
                             customer = (OrderCustomer)customerResponse.Results;
 
-                            DatabaseResponse requestIdToUpdateUnblock = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customer.CustomerId, (int)BSSCalls.ExistingSession, request.OldMobileNumber);
+                            DatabaseResponse requestIdToUpdateUnblock = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customer.CustomerId);
 
                             DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
 
                             GridBSSConfi config = helper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
 
                             // Unblock
-                            BSSUpdateResponseObject bssUnblockUpdateResponse = await helper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateUnblock.Results, request.OldMobileNumber, true);
+                            BSSUpdateResponseObject bssUnblockUpdateResponse = await helper.UpdateAssetBlockNumber(config, ((BSSAssetRequest)requestIdToUpdateUnblock.Results).request_id, request.OldMobileNumber, true);
 
                             if (helper.GetResponseCode(bssUnblockUpdateResponse) == "0")
                             {
@@ -1203,14 +1191,14 @@ namespace OrderService.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -1234,9 +1222,9 @@ namespace OrderService.Controllers
 
                         DatabaseResponse serviceCAF = await _orderAccess.GetBSSServiceCategoryAndFee(ServiceTypes.Free.ToString());
 
-                        DatabaseResponse requestIdRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.GetAssets.ToString(), aTokenResp.CustomerID, (int)BSSCalls.NewSession, "");
+                        DatabaseResponse requestIdRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.GetAssets.ToString(), aTokenResp.CustomerID);
 
-                        ResponseObject res = await helper.GetAssetInventory(config, (((List<ServiceFees>)serviceCAF.Results)).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdRes.Results);
+                        ResponseObject res = await helper.GetAssetInventory(config, (((List<ServiceFees>)serviceCAF.Results)).FirstOrDefault().ServiceCode, ((BSSAssetRequest)requestIdRes.Results).request_id);
 
                         string AssetToSubscribe = helper.GetAssetId(res);
 
@@ -1244,16 +1232,16 @@ namespace OrderService.Controllers
                         {
                             //Block number                                    
 
-                            DatabaseResponse requestIdToUpdateRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), aTokenResp.CustomerID, (int)BSSCalls.NewSession, "");
+                            DatabaseResponse requestIdToUpdateRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), aTokenResp.CustomerID);
 
-                            BSSUpdateResponseObject bssUpdateResponse = await helper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateRes.Results, AssetToSubscribe, false);
+                            BSSUpdateResponseObject bssUpdateResponse = await helper.UpdateAssetBlockNumber(config, ((BSSAssetRequest)requestIdToUpdateRes.Results).request_id, AssetToSubscribe, false);
 
                             if (helper.GetResponseCode(bssUpdateResponse) == "0")
                             {
                                 // create subscription
                                 CreateSubscriber subscriberToCreate = new CreateSubscriber { BundleID = request.BundleID, OrderID = request.OrderID, MobileNumber = AssetToSubscribe, PromotionCode = "" };
 
-                                DatabaseResponse createSubscriberResponse = await _orderAccess.CreateSubscriber(subscriberToCreate, ((BSSAssetRequest)requestIdToUpdateRes.Results).userid);
+                                DatabaseResponse createSubscriberResponse = await _orderAccess.CreateSubscriber(subscriberToCreate);
 
                                 if (createSubscriberResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                                 {
@@ -1378,14 +1366,14 @@ namespace OrderService.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -1476,8 +1464,7 @@ namespace OrderService.Controllers
         /// "OrderID" :1,
         /// "IDType" :"PAN",
         /// "IDNumber":"P23FD",
-        /// "IDImageFront" : FileInput,
-        /// "IDImageBack" : FileInput,
+        /// "ID" : FileInput,
         /// "NameInNRIC" : "Name as in NRIC",
         /// "Gender":"Male",
         /// "DOB":"15/12/2000", //dd/MM/yyyy
@@ -1496,14 +1483,14 @@ namespace OrderService.Controllers
 
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -1516,9 +1503,7 @@ namespace OrderService.Controllers
 
                     if (!(aTokenResp.CreatedOn < DateTime.UtcNow.AddDays(-7)))
                     {
-                        IFormFile frontImage = request.IDImageFront;
-
-                        IFormFile backImage = request.IDImageBack;
+                        IFormFile file = request.ID;
 
                         BSSAPIHelper helper = new BSSAPIHelper();
 
@@ -1538,7 +1523,7 @@ namespace OrderService.Controllers
 
                         //process file if uploaded - non null
 
-                        if (frontImage != null && backImage != null)
+                        if (file != null)
                         {
                             DatabaseResponse awsConfigResponse = await _orderAccess.GetConfiguration(ConfiType.AWS.ToString());
 
@@ -1548,26 +1533,13 @@ namespace OrderService.Controllers
 
                                 AmazonS3 s3Helper = new AmazonS3(awsConfig);
 
-                                string fileNameFront = "Grid_IDNUMBER_Front_" + DateTime.UtcNow.ToString("yyyymmddhhmmss") + Path.GetExtension(frontImage.FileName); //Grid_IDNUMBER_yyyymmddhhmmss.extension
+                                string fileName = "Grid_IDNUMBER_" + DateTime.UtcNow.ToString("yyyymmddhhmmss") + Path.GetExtension(file.FileName); //Grid_IDNUMBER_yyyymmddhhmmss.extension
 
-                                UploadResponse s3UploadResponse = await s3Helper.UploadFile(frontImage, fileNameFront);
-
-                                if (s3UploadResponse.HasSucceed)
-                                {
-                                    personalDetails.IDFrontImageUrl = "http://gridproject.s3.amazonaws.com/gridproject/" + s3UploadResponse.FileName;
-                                }
-                                else
-                                {
-                                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.S3UploadFailed));
-                                }
-
-                                string fileNameBack = "Grid_IDNUMBER_Back_" + DateTime.UtcNow.ToString("yyyymmddhhmmss") + Path.GetExtension(frontImage.FileName); //Grid_IDNUMBER_yyyymmddhhmmss.extension
-
-                                s3UploadResponse = await s3Helper.UploadFile(backImage, fileNameBack);
+                                UploadResponse s3UploadResponse = await s3Helper.UploadFile(file, fileName);
 
                                 if (s3UploadResponse.HasSucceed)
                                 {
-                                    personalDetails.IDBackImageUrl = "http://gridproject.s3.amazonaws.com/gridproject/" + s3UploadResponse.FileName;
+                                    personalDetails.IDImageUrl = s3UploadResponse.FileName;
                                 }
                                 else
                                 {
@@ -1580,9 +1552,7 @@ namespace OrderService.Controllers
                                 LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToGetConfiguration));
 
                             }
-                        }    //file     
-
-
+                        }    //file                     
 
                         //update personal details
                         DatabaseResponse updatePersoanDetailsResponse = await _orderAccess.UpdateOrderPersonalDetails(personalDetails);
@@ -1676,14 +1646,14 @@ namespace OrderService.Controllers
 
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -1790,14 +1760,14 @@ namespace OrderService.Controllers
 
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -1900,14 +1870,14 @@ namespace OrderService.Controllers
 
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -2006,14 +1976,14 @@ namespace OrderService.Controllers
 
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -2111,14 +2081,14 @@ namespace OrderService.Controllers
 
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -2220,14 +2190,14 @@ namespace OrderService.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -2318,14 +2288,14 @@ namespace OrderService.Controllers
 
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
                                             .SelectMany(x => x.Errors)
                                             .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -2403,7 +2373,7 @@ namespace OrderService.Controllers
                 });
             }
         }
-
+         
         /// <summary>
         /// This will create a checkout session and returns the details to call MPGS 
         /// </summary>
@@ -2417,14 +2387,14 @@ namespace OrderService.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
                                             .SelectMany(x => x.Errors)
                                             .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -2453,15 +2423,15 @@ namespace OrderService.Controllers
                         {
                             Source = "Orders",
 
-                            SourceID = orderId,
+                            SourceID =orderId,
 
-                            CheckOutSessionID = checkoutDetails.CheckoutSession.Id,
+                            CheckOutSessionID =checkoutDetails.CheckoutSession.Id,
 
-                            CheckoutVersion = checkoutDetails.CheckoutSession.Version,
+                            CheckoutVersion =checkoutDetails.CheckoutSession.Version,
 
-                            SuccessIndicator = checkoutDetails.CheckoutSession.SuccessIndicator,
+                            SuccessIndicator =checkoutDetails.CheckoutSession.SuccessIndicator,
 
-                            MPGSOrderID = checkoutDetails.OrderId
+                            MPGSOrderID =checkoutDetails.OrderId
                         };
 
                         //Update checkout details and return amount
@@ -2554,14 +2524,14 @@ namespace OrderService.Controllers
 
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -2584,7 +2554,7 @@ namespace OrderService.Controllers
                         PaymentHelper gatewayHelper = new PaymentHelper();
 
                         GridMPGSConfig gatewayConfig = gatewayHelper.GetGridMPGSConfig((List<Dictionary<string, string>>)configResponse.Results);
-
+                         
                         TransactionRetrieveResponseOperation transactionResponse = new TransactionRetrieveResponseOperation();
 
                         transactionResponse = gatewayHelper.RetrieveCheckOutTransaction(gatewayConfig, updateRequest);
@@ -2668,14 +2638,14 @@ namespace OrderService.Controllers
 
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -2707,14 +2677,14 @@ namespace OrderService.Controllers
 
                                 MiscHelper configHelper = new MiscHelper();
 
-                                DatabaseResponse requestIdToUpdateUnblock = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customer.CustomerId, (int)BSSCalls.ExistingSession, request.MobileNumber);
+                                DatabaseResponse requestIdToUpdateUnblock = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customer.CustomerId);
 
                                 DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
 
                                 GridBSSConfi config = helper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
 
                                 // Unblock
-                                BSSUpdateResponseObject bssUnblockUpdateResponse = await helper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateUnblock.Results, request.MobileNumber, true);
+                                BSSUpdateResponseObject bssUnblockUpdateResponse = await helper.UpdateAssetBlockNumber(config, ((BSSAssetRequest)requestIdToUpdateUnblock.Results).request_id, request.MobileNumber, true);
 
                                 if (helper.GetResponseCode(bssUnblockUpdateResponse) == "0")
                                 {
@@ -2758,7 +2728,7 @@ namespace OrderService.Controllers
                             }
 
                         }
-
+                       
                         else if (removeLineResponse.ResponseCode == (int)DbReturnValue.ActiveTryDelete)
                         {
                             LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.LineDeleteFailed));
@@ -2794,7 +2764,7 @@ namespace OrderService.Controllers
                                 IsDomainValidationErrors = false
                             });
                         }
-                        else
+                        else 
                         {
                             LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.NotExists));
                             return Ok(new OperationResponse
@@ -2852,155 +2822,155 @@ namespace OrderService.Controllers
         [HttpPost]
         public async Task<IActionResult> AssignNewNumberToSubscriber([FromBody] AssignNewNumberRequest request)
         {
-            try
-            {
-                if (!ModelState.IsValid)
+           try
                 {
-                    new OperationResponse
+                    if (!ModelState.IsValid)
                     {
-                        HasSucceeded = false,
-                        IsDomainValidationErrors = true,
-                        Message = string.Join("; ", ModelState.Values
-                                                 .SelectMany(x => x.Errors)
-                                                 .Select(x => x.ErrorMessage))
-                    };
-                }
-
-                OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
-
-                DatabaseResponse tokenAuthResponse = await _orderAccess.AuthenticateCustomerToken(request.Token);
-
-                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
-                {
-
-                    AuthTokenResponse aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
-
-                    if (!(aTokenResp.CreatedOn < DateTime.UtcNow.AddDays(-7)))
-                    {
-                        // call GetAssets BSSAPI
-
-                        BSSAPIHelper helper = new BSSAPIHelper();
-
-                        DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
-
-                        GridBSSConfi config = helper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
-
-                        config.GridDefaultAssetLimit = 1; // to get only on asset
-
-                        DatabaseResponse serviceCAF = await _orderAccess.GetBSSServiceCategoryAndFee(ServiceTypes.Free.ToString());
-
-                        DatabaseResponse requestIdRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.GetAssets.ToString(), aTokenResp.CustomerID, (int)BSSCalls.NewSession, "");
-
-                        ResponseObject res = await helper.GetAssetInventory(config, (((List<ServiceFees>)serviceCAF.Results)).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdRes.Results);
-
-                        string NewNumber = helper.GetAssetId(res);
-
-                        if (res != null && (int.Parse(res.Response.asset_details.total_record_count) > 0))
+                        return StatusCode((int)HttpStatusCode.OK, new OperationResponse
                         {
-                            //Block number                                    
+                            HasSucceeded = false,
+                            IsDomainValidationErrors = true,
+                            Message = string.Join("; ", ModelState.Values
+                                                     .SelectMany(x => x.Errors)
+                                                     .Select(x => x.ErrorMessage))
+                        });
+                    }
 
-                            DatabaseResponse requestIdToUpdateRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), aTokenResp.CustomerID, (int)BSSCalls.ExistingSession, request.OldNumber);
+                    OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
 
-                            BSSUpdateResponseObject bssUpdateResponse = await helper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateRes.Results, NewNumber, false);
+                    DatabaseResponse tokenAuthResponse = await _orderAccess.AuthenticateCustomerToken(request.Token);
 
-                            if (helper.GetResponseCode(bssUpdateResponse) == "0")
+                    if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                    {
+
+                        AuthTokenResponse aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
+
+                        if (!(aTokenResp.CreatedOn < DateTime.UtcNow.AddDays(-7)))
+                        {
+                            // call GetAssets BSSAPI
+
+                            BSSAPIHelper helper = new BSSAPIHelper();
+
+                            DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
+
+                            GridBSSConfi config = helper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
+
+                                config.GridDefaultAssetLimit = 1; // to get only on asset
+
+                            DatabaseResponse serviceCAF = await _orderAccess.GetBSSServiceCategoryAndFee(ServiceTypes.Free.ToString());
+
+                            DatabaseResponse requestIdRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.GetAssets.ToString(), aTokenResp.CustomerID);
+
+                            ResponseObject res = await helper.GetAssetInventory(config, (((List<ServiceFees>)serviceCAF.Results)).FirstOrDefault().ServiceCode, ((BSSAssetRequest)requestIdRes.Results).request_id);
+
+                            string NewNumber = helper.GetAssetId(res);
+
+                            if (res != null && (int.Parse(res.Response.asset_details.total_record_count) > 0))
                             {
-                                // Assign Newnumber
-                                AssignNewNumber newNumbertoAssign = new AssignNewNumber { OrderID = request.OrderID, OldNumber = request.OldNumber, NewNumber = NewNumber };
+                                //Block number                                    
 
-                                DatabaseResponse AssignNewNumberResponse = await _orderAccess.AssignNewNumber(newNumbertoAssign);
+                                DatabaseResponse requestIdToUpdateRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), aTokenResp.CustomerID);
 
-                                if (AssignNewNumberResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
+                                BSSUpdateResponseObject bssUpdateResponse = await helper.UpdateAssetBlockNumber(config, ((BSSAssetRequest)requestIdToUpdateRes.Results).request_id, NewNumber, false);
+
+                                if (helper.GetResponseCode(bssUpdateResponse) == "0")
                                 {
-                                    // Get Order Basic Details
+                                    // Assign Newnumber
+                                    AssignNewNumber newNumbertoAssign = new AssignNewNumber { OrderID = request.OrderID, OldNumber=request.OldNumber,NewNumber= NewNumber };
 
-                                    DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails(request.OrderID);
+                                    DatabaseResponse AssignNewNumberResponse = await _orderAccess.AssignNewNumber(newNumbertoAssign);
 
-                                    return Ok(new OperationResponse
+                                    if (AssignNewNumberResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                                     {
-                                        HasSucceeded = true,
-                                        Message = EnumExtensions.GetDescription(CommonErrors.AssignNuewNumberSuccess),
-                                        IsDomainValidationErrors = false,
-                                        ReturnedObject = orderDetailsResponse.Results
-                                    });
+                                        // Get Order Basic Details
+
+                                        DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails(request.OrderID);
+
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = true,
+                                            Message = EnumExtensions.GetDescription(CommonErrors.AssignNuewNumberSuccess),
+                                            IsDomainValidationErrors = false,
+                                            ReturnedObject = orderDetailsResponse.Results
+                                        });
+
+                                    }
+
+                                    else
+                                    {
+                                        // Assign Newnumber failed
+                                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.AssignNewNumberFailed));
+
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = true,
+                                            Message = EnumExtensions.GetDescription(CommonErrors.AssignNewNumberFailed),
+                                            IsDomainValidationErrors = false
+
+                                        });
+                                    }
+
 
                                 }
-
                                 else
                                 {
-                                    // Assign Newnumber failed
-                                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.AssignNewNumberFailed));
+                                    //blocking failed
 
+                                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateAssetBlockingFailed));
                                     return Ok(new OperationResponse
                                     {
-                                        HasSucceeded = true,
-                                        Message = EnumExtensions.GetDescription(CommonErrors.AssignNewNumberFailed),
+                                        HasSucceeded = false,
+                                        Message = EnumExtensions.GetDescription(DbReturnValue.BlockingFailed),
                                         IsDomainValidationErrors = false
-
                                     });
                                 }
-
 
                             }
                             else
                             {
-                                //blocking failed
+                                // no assets returned
 
-                                LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateAssetBlockingFailed));
+                                LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.GetAssetFailed));
+
                                 return Ok(new OperationResponse
                                 {
                                     HasSucceeded = false,
-                                    Message = EnumExtensions.GetDescription(DbReturnValue.BlockingFailed),
+                                    Message = EnumExtensions.GetDescription(DbReturnValue.GetAssetsFailed),
                                     IsDomainValidationErrors = false
                                 });
-                            }
 
+                            }
                         }
+
                         else
                         {
-                            // no assets returned
+                            //Token expired
 
-                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.GetAssetFailed));
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
 
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = false,
-                                Message = EnumExtensions.GetDescription(DbReturnValue.GetAssetsFailed),
-                                IsDomainValidationErrors = false
+                                Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                                IsDomainValidationErrors = true
                             });
 
                         }
+
                     }
 
                     else
                     {
-                        //Token expired
-
-                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+                        // token auth failure
+                        LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
 
                         return Ok(new OperationResponse
                         {
                             HasSucceeded = false,
-                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
-                            IsDomainValidationErrors = true
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                            IsDomainValidationErrors = false
                         });
-
                     }
-
-                }
-
-                else
-                {
-                    // token auth failure
-                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
-
-                    return Ok(new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
-                        IsDomainValidationErrors = false
-                    });
-                }
 
             }
             catch (Exception ex)
@@ -3016,7 +2986,6 @@ namespace OrderService.Controllers
 
             }
         }
-
 
 
 

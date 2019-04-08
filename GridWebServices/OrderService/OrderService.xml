@@ -4,12 +4,13 @@
         <name>OrderService</name>
     </assembly>
     <members>
-        <member name="M:OrderService.Controllers.BSSAssetsController.GetAssets(OrderService.Models.BSSRequestAssets)">
+        <member name="M:OrderService.Controllers.BSSAssetsController.GetAssets">
             <summary>
             This will return BSS Assets by default limit in configuration
             </summary>
-            <param name="request"></param>
-            <returns></returns>
+            <returns>
+            OperationsResponse
+            </returns>
         </member>
         <member name="M:OrderService.Controllers.BSSAssetsController.GetNumbers(System.String)">
             <summary>
@@ -24,7 +25,7 @@
             }
             </returns>
         </member>
-        <member name="M:OrderService.Controllers.BSSAssetsController.GetMoreNumbers(OrderService.Models.BSSRequestMore)">
+        <member name="M:OrderService.Controllers.BSSAssetsController.GetMoreNumbers(System.String,System.Int32)">
             <summary>
             This will return a set of free or premium Mobile Numbers from BSS API based on the given type input
             </summary>
@@ -150,8 +151,7 @@
             "OrderID" :1,
             "IDType" :"PAN",
             "IDNumber":"P23FD",
-            "IDImageFront" : FileInput,
-            "IDImageBack" : FileInput,
+            "ID" : FileInput,
             "NameInNRIC" : "Name as in NRIC",
             "Gender":"Male",
             "DOB":"15/12/2000", //dd/MM/yyyy
