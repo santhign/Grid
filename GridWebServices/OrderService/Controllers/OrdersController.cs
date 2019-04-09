@@ -110,15 +110,15 @@ namespace OrderService.Controllers
             try
             {
                 if (!ModelState.IsValid)
-                {
-                    new OperationResponse
+                { 
+                    return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -397,14 +397,14 @@ namespace OrderService.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                  return Ok(  new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -608,14 +608,14 @@ namespace OrderService.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                 return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -836,14 +836,14 @@ namespace OrderService.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                   return Ok( new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -1011,14 +1011,14 @@ namespace OrderService.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                  return Ok(  new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -1129,14 +1129,14 @@ namespace OrderService.Controllers
 
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                   return Ok( new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -1309,14 +1309,14 @@ namespace OrderService.Controllers
 
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                  return Ok(  new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -1423,14 +1423,14 @@ namespace OrderService.Controllers
 
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                  return Ok(  new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -1533,14 +1533,14 @@ namespace OrderService.Controllers
 
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                  return Ok( new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -1744,14 +1744,15 @@ namespace OrderService.Controllers
 
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+
+                  return Ok(  new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -1853,14 +1854,14 @@ namespace OrderService.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                  return Ok(  new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -1951,14 +1952,14 @@ namespace OrderService.Controllers
 
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                  return Ok(  new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
                                             .SelectMany(x => x.Errors)
                                             .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -2050,14 +2051,14 @@ namespace OrderService.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                  return Ok(  new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
                                             .SelectMany(x => x.Errors)
                                             .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -2187,14 +2188,14 @@ namespace OrderService.Controllers
 
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                   return Ok( new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -2301,14 +2302,14 @@ namespace OrderService.Controllers
 
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                   return Ok( new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -2489,14 +2490,14 @@ namespace OrderService.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    new OperationResponse
+                  return Ok(  new OperationResponse
                     {
                         HasSucceeded = false,
                         IsDomainValidationErrors = true,
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
-                    };
+                    });
                 }
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
