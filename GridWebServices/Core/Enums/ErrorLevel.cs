@@ -125,5 +125,13 @@ namespace Core.Enums
         [Description("Mandatory RecordEmpty")]
         MandatoryRecordEmpty = 26,
 
+        [EnumMember(Value = "Order Rolled Back")]
+        [Description("Order Rolled Back")]
+        OrderRolledBack = 27,
+
+        [EnumMember(Value = "Order Rolled Back Failed")]
+        [Description("Order Rolled Back Failed")]
+        OrderRolledBackFailed = 28,
+
     }
 }

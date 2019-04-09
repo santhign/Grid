@@ -1,0 +1,387 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>OrderService</name>
+    </assembly>
+    <members>
+        <member name="M:OrderService.Controllers.BSSAssetsController.GetAssets(OrderService.Models.BSSRequestAssets)">
+            <summary>
+            This will return BSS Assets by default limit in configuration
+            </summary>
+            <param name="request"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OrderService.Controllers.BSSAssetsController.GetNumbers(System.String)">
+            <summary>
+            This will return a set of Mobile Numbers from BSS API
+            </summary>
+            <param name="token">AuthToken</param>
+            <returns>OperationResponse
+            Body{
+             HasSucceeded = true,
+             IsDomainValidationErrors = false,
+             ReturnedObject = {numbers} 
+            }
+            </returns>
+        </member>
+        <member name="M:OrderService.Controllers.BSSAssetsController.GetMoreNumbers(OrderService.Models.BSSRequestMore)">
+            <summary>
+            This will return a set of free or premium Mobile Numbers from BSS API based on the given type input
+            </summary>
+            <param name="token">token</param>
+            <param name="type">type=1-free/2-premium</param>
+            <returns>OperationResponse
+            Body{
+             HasSucceeded = true,
+             IsDomainValidationErrors = false,
+             ReturnedObject = {numbers} 
+            }
+            </returns>
+        </member>
+        <member name="M:OrderService.Controllers.BSSAssetsController.GetUsageHistory(System.String,System.String)">
+            <summary>
+            This will return usage history of mobilenumber passed
+            </summary>
+            <param name="token"></param>
+            <param name="mobileNumber"></param>
+            <returns>OperationsResponse</returns>
+        </member>
+        <member name="M:OrderService.Controllers.BSSAssetsController.GetCustomerInvoice(OrderService.Models.CustomerBSSInvoiceRequest)">
+            <summary>
+            This will return Customer's BSS Invoice for the given date range, though optional
+            </summary>
+            <param name="request">
+            body{
+            "Token":"Auth token"
+            "StartDate" :"1/1/2019", //dd/MM/yyyy - optional
+            "EndDate" :"15/12/2019", //dd/MM/yyyy  - optional      
+            }
+            </param>
+            <returns>OperationsResponse</returns>
+        </member>
+        <member name="M:OrderService.Controllers.OrdersController.Get(System.Int32)">
+            <summary>
+            This will return Order details for specific ID passed 
+            </summary>
+            <param name="id">OrderID</param>
+            <returns>OperationsResponse</returns>
+        </member>
+        <member name="M:OrderService.Controllers.OrdersController.Post(OrderService.Models.CreateOrderRequest)">
+             <summary>
+             This will Create an order for the logged in customer with the bundle selected.
+             </summary>
+             <param name="request">CreateOrderRequest</param>
+            Body: 
+            {
+            	"token" : "kfnsldfnksdnfefiu3r9882",
+            	"BundleID" : "1",
+            	"ReferralCode" : "dkfsdsd" --optional
+            	"PromotionCode" : "Launch2019" --optional
+            }
+             <returns>OperationResponse</returns>
+        </member>
+        <member name="M:OrderService.Controllers.OrdersController.UpdateSubscriberNumber(OrderService.Models.UpdateSubscriberNumber)">
+            <summary>
+            This will Update subscribers existing number with new number selected.
+            </summary>
+            <param name="request">
+            body{
+            "Token" :"Auth token",
+            "OrderID" :1,
+            "OldMobileNumber" :"97854562",
+            "NewNumber" :{
+                        "MobileNumber":"97854572",
+                        "ServiceCode" :39
+                        },
+            "DisplayName" : "shortname"       
+            }
+            </param>
+            <returns>OperationResponse</returns>       
+        </member>
+        <member name="M:OrderService.Controllers.OrdersController.PortingNumber(OrderService.Models.UpdateSubscriberPortingNumberRequest)">
+            <summary>
+            This will Update subscribers existing number with new number selected.
+            </summary>
+            <param name="request">
+            Form{
+            "Token" :"Auth token",
+            "OrderID" :1,
+            "OldMobileNumber" :"97854562",
+            "NewMobileNumber":"97854572",
+            "DisplayName" : "shortname",
+            "IsOwnNumber" : 1,
+            "DonorProvider":"",
+            "PortedNumberTransferForm":"", //optional
+            "PortedNumberOwnedBy":"", //optional
+            "PortedNumberOwnerRegistrationID":"", //optional
+            
+            }
+            </param>
+            <returns>OperationResponse</returns> 
+        </member>
+        <member name="M:OrderService.Controllers.OrdersController.CreateSubscriber(OrderService.Models.AdditionalSubscriberRequest)">
+            <summary>
+            This will create an additional subscriber for the orderID input with the selected Bundle
+            </summary>
+            <param name="request">
+            body
+            {
+             "Token":"auth token",
+            "OrderID" :1,
+            "BundleID" :"1"        
+            }
+            </param>
+            <returns>OperationResponse</returns>
+        </member>
+        <member name="M:OrderService.Controllers.OrdersController.GetAvailableSlots(System.String)">
+            <summary>
+            This will returns a set of available delivery slots
+            </summary>
+            <param name="token"></param>
+            <returns>OperationResponse</returns>
+        </member>
+        <member name="M:OrderService.Controllers.OrdersController.UpdateOrderPersonalDetails(OrderService.Models.UpdateOrderPersonalDetailsRequest)">
+            <summary>
+            This will update personal details of the customer for the order
+            </summary>
+            <param name="request">
+            Form{
+            "Token":"Auth token"
+            "OrderID" :1,
+            "IDType" :"PAN",
+            "IDNumber":"P23FD",
+            "IDImageFront" : FileInput,
+            "IDImageBack" : FileInput,
+            "NameInNRIC" : "Name as in NRIC",
+            "Gender":"Male",
+            "DOB":"15/12/2000", //dd/MM/yyyy
+            "ContactNumber":"95421232", 
+            "Nationality":"singaporean",
+            
+            }
+            </param>
+            <returns>OperationResponse</returns>
+        </member>
+        <member name="M:OrderService.Controllers.OrdersController.UpdateOrderBillingDetails(OrderService.Models.UpdateOrderBillingDetailsRequest)">
+            <summary>
+            This will update billing details of the customer for the order
+            </summary>
+            <param name="request">
+            body{
+            "Token":"Auth token"
+            "OrderID" :1,
+            "Postcode" :"4563",
+            "BlockNumber":"P23FD",
+            "Unit" : "",
+            "Floor" : "Name as in NRIC",
+            "BuildingName":"Male",
+            "StreetName":"", 
+            "ContactNumber":"95421232", 
+            }
+            </param>
+            <returns>OperationResponse</returns>
+        </member>
+        <member name="M:OrderService.Controllers.OrdersController.UpdateOrderShippingDetails(OrderService.Models.UpdateOrderShippingDetailsRequest)">
+            <summary>
+            This will update Shipping details of the customer for the order
+            </summary>
+            <param name="request">
+            body{
+            "Token":"Auth token"
+            "OrderID" :1,
+            "Postcode" :"4563",
+            "BlockNumber":"P23FD",
+            "Unit" : "",
+            "Floor" : "Name as in NRIC",
+            "BuildingName":"Male",
+            "StreetName":"", 
+            "ContactNumber":"95421232", 
+            "IsBillingSame":1, 
+            "PortalSlotID":"12dfsf", 
+            }
+            </param>
+            <returns>OperationResponse</returns>
+        </member>
+        <member name="M:OrderService.Controllers.OrdersController.UpdateOrderLOADetails(OrderService.Models.UpdateOrderLOADetailsRequest)">
+            <summary>
+            This will update LOA details of the customer for the order
+            </summary>
+            <param name="request">
+            body{
+            "Token":"Auth token"
+            "OrderID" :1,
+            "RecipientName" :"4563",
+            "IDType":"P23FD",
+            "IDNumber" : "",      
+            "ContactNumber":"95421232", 
+            "EmailAdddress":"",        
+            }
+            </param>
+            <returns>OperationResponse</returns>
+        </member>
+        <member name="M:OrderService.Controllers.OrdersController.ValidateOrderReferralCode(OrderService.Models.ValidateOrderReferralCodeRequest)">
+            <summary>
+            This will validate referral code for the order
+            </summary>
+            <param name="request">
+            body{
+            "Token":"Auth token"
+            "OrderID" :1,
+            "ReferralCode" :"A4EDFE23",       
+            }
+            </param>
+            <returns>OperationResponse</returns>
+        </member>
+        <member name="M:OrderService.Controllers.OrdersController.GetOrderedNumbers(OrderService.Models.OrderedNumberRequest)">
+            <summary>
+            This will return all subscriptions/numbers for the given OrderID
+            </summary>
+            <param name="request">
+            body{
+            "Token":"Auth token"
+            "OrderID" :1             
+            }
+            </param>
+            <returns>OperationResponse</returns>
+        </member>
+        <member name="M:OrderService.Controllers.OrdersController.UpdateOrderSubscriptionDetails(OrderService.Models.UpdateOrderSubcriptionDetailsRequest)">
+            <summary>
+            This will update Order subscription details
+            </summary>
+            <param name="request">
+            body{
+            "Token":"Auth token"
+            "OrderID" :1,
+            "ContactNumber" :"95421232", // optional
+            "Terms":"1",
+            "PaymentSubscription" : "1",      
+            "PromotionMessage":"1",             
+            }
+            </param>
+            <returns>OperationResponse</returns>
+        </member>
+        <member name="M:OrderService.Controllers.OrdersController.GetPendingOrderDetails(System.String)">
+            <summary>
+            This will return OrderID, OrderNumber, OrderDate in pending order Details
+            </summary>
+            <param name="token"></param>
+            <returns>OperationResponse</returns>
+        </member>
+        <member name="M:OrderService.Controllers.OrdersController.GetCheckOutDetails(System.String,System.Int32)">
+            <summary>
+            This will create a checkout session and returns the details to call MPGS 
+            </summary>
+            <param name="token"></param>
+            <param name="orderId"></param>
+            <returns>OperationsResponse</returns>
+        </member>
+        <member name="M:OrderService.Controllers.OrdersController.UpdateCheckOutResponse(OrderService.Models.CheckOutResponseUpdate)">
+            <summary>
+            This will update checkout response to database and retrieve checkout infor from gateway
+            </summary>
+            <param name="updateRequest">
+            body{
+            "Token":"Auth token"
+            "MPGSOrderID" :"f88bere0",
+            "CheckOutSessionID" :"SESSION0002391471348N70583782K8",
+            "Result":"Success"       
+            }
+            </param>
+            <returns>OperationResponse</returns>
+        </member>
+        <member name="M:OrderService.DataAccess.OrderDataAccess.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Constructor setting configuration
+            </summary>
+            <param name="configuration"></param>
+        </member>
+        <member name="M:OrderService.DataAccess.OrderDataAccess.CreateOrder(OrderService.Models.CreateOrder)">
+            <summary>
+            This method will create a new order for createOrder endpoint
+            </summary>
+            <param name="order"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OrderService.DataAccess.WebhookDataAccess.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Constructor setting configuration
+            </summary>
+            <param name="configuration"></param>
+        </member>
+        <member name="M:OrderService.Models.AbstractGatewayApiClient.SendTransaction(OrderService.Models.GatewayApiRequest)">
+            <summary>
+            Abstract method reesponsible to prepare the request to be sent
+            </summary>
+            <returns>The transaction.</returns>
+            <param name="gatewayApiRequest">Gateway API request.</param>
+        </member>
+        <member name="M:OrderService.Models.GatewayApiClient.SendTransaction(OrderService.Models.GatewayApiRequest)">
+            <summary>
+            Sends the transaction.
+            </summary>
+            <returns>The transaction.</returns>
+            <param name="gatewayApiRequest">Gateway API request.</param>
+        </member>
+        <member name="M:OrderService.Models.GatewayApiRequest.getApiGatewayBaseURL">
+            <summary>
+            return the correct API gateway base URL, depends on the authentication method.
+            </summary>
+            <returns>The API gateway base URL.</returns>
+        </member>
+        <member name="M:OrderService.Models.GatewayApiRequest.buildNVPMap">
+            <summary>
+            Builds the NVP Map
+            </summary>
+            <returns>The NVP Map.</returns>
+        </member>
+        <member name="M:OrderService.Models.GatewayApiRequest.buildPayload">
+            <summary>
+            Builds the JSON payload.
+            </summary>
+            <returns>The JSON payload.</returns>
+        </member>
+        <member name="M:OrderService.Models.JsonHelper.BuildJsonFromNVC(System.Collections.Specialized.NameValueCollection)">
+            <summary>
+            Converts a NameValueCollection into a properly formated JSON string,
+            </summary>
+            <param name="nvc">
+            Keys must be in form of "sourceOfFunds.provided.card.expiry.month" using "." to
+            represent the levels of nesting of the JSON structure
+            </param>
+            <returns>
+            JSON String
+            </returns>
+        </member>
+        <member name="M:OrderService.Models.JsonHelper.BuildNVCFromJson(System.String)">
+            <summary>
+            Converts a JSON string into a NameValueCollection representing the JSON structure
+            </summary>
+            <param name="json">
+            JSON string to convert
+            </param>
+            NameValueCollection, key names represent the JSON nesting using "." delimeters
+            "sourceOfFunds.provided.cardDetails.card.expiry.month"
+            <returns></returns>
+        </member>
+        <member name="M:OrderService.Models.JsonHelper.TraverseDictionary(System.String,System.Collections.Generic.Dictionary{System.String,System.Object})">
+            <summary>
+            Process and recursively keep calling itself to process all levels of the JSON string
+            </summary>
+            <param name="path">
+            String that keeps track of what to prefix each key with to maintain JSON nesting
+            </param>
+            <param name="dict">
+            The dictionary level working with
+            </param>
+            <returns>
+            NameValueCollection of all the nested JSON parameters
+            </returns>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:OrderService.Models.TransactionResponseModel.toTransactionResponseModel(System.String)" -->
+        <member name="T:OrderService.Startup">
+            <summary>
+            Application startup/entry point
+            </summary>
+        </member>
+    </members>
+</doc>

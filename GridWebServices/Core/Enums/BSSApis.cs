@@ -56,6 +56,7 @@ namespace Core.Enums
         [Description("BSS Free")]
         Free = 3,        
     }
+      
 
     public enum PremiumTypes
     {
