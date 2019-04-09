@@ -38,6 +38,17 @@ namespace OrderService.Controllers
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                                                   .SelectMany(x => x.Errors)
+                                                   .Select(x => x.ErrorMessage))
+                    });
+                }
                 BSSAPIHelper helper = new BSSAPIHelper();
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -136,6 +147,17 @@ namespace OrderService.Controllers
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                                                   .SelectMany(x => x.Errors)
+                                                   .Select(x => x.ErrorMessage))
+                    });
+                }
                 BSSAPIHelper helper = new BSSAPIHelper();
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -338,7 +360,17 @@ namespace OrderService.Controllers
         {
             try
             {
-
+                if (!ModelState.IsValid)
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                                                   .SelectMany(x => x.Errors)
+                                                   .Select(x => x.ErrorMessage))
+                    });
+                }
                 BSSAPIHelper helper = new BSSAPIHelper();
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -661,6 +693,17 @@ namespace OrderService.Controllers
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                                                   .SelectMany(x => x.Errors)
+                                                   .Select(x => x.ErrorMessage))
+                    });
+                }
                 // clarify date range -- preferably need to send from UI
 
                 BSSAPIHelper helper = new BSSAPIHelper();
