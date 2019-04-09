@@ -863,15 +863,11 @@ namespace OrderService.Models
         [Required(ErrorMessage = "IDNumber is required")]
         public string IDNumber { get; set; }
 
-        /// <summary>
-        /// Gets or sets the identifier.
-        /// </summary>
-        /// <value>
-        /// The identifier.
-        /// </value>
-        [Required(ErrorMessage = "ID Image is required")]
-        public IFormFile ID { get; set; }
+        [Required(ErrorMessage = "IDImageFront Image is required")]
+        public IFormFile IDImageFront { get; set; }
 
+        [Required(ErrorMessage = "IDImageBack Image is required")]
+        public IFormFile IDImageBack { get; set; }
         /// <summary>
         /// Gets or sets the name in nric.
         /// </summary>
@@ -951,7 +947,8 @@ namespace OrderService.Models
         /// <value>
         /// The identifier image URL.
         /// </value>
-        public string IDImageUrl { get; set; }
+        public string IDFrontImageUrl { get; set; }
+        public string IDBackImageUrl { get; set; }
         /// <summary>
         /// Gets or sets the name in nric.
         /// </summary>
@@ -1508,6 +1505,20 @@ namespace OrderService.Models
         /// The end date.
         /// </value>
         public DateTime EndDate { get; set; }
+
+    }
+    public class BSSRequestAssets
+    {
+        [Required(ErrorMessage = "Token required")]
+        public string Token { get; set; }
+
+    }
+    public class BSSRequestMore
+    {
+        [Required(ErrorMessage = "Token required")]
+        public string Token { get; set; }
+
+        public int Type { get; set; }
 
     }
 }
