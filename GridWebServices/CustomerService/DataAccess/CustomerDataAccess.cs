@@ -248,56 +248,7 @@ namespace CustomerService.DataAccess
             }
         }
 
-        /// <summary>
-        /// Changes the phone request.
-        /// </summary>
-        /// <param name="changePhone">The change phone.</param>
-        /// <returns></returns>
-        public async Task<DatabaseResponse> ChangePhoneRequest(ChangePhoneRequest changePhone)
-        {
-            try
-            {
-
-                SqlParameter[] parameters =
-                {
-                    new SqlParameter( "@CustomerID",  SqlDbType.NVarChar ),
-                    new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar),
-                    new SqlParameter( "@NewMobileNumber",  SqlDbType.NVarChar ),
-                    new SqlParameter( "@RequestTypeDescription",  SqlDbType.NVarChar),
-                    new SqlParameter( "@PremiumType",  SqlDbType.Int),
-                    //new SqlParameter( "@PortedNumberTransferForm",  SqlDbType.NVarChar),
-                    //new SqlParameter( "@PortedNumberOwnedBy",  SqlDbType.NVarChar),
-                    //new SqlParameter( "@PortedNumberOwnerRegistrationID",  SqlDbType.NVarChar)
-                    
-                };
-
-                parameters[0].Value = changePhone.CustomerId;
-                parameters[1].Value = changePhone.MobileNumber;
-                parameters[2].Value = changePhone.NewMobileNumber;
-                parameters[3].Value = Core.Enums.RequestType.ChangeNumber.GetDescription();
-                parameters[4].Value = changePhone.PremiumType;
-                //parameters[5].Value = changePhone.PortedNumberTransferForm;
-                //parameters[6].Value = changePhone.PortedNumberOwnedBy;
-                //parameters[7].Value = changePhone.PortedNumberOwnerRegistrationId;
-
-                _DataHelper = new DataAccessHelper("Customer_CR_ChangePhoneRequest", parameters, _configuration);
-
-                var result = await _DataHelper.RunAsync();
-
-                return new DatabaseResponse { ResponseCode = result };
-            }
-
-            catch (Exception ex)
-            {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-
-                throw;
-            }
-            finally
-            {
-                _DataHelper.Dispose();
-            }
-        }
+        
 
         /// <summary>
         /// Gets the customer plans.
