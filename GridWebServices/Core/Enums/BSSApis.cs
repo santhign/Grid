@@ -56,22 +56,7 @@ namespace Core.Enums
         [Description("BSS Free")]
         Free = 3,        
     }
-
-    /// <summary>Different PlanType </summary>
-    public enum PlanType
-    {
-        [EnumMember(Value = "Base")]
-        [Description("Base")]
-        Base = 0,
-
-        [EnumMember(Value = "VAS")]
-        [Description("VAS Plan")]
-        VAS = 1,
-
-        [EnumMember(Value = "Shared_VAS")]
-        [Description("Shared VAS")]
-        Shared_VAS = 2,
-    }
+      
 
     public enum PremiumTypes
     {
