@@ -16,6 +16,7 @@ using Core.Helpers;
 using System.IO;
 using OrderService.Enums;
 using System.Net;
+using Microsoft.IdentityModel.Tokens;
 
 namespace OrderService.Controllers
 {
@@ -24,10 +25,11 @@ namespace OrderService.Controllers
     public class ChangeRequestController : ControllerBase
     {
         readonly IConfiguration _iconfiguration;
-
-        public ChangeRequestController(IConfiguration configuration)
+        readonly IChangeRequestDataAccess _changeRequestDataAccess;
+        public ChangeRequestController(IConfiguration configuration, IChangeRequestDataAccess changeRequestDataAccess)
         {
             _iconfiguration = configuration;
+            _changeRequestDataAccess = changeRequestDataAccess;
         }
 
         /// <summary>
@@ -38,8 +40,8 @@ namespace OrderService.Controllers
         /// <param name="planId">The plan identifier.</param>
         /// <returns></returns>
         [HttpPost]
-        [Route("RemoveVasService")]
-        public async Task<IActionResult> RemoveVasService(string token, string mobileNumber, int planId)
+        [Route("RemoveVasService/{mobileNumber}/{planId}")]
+        public async Task<IActionResult> RemoveVasService([FromHeader]string token, string mobileNumber, int planId)
         {
 
             try
@@ -56,7 +58,7 @@ namespace OrderService.Controllers
                     });
                 }
 
-                var orderAccess = new ChangeRequestDataAccess(_iconfiguration);
+                var orderAccess = _changeRequestDataAccess;//new ChangeRequestDataAccess(_iconfiguration);
                 var tokenAuthResponse = await orderAccess.AuthenticateCustomerToken(token);
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {

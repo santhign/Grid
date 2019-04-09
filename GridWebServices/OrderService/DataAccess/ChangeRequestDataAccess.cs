@@ -14,7 +14,7 @@ using Core.Extensions;
 
 namespace OrderService.DataAccess
 {
-    public class ChangeRequestDataAccess
+    public class ChangeRequestDataAccess : IChangeRequestDataAccess
     {
         internal DataAccessHelper _DataHelper = null;
 
@@ -43,14 +43,16 @@ namespace OrderService.DataAccess
 
                 SqlParameter[] parameters =
                 {
-                    new SqlParameter( "@CustomerId",  SqlDbType.Int ),
-                    new SqlParameter( "@OldMobileNumber",  SqlDbType.NVarChar ),
-                    new SqlParameter( "@PlanId",  SqlDbType.Int)
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+                    new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@PlanID",  SqlDbType.Int),
+                    new SqlParameter( "@RequestType",  SqlDbType.NVarChar )
                 };
 
                 parameters[0].Value = customerId;
                 parameters[1].Value = mobileNumber;
                 parameters[2].Value = planId;
+                parameters[3].Value = Core.Enums.RequestType.Removal.GetDescription();
 
 
                 _DataHelper = new DataAccessHelper("Orders_CR_InsertRemoveVAS", parameters, _configuration);
@@ -89,16 +91,18 @@ namespace OrderService.DataAccess
 
                 SqlParameter[] parameters =
                 {
-                    new SqlParameter( "@CustomerId",  SqlDbType.Int ),
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
                     new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar ),
                     new SqlParameter( "@BundleID",  SqlDbType.Int),
-                    new SqlParameter( "@Quantity",  SqlDbType.Int)
+                    new SqlParameter( "@Quantity",  SqlDbType.Int),
+                    new SqlParameter( "@RequestType",  SqlDbType.Int)
                 };
 
                 parameters[0].Value = customerId;
                 parameters[1].Value = mobileNumber;
                 parameters[2].Value = bundleId;
                 parameters[3].Value = quantity;
+                parameters[4].Value = Core.Enums.RequestType.Addition.GetDescription();
 
 
                 _DataHelper = new DataAccessHelper("Orders_CR_BuyVAS", parameters, _configuration);
