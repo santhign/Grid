@@ -9,6 +9,7 @@ using System.Data;
 using System.Data.SqlClient;
 using InfrastructureService;
 using Core.Enums;
+using Core.Models;
 
 
 namespace CustomerService.DataAccess
@@ -28,37 +29,46 @@ namespace CustomerService.DataAccess
             _configuration = configuration;
         }
 
-        public async Task<ForgetPassword> GetForgetPassword(Emails emails)
+        public async Task<DatabaseResponse> GetForgetPassword(string email)
         {
             try
             {
                 SqlParameter[] parameters =
                  {
-                    new SqlParameter( "@EmailAddress",  SqlDbType.VarChar ) 
+                    new SqlParameter( "@EmailAddress",  SqlDbType.VarChar )
                 };
 
-                parameters[0].Value = emails.EmailId;
+                parameters[0].Value = email;
 
                 _DataHelper = new DataAccessHelper("Customer_ForgotPassword", parameters, _configuration);
 
                 DataTable dt = new DataTable();
 
-                _DataHelper.Run(dt);
+                int result = await _DataHelper.RunAsync(dt); //111/107/109
 
-                List< ForgetPassword> _forgetPassword = new List<ForgetPassword>();
+                ForgetPassword changePasswordToken = new ForgetPassword();
+
+                DatabaseResponse response = new DatabaseResponse();
 
                 if (dt != null && dt.Rows.Count > 0)
                 {
 
-                    _forgetPassword = (from model in dt.AsEnumerable()
-                                 select new ForgetPassword ()
-                                 {
-                                     CustomerId = model.Field<int>("CustomerId"),
-                                     Token = model.Field<string>("Token") 
-                                 }).ToList();
+                    changePasswordToken = (from model in dt.AsEnumerable()
+                                           select new ForgetPassword()
+                                           {
+                                               CustomerId = model.Field<int>("CustomerId"),
+                                               Token = model.Field<string>("Token")
+                                           }).FirstOrDefault();
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = changePasswordToken };
                 }
 
-                return _forgetPassword[0];
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
 
             }
             catch (Exception ex)
