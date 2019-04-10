@@ -195,7 +195,6 @@ namespace Core.Helpers
             return (int)command.Parameters["ReturnValue"].Value; 
         }
 
-
         /// <summary>
         /// Dispose connection and command objects
         /// </summary>
