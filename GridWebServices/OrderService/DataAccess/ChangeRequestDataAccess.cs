@@ -95,7 +95,7 @@ namespace OrderService.DataAccess
                     new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar ),
                     new SqlParameter( "@BundleID",  SqlDbType.Int),
                     new SqlParameter( "@Quantity",  SqlDbType.Int),
-                    new SqlParameter( "@RequestType",  SqlDbType.Int)
+                    new SqlParameter( "@RequestType",  SqlDbType.NVarChar)
                 };
 
                 parameters[0].Value = customerId;
@@ -333,70 +333,6 @@ namespace OrderService.DataAccess
             {
                 _DataHelper.Dispose();
             }
-        }
-
-        public async Task<DatabaseResponse> AuthenticateCustomerToken(string token)
-        {
-            try
-            {
-
-                SqlParameter[] parameters =
-                {
-                    new SqlParameter( "@Token",  SqlDbType.NVarChar )
-
-                };
-
-                parameters[0].Value = token;
-
-                _DataHelper = new DataAccessHelper(DbObjectNames.Customer_AuthenticateToken, parameters, _configuration);
-
-                var dt = new DataTable();
-
-                int result = await _DataHelper.RunAsync(dt); // 111 /109
-
-                DatabaseResponse response = new DatabaseResponse();
-
-                if (result == 111)
-                {
-
-                    AuthTokenResponse tokenResponse = new AuthTokenResponse();
-
-                    if (dt != null && dt.Rows.Count > 0)
-                    {
-
-                        tokenResponse = (from model in dt.AsEnumerable()
-                            select new AuthTokenResponse()
-                            {
-                                CustomerID = model.Field<int>("CustomerID"),
-
-                                CreatedOn = model.Field<DateTime>("CreatedOn")
-
-
-                            }).FirstOrDefault();
-                    }
-
-                    response = new DatabaseResponse { ResponseCode = result, Results = tokenResponse };
-
-                }
-
-                else
-                {
-                    response = new DatabaseResponse { ResponseCode = result };
-                }
-
-                return response;
-            }
-
-            catch (Exception ex)
-            {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-
-                throw (ex);
-            }
-            finally
-            {
-                _DataHelper.Dispose();
-            }
-        }
+        }       
     }
 }

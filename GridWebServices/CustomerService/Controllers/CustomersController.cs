@@ -178,8 +178,8 @@ namespace CustomerService.Controllers
         /// <returns>
         /// Success or Failure status code
         /// </returns>
-        [HttpPut("UpdateCustomerProfile/{token}/{password}/{mobileNumber}")]
-        public async Task<IActionResult> UpdateCustomerProfile(string token, string password, string mobileNumber)
+        [HttpPut("UpdateCustomerProfile/{password}/{mobileNumber}")]
+        public async Task<IActionResult> UpdateCustomerProfile([FromHeader(Name = "Grid-Authorization-Token")] string token,[FromRoute] string password, [FromRoute] string mobileNumber)
         {
             try
             {
@@ -195,7 +195,8 @@ namespace CustomerService.Controllers
                     });
                 }
                 var customerAccess = new CustomerDataAccess(_iconfiguration);
-                var tokenAuthResponse = await customerAccess.AuthenticateCustomerToken(token);
+                var helper = new AuthHelper(_iconfiguration);
+                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
                     var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
@@ -262,8 +263,8 @@ namespace CustomerService.Controllers
         /// <param name="planType">Plan Type</param>
         /// <returns></returns>
         /// <exception cref="Exception">Customer record not found for " + token + " token</exception>
-        [HttpGet("CustomerPlans/{token}")]
-        public async Task<IActionResult> GetCustomerPlans([FromRoute] string token, string mobileNumber, int ? planType)
+        [HttpGet("CustomerPlans")]
+        public async Task<IActionResult> GetCustomerPlans([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] string mobileNumber, [FromRoute] int ? planType)
         {
             try
             {
@@ -281,7 +282,8 @@ namespace CustomerService.Controllers
                 }
 
                 var customerAccess = new CustomerDataAccess(_iconfiguration);
-                var tokenAuthResponse = await customerAccess.AuthenticateCustomerToken(token);
+                var helper = new AuthHelper(_iconfiguration);
+                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
                 if (tokenAuthResponse.ResponseCode == (int) DbReturnValue.AuthSuccess)
                 {
                     var aTokenResp = (AuthTokenResponse) tokenAuthResponse.Results;
@@ -336,8 +338,8 @@ namespace CustomerService.Controllers
         /// <returns>
         /// List of Shared VAS plan associated with Customers along with all subscribers
         /// </returns>
-        [HttpGet("GetSharedVASPlansForCustomer/{token}")]
-        public async Task<IActionResult> GetSharedVasPlansForCustomer([FromRoute] string token, string mobileNumber)
+        [HttpGet("GetSharedVASPlansForCustomer")]
+        public async Task<IActionResult> GetSharedVasPlansForCustomer([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] string mobileNumber)
         {
 
             if (!ModelState.IsValid)
@@ -363,8 +365,8 @@ namespace CustomerService.Controllers
         /// <returns>
         /// List of VAS plan associated with Customers along with all subscribers
         /// </returns>
-        [HttpGet("GetVASPlansForCustomer/{token}")]
-        public async Task<IActionResult> GetVasPlansForCustomer([FromRoute] string token, string mobileNumber)
+        [HttpGet("GetVASPlansForCustomer/{mobileNumber}")]
+        public async Task<IActionResult> GetVasPlansForCustomer([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] string mobileNumber)
         {
 
             if (!ModelState.IsValid)
@@ -679,12 +681,11 @@ namespace CustomerService.Controllers
 
 
         /// <summary>
-        /// This will send forget password mail
+        /// Forgets the password.
         /// </summary>
-        /// <param name="email">abcd@gmail.com</param>
-        /// <returns>
-        /// Customer Id and Token key
-        /// </returns>
+        /// <param name="token">The token.</param>
+        /// <param name="email">The email.</param>
+        /// <returns></returns>
         [HttpGet]
         [Route("ForgetPassword/{email}")]
         public async Task<IActionResult> ForgetPassword([FromHeader(Name = "Grid-Authorization-Token")] string token,[FromRoute] string email)

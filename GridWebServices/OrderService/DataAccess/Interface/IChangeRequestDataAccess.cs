@@ -52,12 +52,6 @@ namespace OrderService.DataAccess
         /// <param name="changePhone">The change phone.</param>
         /// <returns></returns>
         Task<DatabaseResponse> ChangePhoneRequest(ChangePhoneRequest changePhone);
-        /// <summary>
-        /// Authenticates the customer token.
-        /// </summary>
-        /// <param name="token">The token.</param>
-        /// <returns></returns>
-        Task<DatabaseResponse> AuthenticateCustomerToken(string token);
 
     }
 }

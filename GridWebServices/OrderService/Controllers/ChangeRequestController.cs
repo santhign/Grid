@@ -41,7 +41,7 @@ namespace OrderService.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("RemoveVasService/{mobileNumber}/{planId}")]
-        public async Task<IActionResult> RemoveVasService([FromHeader]string token, string mobileNumber, int planId)
+        public async Task<IActionResult> RemoveVasService([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] string mobileNumber, [FromRoute] int planId)
         {
 
             try
@@ -58,13 +58,14 @@ namespace OrderService.Controllers
                     });
                 }
 
-                var orderAccess = _changeRequestDataAccess;//new ChangeRequestDataAccess(_iconfiguration);
-                var tokenAuthResponse = await orderAccess.AuthenticateCustomerToken(token);
+                //var orderAccess = _changeRequestDataAccess;//new ChangeRequestDataAccess(_iconfiguration);
+                var helper = new AuthHelper(_iconfiguration);
+                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
                     var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
                     var statusResponse =
-                        await orderAccess.RemoveVasService(aTokenResp.CustomerID, mobileNumber, planId);
+                        await _changeRequestDataAccess.RemoveVasService(aTokenResp.CustomerID, mobileNumber, planId);
 
                     if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                     {
@@ -127,7 +128,7 @@ namespace OrderService.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("BuyVasService/{mobileNumber}/{bundleId}/{quantity}")]
-        public async Task<IActionResult> BuyVasService([FromHeader]string token, string mobileNumber, int bundleId, int quantity)
+        public async Task<IActionResult> BuyVasService([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] string mobileNumber, [FromRoute] int bundleId, [FromRoute] int quantity)
         {
 
             try
@@ -144,13 +145,14 @@ namespace OrderService.Controllers
                     });
                 }
 
-                var changeRequestDataAccess = new ChangeRequestDataAccess(_iconfiguration);
-                var tokenAuthResponse = await changeRequestDataAccess.AuthenticateCustomerToken(token);
+
+                var helper = new AuthHelper(_iconfiguration);
+                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
                     var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
                     var statusResponse =
-                        await changeRequestDataAccess.BuyVasService(aTokenResp.CustomerID, mobileNumber, bundleId, quantity);
+                        await _changeRequestDataAccess.BuyVasService(aTokenResp.CustomerID, mobileNumber, bundleId, quantity);
 
                     if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                     {
@@ -210,8 +212,8 @@ namespace OrderService.Controllers
         /// <param name="remark">The remark.</param>
         /// <returns></returns>
         [HttpPost]
-        [Route("SubscriberTerminationRequest/{mobileNumber}")]
-        public async Task<IActionResult> SubscriberTerminationRequest([FromHeader] string token, string mobileNumber, string remark)
+        [Route("TerminationRequest/{mobileNumber}/{remark}")]
+        public async Task<IActionResult> TerminationRequest([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] string mobileNumber, [FromRoute] string remark)
         {
 
             try
@@ -228,15 +230,15 @@ namespace OrderService.Controllers
                     });
                 }
 
-                var changeRequestDataAccess = new ChangeRequestDataAccess(_iconfiguration);
 
-                var tokenAuthResponse = await changeRequestDataAccess.AuthenticateCustomerToken(token);
+                var helper = new AuthHelper(_iconfiguration);
 
+                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
                     var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
 
-                    var statusResponse = await changeRequestDataAccess.TerminationOrSuspensionRequest(aTokenResp.CustomerID, mobileNumber, Core.Enums.RequestType.Termination.GetDescription(), remark);
+                    var statusResponse = await _changeRequestDataAccess.TerminationOrSuspensionRequest(aTokenResp.CustomerID, mobileNumber, Core.Enums.RequestType.Termination.GetDescription(), remark);
 
                     if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                     {
@@ -297,8 +299,8 @@ namespace OrderService.Controllers
         /// <param name="mobileNumber">The mobile number.</param>
         /// <returns></returns>
         [HttpPost]
-        [Route("SubscriberSimReplacementRequest/{mobileNumber}")]
-        public async Task<IActionResult> SubscriberSimReplacementRequest([FromHeader]string token, string mobileNumber)
+        [Route("SimReplacementRequest/{mobileNumber}")]
+        public async Task<IActionResult> SimReplacementRequest([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] string mobileNumber)
         {
 
             try
@@ -315,15 +317,14 @@ namespace OrderService.Controllers
                     });
                 }
 
-                var changeRequestDataAccess = new ChangeRequestDataAccess(_iconfiguration);
-
-                var tokenAuthResponse = await changeRequestDataAccess.AuthenticateCustomerToken(token);
+                var helper = new AuthHelper(_iconfiguration);
+                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
 
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
                     var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
 
-                    var statusResponse = await changeRequestDataAccess.SimReplacementRequest(aTokenResp.CustomerID, mobileNumber);
+                    var statusResponse = await _changeRequestDataAccess.SimReplacementRequest(aTokenResp.CustomerID, mobileNumber);
 
                     if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                     {
@@ -384,10 +385,9 @@ namespace OrderService.Controllers
         /// <param name="remark">The remark.</param>
         /// <returns></returns>
         [HttpPost]
-        [Route("SubscriberSuspensionRequest/{mobileNumber}")]
-        public async Task<IActionResult> SubscriberSuspensionRequest([FromHeader]string token, string mobileNumber, string remark)
+        [Route("SuspensionRequest/{mobileNumber}/{remark}")]
+        public async Task<IActionResult> SuspensionRequest([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] string mobileNumber, [FromRoute] string remark)
         {
-
             try
             {
                 if (!ModelState.IsValid)
@@ -402,15 +402,14 @@ namespace OrderService.Controllers
                     });
                 }
 
-                var changeRequestDataAccess = new ChangeRequestDataAccess(_iconfiguration);
-
-                var tokenAuthResponse = await changeRequestDataAccess.AuthenticateCustomerToken(token);
+                var helper = new AuthHelper(_iconfiguration);
+                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
 
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
                     var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
 
-                    var statusResponse = await changeRequestDataAccess.TerminationOrSuspensionRequest(aTokenResp.CustomerID, mobileNumber, Core.Enums.RequestType.Suspension.GetDescription(), remark);
+                    var statusResponse = await _changeRequestDataAccess.TerminationOrSuspensionRequest(aTokenResp.CustomerID, mobileNumber, Core.Enums.RequestType.Suspension.GetDescription(), remark);
 
                     if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                     {
@@ -471,7 +470,7 @@ namespace OrderService.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("ChangePhoneNumberRequest")]
-        public async Task<IActionResult> ChangePhoneNumberRequest([FromHeader]string token, [FromBody]ChangePhoneRequest request)
+        public async Task<IActionResult> ChangePhoneNumberRequest([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody]ChangePhoneRequest request)
         {
             try
             {
@@ -487,16 +486,15 @@ namespace OrderService.Controllers
                     });
                 }
 
-                var changeRequestDataAccess = new ChangeRequestDataAccess(_iconfiguration);
-
-                var tokenAuthResponse = await changeRequestDataAccess.AuthenticateCustomerToken(token);
+                var helper = new AuthHelper(_iconfiguration);
+                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
 
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
                     var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
                     request.CustomerId = aTokenResp.CustomerID;
                     var statusResponse =
-                        await changeRequestDataAccess.ChangePhoneRequest(request);
+                        await _changeRequestDataAccess.ChangePhoneRequest(request);
 
                     if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                     {
