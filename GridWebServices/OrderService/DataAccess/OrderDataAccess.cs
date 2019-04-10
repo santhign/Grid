@@ -57,7 +57,7 @@ namespace OrderService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                int result = _DataHelper.Run(dt);
+                int result = await _DataHelper.RunAsync(dt);
 
                 OrderInit orderCreated = new OrderInit();
 
@@ -112,7 +112,7 @@ namespace OrderService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                int result = _DataHelper.Run();    // 100 / 107 
+                int result = await _DataHelper.RunAsync();    // 100 / 107 
 
                 return new DatabaseResponse { ResponseCode = result };
             }
@@ -146,7 +146,7 @@ namespace OrderService.DataAccess
 
                 DataSet ds = new DataSet();
 
-                int result = _DataHelper.Run(ds); // 105 /109
+                int result = await _DataHelper.RunAsync(ds); // 105 /109
 
                 DatabaseResponse response = new DatabaseResponse();
 
@@ -232,7 +232,7 @@ namespace OrderService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                _DataHelper.Run(dt);
+                await _DataHelper.RunAsync(dt);
 
                 BSSAssetRequest assetRequest = new BSSAssetRequest();
 
@@ -284,7 +284,7 @@ namespace OrderService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                int result = _DataHelper.Run(dt); // 102 /105
+                int result = await _DataHelper.RunAsync(dt); // 102 /105
 
                 DatabaseResponse response = new DatabaseResponse();
 
@@ -347,7 +347,7 @@ namespace OrderService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                int result = _DataHelper.Run(dt); // 111 /109
+                int result = await _DataHelper.RunAsync(dt); // 111 /109
 
                 DatabaseResponse response = new DatabaseResponse();
 
@@ -418,7 +418,7 @@ namespace OrderService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                int result = _DataHelper.Run();    // 101 / 102 
+                int result = await _DataHelper.RunAsync();    // 101 / 102 
 
                 return new DatabaseResponse { ResponseCode = result };
             }
@@ -467,7 +467,7 @@ namespace OrderService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                int result = _DataHelper.Run();    // 101 / 109 
+                int result = await _DataHelper.RunAsync();    // 101 / 109 
 
                 return new DatabaseResponse { ResponseCode = result };
             }
@@ -501,7 +501,7 @@ namespace OrderService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                int result = _DataHelper.Run(dt); // 102 /105
+                int result = await _DataHelper.RunAsync(dt); // 102 /105
 
                 DatabaseResponse response = new DatabaseResponse();
 
@@ -556,7 +556,7 @@ namespace OrderService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                int result = _DataHelper.Run(dt); // 102 /105
+                int result = await _DataHelper.RunAsync(dt); // 102 /105
 
                 DatabaseResponse response = new DatabaseResponse();
 
@@ -622,7 +622,7 @@ namespace OrderService.DataAccess
 
                 DataSet ds = new DataSet();
 
-                int result = _DataHelper.Run(ds); // 105 /102
+                int result = await _DataHelper.RunAsync(ds); // 105 /102
 
                 DatabaseResponse response = new DatabaseResponse();
 
@@ -746,7 +746,7 @@ namespace OrderService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                int result = _DataHelper.Run(dt); // 105 /102
+                int result = await _DataHelper.RunAsync(dt); // 105 /102
 
                 DatabaseResponse response = new DatabaseResponse();
 
@@ -801,7 +801,7 @@ namespace OrderService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                int result = _DataHelper.Run(dt); // 105 /102
+                int result = await _DataHelper.RunAsync(dt); // 105 /102
 
                 DatabaseResponse response = new DatabaseResponse();
 
@@ -882,7 +882,7 @@ namespace OrderService.DataAccess
 
                 _DataHelper = new DataAccessHelper("Orders_UpdateOrderBasicDetails", parameters, _configuration);
 
-                int result = _DataHelper.Run();    // 101 / 109 
+                int result = await _DataHelper.RunAsync();    // 101 / 109 
 
                 return new DatabaseResponse { ResponseCode = result };
             }
@@ -926,7 +926,7 @@ namespace OrderService.DataAccess
 
                 _DataHelper = new DataAccessHelper("Orders_UpdateOrderBillingDetails", parameters, _configuration);
 
-                int result = _DataHelper.Run();    // 101 / 109 
+                int result = await _DataHelper.RunAsync();    // 101 / 109 
 
                 return new DatabaseResponse { ResponseCode = result };
             }
@@ -974,7 +974,7 @@ namespace OrderService.DataAccess
 
                 _DataHelper = new DataAccessHelper("Orders_UpdateOrderShippingDetails", parameters, _configuration);
 
-                int result = _DataHelper.Run();    // 101 / 109 
+                int result = await _DataHelper.RunAsync();    // 101 / 109 
 
                 return new DatabaseResponse { ResponseCode = result };
             }
@@ -1014,7 +1014,7 @@ namespace OrderService.DataAccess
 
                 _DataHelper = new DataAccessHelper("Orders_UpdateOrderLOADetails", parameters, _configuration);
 
-                int result = _DataHelper.Run();    // 101 / 109 
+                int result = await _DataHelper.RunAsync();    // 101 / 109 
 
                 return new DatabaseResponse { ResponseCode = result };
             }
@@ -1047,7 +1047,7 @@ namespace OrderService.DataAccess
 
                 _DataHelper = new DataAccessHelper("Orders_ValidateReferralCode", parameters, _configuration);
 
-                int result = _DataHelper.Run();    // 105 / 109 
+                int result = await _DataHelper.RunAsync();    // 105 / 109 
 
                 return new DatabaseResponse { ResponseCode = result };
             }
@@ -1080,7 +1080,7 @@ namespace OrderService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                int result = _DataHelper.Run(dt);    // 105 / 109 
+                int result = await _DataHelper.RunAsync(dt);    // 105 / 109 
                 DatabaseResponse response = new DatabaseResponse();
                 if (result == 105)
                 {
@@ -1141,7 +1141,7 @@ namespace OrderService.DataAccess
 
                 _DataHelper = new DataAccessHelper("Orders_UpdateOrderSubscriptions", parameters, _configuration);
 
-                int result = _DataHelper.Run();    // 101 / 109 
+                int result = await _DataHelper.RunAsync();    // 101 / 109 
 
                 return new DatabaseResponse { ResponseCode = result };
             }
@@ -1173,7 +1173,7 @@ namespace OrderService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                int result = _DataHelper.Run(dt);    // 105 / 119 
+                int result = await _DataHelper.RunAsync(dt);    // 105 / 119 
                 DatabaseResponse response = new DatabaseResponse();
                 if (result == 105)
                 {
@@ -1239,7 +1239,7 @@ namespace OrderService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                int result = _DataHelper.Run(dt);    // 105 / 102
+                int result = await _DataHelper.RunAsync(dt);    // 105 / 102
                 DatabaseResponse response = new DatabaseResponse();
                 if (result == 105)
                 {
@@ -1296,7 +1296,7 @@ namespace OrderService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                int result = _DataHelper.Run();    // 105 / 102
+                int result = await _DataHelper.RunAsync();    // 105 / 102
 
                 DatabaseResponse response = new DatabaseResponse();
 
@@ -1368,7 +1368,7 @@ namespace OrderService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                int result = _DataHelper.Run();    // 105 / 102
+                int result = await _DataHelper.RunAsync();    // 105 / 102
 
                 DatabaseResponse response = new DatabaseResponse();
 
@@ -1406,7 +1406,7 @@ namespace OrderService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                int result = _DataHelper.Run();    // 104 /103/ 109 
+                int result = await _DataHelper.RunAsync();    // 104 /103/ 109 
 
                 DatabaseResponse response = new DatabaseResponse();
 
@@ -1447,7 +1447,7 @@ namespace OrderService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                int result = _DataHelper.Run();    // 104 /103/ 109 
+                int result = await _DataHelper.RunAsync();    // 104 /103/ 109 
 
                 DatabaseResponse response = new DatabaseResponse();
 
@@ -1483,7 +1483,7 @@ namespace OrderService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                int result = _DataHelper.Run(dt);    // 105 /102
+                int result = await _DataHelper.RunAsync(dt);    // 105 /102
 
                 DatabaseResponse response = new DatabaseResponse();
 
@@ -1543,7 +1543,7 @@ namespace OrderService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                int result = _DataHelper.Run();    // 105 / 102
+                int result = await _DataHelper.RunAsync();    // 105 / 102
 
                 DatabaseResponse response = new DatabaseResponse();
 
@@ -1579,7 +1579,7 @@ namespace OrderService.DataAccess
                 _DataHelper = new DataAccessHelper("Orders_RollBackOldUnfinishedOrder", parameters, _configuration);
               
 
-                int result = _DataHelper.Run(); // 103 /104
+                int result = await _DataHelper.RunAsync(); // 103 /104
 
                 return new DatabaseResponse { ResponseCode = result };
                  
@@ -1619,7 +1619,7 @@ namespace OrderService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                _DataHelper.Run(dt);
+                await _DataHelper.RunAsync(dt);
 
                 BSSAssetRequest assetRequest = new BSSAssetRequest();
 

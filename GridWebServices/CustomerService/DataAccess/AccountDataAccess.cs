@@ -17,7 +17,7 @@ namespace CustomerService.DataAccess
     {
         internal DataAccessHelper _DataHelper = null;
 
-        private IConfiguration _configuration;
+        private readonly IConfiguration _configuration;
 
         /// <summary>
         /// Constructor setting configuration
@@ -45,7 +45,7 @@ namespace CustomerService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                int result = _DataHelper.Run(dt);
+                int result = await _DataHelper.RunAsync(dt);
 
                 Customer customer = new Customer();
 
@@ -104,7 +104,7 @@ namespace CustomerService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                int result = _DataHelper.Run(dt); // 100 /105
+                int result = await _DataHelper.RunAsync(dt); // 100 /105
 
                 DatabaseResponse response = new DatabaseResponse();
 

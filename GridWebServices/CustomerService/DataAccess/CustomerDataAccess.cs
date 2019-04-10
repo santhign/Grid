@@ -28,7 +28,7 @@ namespace CustomerService.DataAccess
         /// <summary>
         /// The configuration
         /// </summary>
-        private IConfiguration _configuration;
+        private readonly IConfiguration _configuration;
 
         /// <summary>
         /// Constructor setting configuration
@@ -64,7 +64,7 @@ namespace CustomerService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                int result = _DataHelper.Run(dt);
+                int result = await _DataHelper.RunAsync(dt);
 
                 Customer newCustomer = new Customer();
 
@@ -115,7 +115,7 @@ namespace CustomerService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                _DataHelper.Run(dt);
+                await _DataHelper.RunAsync(dt);
 
                 List<Customer> customerList = new List<Customer>();
 
@@ -167,7 +167,7 @@ namespace CustomerService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                _DataHelper.Run(dt);
+                await _DataHelper.RunAsync(dt);
 
                 Customer customer = new Customer();
 
@@ -345,7 +345,7 @@ namespace CustomerService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                int result = _DataHelper.Run(dt); // 111 /109
+                int result = await _DataHelper.RunAsync(dt); // 111 /109
 
                 DatabaseResponse response = new DatabaseResponse();
 
@@ -416,7 +416,7 @@ namespace CustomerService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                int result = _DataHelper.Run(dt); // 105 /119
+                int result = await _DataHelper.RunAsync(dt); // 105 /119
 
                 DatabaseResponse response = new DatabaseResponse();
 
@@ -555,7 +555,7 @@ namespace CustomerService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                _DataHelper.Run(dt);
+                await _DataHelper.RunAsync(dt);
 
                 List<CustomerSearch> customerList = new List<CustomerSearch>();
 
@@ -615,7 +615,7 @@ namespace CustomerService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                int result = _DataHelper.Run(dt); // 105 /119
+                int result = await _DataHelper.RunAsync(dt); // 105 /119
 
                 DatabaseResponse response = new DatabaseResponse();
 

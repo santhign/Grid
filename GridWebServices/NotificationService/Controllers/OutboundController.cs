@@ -25,6 +25,10 @@ namespace NotificationService.Controllers
     {
         IConfiguration _iconfiguration;
 
+        public OutboundController(IConfiguration configuration)
+        {
+            _iconfiguration = configuration;
+        }
 
         /// <summary>
         /// This will send email

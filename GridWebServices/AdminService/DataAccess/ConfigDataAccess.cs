@@ -16,7 +16,7 @@ namespace AdminService.DataAccess
     {
         internal DataAccessHelper _DataHelper = null;
 
-        private IConfiguration _configuration;
+        private readonly IConfiguration _configuration;
 
         /// <summary>
         /// Constructor setting configuration
@@ -29,8 +29,7 @@ namespace AdminService.DataAccess
         /// <summary>
         /// API to get the generic config values.
         /// </summary>
-        /// <param name="ConfigKey"></param>       
-        /// <param name="NeedValidation"></param>    
+        /// <param name="ConfigKey"></param>        
         /// <returns></returns>
         public async Task<List<Config>> GetConfigValue(string ConfigKey)
         {

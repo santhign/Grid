@@ -346,8 +346,7 @@ namespace OrderService.Controllers
         /// <summary>
         /// This will return a set of free or premium Mobile Numbers from BSS API based on the given type input
         /// </summary>
-        /// <param name="token">token</param>
-        /// <param name="type">type=1-free/2-premium</param>
+        /// <param name="request">request</param>
         /// <returns>OperationResponse
         /// Body{
         ///  HasSucceeded = true,
