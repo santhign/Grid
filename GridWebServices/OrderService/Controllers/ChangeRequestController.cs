@@ -126,8 +126,8 @@ namespace OrderService.Controllers
         /// <param name="quantity">The quantity.</param>
         /// <returns></returns>
         [HttpPost]
-        [Route("BuyVasService")]
-        public async Task<IActionResult> BuyVasService(string token, string mobileNumber, int bundleId, int quantity)
+        [Route("BuyVasService/{mobileNumber}/{bundleId}/{quantity}")]
+        public async Task<IActionResult> BuyVasService([FromHeader]string token, string mobileNumber, int bundleId, int quantity)
         {
 
             try
@@ -210,8 +210,8 @@ namespace OrderService.Controllers
         /// <param name="remark">The remark.</param>
         /// <returns></returns>
         [HttpPost]
-        [Route("SubscriberTerminationRequest/{token}/{mobileNumber}")]
-        public async Task<IActionResult> SubscriberTerminationRequest(string token, string mobileNumber, string remark)
+        [Route("SubscriberTerminationRequest/{mobileNumber}")]
+        public async Task<IActionResult> SubscriberTerminationRequest([FromHeader] string token, string mobileNumber, string remark)
         {
 
             try
@@ -297,8 +297,8 @@ namespace OrderService.Controllers
         /// <param name="mobileNumber">The mobile number.</param>
         /// <returns></returns>
         [HttpPost]
-        [Route("SubscriberSimReplacementRequest/{token}/{mobileNumber}")]
-        public async Task<IActionResult> SubscriberSimReplacementRequest(string token, string mobileNumber)
+        [Route("SubscriberSimReplacementRequest/{mobileNumber}")]
+        public async Task<IActionResult> SubscriberSimReplacementRequest([FromHeader]string token, string mobileNumber)
         {
 
             try
@@ -384,8 +384,8 @@ namespace OrderService.Controllers
         /// <param name="remark">The remark.</param>
         /// <returns></returns>
         [HttpPost]
-        [Route("SubscriberSuspensionRequest/{token}/{mobileNumber}")]
-        public async Task<IActionResult> SubscriberSuspensionRequest(string token, string mobileNumber, string remark)
+        [Route("SubscriberSuspensionRequest/{mobileNumber}")]
+        public async Task<IActionResult> SubscriberSuspensionRequest([FromHeader]string token, string mobileNumber, string remark)
         {
 
             try
@@ -470,8 +470,8 @@ namespace OrderService.Controllers
         /// <param name="request">The request.</param>
         /// <returns></returns>
         [HttpPost]
-        [Route("ChangePhoneNumberRequest/{token}")]
-        public async Task<IActionResult> ChangePhoneNumberRequest([FromRoute]string token, [FromBody]ChangePhoneRequest request)
+        [Route("ChangePhoneNumberRequest")]
+        public async Task<IActionResult> ChangePhoneNumberRequest([FromHeader]string token, [FromBody]ChangePhoneRequest request)
         {
             try
             {
