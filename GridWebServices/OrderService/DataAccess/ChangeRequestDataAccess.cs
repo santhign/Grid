@@ -55,7 +55,7 @@ namespace OrderService.DataAccess
                 parameters[3].Value = Core.Enums.RequestType.Removal.GetDescription();
 
 
-                _DataHelper = new DataAccessHelper("Orders_CR_InsertRemoveVAS", parameters, _configuration);
+                _DataHelper = new DataAccessHelper(DbObjectNames.Orders_CR_InsertRemoveVAS, parameters, _configuration);
 
 
 
@@ -105,7 +105,7 @@ namespace OrderService.DataAccess
                 parameters[4].Value = Core.Enums.RequestType.Addition.GetDescription();
 
 
-                _DataHelper = new DataAccessHelper("Orders_CR_BuyVAS", parameters, _configuration);
+                _DataHelper = new DataAccessHelper(DbObjectNames.Orders_CR_BuyVAS, parameters, _configuration);
 
 
 
@@ -239,7 +239,7 @@ namespace OrderService.DataAccess
                 parameters[2].Value = request;
                 parameters[3].Value = remark;
 
-                _DataHelper = new DataAccessHelper("Orders_CR_RaiseRequest", parameters, _configuration);
+                _DataHelper = new DataAccessHelper(DbObjectNames.Orders_CR_RaiseRequest, parameters, _configuration);
 
                 var result = await _DataHelper.RunAsync(ds);
 
@@ -316,7 +316,7 @@ namespace OrderService.DataAccess
                 //parameters[6].Value = changePhone.PortedNumberOwnedBy;
                 //parameters[7].Value = changePhone.PortedNumberOwnerRegistrationId;
 
-                _DataHelper = new DataAccessHelper("Customer_CR_ChangePhoneRequest", parameters, _configuration);
+                _DataHelper = new DataAccessHelper(DbObjectNames.Customer_CR_ChangePhoneRequest, parameters, _configuration);
 
                 var result = await _DataHelper.RunAsync();
 
@@ -348,7 +348,7 @@ namespace OrderService.DataAccess
 
                 parameters[0].Value = token;
 
-                _DataHelper = new DataAccessHelper("Customer_AuthenticateToken", parameters, _configuration);
+                _DataHelper = new DataAccessHelper(DbObjectNames.Customer_AuthenticateToken, parameters, _configuration);
 
                 var dt = new DataTable();
 
