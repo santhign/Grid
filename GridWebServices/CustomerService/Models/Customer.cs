@@ -196,27 +196,7 @@ namespace CustomerService.Models
         /// </value>
         public string Token { get; set; }
     }
-
-    /// <summary>
-    /// AuthTokenResponse class
-    /// </summary>
-    public class AuthTokenResponse
-    {
-        /// <summary>
-        /// Gets or sets the customer identifier.
-        /// </summary>
-        /// <value>
-        /// The customer identifier.
-        /// </value>
-        public int CustomerID { get; set; }
-        /// <summary>
-        /// Gets or sets the created on.
-        /// </summary>
-        /// <value>
-        /// The created on.
-        /// </value>
-        public DateTime CreatedOn { get; set; }
-    }
+    
 
     /// <summary>
     /// ValidateReferralCodeRequest class

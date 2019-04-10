@@ -20,5 +20,11 @@ namespace CustomerService.Models
 
         [DataMember(Name = "Postcode")]
         public string Postcode { get; set; }
+
+        internal string ToJsonString()
+        {
+            throw new NotImplementedException();
+        }
+
     }
 }

@@ -94,79 +94,58 @@ namespace CustomerService.Controllers
         }
 
 
-        ///// <summary>
-        ///// This will validate postcode
-        ///// </summary>
-        ///// <param name="Token"></param>
-        ///// <param name="postcode"></param>
-        ///// <returns>validation status</returns>
-        ///// POST: api/ValidateAuthenticatedPostcode
-        /////Body: 
-        /////{
-        /////  "APIKey":"xyz","APISecret":"abc","PostcodeNumber":"408600"
-        ///// }
-        //[HttpGet]
-        //[Route("ValidatePostcode/{postcode}")]
-        //public async Task<IActionResult> PostcodeValidate([FromHeader] string Token, [FromRoute]string postcode)
-        //{
-        //    try
-        //    {
+        /// <summary>
+        /// This will validate postcode
+        /// </summary>
+        /// <param name="Token"></param>
+        /// <param name="postcode"></param>
+        /// <returns>validation status</returns>
+        /// POST: api/ValidateAuthenticatedPostcode
+        ///Body: 
+        ///{
+        ///  "APIKey":"xyz","APISecret":"abc","PostcodeNumber":"408600"
+        /// }
+        [HttpPost]
+        [Route("ValidatePostcode/{postcode}")]
+        public async Task<IActionResult> ValidatePostcode([FromRoute]string postcode)
+        {
+            try
+            {
 
-        //        CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
-        //        DatabaseResponse tokenAuthResponse = await _customerAccess.AuthenticateCustomerToken(Token);
+                if (postcode.Length == 0)
+                {
+                    LogInfo.Error(StatusMessages.MissingRequiredFields);
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = StatusMessages.MissingRequiredFields,
+                        IsDomainValidationErrors = true
+                    });
+                }
 
-        //        if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
-        //        {
-        //            DatabaseResponse configResponse = ConfigHelper.GetValue("Postcode", _iconfiguration);
+                ValidationDataAccess _validateDataAccess = new ValidationDataAccess(_iconfiguration);
 
-        //            List<Dictionary<string, string>> _result = ((List<Dictionary<string, string>>)configResponse.Results);
+                return Ok(new ServerResponse
+                {
+                    HasSucceeded = true,
+                    Message = StatusMessages.SuccessMessage,
+                    Result = await _validateDataAccess.ValidatePostcode(postcode)
 
-        //            string _APIKey = _result.Single(x => x["key"] == "PostcodeApiKey")["value"];
-        //            string _APISecret = _result.Single(x => x["key"] == "PostcodeSecret")["value"];
-        //            string _Postcodeurl = _result.Single(x => x["key"] == "Postcodeurl")["value"];
-        //            PostCodeRequest _request = new PostCodeRequest();
-        //            _request.APIKey = _APIKey;
-        //            _request.APISecret = _APISecret;
-        //            _request.Postcode = postcode;
+                });
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
-        //            System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
-        //            ApiClient client = new ApiClient(new Uri(_Postcodeurl));
-        //            await client.PostAsync<ResponseObject>(new Uri(_Postcodeurl), _request);
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+            }
+        }
 
-        //            return Ok(new ServerResponse
-        //            {
-        //                HasSucceeded = true,
-        //                Message = StatusMessages.SuccessMessage
-
-        //            });
-        //        }
-        //        else
-        //        {
-        //            // token auth failure
-        //            LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
-
-        //            return Ok(new OperationResponse
-        //            {
-        //                HasSucceeded = false,
-        //                Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
-        //                IsDomainValidationErrors = false
-        //            });
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-
-        //        return Ok(new OperationResponse
-        //        {
-        //            HasSucceeded = false,
-        //            Message = StatusMessages.ServerError,
-        //            IsDomainValidationErrors = false
-        //        });
-        //    }
-
-        //}
-        
         /// <summary>
         /// This will check NRIC Validation
         /// </summary>

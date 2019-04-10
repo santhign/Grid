@@ -31,7 +31,7 @@ namespace OrderService.Controllers
         }
         /// <summary>
         /// This will return Order details for specific ID passed 
-        /// </summary>
+        /// </summary>       
         /// <param name="id">OrderID</param>
         /// <returns>OperationsResponse</returns>
         // GET: api/Orders/5
@@ -40,6 +40,7 @@ namespace OrderService.Controllers
         {
             try
             {
+
                 if (!ModelState.IsValid)
                 {
                     return Ok(new OperationResponse

@@ -13,6 +13,8 @@ using InfrastructureService;
 using Microsoft.Extensions.Configuration;
 using CustomerService.DataAccess;
 using Serilog;
+using System.Net.Mail;
+
 
 namespace CustomerService.Controllers
 {
@@ -679,56 +681,122 @@ namespace CustomerService.Controllers
         /// <summary>
         /// This will send forget password mail
         /// </summary>
-        /// <param name="emailid">abcd@gmail.com</param>
+        /// <param name="email">abcd@gmail.com</param>
         /// <returns>
         /// Customer Id and Token key
         /// </returns>
         [HttpGet]
-        [Route("ForgetPassword/{emailid}")]
-        public async Task<IActionResult> ForgetPassword([FromRoute] string emailid)
+        [Route("ForgetPassword/{email}")]
+        public async Task<IActionResult> ForgetPassword([FromHeader(Name = "Grid-Authorization-Token")] string token,[FromRoute] string email)
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    Log.Error(StatusMessages.DomainValidationError);
-                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
+                AuthHelper helper = new AuthHelper(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token); 
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {                   
+
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
                     {
-                        HasSucceeded = false,
-                        IsDomainValidationErrors = true,
-                        Message = string.Join("; ", ModelState.Values
-                                            .SelectMany(x => x.Errors)
-                                            .Select(x => x.ErrorMessage))
-                    });
+                        if (!ModelState.IsValid)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = string.Join("; ", ModelState.Values
+                                                           .SelectMany(x => x.Errors)
+                                                           .Select(x => x.ErrorMessage))
+                            });
+                        }
+                        try
+
+                        {
+                            MailAddress m = new MailAddress(email);
+                        }
+                        catch
+                        {
+                            Log.Error(StatusMessages.DomainValidationError);
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = EnumExtensions.GetDescription(CommonErrors.InvalidEmail),
+                            });
+
+                        }
+
+                        EmailDataAccess _emailDataAccess = new EmailDataAccess(_iconfiguration);
+
+                        DatabaseResponse _forgetPassword = await _emailDataAccess.GetForgetPassword(email);
+
+                        if (_forgetPassword.ResponseCode == (int)DbReturnValue.CreateSuccess)
+                        {
+                            // get system config- reset password url and email config form db and send a plain email with the reset url
+
+
+
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = true,
+                                Message = StatusMessages.SuccessMessage,
+                                Result = _forgetPassword
+
+                            });
+
+                        }
+                        else if (_forgetPassword.ResponseCode == (int)DbReturnValue.CreationFailed)
+                        {
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(CommonErrors.TokenGenerationFailed)
+
+                            });
+                        }
+
+                        else
+                        {
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.EmailNotExists)
+
+                            });
+                        }
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+
                 }
 
-
-                EmailDataAccess _emailDataAccess = new EmailDataAccess(_iconfiguration);
-
-                Emails _emails = new Emails();
-                _emails.EmailId = emailid;
-                ForgetPassword _forgetPassword = await _emailDataAccess.GetForgetPassword(_emails);
-
-                if (_forgetPassword == null)
-                {
-                    return Ok(new ServerResponse
-                    {
-                        HasSucceeded = false,
-                        Message = EnumExtensions.GetDescription(DbReturnValue.NotExists)
-
-                    });
-                }
                 else
                 {
-                    return Ok(new ServerResponse
-                    {
-                        HasSucceeded = true,
-                        Message = StatusMessages.SuccessMessage,
-                        Result = _forgetPassword
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
 
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
                     });
                 }
-
 
             }
             catch (Exception ex)

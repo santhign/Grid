@@ -133,5 +133,13 @@ namespace Core.Enums
         [Description("Order Rolled Back Failed")]
         OrderRolledBackFailed = 28,
 
+        [EnumMember(Value = "Invalid email address")]
+        [Description("Invalid email address")]
+        InvalidEmail = 29,
+
+        [EnumMember(Value = "TokenGenerationFailed")]
+        [Description("TokenGenerationFailed")]
+        TokenGenerationFailed = 30,
+
     }
 }
