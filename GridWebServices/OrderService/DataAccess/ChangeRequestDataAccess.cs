@@ -148,7 +148,7 @@ namespace OrderService.DataAccess
                 parameters[1].Value = mobileNumber;
                 parameters[2].Value = Core.Enums.RequestType.ChangeSim.GetDescription();
 
-                _DataHelper = new DataAccessHelper("Order_CR_SIMReplacementRequest", parameters, _configuration);
+                _DataHelper = new DataAccessHelper(DbObjectNames.Order_CR_SIMReplacementRequest, parameters, _configuration);
 
                 var result = await _DataHelper.RunAsync(ds);
 
@@ -164,7 +164,7 @@ namespace OrderService.DataAccess
                                     {
                                         ChangeRequestId = model.Field<int>("ChangeRequestId"),
                                         OrderNumber = model.Field<string>("OrderNumber"),
-                                        //RequestOn = model.Field<DateTime>("RequestOn"),
+                                        RequestOn = model.Field<DateTime>("RequestOn"),
                                         RequestTypeDescription = model.Field<string>("RequestTypeDescription"),
                                         BillingUnit = model.Field<string>("BillingUnit"),
                                         BillingFloor = model.Field<string>("BillingFloor"),
@@ -176,13 +176,26 @@ namespace OrderService.DataAccess
                                         Email = model.Field<string>("Email"),
                                         IdentityCardNumber = model.Field<string>("IdentityCardNumber"),
                                         IdentityCardType = model.Field<string>("IdentityCardType"),
-                                        //IsSameAsBilling = model.Field<string>("IsSameAsBilling"),
+                                        IsSameAsBilling = model.Field<int>("IsSameAsBilling"),
                                         ShippingUnit = model.Field<string>("ShippingUnit"),
                                         ShippingFloor = model.Field<string>("ShippingFloor"),
                                         ShippingBuildingNumber = model.Field<string>("ShippingBuildingNumber"),
                                         ShippingStreetName = model.Field<string>("ShippingStreetName"),
                                         ShippingPostCode = model.Field<string>("ShippingPostCode"),
-                                        ShippingContactNumber = model.Field<string>("ShippingContactNumber")//,
+                                        ShippingContactNumber = model.Field<string>("ShippingContactNumber"),
+                                        AlternateRecipientName = model.Field<string>("AlternateRecipientName"),
+                                        AlternateRecipientEmail = model.Field<string>("AlternateRecipientEmail"),
+                                        AlternateRecipientContact = model.Field<string>("AlternateRecipientContact"),
+                                        AlternateRecioientIDNumber = model.Field<string>("AlternateRecipientName"),
+                                        AlternateRecioientIDType = model.Field<string>("AlternateRecioientIDType"),
+                                        PortalSlotID = model.Field<string>("PortalSlotID"),
+                                        ScheduledDate = model.Field<DateTime?>("ScheduledDate"),
+                                        DeliveryVendor = model.Field<string>("DeliveryVendor"),
+                                        DeliveryOn = model.Field<DateTime?>("DeliveryOn"),
+                                        DeliveryTime = model.Field<DateTime?>("DeliveryTime"),
+                                        VendorTrackingCode = model.Field<string>("VendorTrackingCode"),
+                                        VendorTrackingUrl = model.Field<string>("VendorTrackingUrl"),
+                                        DeliveryFee = model.Field<double>("DeliveryFee")
 
                                     }).FirstOrDefault();
 
