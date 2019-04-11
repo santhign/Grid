@@ -57,7 +57,9 @@ namespace CustomerService.DataAccess
                                            select new ForgetPassword()
                                            {
                                                CustomerId = model.Field<int>("CustomerId"),
-                                               Token = model.Field<string>("Token")
+                                               Token = model.Field<string>("Token"),
+                                               Name= model.Field<string>("Name"),
+                                               Email = model.Field<string>("Email")
                                            }).FirstOrDefault();
 
                     response = new DatabaseResponse { ResponseCode = result, Results = changePasswordToken };
