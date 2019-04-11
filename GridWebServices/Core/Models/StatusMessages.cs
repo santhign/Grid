@@ -22,5 +22,7 @@ namespace Core.Models
         public static string InvalidMessage = "Invalid";
 
         public static string ValidMessage = "Valid";
+
+        public static string ResetPassowrdLinkSent = "An email has been sent to registered Email ID with Reset Password Link";
     }
 }

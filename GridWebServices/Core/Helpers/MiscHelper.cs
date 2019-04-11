@@ -18,7 +18,15 @@ namespace Core.Helpers
             config.AWSBucketName = configDict.Single(x => x["key"] == "AWSBucketName")["value"];
             config.AWSUser = configDict.Single(x => x["key"] == "AWSUser")["value"];
             return config;
-        }       
-        
+        }
+
+        public ForgotPasswordMsgConfig GetResetPasswordNotificationConfig(List<Dictionary<string, string>> configDict)
+        {
+            ForgotPasswordMsgConfig config = new ForgotPasswordMsgConfig();
+            config.ForgotPasswordSNSTopic = configDict.Single(x => x["key"] == "ForgotPasswordSNSTopic")["value"];
+            config.PasswordResetUrl = configDict.Single(x => x["key"] == "PasswordResetUrl")["value"];            
+            return config;
+        }
+
     }
 }

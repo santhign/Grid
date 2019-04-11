@@ -12,7 +12,10 @@ namespace Core.Models
         public string MessageType { get; set; }
 
         [DataMember(Name = "MessageName")]
-        public string messagetemplate { get; set; }
+        public string MessageName { get; set; }
+
+        [DataMember(Name = "MessageTemplate")]
+        public string MessageTemplate { get; set; }
 
         [DataMember(Name = "Message")]
         public MessageObject Message { get; set; }

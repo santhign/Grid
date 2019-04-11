@@ -9,12 +9,13 @@ using Core.Enums;
 using Core.Helpers;
 using Core.Models;
 using Core.Extensions;
+using Core.DataAccess;
 using InfrastructureService;
 using Microsoft.Extensions.Configuration;
 using CustomerService.DataAccess;
 using Serilog;
 using System.Net.Mail;
-
+using InfrastructureService.MessageQueue;
 
 namespace CustomerService.Controllers
 {
@@ -799,19 +800,75 @@ namespace CustomerService.Controllers
                         DatabaseResponse _forgetPassword = await _emailDataAccess.GetForgetPassword(email);
 
                         if (_forgetPassword.ResponseCode == (int)DbReturnValue.CreateSuccess)
-                        {
-                            // get system config- reset password url and email config form db and send a plain email with the reset url
+                        {                           
+                          
+                            ForgetPassword passwordTokenDetails = new ForgetPassword();
 
-                            NotificationMessage notificationMessage = new NotificationMessage();
-                           // notificationMessage.MessageType
+                            ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
 
-                            return Ok(new ServerResponse
+                            //Get password reset Url and aws notification topic name
+
+                            DatabaseResponse forgotPasswordMsgConfig = await _configAccess.GetConfiguration(ConfiType.ForgotPasswordMsg.ToString());
+
+                            MiscHelper parser = new MiscHelper();                              
+
+                            ForgotPasswordMsgConfig forgotPasswordConfig = parser.GetResetPasswordNotificationConfig((List<Dictionary<string, string>>)forgotPasswordMsgConfig.Results);
+                            
+                            if (_forgetPassword.Results != null)
                             {
-                                HasSucceeded = true,
-                                Message = StatusMessages.SuccessMessage,
-                                Result = _forgetPassword
+                                passwordTokenDetails = (ForgetPassword)_forgetPassword.Results;
 
-                            });
+                                NotificationMessage notificationMessage = new NotificationMessage();
+
+                                List<NotificationParams> msgParamsList = new List<NotificationParams>();
+
+                                NotificationParams msgParams = new NotificationParams();
+
+                                msgParams.name = passwordTokenDetails.Name;
+
+                                msgParams.param1 = passwordTokenDetails.Token;
+
+                                msgParams.param2 = forgotPasswordConfig.PasswordResetUrl;
+
+                                msgParamsList.Add(msgParams);
+
+                                notificationMessage = new NotificationMessage
+                                {
+
+                                    MessageType = NotificationMsgType.Email.ToString(),
+
+                                    MessageName= NotificationMsgName.ForgotPassword.ToString(),                                     
+
+                                    Message = new MessageObject { emailaddress = passwordTokenDetails.Email, parameters= msgParamsList }
+
+                                };
+
+
+                                // Publish notification to topic
+
+                                Publisher forgotPassNotificationPublisher = new Publisher(_iconfiguration, forgotPasswordConfig.ForgotPasswordSNSTopic);
+
+                                await forgotPassNotificationPublisher.PublishAsync(notificationMessage);
+                            
+
+                                return Ok(new ServerResponse
+                                {
+                                    HasSucceeded = true,
+                                    Message = StatusMessages.ResetPassowrdLinkSent                                    
+
+                                });
+                            }
+
+                            else
+                            {
+                                // unable to retrieve password token details
+
+                                return Ok(new ServerResponse
+                                {
+                                    HasSucceeded = false,
+                                    Message = EnumExtensions.GetDescription(CommonErrors.UnableToRetrievePasswordToken)
+                                });
+                            }
 
                         }
                         else if (_forgetPassword.ResponseCode == (int)DbReturnValue.CreationFailed)
