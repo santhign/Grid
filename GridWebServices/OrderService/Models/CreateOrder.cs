@@ -141,15 +141,6 @@ namespace OrderService.Models
     public class CreateOrderRequest
     {
         /// <summary>
-        /// Gets or sets the token.
-        /// </summary>
-        /// <value>
-        /// The token.
-        /// </value>
-        [Required(ErrorMessage = "Token is required")]
-        public string Token { get; set; }
-
-        /// <summary>
         /// Gets or sets the bundle identifier.
         /// </summary>
         /// <value>
@@ -226,15 +217,6 @@ namespace OrderService.Models
     public class UpdateSubscriberNumber
     {
         /// <summary>
-        /// Gets or sets the token.
-        /// </summary>
-        /// <value>
-        /// The token.
-        /// </value>
-        [Required(ErrorMessage = "Token is required")]
-        public string Token { get; set; }
-
-        /// <summary>
         /// Gets or sets the order identifier.
         /// </summary>
         /// <value>
@@ -277,14 +259,6 @@ namespace OrderService.Models
     /// </summary>
     public class UpdateSubscriberPortingNumberRequest
     {
-        /// <summary>
-        /// Gets or sets the token.
-        /// </summary>
-        /// <value>
-        /// The token.
-        /// </value>
-        [Required(ErrorMessage = "Token is required")]
-        public string Token { get; set; }
         /// <summary>
         /// Gets or sets the order identifier.
         /// </summary>
@@ -455,15 +429,6 @@ namespace OrderService.Models
     public class AdditionalSubscriberRequest
     {
         /// <summary>
-        /// Gets or sets the token.
-        /// </summary>
-        /// <value>
-        /// The token.
-        /// </value>
-        [Required(ErrorMessage = "Token is required")]
-        public string Token { get; set; }
-
-        /// <summary>
         /// Gets or sets the order identifier.
         /// </summary>
         /// <value>
@@ -487,15 +452,6 @@ namespace OrderService.Models
     /// </summary>
     public class UpdateOrderPersonalDetailsRequest
     {
-        /// <summary>
-        /// Gets or sets the token.
-        /// </summary>
-        /// <value>
-        /// The token.
-        /// </value>
-        [Required(ErrorMessage = "Token required")]
-        public string Token { get; set; }
-
         /// <summary>
         /// Gets or sets the order identifier.
         /// </summary>
@@ -653,15 +609,6 @@ namespace OrderService.Models
     public class UpdateOrderBillingDetailsRequest
     {
         /// <summary>
-        /// Gets or sets the token.
-        /// </summary>
-        /// <value>
-        /// The token.
-        /// </value>
-        [Required(ErrorMessage = "Token required")]
-        public string Token { get; set; }
-
-        /// <summary>
         /// Gets or sets the order identifier.
         /// </summary>
         /// <value>
@@ -741,15 +688,6 @@ namespace OrderService.Models
     /// </summary>
     public class UpdateOrderShippingDetailsRequest 
     {
-        /// <summary>
-        /// Gets or sets the token.
-        /// </summary>
-        /// <value>
-        /// The token.
-        /// </value>
-        [Required(ErrorMessage = "Token required")]
-        public string Token { get; set; }
-
         /// <summary>
         /// Gets or sets the order identifier.
         /// </summary>
@@ -848,15 +786,6 @@ namespace OrderService.Models
     public class UpdateOrderLOADetailsRequest
     {
         /// <summary>
-        /// Gets or sets the token.
-        /// </summary>
-        /// <value>
-        /// The token.
-        /// </value>
-        [Required(ErrorMessage = "Token required")]
-        public string Token { get; set; }
-
-        /// <summary>
         /// Gets or sets the order identifier.
         /// </summary>
         /// <value>
@@ -920,15 +849,6 @@ namespace OrderService.Models
     public class ValidateOrderReferralCodeRequest
     {
         /// <summary>
-        /// Gets or sets the token.
-        /// </summary>
-        /// <value>
-        /// The token.
-        /// </value>
-        [Required(ErrorMessage = "Token required")]
-        public string Token { get; set; }
-
-        /// <summary>
         /// Gets or sets the order identifier.
         /// </summary>
         /// <value>
@@ -954,15 +874,6 @@ namespace OrderService.Models
     public class OrderedNumberRequest
     {
         /// <summary>
-        /// Gets or sets the token.
-        /// </summary>
-        /// <value>
-        /// The token.
-        /// </value>
-        [Required(ErrorMessage = "Token required")]
-        public string Token { get; set; }
-
-        /// <summary>
         /// Gets or sets the order identifier.
         /// </summary>
         /// <value>
@@ -978,15 +889,6 @@ namespace OrderService.Models
     /// </summary>
     public class UpdateOrderSubcriptionDetailsRequest
     {
-        /// <summary>
-        /// Gets or sets the token.
-        /// </summary>
-        /// <value>
-        /// The token.
-        /// </value>
-        [Required(ErrorMessage = "Token required")]
-        public string Token { get; set; }
-
         /// <summary>
         /// Gets or sets the order identifier.
         /// </summary>
@@ -1039,15 +941,6 @@ namespace OrderService.Models
     public class RemoveAdditionalLineRequest
     {
         /// <summary>
-        /// Gets or sets the token.
-        /// </summary>
-        /// <value>
-        /// The token.
-        /// </value>
-        [Required(ErrorMessage = "Token required")]
-        public string Token { get; set; }
-
-        /// <summary>
         /// Gets or sets the order identifier.
         /// </summary>
         /// <value>
@@ -1074,15 +967,6 @@ namespace OrderService.Models
     public class AssignNewNumberRequest
     {
         /// <summary>
-        /// Gets or sets the token.
-        /// </summary>
-        /// <value>
-        /// The token.
-        /// </value>
-        [Required(ErrorMessage = "Token required")]
-        public string Token { get; set; }
-
-        /// <summary>
         /// Gets or sets the order identifier.
         /// </summary>
         /// <value>
@@ -1108,13 +992,6 @@ namespace OrderService.Models
     /// </summary>
     public class AssignNewNumber
     {
-        /// <summary>
-        /// Gets or sets the token.
-        /// </summary>
-        /// <value>
-        /// The token.
-        /// </value>
-        public string Token { get; set; }
         /// <summary>
         /// Gets or sets the order identifier.
         /// </summary>
@@ -1144,14 +1021,6 @@ namespace OrderService.Models
     public class CustomerBSSInvoiceRequest
     {
         /// <summary>
-        /// Gets or sets the token.
-        /// </summary>
-        /// <value>
-        /// The token.
-        /// </value>
-        [Required(ErrorMessage = "Token required")]
-        public string Token { get; set; }
-        /// <summary>
         /// Gets or sets the start date.
         /// </summary>
         /// <value>
@@ -1167,17 +1036,9 @@ namespace OrderService.Models
         public DateTime EndDate { get; set; }
 
     }
-    public class BSSRequestAssets
-    {
-        [Required(ErrorMessage = "Token required")]
-        public string Token { get; set; }
 
-    }
     public class BSSRequestMore
     {
-        [Required(ErrorMessage = "Token required")]
-        public string Token { get; set; }
-
         public int Type { get; set; }
 
     }
