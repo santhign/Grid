@@ -35,15 +35,15 @@ namespace InfrastructureService.MessageQueue
             }
             catch (ArgumentNullException ex)
             {
-                
+                LogInfo.Fatal(ex, "Error while publishing the message queue");
             }
             catch (WebException ex)
             {
-               
+                LogInfo.Fatal(ex, "Error while publishing the message queue");
             }
             catch (Exception ex)
             {
-                
+                LogInfo.Fatal(ex, "Error while publishing the message queue");
             }
         }
 
