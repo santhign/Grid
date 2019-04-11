@@ -346,6 +346,57 @@ namespace OrderService.DataAccess
             {
                 _DataHelper.Dispose();
             }
-        }       
+        }
+
+        public async Task<DatabaseResponse> UpdateCRShippingDetails(UpdateCRShippingDetailsRequest shippingDetails)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@ChangeRequestID",  SqlDbType.Int ),
+                    new SqlParameter( "@Postcode",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@BlockNumber",  SqlDbType.NVarChar),
+                    new SqlParameter( "@Unit",  SqlDbType.NVarChar),
+                    new SqlParameter( "@Floor",  SqlDbType.NVarChar),
+                    new SqlParameter( "@BuildingName",  SqlDbType.NVarChar),
+                    new SqlParameter( "@StreetName",  SqlDbType.NVarChar),
+                    new SqlParameter( "@ContactNumber",  SqlDbType.NVarChar),
+                    new SqlParameter( "@IsBillingSame",  SqlDbType.Int),
+                    new SqlParameter( "@PortalSlotID",  SqlDbType.NVarChar),
+                    new SqlParameter( "@CustomerID", SqlDbType.Int)
+                };
+
+                parameters[0].Value = shippingDetails.ChangeRequestID;
+                parameters[1].Value = shippingDetails.Postcode;
+                parameters[2].Value = shippingDetails.BlockNumber;
+                parameters[3].Value = shippingDetails.Unit;
+                parameters[4].Value = shippingDetails.Floor;
+                parameters[5].Value = shippingDetails.BuildingName;
+                parameters[6].Value = shippingDetails.StreetName;
+                parameters[7].Value = shippingDetails.ContactNumber;
+                parameters[8].Value = shippingDetails.IsBillingSame;
+                parameters[9].Value = shippingDetails.PortalSlotID;
+                parameters[10].Value = shippingDetails.CustomerID;
+
+
+                _DataHelper = new DataAccessHelper(DbObjectNames.Orders_CR_UpdateCRShippingDetails, parameters, _configuration);
+
+                int result = await _DataHelper.RunAsync();    // 101 / 109 
+
+                return new DatabaseResponse { ResponseCode = result };
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw;
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
     }
 }

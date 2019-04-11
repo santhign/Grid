@@ -294,7 +294,6 @@ namespace OrderService.Models
         public IList<ChangeRequestCharges> ChangeRequestChargesList;
     }
 
-
     /// <summary>
     /// Termination and Suspension Response
     /// </summary>
@@ -343,7 +342,7 @@ namespace OrderService.Models
     }
 
     /// <summary>
-    /// 
+    /// Change Request Charges class
     /// </summary>
     public class ChangeRequestCharges
     {
@@ -375,6 +374,101 @@ namespace OrderService.Models
         ///   <c>true</c> if this instance is GST included; otherwise, <c>false</c>.
         /// </value>
         public bool IsGstIncluded { get; set; }
+
+    }
+
+    /// <summary>
+    /// UpdateCRShippingDetailsRequest
+    /// </summary>
+    public class UpdateCRShippingDetailsRequest
+    {
+
+        public int CustomerID { get; set; }
+        /// <summary>
+        /// Gets or sets the change request identifier.
+        /// </summary>
+        /// <value>
+        /// The change request identifier.
+        /// </value>
+        public int ChangeRequestID { get; set; }
+
+        /// <summary>
+        /// Gets or sets the postcode.
+        /// </summary>
+        /// <value>
+        /// The postcode.
+        /// </value>
+        
+        public string Postcode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the block number.
+        /// </summary>
+        /// <value>
+        /// The block number.
+        /// </value>
+        
+        public string BlockNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets the unit.
+        /// </summary>
+        /// <value>
+        /// The unit.
+        /// </value>
+        
+        public string Unit { get; set; }
+
+        /// <summary>
+        /// Gets or sets the floor.
+        /// </summary>
+        /// <value>
+        /// The floor.
+        /// </value>
+        
+        public string Floor { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the building.
+        /// </summary>
+        /// <value>
+        /// The name of the building.
+        /// </value>
+        
+        public string BuildingName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the street.
+        /// </summary>
+        /// <value>
+        /// The name of the street.
+        /// </value>
+        
+        public string StreetName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the contact number.
+        /// </summary>
+        /// <value>
+        /// The contact number.
+        /// </value>        
+        public string ContactNumber { get; set; }
+        /// <summary>
+        /// Gets or sets the is billing same.
+        /// </summary>
+        /// <value>
+        /// The is billing same.
+        /// </value>
+        
+        public int IsBillingSame { get; set; }
+
+        /// <summary>
+        /// Gets or sets the portal slot identifier.
+        /// </summary>
+        /// <value>
+        /// The portal slot identifier.
+        /// </value>        
+        public string PortalSlotID { get; set; }
 
     }
 }

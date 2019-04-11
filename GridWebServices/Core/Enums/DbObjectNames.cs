@@ -44,5 +44,11 @@ namespace Core.Enums
         /// The customer cr change phone request
         /// </summary>
         public const string Customer_CR_ChangePhoneRequest = "Customer_CR_ChangePhoneRequest";
+
+        /// <summary>
+        /// The orders cr update cr shipping details
+        /// </summary>
+        public const string Orders_CR_UpdateCRShippingDetails = "Orders_CR_UpdateCRShippingDetails";
     }
+
 }
