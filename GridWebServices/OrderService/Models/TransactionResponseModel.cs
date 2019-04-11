@@ -48,7 +48,7 @@ namespace OrderService.Models
         /// <summary>
         /// Parses JSON response from Hosted/Browser Checkout transaction into TransactionResponse object
         /// </summary>
-        /// <param name="response">response from API
+        /// <param name="response">response from API</param>
         /// <returns>TransactionResponseModel</returns>
         public static TransactionResponseModel toTransactionResponseModel(string response)
         {

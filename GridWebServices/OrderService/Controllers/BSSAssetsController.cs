@@ -30,52 +30,53 @@ namespace OrderService.Controllers
         /// <summary>
         /// This will return BSS Assets by default limit in configuration
         /// </summary>
-        /// <param name="request"></param>
+        /// <param name="token"></param>
         /// <returns></returns>
         [Route("GetAssets")]
         [HttpPost]
-        public async Task<IActionResult> GetAssets([FromBody] BSSRequestAssets request)
+        public async Task<IActionResult> GetAssets([FromHeader(Name = "Grid-Authorization-Token")] string token)
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    return Ok(new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        IsDomainValidationErrors = true,
-                        Message = string.Join("; ", ModelState.Values
-                                                   .SelectMany(x => x.Errors)
-                                                   .Select(x => x.ErrorMessage))
-                    });
-                }
-                BSSAPIHelper helper = new BSSAPIHelper();
+                AuthHelper helper = new AuthHelper(_iconfiguration);
 
-                OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
-
-                DatabaseResponse tokenAuthResponse = await _orderAccess.AuthenticateCustomerToken(request.Token);
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
 
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
-                    AuthTokenResponse aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
-
-                    if (!(aTokenResp.CreatedOn < DateTime.UtcNow.AddDays(-7)))
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
                     {
+                        int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+                        if (!ModelState.IsValid)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = string.Join("; ", ModelState.Values
+                                                           .SelectMany(x => x.Errors)
+                                                           .Select(x => x.ErrorMessage))
+                            });
+                        }
+                        BSSAPIHelper bsshelper = new BSSAPIHelper();
+
+                        OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+
                         DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
 
-                        GridBSSConfi config = helper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
+                        GridBSSConfi config = bsshelper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
 
                         DatabaseResponse serviceCAF = await _orderAccess.GetBSSServiceCategoryAndFee(ServiceTypes.Free.ToString());
 
-                        DatabaseResponse requestIdRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.GetAssets.ToString(), aTokenResp.CustomerID, (int)BSSCalls.NewSession, "");
+                        DatabaseResponse requestIdRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.GetAssets.ToString(), customerID, (int)BSSCalls.NewSession, "");
 
-                        ResponseObject res = await helper.GetAssetInventory(config, ((List<ServiceFees>)serviceCAF.Results).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdRes.Results);
+                        ResponseObject res = await bsshelper.GetAssetInventory(config, ((List<ServiceFees>)serviceCAF.Results).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdRes.Results);
 
                         BSSNumbers receivedNumbers = new BSSNumbers();
 
-                        receivedNumbers.FreeNumbers = helper.GetFreeNumbers(res);
+                        receivedNumbers.FreeNumbers = bsshelper.GetFreeNumbers(res);
 
-                        string json = helper.GetJsonString(receivedNumbers.FreeNumbers); // json insert
+                        string json = bsshelper.GetJsonString(receivedNumbers.FreeNumbers); // json insert
 
                         DatabaseResponse updateBssCallFeeNumbers = await _orderAccess.UpdateBSSCallNumbers(json, ((BSSAssetRequest)requestIdRes.Results).userid, ((BSSAssetRequest)requestIdRes.Results).BSSCallLogID);
 
@@ -141,58 +142,59 @@ namespace OrderService.Controllers
 
         // GET: api/Orders/token
 
-        [HttpGet("{token}")]
+        [HttpGet]
 
-        public async Task<IActionResult> GetNumbers([FromRoute] string token)
+        public async Task<IActionResult> GetNumbers([FromHeader(Name = "Grid-Authorization-Token")] string token)
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    return Ok(new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        IsDomainValidationErrors = true,
-                        Message = string.Join("; ", ModelState.Values
-                                                   .SelectMany(x => x.Errors)
-                                                   .Select(x => x.ErrorMessage))
-                    });
-                }
-                BSSAPIHelper helper = new BSSAPIHelper();
+                AuthHelper helper = new AuthHelper(_iconfiguration);
 
-                OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
-
-                DatabaseResponse tokenAuthResponse = await _orderAccess.AuthenticateCustomerToken(token);
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
 
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
-                    AuthTokenResponse aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
-
-                    if (!(aTokenResp.CreatedOn < DateTime.UtcNow.AddDays(-7)))
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
                     {
+                        int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+                        if (!ModelState.IsValid)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = string.Join("; ", ModelState.Values
+                                                           .SelectMany(x => x.Errors)
+                                                           .Select(x => x.ErrorMessage))
+                            });
+                        }
+                        BSSAPIHelper bsshelper = new BSSAPIHelper();
+
+                        OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+
                         DatabaseResponse systemConfigResponse = await _orderAccess.GetConfiguration(ConfiType.System.ToString());
 
                         DatabaseResponse bssConfigResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
 
-                        GridBSSConfi bssConfig = helper.GetGridConfig((List<Dictionary<string, string>>)bssConfigResponse.Results);
+                        GridBSSConfi bssConfig = bsshelper.GetGridConfig((List<Dictionary<string, string>>)bssConfigResponse.Results);
 
-                        GridSystemConfig systemConfig = helper.GetGridSystemConfig((List<Dictionary<string, string>>)systemConfigResponse.Results);
+                        GridSystemConfig systemConfig = bsshelper.GetGridSystemConfig((List<Dictionary<string, string>>)systemConfigResponse.Results);
 
                         DatabaseResponse serviceCAF = await _orderAccess.GetBSSServiceCategoryAndFee(ServiceTypes.Free.ToString());
 
-                        DatabaseResponse requestIdResForFreeNumber = await _orderAccess.GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.GetAssets.ToString(), aTokenResp.CustomerID, (int)BSSCalls.ExistingSession, "");
+                        DatabaseResponse requestIdResForFreeNumber = await _orderAccess.GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.GetAssets.ToString(), customerID, (int)BSSCalls.ExistingSession, "");
 
                         //Getting FreeNumbers
-                        ResponseObject res = await helper.GetAssetInventory(bssConfig, ((List<ServiceFees>)serviceCAF.Results).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdResForFreeNumber.Results, systemConfig.FreeNumberListCount);
+                        ResponseObject res = await bsshelper.GetAssetInventory(bssConfig, ((List<ServiceFees>)serviceCAF.Results).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdResForFreeNumber.Results, systemConfig.FreeNumberListCount);
 
                         BSSNumbers numbers = new BSSNumbers();
 
                         if (res != null)
                         {
-                            numbers.FreeNumbers = helper.GetFreeNumbers(res);
+                            numbers.FreeNumbers = bsshelper.GetFreeNumbers(res);
 
                             //insert these number into database
-                            string json = helper.GetJsonString(numbers.FreeNumbers); // json insert
+                            string json = bsshelper.GetJsonString(numbers.FreeNumbers); // json insert
 
                             DatabaseResponse updateBssCallFeeNumbers = await _orderAccess.UpdateBSSCallNumbers(json, ((BSSAssetRequest)requestIdResForFreeNumber.Results).userid, ((BSSAssetRequest)requestIdResForFreeNumber.Results).BSSCallLogID);
 
@@ -226,17 +228,17 @@ namespace OrderService.Controllers
                                         //get code and call premum 
                                         //  fee.PortalServiceName
 
-                                        DatabaseResponse requestIdResForPremium = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.GetAssets.ToString(), aTokenResp.CustomerID, (int)BSSCalls.ExistingSession, numbers.FreeNumbers.FirstOrDefault().MobileNumber);
+                                        DatabaseResponse requestIdResForPremium = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.GetAssets.ToString(), customerID, (int)BSSCalls.ExistingSession, numbers.FreeNumbers.FirstOrDefault().MobileNumber);
 
-                                        ResponseObject premumResponse = await helper.GetAssetInventory(bssConfig, fee.ServiceCode, (BSSAssetRequest)requestIdResForPremium.Results, countPerPremium);
+                                        ResponseObject premumResponse = await bsshelper.GetAssetInventory(bssConfig, fee.ServiceCode, (BSSAssetRequest)requestIdResForPremium.Results, countPerPremium);
 
                                         if (premumResponse != null && premumResponse.Response.asset_details != null)
                                         {
-                                            List<PremiumNumbers> premiumNumbers = helper.GetPremiumNumbers(premumResponse, fee);
+                                            List<PremiumNumbers> premiumNumbers = bsshelper.GetPremiumNumbers(premumResponse, fee);
 
-                                            List<FreeNumber> premiumToLogNumbers = helper.GetFreeNumbers(premumResponse);
+                                            List<FreeNumber> premiumToLogNumbers = bsshelper.GetFreeNumbers(premumResponse);
 
-                                            string jsonPremium = helper.GetJsonString(premiumToLogNumbers);
+                                            string jsonPremium = bsshelper.GetJsonString(premiumToLogNumbers);
 
                                             DatabaseResponse updateBssCallPremiumNumbers = await _orderAccess.UpdateBSSCallNumbers(jsonPremium, ((BSSAssetRequest)requestIdResForPremium.Results).userid, ((BSSAssetRequest)requestIdResForPremium.Results).BSSCallLogID);
 
@@ -340,12 +342,12 @@ namespace OrderService.Controllers
                     IsDomainValidationErrors = false
                 });
             }
-
         }
 
         /// <summary>
         /// This will return a set of free or premium Mobile Numbers from BSS API based on the given type input
         /// </summary>
+        /// <param name="token"></param>
         /// <param name="request">request</param>
         /// <returns>OperationResponse
         /// Body{
@@ -355,58 +357,59 @@ namespace OrderService.Controllers
         /// }
         /// </returns>
         [HttpPost]
-        public async Task<IActionResult> GetMoreNumbers(BSSRequestMore request)
+        public async Task<IActionResult> GetMoreNumbers([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody]BSSRequestMore request)
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    return Ok(new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        IsDomainValidationErrors = true,
-                        Message = string.Join("; ", ModelState.Values
-                                                   .SelectMany(x => x.Errors)
-                                                   .Select(x => x.ErrorMessage))
-                    });
-                }
-                BSSAPIHelper helper = new BSSAPIHelper();
+                AuthHelper helper = new AuthHelper(_iconfiguration);
 
-                OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
-
-                DatabaseResponse tokenAuthResponse = await _orderAccess.AuthenticateCustomerToken(request.Token);
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
 
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
-                    AuthTokenResponse aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
-
-                    if (!(aTokenResp.CreatedOn < DateTime.UtcNow.AddDays(-7)))
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
                     {
+                        int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+                        if (!ModelState.IsValid)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = string.Join("; ", ModelState.Values
+                                                           .SelectMany(x => x.Errors)
+                                                           .Select(x => x.ErrorMessage))
+                            });
+                        }
+                        BSSAPIHelper bsshelper = new BSSAPIHelper();
+
+                        OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+
 
                         DatabaseResponse systemConfigResponse = await _orderAccess.GetConfiguration(ConfiType.System.ToString());
 
                         DatabaseResponse bssConfigResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
 
-                        GridBSSConfi bssConfig = helper.GetGridConfig((List<Dictionary<string, string>>)bssConfigResponse.Results);
+                        GridBSSConfi bssConfig = bsshelper.GetGridConfig((List<Dictionary<string, string>>)bssConfigResponse.Results);
 
-                        GridSystemConfig systemConfig = helper.GetGridSystemConfig((List<Dictionary<string, string>>)systemConfigResponse.Results);
+                        GridSystemConfig systemConfig = bsshelper.GetGridSystemConfig((List<Dictionary<string, string>>)systemConfigResponse.Results);
 
                         DatabaseResponse serviceCAF = await _orderAccess.GetBSSServiceCategoryAndFee(ServiceTypes.Free.ToString());
 
-                        DatabaseResponse requestIdResForFreeNumber = await _orderAccess.GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.GetAssets.ToString(), aTokenResp.CustomerID, (int)BSSCalls.ExistingSession, "");
+                        DatabaseResponse requestIdResForFreeNumber = await _orderAccess.GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.GetAssets.ToString(), customerID, (int)BSSCalls.ExistingSession, "");
 
                         BSSNumbers numbers = new BSSNumbers();
 
                         if (request.Type == 1) // free numbers
                         {
-                            ResponseObject res = await helper.GetAssetInventory(bssConfig, ((List<ServiceFees>)serviceCAF.Results).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdResForFreeNumber.Results, systemConfig.FreeNumberListCount);
+                            ResponseObject res = await bsshelper.GetAssetInventory(bssConfig, ((List<ServiceFees>)serviceCAF.Results).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdResForFreeNumber.Results, systemConfig.FreeNumberListCount);
 
                             if (res != null)
                             {
-                                numbers.FreeNumbers = helper.GetFreeNumbers(res);
+                                numbers.FreeNumbers = bsshelper.GetFreeNumbers(res);
 
                                 //insert these number into database
-                                string json = helper.GetJsonString(numbers.FreeNumbers); // json insert
+                                string json = bsshelper.GetJsonString(numbers.FreeNumbers); // json insert
 
                                 DatabaseResponse updateBssCallFeeNumbers = await _orderAccess.UpdateBSSCallNumbers(json, ((BSSAssetRequest)requestIdResForFreeNumber.Results).userid, ((BSSAssetRequest)requestIdResForFreeNumber.Results).BSSCallLogID);
                             }
@@ -445,20 +448,20 @@ namespace OrderService.Controllers
                                     //get code and call premum 
                                     //  fee.PortalServiceName
 
-                                    DatabaseResponse requestIdResForPremium = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.GetAssets.ToString(), aTokenResp.CustomerID, (int)BSSCalls.ExistingSession, "");
+                                    DatabaseResponse requestIdResForPremium = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.GetAssets.ToString(), customerID, (int)BSSCalls.ExistingSession, "");
 
-                                    ResponseObject premumResponse = await helper.GetAssetInventory(bssConfig, fee.ServiceCode, (BSSAssetRequest)requestIdResForPremium.Results, countPerPremium);
+                                    ResponseObject premumResponse = await bsshelper.GetAssetInventory(bssConfig, fee.ServiceCode, (BSSAssetRequest)requestIdResForPremium.Results, countPerPremium);
 
                                     if (premumResponse != null && premumResponse.Response.asset_details != null)
                                     {
-                                        List<PremiumNumbers> premiumNumbers = helper.GetPremiumNumbers(premumResponse, fee);
+                                        List<PremiumNumbers> premiumNumbers = bsshelper.GetPremiumNumbers(premumResponse, fee);
 
                                         BSSNumbers bssPremium = new BSSNumbers();
 
-                                        bssPremium.FreeNumbers = helper.GetFreeNumbers(premumResponse);
+                                        bssPremium.FreeNumbers = bsshelper.GetFreeNumbers(premumResponse);
 
                                         //insert these number into database
-                                        string json = helper.GetJsonString(bssPremium.FreeNumbers); // json insert
+                                        string json = bsshelper.GetJsonString(bssPremium.FreeNumbers); // json insert
 
                                         DatabaseResponse updateBssCallFeeNumbers = await _orderAccess.UpdateBSSCallNumbers(json, ((BSSAssetRequest)requestIdResForPremium.Results).userid, ((BSSAssetRequest)requestIdResForPremium.Results).BSSCallLogID);
 
@@ -568,7 +571,6 @@ namespace OrderService.Controllers
                     IsDomainValidationErrors = false
                 });
             }
-
         }
 
         /// <summary>
@@ -577,44 +579,44 @@ namespace OrderService.Controllers
         /// <param name="token"></param>
         /// <param name="mobileNumber"></param>
         /// <returns>OperationsResponse</returns>
-
-
-        [HttpGet("{token}/{mobileNumber}")]
-        public async Task<IActionResult> GetUsageHistory([FromRoute] string token, [FromRoute] string mobileNumber)
+        [HttpGet("{mobileNumber}")]
+        public async Task<IActionResult> GetUsageHistory([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] string mobileNumber)
         {
             try
             {
+                AuthHelper helper = new AuthHelper(_iconfiguration);
 
-                BSSAPIHelper helper = new BSSAPIHelper();
-
-                OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
-
-                DatabaseResponse tokenAuthResponse = await _orderAccess.AuthenticateCustomerToken(token);
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
 
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
-                    AuthTokenResponse aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
-
-                    if (!(aTokenResp.CreatedOn < DateTime.UtcNow.AddDays(-7)))
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
                     {
+                        int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+
+                        BSSAPIHelper bsshelper = new BSSAPIHelper();
+
+                        OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+
+
 
                         DatabaseResponse systemConfigResponse = await _orderAccess.GetConfiguration(ConfiType.System.ToString());
 
                         DatabaseResponse bssConfigResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
 
-                        GridBSSConfi bssConfig = helper.GetGridConfig((List<Dictionary<string, string>>)bssConfigResponse.Results);
+                        GridBSSConfi bssConfig = bsshelper.GetGridConfig((List<Dictionary<string, string>>)bssConfigResponse.Results);
 
-                        GridSystemConfig systemConfig = helper.GetGridSystemConfig((List<Dictionary<string, string>>)systemConfigResponse.Results);
+                        GridSystemConfig systemConfig = bsshelper.GetGridSystemConfig((List<Dictionary<string, string>>)systemConfigResponse.Results);
 
                         DatabaseResponse serviceCAF = await _orderAccess.GetBSSServiceCategoryAndFee(ServiceTypes.Free.ToString());
 
-                        DatabaseResponse requestIdRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.GetAssets.ToString(), aTokenResp.CustomerID, (int)BSSCalls.NoSession, "");
+                        DatabaseResponse requestIdRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.GetAssets.ToString(), customerID, (int)BSSCalls.NoSession, "");
 
                         BSSQueryPlanResponse numbers = new BSSQueryPlanResponse();
 
-                        object usageHistory = await helper.GetUsageHistory(bssConfig, mobileNumber, ((BSSAssetRequest)requestIdRes.Results).request_id);
+                        object usageHistory = await bsshelper.GetUsageHistory(bssConfig, mobileNumber, ((BSSAssetRequest)requestIdRes.Results).request_id);
 
-                        BSSQueryPlanResponse res = helper.GetQueryPlan(usageHistory);
+                        BSSQueryPlanResponse res = bsshelper.GetQueryPlan(usageHistory);
 
                         //  if (helper.GetResponseCode(usageHistory) == "0")
 
@@ -672,12 +674,12 @@ namespace OrderService.Controllers
                     IsDomainValidationErrors = false
                 });
             }
-
         }
 
         /// <summary>
         /// This will return Customer's BSS Invoice for the given date range, though optional
         /// </summary>
+        /// <param name="token"></param>
         /// <param name="request">
         /// body{
         /// "Token":"Auth token"
@@ -688,52 +690,54 @@ namespace OrderService.Controllers
         /// <returns>OperationsResponse</returns>
         [Route("GetCustomerInvoice")]
         [HttpPost]
-        public async Task<IActionResult> GetCustomerInvoice([FromBody] CustomerBSSInvoiceRequest request)
+        public async Task<IActionResult> GetCustomerInvoice([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] CustomerBSSInvoiceRequest request)
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    return Ok(new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        IsDomainValidationErrors = true,
-                        Message = string.Join("; ", ModelState.Values
-                                                   .SelectMany(x => x.Errors)
-                                                   .Select(x => x.ErrorMessage))
-                    });
-                }
-                // clarify date range -- preferably need to send from UI
+                AuthHelper helper = new AuthHelper(_iconfiguration);
 
-                BSSAPIHelper helper = new BSSAPIHelper();
-
-                OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
-
-                DatabaseResponse tokenAuthResponse = await _orderAccess.AuthenticateCustomerToken(request.Token);
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
 
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
-                    AuthTokenResponse aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
-
-                    if (!(aTokenResp.CreatedOn < DateTime.UtcNow.AddDays(-7)))
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
                     {
+                        int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+                        if (!ModelState.IsValid)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = string.Join("; ", ModelState.Values
+                                                           .SelectMany(x => x.Errors)
+                                                           .Select(x => x.ErrorMessage))
+                            });
+                        }
+                        // clarify date range -- preferably need to send from UI
+
+                        BSSAPIHelper bsshelper = new BSSAPIHelper();
+
+                        OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+
+
                         DatabaseResponse systemConfigResponse = await _orderAccess.GetConfiguration(ConfiType.System.ToString());
 
                         DatabaseResponse bssConfigResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
 
-                        GridBSSConfi bssConfig = helper.GetGridConfig((List<Dictionary<string, string>>)bssConfigResponse.Results);
+                        GridBSSConfi bssConfig = bsshelper.GetGridConfig((List<Dictionary<string, string>>)bssConfigResponse.Results);
 
-                        GridSystemConfig systemConfig = helper.GetGridSystemConfig((List<Dictionary<string, string>>)systemConfigResponse.Results);
+                        GridSystemConfig systemConfig = bsshelper.GetGridSystemConfig((List<Dictionary<string, string>>)systemConfigResponse.Results);
 
-                        DatabaseResponse accountResponse = await _orderAccess.GetCustomerBSSAccountNumber(aTokenResp.CustomerID);
+                        DatabaseResponse accountResponse = await _orderAccess.GetCustomerBSSAccountNumber(customerID);
 
                         if (accountResponse.ResponseCode == (int)DbReturnValue.RecordExists)
                         {
                             if (!string.IsNullOrEmpty(((BSSAccount)accountResponse.Results).AccountNumber))
                             {
-                                DatabaseResponse requestIdRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.GetInvoiceDetails.ToString(), aTokenResp.CustomerID, 0, "");
+                                DatabaseResponse requestIdRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.GetInvoiceDetails.ToString(), customerID, 0, "");
 
-                                BSSInvoiceResponseObject invoiceResponse = await helper.GetBSSCustomerInvoice(bssConfig, ((BSSAssetRequest)requestIdRes.Results).request_id, ((BSSAccount)accountResponse.Results).AccountNumber);
+                                BSSInvoiceResponseObject invoiceResponse = await bsshelper.GetBSSCustomerInvoice(bssConfig, ((BSSAssetRequest)requestIdRes.Results).request_id, ((BSSAccount)accountResponse.Results).AccountNumber);
 
                                 if (invoiceResponse.Response.result_code == "0")
                                 {
@@ -827,7 +831,6 @@ namespace OrderService.Controllers
                     IsDomainValidationErrors = false
                 });
             }
-
         }
     }
 }
