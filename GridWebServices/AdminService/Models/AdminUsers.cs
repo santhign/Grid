@@ -41,4 +41,28 @@ namespace AdminService.Models
         public string  ExistingPassword { get; set; }
         public string  NewPassword { get; set; }
     }
+    public class LoggedInPrinciple
+    {
+        /// <summary>
+        /// Gets or sets the customer.
+        /// </summary>
+        /// <value>
+        /// The customer.
+        /// </value>
+        public AdminUsers AdminUser { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is authenticated.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is authenticated; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsAuthenticated { get; set; }
+        /// <summary>
+        /// Gets or sets the token.
+        /// </summary>
+        /// <value>
+        /// The token.
+        /// </value>
+        public string Token { get; set; }
+    }
 }
