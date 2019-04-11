@@ -36,49 +36,100 @@ namespace CustomerService.Controllers
         /// <summary>
         /// This will validate the email id
         /// </summary> 
+        /// <param name="token"></param>
         ///<param name="emailid">abcd@gmail.com</param>
         /// <returns>validation result</returns> 
         [HttpGet]
         [Route("EmailValidation/{emailid}")]
-        public async Task<IActionResult> EmailValidation([FromRoute] string emailid)
+        public async Task<IActionResult> EmailValidation([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] string emailid)
         {
-
             try
             {
-                if (!ModelState.IsValid)
+                AuthHelper helper = new AuthHelper(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
-                    Log.Error(StatusMessages.DomainValidationError);
-                    new OperationResponse
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    {
+                        if (!ModelState.IsValid)
+                        {
+                            Log.Error(StatusMessages.DomainValidationError);
+                            new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = string.Join("; ", ModelState.Values
+                                                    .SelectMany(x => x.Errors)
+                                                    .Select(x => x.ErrorMessage))
+                            };
+                        }
+
+                        DatabaseResponse configResponseEmail = ConfigHelper.GetValue("EmailValidate", _iconfiguration);
+
+                        List<Dictionary<string, string>> _result = ((List<Dictionary<string, string>>)configResponseEmail.Results);
+
+                        EmailValidationHelper emailhelper = new EmailValidationHelper();
+                        EmailConfig objEmailConfig = new EmailConfig();
+                        objEmailConfig.key = _result.Single(x => x["key"] == "NeverbouceKey")["value"];
+                        objEmailConfig.Email = emailid;
+                        objEmailConfig.EmailAPIUrl = _result.Single(x => x["key"] == "Emailurl")["value"];
+
+
+                        string configResponse = await emailhelper.EmailValidation(objEmailConfig);
+                        if (configResponse.ToLower().Trim() != "invalid")
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = true,
+                                Message = StatusMessages.ValidMessage,
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                        else
+                        {
+                            //Invalid email
+
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.InvalidEmail));
+
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = StatusMessages.InvalidMessage,
+                                IsDomainValidationErrors = true
+                            });
+
+                        }
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
-                        IsDomainValidationErrors = true,
-                        Message = string.Join("; ", ModelState.Values
-                                            .SelectMany(x => x.Errors)
-                                            .Select(x => x.ErrorMessage))
-                    };
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
                 }
-
-                DatabaseResponse configResponseEmail = ConfigHelper.GetValue("EmailValidate", _iconfiguration);
-
-                List<Dictionary<string, string>> _result = ((List<Dictionary<string, string>>)configResponseEmail.Results);
-
-                EmailValidationHelper helper = new EmailValidationHelper();
-                EmailConfig objEmailConfig = new EmailConfig();
-                objEmailConfig.key = _result.Single(x => x["key"] == "NeverbouceKey").Select(x => x.Value).ToString();
-                objEmailConfig.Email = emailid;
-                objEmailConfig.EmailAPIUrl = _result.Single(x => x["key"] == "Emailurl").Select(x => x.Value).ToString();
-
-
-                ResponseObject configResponse = await helper.EmailValidation(objEmailConfig);
-
-                return Ok(new OperationResponse
-                {
-                    HasSucceeded = true,
-                    IsDomainValidationErrors = false,
-                    ReturnedObject = configResponse
-                });
-
-
             }
             catch (Exception ex)
             {
@@ -90,14 +141,13 @@ namespace CustomerService.Controllers
                     IsDomainValidationErrors = false
                 });
             }
-
         }
 
 
         /// <summary>
         /// This will validate postcode
         /// </summary>
-        /// <param name="Token"></param>
+        /// <param name="token"></param>
         /// <param name="postcode"></param>
         /// <returns>validation status</returns>
         /// POST: api/ValidateAuthenticatedPostcode
@@ -107,31 +157,67 @@ namespace CustomerService.Controllers
         /// }
         [HttpPost]
         [Route("ValidatePostcode/{postcode}")]
-        public async Task<IActionResult> ValidatePostcode([FromRoute]string postcode)
+        public async Task<IActionResult> ValidatePostcode([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute]string postcode)
         {
             try
             {
+                AuthHelper helper = new AuthHelper(_iconfiguration);
 
-                if (postcode.Length == 0)
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
-                    LogInfo.Error(StatusMessages.MissingRequiredFields);
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    {
+                        if (postcode.Length == 0)
+                        {
+                            LogInfo.Error(StatusMessages.MissingRequiredFields);
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = StatusMessages.MissingRequiredFields,
+                                IsDomainValidationErrors = true
+                            });
+                        }
+
+                        ValidationDataAccess _validateDataAccess = new ValidationDataAccess(_iconfiguration);
+
+                        return Ok(new ServerResponse
+                        {
+                            HasSucceeded = true,
+                            Message = StatusMessages.SuccessMessage,
+                            Result = await _validateDataAccess.ValidatePostcode(postcode)
+
+                        });
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
-                        Message = StatusMessages.MissingRequiredFields,
-                        IsDomainValidationErrors = true
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
                     });
                 }
-
-                ValidationDataAccess _validateDataAccess = new ValidationDataAccess(_iconfiguration);
-
-                return Ok(new ServerResponse
-                {
-                    HasSucceeded = true,
-                    Message = StatusMessages.SuccessMessage,
-                    Result = await _validateDataAccess.ValidatePostcode(postcode)
-
-                });
             }
             catch (Exception ex)
             {
@@ -157,7 +243,7 @@ namespace CustomerService.Controllers
         public IActionResult NRICValidation([FromRoute] string NRIC)
         {
 
-            string _warningmsg;
+            string _warningmsg = "";
             try
             {
 
@@ -220,7 +306,7 @@ namespace CustomerService.Controllers
                 return Ok(new OperationResponse
                 {
                     HasSucceeded = false,
-                    Message = StatusMessages.ServerError,
+                    Message = (_warningmsg == "" ? StatusMessages.ServerError : StatusMessages.InvalidMessage),
                     IsDomainValidationErrors = false
                 });
             }

@@ -12,6 +12,10 @@ using System.Linq;
 using Core.Extensions;
 using InfrastructureService;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 
 namespace AdminService.Controllers
 {
@@ -58,13 +62,81 @@ namespace AdminService.Controllers
 
                 AdminUsersDataAccess _AdminUsersDataAccess = new AdminUsersDataAccess(_iconfiguration);
 
-                return Ok(new ServerResponse
-                {
-                    HasSucceeded = true,
-                    Message = StatusMessages.SuccessMessage,
-                    Result = await _AdminUsersDataAccess.GetLoginAuthentication(userdetails)
+                DatabaseResponse response = await _AdminUsersDataAccess.GetLoginAuthentication(userdetails);
 
-                });
+                if (response.ResponseCode == ((int)DbReturnValue.EmailNotExists))
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.EmailNotExists),
+                        IsDomainValidationErrors = true
+                    });
+                }
+                else if (response.ResponseCode == ((int)DbReturnValue.PasswordIncorrect))
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.PasswordIncorrect),
+                        IsDomainValidationErrors = true
+                    });
+                }
+
+                else if (response.ResponseCode == ((int)DbReturnValue.AuthSuccess))
+                {
+                    //Authentication success
+
+                    var adminuser = new AdminUsers();
+
+                    adminuser = (AdminUsers)response.Results;
+
+                    var tokenHandler = new JwtSecurityTokenHandler();
+
+                    var key = Encoding.ASCII.GetBytes("stratagile grid adminuser signin jwt hashing secret");
+
+                    var tokenDescriptor = new SecurityTokenDescriptor
+                    {
+                        Subject = new ClaimsIdentity(new Claim[]
+                        {
+                             new Claim(ClaimTypes.Name, adminuser.AdminUserID.ToString())
+                        }),
+                        Expires = DateTime.UtcNow.AddDays(7), //  need to check with business needs
+                        SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                    };
+
+                    var token = tokenHandler.CreateToken(tokenDescriptor);
+
+                    var tokenString = tokenHandler.WriteToken(token);
+
+                    DatabaseResponse tokenResponse = new DatabaseResponse();
+
+                    tokenResponse = await _AdminUsersDataAccess.LogAdminUserToken(adminuser.AdminUserID, tokenString);
+
+                    // return basic user info (without password) and token to store client side
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = true,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.AuthSuccess),
+                        ReturnedObject = new LoggedInPrinciple
+                        {
+                            AdminUser = adminuser,
+                            IsAuthenticated = true,
+                            Token = tokenString
+                        }
+                    }
+                    );
+                }
+
+                else
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.ReasonUnknown),
+                        IsDomainValidationErrors = true
+                    });
+                }
             }
             catch (Exception ex)
             {
