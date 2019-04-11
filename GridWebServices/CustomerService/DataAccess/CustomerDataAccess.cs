@@ -103,57 +103,6 @@ namespace CustomerService.DataAccess
         }
 
         /// <summary>
-        /// Gets the customers.
-        /// </summary>
-        /// <returns></returns>
-        public async Task<List<Customer>> GetCustomers()
-        {
-            try
-            {
-
-                _DataHelper = new DataAccessHelper("Admin_GetCustomerListing", _configuration);
-
-                DataTable dt = new DataTable();
-
-                await _DataHelper.RunAsync(dt);
-
-                List<Customer> customerList = new List<Customer>();
-
-                if (dt.Rows.Count > 0)
-                {
-
-                    customerList = (from model in dt.AsEnumerable()
-                                    select new Customer()
-                                    {
-                                        CustomerID = model.Field<int>("CustomerID"),
-                                        Email = model.Field<string>("Email"),
-                                        Password = model.Field<string>("Password"),
-                                        MobileNumber = model.Field<string>("MobileNumber"),
-                                        ReferralCode = model.Field<string>("ReferralCode"),
-                                        Nationality = model.Field<string>("Nationality"),
-                                        Gender = model.Field<string>("Gender"),
-                                        SMSSubscription = model.Field<string>("SMSSubscription"),
-                                        EmailSubscription = model.Field<string>("EmailSubscription"),
-                                        Status = model.Field<string>("Status")
-                                    }).ToList();
-                }
-
-                return customerList;
-            }
-
-            catch (Exception ex)
-            {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-
-                throw (ex);
-            }
-            finally
-            {
-                _DataHelper.Dispose();
-            }
-        }
-
-        /// <summary>
         /// Gets the customer.
         /// </summary>
         /// <param name="customerId">The customer identifier.</param>
