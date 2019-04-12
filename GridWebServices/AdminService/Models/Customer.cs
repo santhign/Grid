@@ -101,6 +101,13 @@ namespace AdminService.Models
         /// </value>
         public string CustomerName { get; set; }
         /// <summary>
+        /// Gets or sets the email of the customer.
+        /// </summary>
+        /// <value>
+        /// The email of the customer.
+        /// </value>
+        public string Email { get; set; }
+        /// <summary>
         /// Gets or sets the phone number.
         /// </summary>
         /// <value>

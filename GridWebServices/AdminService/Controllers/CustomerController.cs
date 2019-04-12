@@ -252,9 +252,9 @@ namespace AdminService.Controllers
         {
             try
             {
-                AuthHelper helper = new AuthHelper(_iconfiguration);
+                AdminUsersDataAccess _adminUsersDataAccess = new AdminUsersDataAccess(_iconfiguration);
 
-                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+                DatabaseResponse tokenAuthResponse = await _adminUsersDataAccess.AuthenticateAdminUserToken(token);
 
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {

@@ -175,6 +175,7 @@ namespace AdminService.DataAccess
                                     {
                                         CustomerId = model.Field<int>("CustomerID"),
                                         CustomerName = model.Field<string>("Name"),
+                                        Email = model.Field<string>("Email"),
                                         PhoneNumber = model.Field<string>("MobileNumber"),
                                         Plan = model.Field<string>("PlanName"),
                                         AdditionalLines = model.Field<int>("AdditionalLines"),
