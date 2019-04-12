@@ -1185,6 +1185,7 @@ namespace OrderService.Controllers
         /// "IDImageFront" : FileInput,
         /// "IDImageBack" : FileInput,
         /// "NameInNRIC" : "Name as in NRIC",
+        /// "DisplayName" : "DisplayName",
         /// "Gender":"Male",
         /// "DOB":"15/12/2000", //dd/MM/yyyy
         /// "ContactNumber":"95421232", 
@@ -1244,6 +1245,7 @@ namespace OrderService.Controllers
                                 IDNumber = request.IDNumber,
                                 IDType = request.IDType,
                                 NameInNRIC = request.NameInNRIC,
+                                DisplayName = request.DisplayName,
                                 Nationality = request.Nationality
                             };
 

@@ -861,6 +861,7 @@ namespace OrderService.DataAccess
                     new SqlParameter( "@IDNumber",  SqlDbType.NVarChar),
                     new SqlParameter( "@IDImageUrl",  SqlDbType.NVarChar),
                     new SqlParameter( "@NameInNRIC",  SqlDbType.NVarChar),
+                    new SqlParameter( "@DisplayName",  SqlDbType.NVarChar),
                     new SqlParameter( "@Gender",  SqlDbType.NVarChar),
                     new SqlParameter( "@DOB",  SqlDbType.Date),
                     new SqlParameter( "@ContactNumber",  SqlDbType.NVarChar),
@@ -874,11 +875,12 @@ namespace OrderService.DataAccess
                 parameters[2].Value = personalDetails.IDNumber;
                 parameters[3].Value = personalDetails.IDFrontImageUrl;
                 parameters[4].Value = personalDetails.NameInNRIC;
-                parameters[5].Value = personalDetails.Gender;
-                parameters[6].Value = personalDetails.DOB;
-                parameters[7].Value = personalDetails.ContactNumber;
-                parameters[8].Value = personalDetails.Nationality;
-                parameters[9].Value = personalDetails.IDBackImageUrl;
+                parameters[5].Value = personalDetails.DisplayName;
+                parameters[6].Value = personalDetails.Gender;
+                parameters[7].Value = personalDetails.DOB;
+                parameters[8].Value = personalDetails.ContactNumber;
+                parameters[9].Value = personalDetails.Nationality;
+                parameters[10].Value = personalDetails.IDBackImageUrl;
 
                 _DataHelper = new DataAccessHelper("Orders_UpdateOrderBasicDetails", parameters, _configuration);
 

@@ -492,6 +492,14 @@ namespace OrderService.Models
         /// </value>
         [Required(ErrorMessage = "NameInNRIC is required")]
         public string NameInNRIC { get; set; }
+        /// <summary>
+        /// Gets or sets the display name.
+        /// </summary>
+        /// <value>
+        /// The display name.
+        /// </value>
+        [Required(ErrorMessage = "Display Name is required")]
+        public string DisplayName { get; set; }
 
         /// <summary>
         /// Gets or sets the gender.
@@ -572,6 +580,13 @@ namespace OrderService.Models
         /// The name in nric.
         /// </value>
         public string NameInNRIC { get; set; }
+        /// <summary>
+        /// Gets or sets the display name.
+        /// </summary>
+        /// <value>
+        /// The display name.
+        /// </value>
+        public string DisplayName { get; set; }
         /// <summary>
         /// Gets or sets the gender.
         /// </summary>
