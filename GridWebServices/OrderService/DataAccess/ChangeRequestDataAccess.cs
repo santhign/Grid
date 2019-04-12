@@ -58,7 +58,6 @@ namespace OrderService.DataAccess
                 _DataHelper = new DataAccessHelper(DbObjectNames.Orders_CR_InsertRemoveVAS, parameters, _configuration);
 
 
-
                 var result = await _DataHelper.RunAsync();    // 101 / 102 
 
                 return new DatabaseResponse { ResponseCode = result };

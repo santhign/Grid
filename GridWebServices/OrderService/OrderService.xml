@@ -79,7 +79,7 @@
             <param name="quantity">The quantity.</param>
             <returns></returns>
         </member>
-        <member name="M:OrderService.Controllers.ChangeRequestController.SubscriberTerminationRequest(System.String,System.String,System.String)">
+        <member name="M:OrderService.Controllers.ChangeRequestController.TerminationRequest(System.String,System.String,System.String)">
             <summary>
             Subscribers the termination request.
             </summary>
@@ -88,15 +88,15 @@
             <param name="remark">The remark.</param>
             <returns></returns>
         </member>
-        <member name="M:OrderService.Controllers.ChangeRequestController.SubscriberSimReplacementRequest(System.String,System.String)">
+        <member name="M:OrderService.Controllers.ChangeRequestController.SimReplacementRequest(System.String,System.String)">
             <summary>
             Subscribers the sim replacement request.
             </summary>
-            <param name="token">The token.</param>
+            <param name="token" in="Header">The token.</param>
             <param name="mobileNumber">The mobile number.</param>
             <returns></returns>
         </member>
-        <member name="M:OrderService.Controllers.ChangeRequestController.SubscriberSuspensionRequest(System.String,System.String,System.String)">
+        <member name="M:OrderService.Controllers.ChangeRequestController.SuspensionRequest(System.String,System.String,System.String)">
             <summary>
             Subscribers the suspension request.
             </summary>
@@ -323,12 +323,13 @@
             <param name="token"></param>
             <returns>OperationResponse</returns>
         </member>
-        <member name="M:OrderService.Controllers.OrdersController.GetCheckOutDetails(System.String,System.Int32)">
+        <member name="M:OrderService.Controllers.OrdersController.GetCheckOutDetails(System.String,System.Int32,System.Int32)">
             <summary>
             This will create a checkout session and returns the details to call MPGS 
             </summary>
-            <param name="token"></param>
-            <param name="orderId"></param>
+            <param name="token" in="Header"></param>     
+            <param name="orderId">Initial OrderID/ChangeRequestID in case of sim replacement/planchange/numberchange</param>
+            <param name="orderType"> Initial Order = 1, ChangeSim = 2, ChangeNumber = 3, ChangePlan = 4</param>
             <returns>OperationsResponse</returns>
         </member>
         <member name="M:OrderService.Controllers.OrdersController.UpdateCheckOutResponse(System.String,OrderService.Models.CheckOutResponseUpdate)">
@@ -419,6 +420,62 @@
             Changes the phone request.
             </summary>
             <param name="changePhone">The change phone.</param>
+            <returns></returns>
+        </member>
+        <member name="T:OrderService.DataAccess.IChangeRequestDataAccess">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:OrderService.DataAccess.IChangeRequestDataAccess.RemoveVasService(System.Int32,System.String,System.Int32)">
+            <summary>
+            Removes the vas service.
+            </summary>
+            <param name="customerId">The customer identifier.</param>
+            <param name="mobileNumber">The mobile number.</param>
+            <param name="planId">The plan identifier.</param>
+            <returns></returns>
+        </member>
+        <member name="M:OrderService.DataAccess.IChangeRequestDataAccess.BuyVasService(System.Int32,System.String,System.Int32,System.Int32)">
+            <summary>
+            Buys the vas service.
+            </summary>
+            <param name="customerId">The customer identifier.</param>
+            <param name="mobileNumber">The mobile number.</param>
+            <param name="bundleId">The bundle identifier.</param>
+            <param name="quantity">The quantity.</param>
+            <returns></returns>
+        </member>
+        <member name="M:OrderService.DataAccess.IChangeRequestDataAccess.SimReplacementRequest(System.Int32,System.String)">
+            <summary>
+            Sims the replacement request.
+            </summary>
+            <param name="customerId">The customer identifier.</param>
+            <param name="mobileNumber">The mobile number.</param>
+            <returns></returns>
+        </member>
+        <member name="M:OrderService.DataAccess.IChangeRequestDataAccess.TerminationOrSuspensionRequest(System.Int32,System.String,System.String,System.String)">
+            <summary>
+            Terminations the or suspension request.
+            </summary>
+            <param name="customerId">The customer identifier.</param>
+            <param name="mobileNumber">The mobile number.</param>
+            <param name="request">The request.</param>
+            <param name="remark">The remark.</param>
+            <returns></returns>
+        </member>
+        <member name="M:OrderService.DataAccess.IChangeRequestDataAccess.ChangePhoneRequest(OrderService.Models.ChangePhoneRequest)">
+            <summary>
+            Changes the phone request.
+            </summary>
+            <param name="changePhone">The change phone.</param>
+            <returns></returns>
+        </member>
+        <member name="M:OrderService.DataAccess.IChangeRequestDataAccess.UpdateCRShippingDetails(OrderService.Models.UpdateCRShippingDetailsRequest)">
+            <summary>
+            Updates the cr shipping details.
+            </summary>
+            <param name="shippingDetails">The shipping details.</param>
             <returns></returns>
         </member>
         <member name="M:OrderService.DataAccess.OrderDataAccess.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
@@ -670,23 +727,31 @@
             The name of the alternate recipient.
             </value>
         </member>
-        <member name="P:OrderService.Models.ChangeSimResponse.Alternate">
+        <member name="P:OrderService.Models.ChangeSimResponse.AlternateRecipientEmail">
             <summary>
-            Gets or sets the alternate.
+            Gets or sets the alternate recipient email.
             </summary>
             <value>
-            The alternate.
+            The alternate recipient email.
             </value>
         </member>
-        <member name="P:OrderService.Models.ChangeSimResponse.RecipientEmail">
+        <member name="P:OrderService.Models.ChangeSimResponse.AlternateRecioientIDNumber">
             <summary>
-            Gets or sets the recipient email.
+            Gets or sets the alternate recioient identifier number.
             </summary>
             <value>
-            The recipient email.
+            The alternate recioient identifier number.
             </value>
         </member>
-        <member name="P:OrderService.Models.ChangeSimResponse.PortalSlotId">
+        <member name="P:OrderService.Models.ChangeSimResponse.AlternateRecioientIDType">
+            <summary>
+            Gets or sets the type of the alternate recioient identifier.
+            </summary>
+            <value>
+            The type of the alternate recioient identifier.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.ChangeSimResponse.PortalSlotID">
             <summary>
             Gets or sets the portal slot identifier.
             </summary>
@@ -694,7 +759,7 @@
             The portal slot identifier.
             </value>
         </member>
-        <member name="P:OrderService.Models.ChangeSimResponse.SlotDate">
+        <member name="P:OrderService.Models.ChangeSimResponse.DeliveryVendor">
             <summary>
             Gets or sets the slot date.
             </summary>
@@ -702,7 +767,7 @@
             The slot date.
             </value>
         </member>
-        <member name="P:OrderService.Models.ChangeSimResponse.SlotFromTime">
+        <member name="P:OrderService.Models.ChangeSimResponse.DeliveryOn">
             <summary>
             Gets or sets the slot from time.
             </summary>
@@ -710,7 +775,23 @@
             The slot from time.
             </value>
         </member>
-        <member name="P:OrderService.Models.ChangeSimResponse.SlotToTime">
+        <member name="P:OrderService.Models.ChangeSimResponse.VendorTrackingCode">
+            <summary>
+            Gets or sets the vendor tracking code.
+            </summary>
+            <value>
+            The vendor tracking code.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.ChangeSimResponse.VendorTrackingUrl">
+            <summary>
+            Gets or sets the vendor tracking URL.
+            </summary>
+            <value>
+            The vendor tracking URL.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.ChangeSimResponse.DeliveryTime">
             <summary>
             Gets or sets the slot to time.
             </summary>
@@ -726,7 +807,7 @@
             The scheduled date.
             </value>
         </member>
-        <member name="P:OrderService.Models.ChangeSimResponse.ServiceFee">
+        <member name="P:OrderService.Models.ChangeSimResponse.DeliveryFee">
             <summary>
             Gets or sets the service fee.
             </summary>
@@ -788,7 +869,7 @@
         </member>
         <member name="T:OrderService.Models.ChangeRequestCharges">
             <summary>
-            
+            Change Request Charges class
             </summary>
         </member>
         <member name="P:OrderService.Models.ChangeRequestCharges.PortalServiceName">
@@ -822,6 +903,91 @@
             <value>
               <c>true</c> if this instance is GST included; otherwise, <c>false</c>.
             </value>
+        </member>
+        <member name="T:OrderService.Models.UpdateCRShippingDetailsRequest">
+            <summary>
+            UpdateCRShippingDetailsRequest
+            </summary>
+        </member>
+        <member name="P:OrderService.Models.UpdateCRShippingDetailsRequest.ChangeRequestID">
+            <summary>
+            Gets or sets the change request identifier.
+            </summary>
+            <value>
+            The change request identifier.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.UpdateCRShippingDetailsRequest.Postcode">
+            <summary>
+            Gets or sets the postcode.
+            </summary>
+            <value>
+            The postcode.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.UpdateCRShippingDetailsRequest.BlockNumber">
+            <summary>
+            Gets or sets the block number.
+            </summary>
+            <value>
+            The block number.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.UpdateCRShippingDetailsRequest.Unit">
+            <summary>
+            Gets or sets the unit.
+            </summary>
+            <value>
+            The unit.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.UpdateCRShippingDetailsRequest.Floor">
+            <summary>
+            Gets or sets the floor.
+            </summary>
+            <value>
+            The floor.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.UpdateCRShippingDetailsRequest.BuildingName">
+            <summary>
+            Gets or sets the name of the building.
+            </summary>
+            <value>
+            The name of the building.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.UpdateCRShippingDetailsRequest.StreetName">
+            <summary>
+            Gets or sets the name of the street.
+            </summary>
+            <value>
+            The name of the street.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.UpdateCRShippingDetailsRequest.ContactNumber">
+            <summary>
+            Gets or sets the contact number.
+            </summary>
+            <value>
+            The contact number.
+            </value>        
+        </member>
+        <member name="P:OrderService.Models.UpdateCRShippingDetailsRequest.IsBillingSame">
+            <summary>
+            Gets or sets the is billing same.
+            </summary>
+            <value>
+            The is billing same.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.UpdateCRShippingDetailsRequest.PortalSlotID">
+            <summary>
+            Gets or sets the portal slot identifier.
+            </summary>
+            <value>
+            The portal slot identifier.
+            </value>        
         </member>
         <member name="T:OrderService.Models.OrderInit">
             <summary>
