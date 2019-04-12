@@ -197,7 +197,66 @@ namespace CustomerService.DataAccess
             }
         }
 
-        
+
+        /// <summary>
+        /// Gets the customer shared plans.
+        /// </summary>
+        /// <param name="customerId">The customer identifier.</param>
+        /// <returns>
+        /// List of plan associated with Customers along with all subscribers
+        /// </returns>
+        public async Task<List<CustomerPlans>> GetCustomerSharedPlans(int customerId)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int )
+                };
+
+                parameters[0].Value = customerId;
+
+                _DataHelper = new DataAccessHelper("Customers_GetSharedPlans", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+
+                await _DataHelper.RunAsync(dt);
+
+                var customerPlans = new List<CustomerPlans>();
+
+                if (dt.Rows.Count > 0)
+                {
+                    customerPlans = (from model in dt.AsEnumerable()
+                                     select new CustomerPlans()
+                                     {
+                                         CustomerID = model.Field<int>("CustomerID"),
+                                         PlanId = model.Field<int>("PlanID"),
+                                         PlanMarketingName = model.Field<string>("PlanMarketingName"),
+                                         PortalSummaryDescription = model.Field<string>("PortalSummaryDescription"),
+                                         PortalDescription = model.Field<string>("PortalDescription"),
+                                         PlanStatus = model.Field<string>("PlanStatus"),
+                                         MobileNumber = model.Field<string>("MobileNumber"),
+                                         SubscriptionType = model.Field<string>("SubscriptionType"),
+                                         IsRecurring = model.Field<int>("IsRecurring"),
+                                         ExpiryDate = model.Field<DateTime?>("ExpiryDate"),
+                                     }).ToList();
+                }
+
+                return customerPlans;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw ex;
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
 
         /// <summary>
         /// Gets the customer plans.
@@ -240,8 +299,6 @@ namespace CustomerService.DataAccess
 
                 if (dt.Rows.Count > 0)
                 {
-
-
                     customerPlans = (from model in dt.AsEnumerable()
                                      select new CustomerPlans()
                                      {
@@ -250,6 +307,7 @@ namespace CustomerService.DataAccess
                                          PlanMarketingName = model.Field<string>("PlanMarketingName"),
                                          PortalSummaryDescription = model.Field<string>("PortalSummaryDescription"),
                                          PortalDescription = model.Field<string>("PortalDescription"),
+                                         PlanStatus = model.Field<string>("PlanStatus"),
                                          MobileNumber = model.Field<string>("MobileNumber"),
                                          SubscriptionType = model.Field<string>("SubscriptionType"),
                                          IsRecurring = model.Field<int>("IsRecurring"),
