@@ -248,12 +248,12 @@ namespace CustomerService.DataAccess
                                          CustomerID = model.Field<int>("CustomerID"),
                                          PlanId = model.Field<int>("PlanID"),
                                          PlanMarketingName = model.Field<string>("PlanMarketingName"),
+                                         PortalSummaryDescription = model.Field<string>("PortalSummaryDescription"),
+                                         PortalDescription = model.Field<string>("PortalDescription"),
                                          MobileNumber = model.Field<string>("MobileNumber"),
                                          SubscriptionType = model.Field<string>("SubscriptionType"),
                                          IsRecurring = model.Field<int>("IsRecurring"),
-                                        
-                                            ExpiryDate = model.Field<DateTime?>("ExpiryDate"),
-
+                                         ExpiryDate = model.Field<DateTime?>("ExpiryDate"),
                                      }).ToList();
                 }
 
@@ -453,7 +453,8 @@ namespace CustomerService.DataAccess
                                           IsPrimary = model.Field<bool>("IsPrimary"),
                                           LinkedMobileNumber = model.Field<string>("LinkedMobileNumber"),
                                           AccountType = model.Field<string>("AccountType"),
-                                          LinkedDisplayName = model.Field<string>("LinkedDisplayName")
+                                          LinkedDisplayName = model.Field<string>("LinkedDisplayName"),
+                                          State = model.Field<string>("State")
                                       }).ToList();
                     }
 

@@ -45,10 +45,9 @@ namespace CustomerService.Controllers
         /// Gets the customer.
         /// </summary>
         /// <param name="token" in="Header"></param>
-        /// <param name="id">The identifier.</param>
         /// <returns></returns>
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetCustomer([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int id)
+        [HttpGet]
+        public async Task<IActionResult> GetCustomer([FromHeader(Name = "Grid-Authorization-Token")] string token)
         {
             try
             {
@@ -58,9 +57,9 @@ namespace CustomerService.Controllers
 
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
-
                     if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
                     {
+                        int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
                         if (!ModelState.IsValid)
                         {
                             return Ok(new OperationResponse
@@ -75,7 +74,7 @@ namespace CustomerService.Controllers
 
                         CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
 
-                        Customer customer = await _customerAccess.GetCustomer(id);
+                        Customer customer = await _customerAccess.GetCustomer(customerID);
 
                         if (customer == null)
                         {
