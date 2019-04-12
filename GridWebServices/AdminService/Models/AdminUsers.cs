@@ -13,7 +13,12 @@ namespace AdminService.Models
         public string Email { get; set; }
         public string Password { get; set; }         
         public string Role { get; set; }
-         
+
+    }
+    public class Roles
+    {
+        public int RoleID { get; set; }
+        public string Role { get; set; }
     }
     public class AdminUserLoginRequest
     {
@@ -29,9 +34,7 @@ namespace AdminService.Models
 
         [Required(ErrorMessage = "Password required")]
         public string Password { get; set; }
-
-        public int DepartmentID { get; set; }
-        public int OfficeID { get; set; }
+        [Required(ErrorMessage = "RoleID required")]
         public int RoleID { get; set; } 
     }
 

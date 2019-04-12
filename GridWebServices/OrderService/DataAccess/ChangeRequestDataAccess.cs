@@ -14,7 +14,7 @@ using Core.Extensions;
 
 namespace OrderService.DataAccess
 {
-    public class ChangeRequestDataAccess
+    public class ChangeRequestDataAccess : IChangeRequestDataAccess
     {
         internal DataAccessHelper _DataHelper = null;
 
@@ -43,17 +43,19 @@ namespace OrderService.DataAccess
 
                 SqlParameter[] parameters =
                 {
-                    new SqlParameter( "@CustomerId",  SqlDbType.Int ),
-                    new SqlParameter( "@OldMobileNumber",  SqlDbType.NVarChar ),
-                    new SqlParameter( "@PlanId",  SqlDbType.Int)
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+                    new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@PlanID",  SqlDbType.Int),
+                    new SqlParameter( "@RequestType",  SqlDbType.NVarChar )
                 };
 
                 parameters[0].Value = customerId;
                 parameters[1].Value = mobileNumber;
                 parameters[2].Value = planId;
+                parameters[3].Value = Core.Enums.RequestType.Removal.GetDescription();
 
 
-                _DataHelper = new DataAccessHelper("Orders_CR_InsertRemoveVAS", parameters, _configuration);
+                _DataHelper = new DataAccessHelper(DbObjectNames.Orders_CR_InsertRemoveVAS, parameters, _configuration);
 
 
 
@@ -89,19 +91,21 @@ namespace OrderService.DataAccess
 
                 SqlParameter[] parameters =
                 {
-                    new SqlParameter( "@CustomerId",  SqlDbType.Int ),
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
                     new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar ),
                     new SqlParameter( "@BundleID",  SqlDbType.Int),
-                    new SqlParameter( "@Quantity",  SqlDbType.Int)
+                    new SqlParameter( "@Quantity",  SqlDbType.Int),
+                    new SqlParameter( "@RequestType",  SqlDbType.NVarChar)
                 };
 
                 parameters[0].Value = customerId;
                 parameters[1].Value = mobileNumber;
                 parameters[2].Value = bundleId;
                 parameters[3].Value = quantity;
+                parameters[4].Value = Core.Enums.RequestType.Addition.GetDescription();
 
 
-                _DataHelper = new DataAccessHelper("Orders_CR_BuyVAS", parameters, _configuration);
+                _DataHelper = new DataAccessHelper(DbObjectNames.Orders_CR_BuyVAS, parameters, _configuration);
 
 
 
@@ -144,7 +148,7 @@ namespace OrderService.DataAccess
                 parameters[1].Value = mobileNumber;
                 parameters[2].Value = Core.Enums.RequestType.ChangeSim.GetDescription();
 
-                _DataHelper = new DataAccessHelper("Order_CR_SIMReplacementRequest", parameters, _configuration);
+                _DataHelper = new DataAccessHelper(DbObjectNames.Order_CR_SIMReplacementRequest, parameters, _configuration);
 
                 var result = await _DataHelper.RunAsync(ds);
 
@@ -160,7 +164,7 @@ namespace OrderService.DataAccess
                                     {
                                         ChangeRequestId = model.Field<int>("ChangeRequestId"),
                                         OrderNumber = model.Field<string>("OrderNumber"),
-                                        //RequestOn = model.Field<DateTime>("RequestOn"),
+                                        RequestOn = model.Field<DateTime>("RequestOn"),
                                         RequestTypeDescription = model.Field<string>("RequestTypeDescription"),
                                         BillingUnit = model.Field<string>("BillingUnit"),
                                         BillingFloor = model.Field<string>("BillingFloor"),
@@ -172,13 +176,26 @@ namespace OrderService.DataAccess
                                         Email = model.Field<string>("Email"),
                                         IdentityCardNumber = model.Field<string>("IdentityCardNumber"),
                                         IdentityCardType = model.Field<string>("IdentityCardType"),
-                                        //IsSameAsBilling = model.Field<string>("IsSameAsBilling"),
+                                        IsSameAsBilling = model.Field<int>("IsSameAsBilling"),
                                         ShippingUnit = model.Field<string>("ShippingUnit"),
                                         ShippingFloor = model.Field<string>("ShippingFloor"),
                                         ShippingBuildingNumber = model.Field<string>("ShippingBuildingNumber"),
                                         ShippingStreetName = model.Field<string>("ShippingStreetName"),
                                         ShippingPostCode = model.Field<string>("ShippingPostCode"),
-                                        ShippingContactNumber = model.Field<string>("ShippingContactNumber")//,
+                                        ShippingContactNumber = model.Field<string>("ShippingContactNumber"),
+                                        AlternateRecipientName = model.Field<string>("AlternateRecipientName"),
+                                        AlternateRecipientEmail = model.Field<string>("AlternateRecipientEmail"),
+                                        AlternateRecipientContact = model.Field<string>("AlternateRecipientContact"),
+                                        AlternateRecioientIDNumber = model.Field<string>("AlternateRecipientName"),
+                                        AlternateRecioientIDType = model.Field<string>("AlternateRecioientIDType"),
+                                        PortalSlotID = model.Field<string>("PortalSlotID"),
+                                        ScheduledDate = model.Field<DateTime?>("ScheduledDate"),
+                                        DeliveryVendor = model.Field<string>("DeliveryVendor"),
+                                        DeliveryOn = model.Field<DateTime?>("DeliveryOn"),
+                                        DeliveryTime = model.Field<DateTime?>("DeliveryTime"),
+                                        VendorTrackingCode = model.Field<string>("VendorTrackingCode"),
+                                        VendorTrackingUrl = model.Field<string>("VendorTrackingUrl"),
+                                        DeliveryFee = model.Field<double>("DeliveryFee")
 
                                     }).FirstOrDefault();
 
@@ -235,7 +252,7 @@ namespace OrderService.DataAccess
                 parameters[2].Value = request;
                 parameters[3].Value = remark;
 
-                _DataHelper = new DataAccessHelper("Orders_CR_RaiseRequest", parameters, _configuration);
+                _DataHelper = new DataAccessHelper(DbObjectNames.Orders_CR_RaiseRequest, parameters, _configuration);
 
                 var result = await _DataHelper.RunAsync(ds);
 
@@ -312,7 +329,7 @@ namespace OrderService.DataAccess
                 //parameters[6].Value = changePhone.PortedNumberOwnedBy;
                 //parameters[7].Value = changePhone.PortedNumberOwnerRegistrationId;
 
-                _DataHelper = new DataAccessHelper("Customer_CR_ChangePhoneRequest", parameters, _configuration);
+                _DataHelper = new DataAccessHelper(DbObjectNames.Customer_CR_ChangePhoneRequest, parameters, _configuration);
 
                 var result = await _DataHelper.RunAsync();
 
@@ -331,63 +348,50 @@ namespace OrderService.DataAccess
             }
         }
 
-        public async Task<DatabaseResponse> AuthenticateCustomerToken(string token)
+        public async Task<DatabaseResponse> UpdateCRShippingDetails(UpdateCRShippingDetailsRequest shippingDetails)
         {
             try
             {
-
                 SqlParameter[] parameters =
-                {
-                    new SqlParameter( "@Token",  SqlDbType.NVarChar )
-
+               {
+                    new SqlParameter( "@ChangeRequestID",  SqlDbType.Int ),
+                    new SqlParameter( "@Postcode",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@BlockNumber",  SqlDbType.NVarChar),
+                    new SqlParameter( "@Unit",  SqlDbType.NVarChar),
+                    new SqlParameter( "@Floor",  SqlDbType.NVarChar),
+                    new SqlParameter( "@BuildingName",  SqlDbType.NVarChar),
+                    new SqlParameter( "@StreetName",  SqlDbType.NVarChar),
+                    new SqlParameter( "@ContactNumber",  SqlDbType.NVarChar),
+                    new SqlParameter( "@IsBillingSame",  SqlDbType.Int),
+                    new SqlParameter( "@PortalSlotID",  SqlDbType.NVarChar),
+                    new SqlParameter( "@CustomerID", SqlDbType.Int)
                 };
 
-                parameters[0].Value = token;
-
-                _DataHelper = new DataAccessHelper("Customer_AuthenticateToken", parameters, _configuration);
-
-                var dt = new DataTable();
-
-                int result = await _DataHelper.RunAsync(dt); // 111 /109
-
-                DatabaseResponse response = new DatabaseResponse();
-
-                if (result == 111)
-                {
-
-                    AuthTokenResponse tokenResponse = new AuthTokenResponse();
-
-                    if (dt != null && dt.Rows.Count > 0)
-                    {
-
-                        tokenResponse = (from model in dt.AsEnumerable()
-                            select new AuthTokenResponse()
-                            {
-                                CustomerID = model.Field<int>("CustomerID"),
-
-                                CreatedOn = model.Field<DateTime>("CreatedOn")
+                parameters[0].Value = shippingDetails.ChangeRequestID;
+                parameters[1].Value = shippingDetails.Postcode;
+                parameters[2].Value = shippingDetails.BlockNumber;
+                parameters[3].Value = shippingDetails.Unit;
+                parameters[4].Value = shippingDetails.Floor;
+                parameters[5].Value = shippingDetails.BuildingName;
+                parameters[6].Value = shippingDetails.StreetName;
+                parameters[7].Value = shippingDetails.ContactNumber;
+                parameters[8].Value = shippingDetails.IsBillingSame;
+                parameters[9].Value = shippingDetails.PortalSlotID;
+                parameters[10].Value = shippingDetails.CustomerID;
 
 
-                            }).FirstOrDefault();
-                    }
+                _DataHelper = new DataAccessHelper(DbObjectNames.Orders_CR_UpdateCRShippingDetails, parameters, _configuration);
 
-                    response = new DatabaseResponse { ResponseCode = result, Results = tokenResponse };
+                int result = await _DataHelper.RunAsync();    // 101 / 109 
 
-                }
-
-                else
-                {
-                    response = new DatabaseResponse { ResponseCode = result };
-                }
-
-                return response;
+                return new DatabaseResponse { ResponseCode = result };
             }
 
             catch (Exception ex)
             {
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
-                throw (ex);
+                throw;
             }
             finally
             {

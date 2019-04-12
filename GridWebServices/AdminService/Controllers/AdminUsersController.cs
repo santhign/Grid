@@ -156,6 +156,7 @@ namespace AdminService.Controllers
         /// <summary>
         /// This will create new admin user
         /// </summary>
+        /// <param name="token"></param>
         /// <param name="adminuser"></param>
         /// <returns>created user details</returns>
         /// POST: api/Create
@@ -169,46 +170,85 @@ namespace AdminService.Controllers
         ///}
         [HttpPost]
         [Route("Create")]
-        public async Task<IActionResult> Create([FromBody] RegisterAdminUser adminuser)
+        public async Task<IActionResult> Create([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] RegisterAdminUser adminuser)
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    Log.Error(StatusMessages.DomainValidationError);
-                    new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        IsDomainValidationErrors = true,
-                        Message = string.Join("; ", ModelState.Values
-                                                 .SelectMany(x => x.Errors)
-                                                 .Select(x => x.ErrorMessage))
-                    };
-                }
-
                 AdminUsersDataAccess _adminUsersDataAccess = new AdminUsersDataAccess(_iconfiguration);
 
-                DatabaseResponse response = await _adminUsersDataAccess.CreateAdminUser(adminuser);
+                DatabaseResponse tokenAuthResponse = await _adminUsersDataAccess.AuthenticateAdminUserToken(token);
 
-
-                if (response.ResponseCode == ((int)DbReturnValue.EmailExists))
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    {
+                        int _AdminUserID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+                        if (!ModelState.IsValid)
+                        {
+                            Log.Error(StatusMessages.DomainValidationError);
+                            new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = string.Join("; ", ModelState.Values
+                                                         .SelectMany(x => x.Errors)
+                                                         .Select(x => x.ErrorMessage))
+                            };
+                        }
+
+
+                        DatabaseResponse response = await _adminUsersDataAccess.CreateAdminUser(adminuser, _AdminUserID);
+
+
+                        if (response.ResponseCode == ((int)DbReturnValue.EmailExists))
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.EmailExists),
+                                IsDomainValidationErrors = true
+                            });
+                        }
+                        else
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = true,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.CreateSuccess),
+                                IsDomainValidationErrors = false,
+                                ReturnedObject = response.Results
+
+                            });
+                        }
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+
+                }
+
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
-                        Message = EnumExtensions.GetDescription(DbReturnValue.EmailExists),
-                        IsDomainValidationErrors = true
-                    });
-                }
-                else
-                {
-                    return Ok(new OperationResponse
-                    {
-                        HasSucceeded = true,
-                        Message = EnumExtensions.GetDescription(DbReturnValue.CreateSuccess),
-                        IsDomainValidationErrors = false,
-                        ReturnedObject = response.Results
-
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
                     });
                 }
             }
@@ -230,56 +270,90 @@ namespace AdminService.Controllers
         /// <summary>
         /// This will  get admin user details based on specific id supplied
         /// </summary>
-        /// <param name="id">1</param>
+        /// <param name="token"></param>
         /// <returns>get user details with specific id</returns>  
         /// 
         // GET: api/GetAdminUser/1
         [HttpGet]
-        [Route("{id}")]
-        public async Task<IActionResult> GetAdminUser([FromRoute] int id)
+        public async Task<IActionResult> GetAdminUser([FromHeader(Name = "Grid-Authorization-Token")] string token)
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    Log.Error(StatusMessages.DomainValidationError);
-                    new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        IsDomainValidationErrors = true,
-                        Message = string.Join("; ", ModelState.Values
-                                            .SelectMany(x => x.Errors)
-                                            .Select(x => x.ErrorMessage))
-                    };
-                }
-
-
                 AdminUsersDataAccess _adminUsersDataAccess = new AdminUsersDataAccess(_iconfiguration);
 
+                DatabaseResponse tokenAuthResponse = await _adminUsersDataAccess.AuthenticateAdminUserToken(token);
 
-                AdminUsers adminusers = await _adminUsersDataAccess.GetAdminUser(id);
-
-                if (adminusers == null)
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
-                    return Ok(new ServerResponse
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
                     {
-                        HasSucceeded = false,
-                        Message = EnumExtensions.GetDescription(DbReturnValue.NotExists)
+                        int _AdminUserID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+                        if (!ModelState.IsValid)
+                        {
+                            Log.Error(StatusMessages.DomainValidationError);
+                            new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = string.Join("; ", ModelState.Values
+                                                    .SelectMany(x => x.Errors)
+                                                    .Select(x => x.ErrorMessage))
+                            };
+                        }
 
-                    });
+
+                        AdminUsers adminusers = await _adminUsersDataAccess.GetAdminUser(_AdminUserID);
+
+                        if (adminusers == null)
+                        {
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists)
+
+                            });
+                        }
+                        else
+                        {
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = true,
+                                Message = StatusMessages.SuccessMessage,
+                                Result = adminusers
+
+                            });
+                        }
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+
                 }
+
                 else
                 {
-                    return Ok(new ServerResponse
-                    {
-                        HasSucceeded = true,
-                        Message = StatusMessages.SuccessMessage,
-                        Result = adminusers
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
 
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
                     });
                 }
-
-
             }
             catch (Exception ex)
             {
@@ -298,21 +372,116 @@ namespace AdminService.Controllers
         /// <summary>
         /// This will get all admin users
         /// </summary>
-        /// <param></param>
+        /// <param name="token"></param>
         /// <returns>get all user details</returns> 
         /// 
         // GET: api/GetAdminusers
         [HttpGet]
-        public async Task<IActionResult> GetAdminusers()
+        public async Task<IActionResult> GetAdminusers([FromHeader(Name = "Grid-Authorization-Token")] string token)
+        {
+            try
+            {
+                AdminUsersDataAccess _adminUsersDataAccess = new AdminUsersDataAccess(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await _adminUsersDataAccess.AuthenticateAdminUserToken(token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    {
+                        int _AdminUserID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+
+                        List<AdminUsers> AdminUsersList = new List<AdminUsers>();
+
+                        AdminUsersList = await _adminUsersDataAccess.GetAdminusers();
+
+                        if (AdminUsersList == null || AdminUsersList.Count == 0)
+                        {
+                            Log.Error(EnumExtensions.GetDescription(DbReturnValue.NotExists));
+
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists)
+
+                            });
+                        }
+                        else
+                        {
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = true,
+                                Message = StatusMessages.SuccessMessage,
+                                Result = AdminUsersList
+
+                            });
+                        }
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+
+                }
+
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+
+        }
+
+        /// <summary>
+        /// This will get all admin roles
+        /// </summary>
+        /// <param></param>
+        /// <returns>get all role details</returns> 
+        /// 
+        // GET: api/GetAdminusers
+        [HttpGet]
+        [Route("roles")]
+        public async Task<IActionResult> GetAdminRoles()
         {
             try
             {
 
                 AdminUsersDataAccess _adminUsersDataAccess = new AdminUsersDataAccess(_iconfiguration);
 
-                List<AdminUsers> AdminUsersList = new List<AdminUsers>();
+                List<Roles> AdminUsersList = new List<Roles>();
 
-                AdminUsersList = await _adminUsersDataAccess.GetAdminusers();
+                AdminUsersList = await _adminUsersDataAccess.GetAdminRoles();
 
                 if (AdminUsersList == null || AdminUsersList.Count == 0)
                 {
@@ -353,48 +522,92 @@ namespace AdminService.Controllers
 
         }
 
-
+        /// <summary>
+        /// This will update admin user profile
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="adminuser"></param>
+        /// <returns>get all role details</returns> 
+        /// 
         [HttpPost]
         [Route("UpdateAdminUser")]
-        public async Task<IActionResult> UpdateAdminUser([FromBody] AdminProfile adminuser)
+        public async Task<IActionResult> UpdateAdminUser([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] AdminProfile adminuser)
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    Log.Error(StatusMessages.DomainValidationError);
-                    new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        IsDomainValidationErrors = true,
-                        Message = string.Join("; ", ModelState.Values
-                                                 .SelectMany(x => x.Errors)
-                                                 .Select(x => x.ErrorMessage))
-                    };
-                }
-
                 AdminUsersDataAccess _adminUsersDataAccess = new AdminUsersDataAccess(_iconfiguration);
 
-                DatabaseResponse response = await _adminUsersDataAccess.UpdateAdminUser(adminuser);
+                DatabaseResponse tokenAuthResponse = await _adminUsersDataAccess.AuthenticateAdminUserToken(token);
 
-                if (response.ResponseCode == ((int)DbReturnValue.EmailNotExists))
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    {
+                        int _AdminUserID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+                        if (!ModelState.IsValid)
+                        {
+                            Log.Error(StatusMessages.DomainValidationError);
+                            new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = string.Join("; ", ModelState.Values
+                                                         .SelectMany(x => x.Errors)
+                                                         .Select(x => x.ErrorMessage))
+                            };
+                        }
+
+                        DatabaseResponse response = await _adminUsersDataAccess.UpdateAdminUser(adminuser);
+
+                        if (response.ResponseCode == ((int)DbReturnValue.EmailNotExists))
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.EmailNotExists),
+                                IsDomainValidationErrors = true
+                            });
+                        }
+                        else
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = true,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.CreateSuccess),
+                                IsDomainValidationErrors = false,
+                                ReturnedObject = response.Results
+
+                            });
+                        }
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+
+                }
+
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
-                        Message = EnumExtensions.GetDescription(DbReturnValue.EmailNotExists),
-                        IsDomainValidationErrors = true
-                    });
-                }
-                else
-                {
-                    return Ok(new OperationResponse
-                    {
-                        HasSucceeded = true,
-                        Message = EnumExtensions.GetDescription(DbReturnValue.CreateSuccess),
-                        IsDomainValidationErrors = false,
-                        ReturnedObject = response.Results
-
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
                     });
                 }
             }
