@@ -20,7 +20,13 @@ namespace Core.Enums
 
         [EnumMember(Value = "MPGS")]
         [Description("MPGS Gateway Configuration")]
-        MPGS = 4
+        MPGS = 4,
+
+        [EnumMember(Value = "ForgotPasswordMsg")]
+        [Description("ForgotPasswordMsg")]
+        ForgotPasswordMsg = 5,
+
+
     }
 
     public enum OrderStatus

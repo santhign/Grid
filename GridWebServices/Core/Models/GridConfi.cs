@@ -76,5 +76,16 @@ namespace Core.Models
 
     }
 
-  
+
+    [DataContract]
+    public class ForgotPasswordMsgConfig
+    {
+        [DataMember(Name = "ForgotPasswordSNSTopic")]
+        public string ForgotPasswordSNSTopic { get; set; }
+
+        [DataMember(Name = "PasswordResetUrl")]
+        public string PasswordResetUrl { get; set; }
+       
+    }
+
 }

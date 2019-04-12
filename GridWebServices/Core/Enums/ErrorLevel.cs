@@ -141,5 +141,10 @@ namespace Core.Enums
         [Description("TokenGenerationFailed")]
         TokenGenerationFailed = 30,
 
+        [EnumMember(Value = "UnableToRetrievePasswordToken")]
+        [Description("Password Token Generated. But unable to retrieve it")]
+        UnableToRetrievePasswordToken = 31,
+
+
     }
 }

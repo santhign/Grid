@@ -2225,11 +2225,12 @@ namespace OrderService.Controllers
         /// <summary>
         /// This will create a checkout session and returns the details to call MPGS 
         /// </summary>
-        /// <param name="token"></param>
-        /// <param name="orderId"></param>
+        /// <param name="token" in="Header"></param>     
+        /// <param name="orderId">Initial OrderID/ChangeRequestID in case of sim replacement/planchange/numberchange</param>
+        /// <param name="orderType"> Initial Order = 1, ChangeSim = 2, ChangeNumber = 3, ChangePlan = 4</param>
         /// <returns>OperationsResponse</returns>
-        [HttpGet("GetCheckOutDetails/{orderId}")]
-        public async Task<IActionResult> GetCheckOutDetails([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute]int orderId)
+        [HttpGet("GetCheckOutDetails/{orderId}/{orderType}")]
+        public async Task<IActionResult> GetCheckOutDetails([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute]int orderId, [FromRoute]int orderType)
         {
             try
             {
@@ -2242,6 +2243,7 @@ namespace OrderService.Controllers
                     if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
                     {
                         int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+
                         if (!ModelState.IsValid)
                         {
                             return Ok(new OperationResponse
@@ -2257,6 +2259,7 @@ namespace OrderService.Controllers
                         OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
 
                         DatabaseResponse customerResponse = await _orderAccess.GetCustomerIdFromOrderId(orderId);
+
                         if (customerResponse.ResponseCode == (int)DbReturnValue.RecordExists && customerID == ((OrderCustomer)customerResponse.Results).CustomerId)
                         {
                             // Call MPGS to create a checkout session and retuen details
@@ -2273,7 +2276,7 @@ namespace OrderService.Controllers
 
                             CheckOutRequestDBUpdateModel checkoutUpdateModel = new CheckOutRequestDBUpdateModel
                             {
-                                Source = "Orders",
+                                Source = ((CheckOutType)orderType).ToString(),
 
                                 SourceID = orderId,
 

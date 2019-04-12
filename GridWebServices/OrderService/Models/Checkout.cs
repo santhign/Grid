@@ -49,8 +49,7 @@ namespace OrderService.Models
 
     }
     public class CheckOutResponseUpdate
-    {      
-        public string Token { get; set; }
+    {
         public string MPGSOrderID { get; set; }
         public string CheckOutSessionID { get; set; }
         public string Result { get; set; }
