@@ -25,7 +25,7 @@ namespace AdminService.DataAccess
             _configuration = configuration;
         }
 
-        public async Task<AdminUsers> GetLoginAuthentication(AdminUserLoginRequest users)
+        public async Task<DatabaseResponse> GetLoginAuthentication(AdminUserLoginRequest users)
         {
             try
             {
@@ -36,15 +36,15 @@ namespace AdminService.DataAccess
                 };
 
                 parameters[0].Value = users.Email;
-                parameters[1].Value = users.Password;
+                parameters[1].Value = new Sha2().Hash(users.Password);
 
                 _DataHelper = new DataAccessHelper("Admin_AuthenticateAdminUser", parameters, _configuration);
 
                 DataTable dt = new DataTable();
 
-                await _DataHelper.RunAsync(dt);
+                int result = await _DataHelper.RunAsync(dt);
 
-                List<AdminUsers> adminuser = new List<AdminUsers>();
+                AdminUsers adminuser = new AdminUsers();
 
                 if (dt != null && dt.Rows.Count > 0)
                 {
@@ -58,11 +58,10 @@ namespace AdminService.DataAccess
                                      Name = model.Field<string>("Name"),
                                      Role = model.Field<string>("Role"),
 
-                                 }).ToList();
+                                 }).FirstOrDefault();
                 }
 
-                return adminuser[0];
-
+                return new DatabaseResponse { ResponseCode = result, Results = adminuser };
             }
             catch (Exception ex)
             {
@@ -75,8 +74,71 @@ namespace AdminService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+        public async Task<DatabaseResponse> LogAdminUserToken(int adminuserId, string token)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@AdminUserID",  SqlDbType.Int ),
+                     new SqlParameter( "@Token",  SqlDbType.NVarChar )
 
-        public async Task<DatabaseResponse> CreateAdminUser(RegisterAdminUser adminuser)
+                };
+                parameters[0].Value = adminuserId;
+                parameters[1].Value = token;
+
+                _DataHelper = new DataAccessHelper("AdminUser_CreateToken", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt); // 100 /105
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 111)
+                {
+
+                    AuthTokenResponse tokenResponse = new AuthTokenResponse();
+
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+
+                        tokenResponse = (from model in dt.AsEnumerable()
+                                         select new AuthTokenResponse()
+                                         {
+                                             CustomerID = model.Field<int>("AdminUserID"),
+
+                                             CreatedOn = model.Field<DateTime>("CreatedOn")
+
+
+                                         }).FirstOrDefault();
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = tokenResponse };
+
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> CreateAdminUser(RegisterAdminUser adminuser, int AdminUserID)
         {
             try
             {
@@ -85,16 +147,14 @@ namespace AdminService.DataAccess
                {
                     new SqlParameter( "@Email",  SqlDbType.NVarChar ),
                     new SqlParameter( "@Password",  SqlDbType.NVarChar ),
-                    new SqlParameter( "@DepartmentID",  SqlDbType.Int ),
-                    new SqlParameter( "@OfficeID", SqlDbType.Int),
-                    new SqlParameter( "@RoleID", SqlDbType.Int)
+                    new SqlParameter( "@RoleID", SqlDbType.Int),
+                    new SqlParameter( "@CreatedBy", SqlDbType.Int)
                 };
 
                 parameters[0].Value = adminuser.Email;
                 parameters[1].Value = new Sha2().Hash(adminuser.Password);
-                parameters[2].Value = adminuser.DepartmentID;
-                parameters[3].Value = adminuser.OfficeID;
-                parameters[4].Value = adminuser.RoleID;
+                parameters[2].Value = adminuser.RoleID;
+                parameters[3].Value = AdminUserID;
 
                 _DataHelper = new DataAccessHelper("Admin_CreateAdminUser", parameters, _configuration);
 
@@ -182,7 +242,7 @@ namespace AdminService.DataAccess
             }
         }
 
-        public async Task<List<AdminUsers >> GetAdminusers()
+        public async Task<List<AdminUsers>> GetAdminusers()
         {
             try
             {                
@@ -209,6 +269,44 @@ namespace AdminService.DataAccess
                 }
 
                 return adminusersList;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<List<Roles>> GetAdminRoles()
+        {
+            try
+            {
+                _DataHelper = new DataAccessHelper("Admin_GetAllAdminRoles", _configuration);
+
+                DataTable dt = new DataTable();
+
+                await _DataHelper.RunAsync(dt);
+
+                List<Roles> adminRoles = new List<Roles>();
+
+                if (dt.Rows.Count > 0)
+                {
+
+                    adminRoles = (from model in dt.AsEnumerable()
+                                      select new Roles()
+                                      {
+                                          RoleID = model.Field<int>("RoleID"),
+                                          Role = model.Field<string>("Role")
+                                      }).ToList();
+                }
+
+                return adminRoles;
             }
 
             catch (Exception ex)
@@ -251,6 +349,74 @@ namespace AdminService.DataAccess
             catch (Exception ex)
             {
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> AuthenticateAdminUserToken(string token)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@Token",  SqlDbType.NVarChar )
+
+                };
+
+                parameters[0].Value = token;
+
+                _DataHelper = new DataAccessHelper("AdminUser_AuthenticateToken", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt); // 111 /109
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                AuthTokenResponse tokenResponse = new AuthTokenResponse();
+
+                if (result == 111)
+                {
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+
+                        tokenResponse = (from model in dt.AsEnumerable()
+                                         select new AuthTokenResponse()
+                                         {
+                                             CustomerID = model.Field<int>("AdminUserID"),
+
+                                             CreatedOn = model.Field<DateTime>("CreatedOn")
+
+
+                                         }).FirstOrDefault();
+                    }
+
+
+                    if (tokenResponse.CreatedOn < DateTime.UtcNow.AddDays(-7))
+                    {
+                        tokenResponse.IsExpired = true;
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = tokenResponse };
+
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
 
                 throw (ex);
             }

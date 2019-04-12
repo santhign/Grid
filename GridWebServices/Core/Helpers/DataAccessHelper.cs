@@ -7,14 +7,21 @@ using System.Threading.Tasks;
 
 namespace Core.Helpers
 {
+    /// <summary>
+    /// Data Access Helper class
+    /// </summary>
+    /// <seealso cref="System.IDisposable" />
     public class DataAccessHelper : IDisposable
     {
+        /// <summary>
+        /// The command
+        /// </summary>
         private SqlCommand command;
 
         /// <summary>
-        /// Returns connneciton string form configuration 
+        /// Returns connneciton string form configuration
         /// </summary>
-        /// <param name="configuration"></param>
+        /// <param name="configuration">The configuration.</param>
         /// <returns></returns>
         public string GetConnection(IConfiguration configuration)
         {
@@ -25,8 +32,8 @@ namespace Core.Helpers
         /// <summary>
         /// Run SP without parameters
         /// </summary>
-        /// <param name="sprocName"></param>
-        /// <param name="configuration"></param>
+        /// <param name="sprocName">Name of the sproc.</param>
+        /// <param name="configuration">The configuration.</param>
         public DataAccessHelper(string sprocName, IConfiguration configuration)
         {
             //creating command object with connection name and proc name, and open connection for the command
@@ -50,11 +57,11 @@ namespace Core.Helpers
         }
 
         /// <summary>
-        /// 
+        /// Initializes a new instance of the <see cref="DataAccessHelper"/> class.
         /// </summary>
-        /// <param name="sprocName"></param>
-        /// <param name="parameters"></param>
-        /// <param name="configuration"></param>
+        /// <param name="sprocName">Name of the sproc.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <param name="configuration">The configuration.</param>
         public DataAccessHelper(string sprocName, SqlParameter[] parameters, IConfiguration configuration)
         {
             // prepare a command object with procedure and parameters
@@ -86,6 +93,8 @@ namespace Core.Helpers
         /// Run command with executeNonQuery
         /// </summary>
         /// <returns></returns>
+        /// <exception cref="ObjectDisposedException"></exception>
+        [Obsolete]
         public int Run()
         {
             // Execute this stored procedure.  Int32 value returned by the stored procedure
@@ -95,6 +104,10 @@ namespace Core.Helpers
             return (int)command.Parameters["ReturnValue"].Value;
         }
 
+        /// <summary>
+        /// Runs the asynchronous.
+        /// </summary>
+        /// <returns></returns>
         public async Task<int> RunAsync()
         {
             return await Task.Run(() =>
@@ -111,25 +124,33 @@ namespace Core.Helpers
         }
 
         /// <summary>
-        /// Run command  with data adapter: fill datatable 
+        /// Run command  with data adapter: fill datatable
         /// </summary>
-        /// <param name="dataTable"></param>
+        /// <param name="dataTable">The data table.</param>
         /// <returns></returns>
+        /// <exception cref="ObjectDisposedException"></exception>
+        [Obsolete]
         public int Run(DataTable dataTable)
         {
             //	Fill a DataTable with the result of executing this stored procedure.
             if (command == null)
                 throw new ObjectDisposedException(GetType().FullName);
 
-            SqlDataAdapter dataAdapter = new SqlDataAdapter();
-
-            dataAdapter.SelectCommand = command;
+            SqlDataAdapter dataAdapter = new SqlDataAdapter
+            {
+                SelectCommand = command
+            };
             dataAdapter.Fill(dataTable);
 
             return (int)command.Parameters["ReturnValue"].Value; 
         }
 
 
+        /// <summary>
+        /// Runs the asynchronous.
+        /// </summary>
+        /// <param name="dataTable">The data table.</param>
+        /// <returns></returns>
         public async Task<int> RunAsync(DataTable dataTable)
         {
 
@@ -179,18 +200,20 @@ namespace Core.Helpers
         /// <summary>
         /// Run command  with data adapter: fill dataset
         /// </summary>
-        /// <param name="dataSet"></param>
+        /// <param name="dataSet">The data set.</param>
         /// <returns></returns>
-
+        /// <exception cref="ObjectDisposedException"></exception>
+        [Obsolete]
         public int Run(DataSet dataSet)
         {
             //	Fill a DataSet with the result of executing this stored procedure.
             if (command == null)
                 throw new ObjectDisposedException(GetType().FullName);
 
-            SqlDataAdapter dataAdapter = new SqlDataAdapter();
-
-            dataAdapter.SelectCommand = command;
+            SqlDataAdapter dataAdapter = new SqlDataAdapter
+            {
+                SelectCommand = command
+            };
             dataAdapter.Fill(dataSet);
             return (int)command.Parameters["ReturnValue"].Value; 
         }

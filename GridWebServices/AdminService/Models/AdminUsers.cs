@@ -13,7 +13,12 @@ namespace AdminService.Models
         public string Email { get; set; }
         public string Password { get; set; }         
         public string Role { get; set; }
-         
+
+    }
+    public class Roles
+    {
+        public int RoleID { get; set; }
+        public string Role { get; set; }
     }
     public class AdminUserLoginRequest
     {
@@ -29,9 +34,7 @@ namespace AdminService.Models
 
         [Required(ErrorMessage = "Password required")]
         public string Password { get; set; }
-
-        public int DepartmentID { get; set; }
-        public int OfficeID { get; set; }
+        [Required(ErrorMessage = "RoleID required")]
         public int RoleID { get; set; } 
     }
 
@@ -40,5 +43,29 @@ namespace AdminService.Models
         public int AdminUserID { get; set; }
         public string  ExistingPassword { get; set; }
         public string  NewPassword { get; set; }
+    }
+    public class LoggedInPrinciple
+    {
+        /// <summary>
+        /// Gets or sets the customer.
+        /// </summary>
+        /// <value>
+        /// The customer.
+        /// </value>
+        public AdminUsers AdminUser { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is authenticated.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is authenticated; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsAuthenticated { get; set; }
+        /// <summary>
+        /// Gets or sets the token.
+        /// </summary>
+        /// <value>
+        /// The token.
+        /// </value>
+        public string Token { get; set; }
     }
 }

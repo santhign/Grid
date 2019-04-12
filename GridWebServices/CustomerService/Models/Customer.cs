@@ -303,6 +303,13 @@ namespace CustomerService.Models
         ///   <c>true</c> if this instance is primary; otherwise, <c>false</c>.
         /// </value>
         public bool IsPrimary { get; set; }
+        /// <summary>
+        /// Gets or sets the state.
+        /// </summary>
+        /// <value>
+        /// The state.
+        /// </value>
+        public string State { get; set; }
     }
 
     /// <summary>
@@ -395,6 +402,20 @@ namespace CustomerService.Models
         /// The type of the PlanMarketingName.
         /// </value>
         public string PlanMarketingName { get; set; }
+        /// <summary>
+        /// Gets or sets the type of the PortalSummaryDescription.
+        /// </summary>
+        /// <value>
+        /// The type of the PortalSummaryDescription.
+        /// </value>
+        public string PortalSummaryDescription { get; set; }
+        /// <summary>
+        /// Gets or sets the type of the PortalDescription.
+        /// </summary>
+        /// <value>
+        /// The type of the PortalDescription.
+        /// </value>
+        public string PortalDescription { get; set; }
         /// <summary>
         /// Gets or sets the is recurring.
         /// </summary>

@@ -5,35 +5,21 @@ using System.Threading.Tasks;
 using Core.Models;
 using Core.Enums;
 using System.Linq;
+using NeverBounce;
+using NeverBounce.Models;
 
 namespace Core.Helpers
 {
     public class EmailValidationHelper
     {
         List<RequestParam> paramList = new List<RequestParam>();
-        public async Task<ResponseObject> EmailValidation(EmailConfig config)
+        public async Task<string> EmailValidation(EmailConfig config)
         {
-            ApiClient client = new ApiClient(new Uri(config.EmailAPIUrl));
-
-            RequestParam _requestParam = new RequestParam();
-            _requestParam.id = "key";
-            _requestParam.value = config.key;
-            paramList.Add(_requestParam);
-
-            _requestParam = new RequestParam();
-            _requestParam.id = "email";
-            _requestParam.value = config.Email;
-            paramList.Add(_requestParam);
-
-            SetParam param = new SetParam();
-
-            RequestObject req = new RequestObject();
-
-            var requestUrl = GetRequestUrl(config.EmailAPIUrl, ref client);
-
-            param.param = paramList;
-
-            return await client.PostAsync<ResponseObject, RequestObject>(requestUrl, req);
+            SingleRequestModel _model = new SingleRequestModel();
+            _model.email = config.Email;
+            NeverBounceSdk _neverbounce = new NeverBounceSdk(config.key);
+            SingleResponseModel _response = await _neverbounce.Single.Check(_model);
+            return _response.result;
         }
 
         private Uri GetRequestUrl(string url, ref ApiClient client)

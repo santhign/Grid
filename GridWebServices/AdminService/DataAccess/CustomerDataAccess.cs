@@ -86,5 +86,116 @@ namespace AdminService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+        
+        /// <summary>
+        /// Gets the customer.
+        /// </summary>
+        /// <param name="customerId">The customer identifier.</param>
+        /// <returns></returns>
+        public async Task<Customer> GetCustomer(int customerId)
+        {
+            try
+            {
+
+                _DataHelper = new DataAccessHelper("Admin_GetCustomerListing", _configuration);
+
+                DataTable dt = new DataTable();
+
+                await _DataHelper.RunAsync(dt);
+
+                Customer customer = new Customer();
+
+                if (dt.Rows.Count > 0)
+                {
+
+                    customer = (from model in dt.AsEnumerable()
+                                select new Customer()
+                                {
+                                    CustomerID = model.Field<int>("CustomerID"),
+                                    Email = model.Field<string>("Email"),
+                                    Password = model.Field<string>("Password"),
+                                    MobileNumber = model.Field<string>("MobileNumber"),
+                                    ReferralCode = model.Field<string>("ReferralCode"),
+                                    Nationality = model.Field<string>("Nationality"),
+                                    Gender = model.Field<string>("Gender"),
+                                    SMSSubscription = model.Field<string>("SMSSubscription"),
+                                    EmailSubscription = model.Field<string>("EmailSubscription"),
+                                    Status = model.Field<string>("Status")
+                                }).Where(c => c.CustomerID == customerId).FirstOrDefault();
+                }
+
+                return customer;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+
+        /// <summary>
+        /// Gets the search customers.
+        /// </summary>
+        /// <param name="SearchValue">The search value.</param>
+        /// <returns></returns>
+        public async Task<List<CustomerSearch>> GetSearchCustomers(string SearchValue)
+        {
+
+            try
+            {
+
+
+                SqlParameter[] parameters =
+                    {
+                    new SqlParameter("@SearchValue", SqlDbType.NVarChar)
+                    };
+
+                parameters[0].Value = SearchValue;
+                _DataHelper = new DataAccessHelper("Customer_SearchCustomers", parameters, _configuration);
+
+
+                DataTable dt = new DataTable();
+
+                await _DataHelper.RunAsync(dt);
+
+                List<CustomerSearch> customerList = new List<CustomerSearch>();
+
+                if (dt.Rows.Count > 0)
+                {
+
+                    customerList = (from model in dt.AsEnumerable()
+                                    select new CustomerSearch()
+                                    {
+                                        CustomerId = model.Field<int>("CustomerID"),
+                                        CustomerName = model.Field<string>("Name"),
+                                        PhoneNumber = model.Field<string>("MobileNumber"),
+                                        Plan = model.Field<string>("PlanName"),
+                                        AdditionalLines = model.Field<int>("AdditionalLines"),
+                                        JoinedOn = model.Field<DateTime>("JoinedOn"),
+                                        Status = model.Field<string>("Status")
+                                    }).ToList();
+                }
+
+                return customerList;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
     }
 }

@@ -148,7 +148,7 @@ namespace OrderService.Models
         /// <value>
         /// The is same as billing.
         /// </value>
-        public string IsSameAsBilling { get; set; }
+        public int IsSameAsBilling { get; set; }
         /// <summary>
         /// Gets or sets the shipping unit.
         /// </summary>
@@ -206,47 +206,73 @@ namespace OrderService.Models
         /// </value>
         public string AlternateRecipientName { get; set; }
         /// <summary>
-        /// Gets or sets the alternate.
+        /// Gets or sets the alternate recipient email.
         /// </summary>
         /// <value>
-        /// The alternate.
+        /// The alternate recipient email.
         /// </value>
-        public string Alternate { get; set; }
+        public string AlternateRecipientEmail { get; set; }
+
         /// <summary>
-        /// Gets or sets the recipient email.
+        /// Gets or sets the alternate recioient identifier number.
         /// </summary>
         /// <value>
-        /// The recipient email.
+        /// The alternate recioient identifier number.
         /// </value>
-        public string RecipientEmail { get; set; }
+        public string AlternateRecioientIDNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the alternate recioient identifier.
+        /// </summary>
+        /// <value>
+        /// The type of the alternate recioient identifier.
+        /// </value>
+        public string AlternateRecioientIDType { get; set; }
         /// <summary>
         /// Gets or sets the portal slot identifier.
         /// </summary>
         /// <value>
         /// The portal slot identifier.
         /// </value>
-        public int PortalSlotId { get; set; }
+        public string PortalSlotID { get; set; }
         /// <summary>
         /// Gets or sets the slot date.
         /// </summary>
         /// <value>
         /// The slot date.
         /// </value>
-        public DateTime? SlotDate { get; set; }
+        public string DeliveryVendor { get; set; }
         /// <summary>
         /// Gets or sets the slot from time.
         /// </summary>
         /// <value>
         /// The slot from time.
         /// </value>
-        public DateTime? SlotFromTime { get; set; }
+        public DateTime? DeliveryOn { get; set; }
+
+        /// <summary>
+        /// Gets or sets the vendor tracking code.
+        /// </summary>
+        /// <value>
+        /// The vendor tracking code.
+        /// </value>
+        public string VendorTrackingCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the vendor tracking URL.
+        /// </summary>
+        /// <value>
+        /// The vendor tracking URL.
+        /// </value>
+        public string VendorTrackingUrl { get; set; }
+        
         /// <summary>
         /// Gets or sets the slot to time.
         /// </summary>
         /// <value>
         /// The slot to time.
         /// </value>
-        public DateTime? SlotToTime { get; set; }
+        public DateTime? DeliveryTime { get; set; }
         /// <summary>
         /// Gets or sets the scheduled date.
         /// </summary>
@@ -260,14 +286,13 @@ namespace OrderService.Models
         /// <value>
         /// The service fee.
         /// </value>
-        public string ServiceFee { get; set; }
+        public double DeliveryFee { get; set; }
 
         /// <summary>
         /// The change request charges list
         /// </summary>
         public IList<ChangeRequestCharges> ChangeRequestChargesList;
     }
-
 
     /// <summary>
     /// Termination and Suspension Response
@@ -317,7 +342,7 @@ namespace OrderService.Models
     }
 
     /// <summary>
-    /// 
+    /// Change Request Charges class
     /// </summary>
     public class ChangeRequestCharges
     {
@@ -349,6 +374,101 @@ namespace OrderService.Models
         ///   <c>true</c> if this instance is GST included; otherwise, <c>false</c>.
         /// </value>
         public bool IsGstIncluded { get; set; }
+
+    }
+
+    /// <summary>
+    /// UpdateCRShippingDetailsRequest
+    /// </summary>
+    public class UpdateCRShippingDetailsRequest
+    {
+
+        public int CustomerID { get; set; }
+        /// <summary>
+        /// Gets or sets the change request identifier.
+        /// </summary>
+        /// <value>
+        /// The change request identifier.
+        /// </value>
+        public int ChangeRequestID { get; set; }
+
+        /// <summary>
+        /// Gets or sets the postcode.
+        /// </summary>
+        /// <value>
+        /// The postcode.
+        /// </value>
+        
+        public string Postcode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the block number.
+        /// </summary>
+        /// <value>
+        /// The block number.
+        /// </value>
+        
+        public string BlockNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets the unit.
+        /// </summary>
+        /// <value>
+        /// The unit.
+        /// </value>
+        
+        public string Unit { get; set; }
+
+        /// <summary>
+        /// Gets or sets the floor.
+        /// </summary>
+        /// <value>
+        /// The floor.
+        /// </value>
+        
+        public string Floor { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the building.
+        /// </summary>
+        /// <value>
+        /// The name of the building.
+        /// </value>
+        
+        public string BuildingName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the street.
+        /// </summary>
+        /// <value>
+        /// The name of the street.
+        /// </value>
+        
+        public string StreetName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the contact number.
+        /// </summary>
+        /// <value>
+        /// The contact number.
+        /// </value>        
+        public string ContactNumber { get; set; }
+        /// <summary>
+        /// Gets or sets the is billing same.
+        /// </summary>
+        /// <value>
+        /// The is billing same.
+        /// </value>
+        
+        public int IsBillingSame { get; set; }
+
+        /// <summary>
+        /// Gets or sets the portal slot identifier.
+        /// </summary>
+        /// <value>
+        /// The portal slot identifier.
+        /// </value>        
+        public string PortalSlotID { get; set; }
 
     }
 }
