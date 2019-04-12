@@ -81,4 +81,59 @@ namespace AdminService.Models
         /// </value>
         public string Status { get; set; }
     }
+    /// <summary>
+    /// CustomerSearch class
+    /// </summary>
+    public class CustomerSearch
+    {
+        /// <summary>
+        /// Gets or sets the customer identifier.
+        /// </summary>
+        /// <value>
+        /// The customer identifier.
+        /// </value>
+        public int CustomerId { get; set; }
+        /// <summary>
+        /// Gets or sets the name of the customer.
+        /// </summary>
+        /// <value>
+        /// The name of the customer.
+        /// </value>
+        public string CustomerName { get; set; }
+        /// <summary>
+        /// Gets or sets the phone number.
+        /// </summary>
+        /// <value>
+        /// The phone number.
+        /// </value>
+        public string PhoneNumber { get; set; }
+        /// <summary>
+        /// Gets or sets the plan.
+        /// </summary>
+        /// <value>
+        /// The plan.
+        /// </value>
+        public string Plan { get; set; }
+        /// <summary>
+        /// Gets or sets the additional lines.
+        /// </summary>
+        /// <value>
+        /// The additional lines.
+        /// </value>
+        public int AdditionalLines { get; set; }
+        /// <summary>
+        /// Gets or sets the joined on.
+        /// </summary>
+        /// <value>
+        /// The joined on.
+        /// </value>
+        public DateTime JoinedOn { get; set; }
+        /// <summary>
+        /// Gets or sets the status.
+        /// </summary>
+        /// <value>
+        /// The status.
+        /// </value>
+        public string Status { get; set; }
+    }
 }

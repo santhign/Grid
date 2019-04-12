@@ -164,8 +164,6 @@ namespace AdminService.Controllers
         ///{
         ///	"Email" : "abcd@gmail.com",
         ///	"Password" : "xyz",
-        ///	"DepartmentID" : 1,
-        ///	"OfficeID" : 1,
         ///	"RoleID" : 1
         ///}
         [HttpPost]
@@ -271,11 +269,13 @@ namespace AdminService.Controllers
         /// This will  get admin user details based on specific id supplied
         /// </summary>
         /// <param name="token"></param>
+        /// <param name="UserID"></param>
         /// <returns>get user details with specific id</returns>  
         /// 
         // GET: api/GetAdminUser/1
         [HttpGet]
-        public async Task<IActionResult> GetAdminUser([FromHeader(Name = "Grid-Authorization-Token")] string token)
+        [Route("{UserID}")]
+        public async Task<IActionResult> GetAdminUser([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int UserID)
         {
             try
             {
@@ -302,7 +302,7 @@ namespace AdminService.Controllers
                         }
 
 
-                        AdminUsers adminusers = await _adminUsersDataAccess.GetAdminUser(_AdminUserID);
+                        AdminUsers adminusers = await _adminUsersDataAccess.GetAdminUser(UserID);
 
                         if (adminusers == null)
                         {
@@ -466,42 +466,78 @@ namespace AdminService.Controllers
         /// <summary>
         /// This will get all admin roles
         /// </summary>
-        /// <param></param>
+        /// <param name="token"></param>
         /// <returns>get all role details</returns> 
         /// 
-        // GET: api/GetAdminusers
         [HttpGet]
         [Route("roles")]
-        public async Task<IActionResult> GetAdminRoles()
+        public async Task<IActionResult> GetAdminRoles([FromHeader(Name = "Grid-Authorization-Token")] string token)
         {
             try
             {
-
                 AdminUsersDataAccess _adminUsersDataAccess = new AdminUsersDataAccess(_iconfiguration);
 
-                List<Roles> AdminUsersList = new List<Roles>();
+                DatabaseResponse tokenAuthResponse = await _adminUsersDataAccess.AuthenticateAdminUserToken(token);
 
-                AdminUsersList = await _adminUsersDataAccess.GetAdminRoles();
-
-                if (AdminUsersList == null || AdminUsersList.Count == 0)
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
-                    Log.Error(EnumExtensions.GetDescription(DbReturnValue.NotExists));
-
-                    return Ok(new ServerResponse
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
                     {
-                        HasSucceeded = false,
-                        Message = EnumExtensions.GetDescription(DbReturnValue.NotExists)
 
-                    });
+                        List<Roles> AdminUsersList = new List<Roles>();
+
+                        AdminUsersList = await _adminUsersDataAccess.GetAdminRoles();
+
+                        if (AdminUsersList == null || AdminUsersList.Count == 0)
+                        {
+                            Log.Error(EnumExtensions.GetDescription(DbReturnValue.NotExists));
+
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists)
+
+                            });
+                        }
+                        else
+                        {
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = true,
+                                Message = StatusMessages.SuccessMessage,
+                                Result = AdminUsersList
+
+                            });
+                        }
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+
                 }
+
                 else
                 {
-                    return Ok(new ServerResponse
-                    {
-                        HasSucceeded = true,
-                        Message = StatusMessages.SuccessMessage,
-                        Result = AdminUsersList
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
 
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
                     });
                 }
 
@@ -519,7 +555,6 @@ namespace AdminService.Controllers
                 });
 
             }
-
         }
 
         /// <summary>
