@@ -124,5 +124,60 @@ namespace InfrastructureService
 
             }
         }
+
+        public async Task<DownloadResponse> DownloadFile( string objectKey)
+        {
+            try
+            {
+                // connecting to the client
+                var client = new AmazonS3Client(accessKey, accessSecret, Amazon.RegionEndpoint.APSoutheast1);
+
+                // create a get request
+                GetObjectRequest request = new GetObjectRequest
+                {
+                    BucketName = bucket,
+                    Key = objectKey
+                };
+               
+                // Issue request and remember to dispose of the response
+                using (GetObjectResponse response = await client.GetObjectAsync(request))
+                {
+                    using (Stream responseStream = response.ResponseStream)
+                    {
+                        return new DownloadResponse
+                        {
+                            HasSucceed = false,
+                            FileObject= ReadStream(responseStream)
+                        };
+                        
+                    }
+                }
+              
+            }
+            catch (Exception ex)
+            {
+                return new DownloadResponse
+                {
+                    HasSucceed = false,
+                    Message = ex.Message
+
+                };
+
+            }
+        }
+
+        private static byte[] ReadStream(Stream responseStream)
+        {
+            byte[] buffer = new byte[16 * 1024];
+            using (MemoryStream ms = new MemoryStream())
+            {
+                int read;
+                while ((read = responseStream.Read(buffer, 0, buffer.Length)) > 0)
+                {
+                    ms.Write(buffer, 0, read);
+                }
+                return ms.ToArray();
+            }
+        }
     }
 }
