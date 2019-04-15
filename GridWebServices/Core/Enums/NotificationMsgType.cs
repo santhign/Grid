@@ -15,7 +15,7 @@ namespace Core.Enums
         SMS = 2,
 
     }
-    public enum NotificationMsgName
+    public enum NotificationEvent
     {
         [EnumMember(Value = "Registration")]
         [Description("Registration")]
