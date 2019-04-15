@@ -1057,4 +1057,19 @@ namespace OrderService.Models
         public int Type { get; set; }
 
     }
+
+    public class OrderNRICDetails
+    {     
+      
+        public int CustomerID { get; set; }       
+        public int DocumentID { get; set; }               
+        public string DocumentURL { get; set; }
+
+        public string DocumentBackURL { get; set; }
+
+        public string IdentityCardNumber { get; set; }
+
+        public string IdentityCardType { get; set; }
+        
+    }
 }

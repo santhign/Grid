@@ -295,7 +295,7 @@ namespace OrderService.Controllers
         /// <summary>
         /// Subscribers the sim replacement request.
         /// </summary>
-        /// <param name="token">The token.</param>
+        /// <param name="token" in="Header">The token.</param>
         /// <param name="mobileNumber">The mobile number.</param>
         /// <returns></returns>
         [HttpPost]
@@ -318,6 +318,7 @@ namespace OrderService.Controllers
                 }
 
                 var helper = new AuthHelper(_iconfiguration);
+
                 var tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
 
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)

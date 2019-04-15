@@ -939,7 +939,7 @@ namespace CustomerService.Controllers
 
                                     MessageType = NotificationMsgType.Email.ToString(),
 
-                                    MessageName= NotificationMsgName.ForgotPassword.ToString(),                                     
+                                    MessageName= NotificationEvent.ForgotPassword.ToString(),                                     
 
                                     Message = new MessageObject { emailaddress = passwordTokenDetails.Email, parameters= msgParamsList }
 

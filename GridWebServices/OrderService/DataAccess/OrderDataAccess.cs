@@ -1807,5 +1807,59 @@ namespace OrderService.DataAccess
             }
         }
 
+        public async Task<DatabaseResponse> GetCustomerNRICDetails(int CustomerID)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int)                   
+                };
+
+                parameters[0].Value = CustomerID;              
+
+                _DataHelper = new DataAccessHelper("Order_GetCustomerNRICDetails", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+               int result= await _DataHelper.RunAsync(dt);
+                
+                DatabaseResponse response = new DatabaseResponse();
+
+                OrderNRICDetails nRICDetails = new OrderNRICDetails();
+
+                if (dt!=null && dt.Rows.Count > 0)
+                {
+                    nRICDetails = (from model in dt.AsEnumerable()
+                                    select new OrderNRICDetails()
+                                    {
+                                         CustomerID = model.Field<int>("CustomerID"),
+                                         DocumentID  = model.Field<int>("DocumentID"),
+                                         DocumentURL = model.Field<string>("DocumentURL"),
+                                         DocumentBackURL = model.Field<string>("DocumentBackURL"),
+                                         IdentityCardNumber = model.Field<string>("IdentityCardNumber"),
+                                         IdentityCardType = model.Field<string>("IdentityCardType"),
+
+                                    }).FirstOrDefault();
+                }
+
+                response = new DatabaseResponse {ResponseCode= result, Results = nRICDetails };
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
     }
 }
