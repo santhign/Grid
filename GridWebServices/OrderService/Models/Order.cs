@@ -19,6 +19,7 @@ namespace OrderService.Models
         public string BillingContactNumber { get; set; }
         public string ReferralCode { get; set; }
         public string PromotionCode { get; set; }
+        public bool HaveDocuments { get; set; }
         public string Name { get; set; }
         public string Email { get; set; }
         public string IDType { get; set; }

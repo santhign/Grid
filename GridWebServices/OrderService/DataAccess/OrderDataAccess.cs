@@ -649,6 +649,7 @@ namespace OrderService.DataAccess
                                             BillingContactNumber = model.Field<string>("BillingContactNumber"),
                                             ReferralCode = model.Field<string>("ReferralCode"),
                                             PromotionCode = model.Field<string>("PromotionCode"),
+                                            HaveDocuments = model.Field<bool>("HaveDocuments"),
                                             Name = model.Field<string>("Name"),
                                             Email = model.Field<string>("Email"),
                                             IDType = model.Field<string>("IDType"),
