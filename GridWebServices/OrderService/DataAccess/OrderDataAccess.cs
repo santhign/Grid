@@ -793,6 +793,134 @@ namespace OrderService.DataAccess
             }
         }
 
+        public async Task<DatabaseResponse> GetCustomerIdFromChangeRequestId(int orderId)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@ChangeRequestID",  SqlDbType.Int )
+
+                };
+
+                parameters[0].Value = orderId;
+
+                _DataHelper = new DataAccessHelper("Order_GetCustomerIDByChangeRequestID", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt); // 105 /102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 105)
+                {
+
+                    OrderCustomer customer = new OrderCustomer();
+
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+
+                        customer = (from model in dt.AsEnumerable()
+                                    select new OrderCustomer()
+                                    {
+                                        CustomerId = model.Field<int>("CustomerID"),
+
+                                    }).FirstOrDefault();
+
+
+
+
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = customer };
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> GetCustomerIdFromAccountInvoiceId(int orderId)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@AccountInvoiceID",  SqlDbType.Int )
+
+                };
+
+                parameters[0].Value = orderId;
+
+                _DataHelper = new DataAccessHelper("Order_GetCustomerIDByAccountInvoiceID", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt); // 105 /102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 105)
+                {
+
+                    OrderCustomer customer = new OrderCustomer();
+
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+
+                        customer = (from model in dt.AsEnumerable()
+                                    select new OrderCustomer()
+                                    {
+                                        CustomerId = model.Field<int>("CustomerID"),
+
+                                    }).FirstOrDefault();
+
+
+
+
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = customer };
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
         public async Task<DatabaseResponse> GetAvailableSlots()
         {
             try

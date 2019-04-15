@@ -2229,7 +2229,7 @@ namespace OrderService.Controllers
         /// </summary>
         /// <param name="token" in="Header"></param>     
         /// <param name="orderId">Initial OrderID/ChangeRequestID in case of sim replacement/planchange/numberchange</param>
-        /// <param name="orderType"> Initial Order = 1, ChangeSim = 2, ChangeNumber = 3, ChangePlan = 4</param>
+        /// <param name="orderType"> Initial Order = 1, ChangeRequest = 2, AccountInvoices = 4</param>
         /// <returns>OperationsResponse</returns>
         [HttpGet("GetCheckOutDetails/{orderId}/{orderType}")]
         public async Task<IActionResult> GetCheckOutDetails([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute]int orderId, [FromRoute]int orderType)
@@ -2259,8 +2259,19 @@ namespace OrderService.Controllers
                         }
 
                         OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
-
-                        DatabaseResponse customerResponse = await _orderAccess.GetCustomerIdFromOrderId(orderId);
+                        DatabaseResponse customerResponse;
+                        if (orderType == 1)
+                        {
+                            customerResponse = await _orderAccess.GetCustomerIdFromOrderId(orderId);
+                        }
+                        else if (orderType == 2)
+                        {
+                            customerResponse = await _orderAccess.GetCustomerIdFromChangeRequestId(orderId);
+                        }
+                        else
+                        {
+                            customerResponse = await _orderAccess.GetCustomerIdFromAccountInvoiceId(orderId);
+                        }
 
                         if (customerResponse.ResponseCode == (int)DbReturnValue.RecordExists && customerID == ((OrderCustomer)customerResponse.Results).CustomerId)
                         {
