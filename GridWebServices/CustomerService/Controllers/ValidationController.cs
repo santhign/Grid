@@ -78,26 +78,30 @@ namespace CustomerService.Controllers
 
 
                         string configResponse = await emailhelper.EmailValidation(objEmailConfig);
+                        EmailValidationResponse _response = new EmailValidationResponse();
+                        _response.Status = configResponse;
                         if (configResponse.ToLower().Trim() != "invalid")
                         {
-                            return Ok(new OperationResponse
+                            _response.IsValid = true;
+                            return Ok(new ServerResponse
                             {
                                 HasSucceeded = true,
                                 Message = StatusMessages.ValidMessage,
-                                IsDomainValidationErrors = false
+                                Result = _response
                             });
                         }
                         else
                         {
                             //Invalid email
+                            _response.IsValid = false;
 
                             LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.InvalidEmail));
 
-                            return Ok(new OperationResponse
+                            return Ok(new ServerResponse
                             {
-                                HasSucceeded = false,
+                                HasSucceeded = true,
                                 Message = StatusMessages.InvalidMessage,
-                                IsDomainValidationErrors = true
+                                Result = _response
                             });
 
                         }

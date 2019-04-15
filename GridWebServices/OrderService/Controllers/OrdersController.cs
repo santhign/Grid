@@ -373,7 +373,7 @@ namespace OrderService.Controllers
 
                                 return Ok(new OperationResponse
                                 {
-                                    HasSucceeded = false,
+                                    HasSucceeded = true,
                                     Message = EnumExtensions.GetDescription(DbReturnValue.RecordExists),
                                     IsDomainValidationErrors = false,
                                     ReturnedObject = orderDetailsResponse.Results
@@ -1185,6 +1185,7 @@ namespace OrderService.Controllers
         /// "IDImageFront" : FileInput,
         /// "IDImageBack" : FileInput,
         /// "NameInNRIC" : "Name as in NRIC",
+        /// "DisplayName" : "DisplayName",
         /// "Gender":"Male",
         /// "DOB":"15/12/2000", //dd/MM/yyyy
         /// "ContactNumber":"95421232", 
@@ -1244,6 +1245,7 @@ namespace OrderService.Controllers
                                 IDNumber = request.IDNumber,
                                 IDType = request.IDType,
                                 NameInNRIC = request.NameInNRIC,
+                                DisplayName = request.DisplayName,
                                 Nationality = request.Nationality
                             };
 
@@ -1265,7 +1267,7 @@ namespace OrderService.Controllers
 
                                     if (s3UploadResponse.HasSucceed)
                                     {
-                                        personalDetails.IDFrontImageUrl = "http://gridproject.s3.amazonaws.com/gridproject/" + s3UploadResponse.FileName;
+                                        personalDetails.IDFrontImageUrl = awsConfig.AWSEndPoint + s3UploadResponse.FileName;
                                     }
                                     else
                                     {
@@ -1278,7 +1280,7 @@ namespace OrderService.Controllers
 
                                     if (s3UploadResponse.HasSucceed)
                                     {
-                                        personalDetails.IDBackImageUrl = "http://gridproject.s3.amazonaws.com/gridproject/" + s3UploadResponse.FileName;
+                                        personalDetails.IDBackImageUrl = awsConfig.AWSEndPoint + s3UploadResponse.FileName;
                                     }
                                     else
                                     {
@@ -2227,7 +2229,7 @@ namespace OrderService.Controllers
         /// </summary>
         /// <param name="token" in="Header"></param>     
         /// <param name="orderId">Initial OrderID/ChangeRequestID in case of sim replacement/planchange/numberchange</param>
-        /// <param name="orderType"> Initial Order = 1, ChangeSim = 2, ChangeNumber = 3, ChangePlan = 4</param>
+        /// <param name="orderType"> Initial Order = 1, ChangeRequest = 2, AccountInvoices = 4</param>
         /// <returns>OperationsResponse</returns>
         [HttpGet("GetCheckOutDetails/{orderId}/{orderType}")]
         public async Task<IActionResult> GetCheckOutDetails([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute]int orderId, [FromRoute]int orderType)
@@ -2257,8 +2259,19 @@ namespace OrderService.Controllers
                         }
 
                         OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
-
-                        DatabaseResponse customerResponse = await _orderAccess.GetCustomerIdFromOrderId(orderId);
+                        DatabaseResponse customerResponse;
+                        if (orderType == 1)
+                        {
+                            customerResponse = await _orderAccess.GetCustomerIdFromOrderId(orderId);
+                        }
+                        else if (orderType == 2)
+                        {
+                            customerResponse = await _orderAccess.GetCustomerIdFromChangeRequestId(orderId);
+                        }
+                        else
+                        {
+                            customerResponse = await _orderAccess.GetCustomerIdFromAccountInvoiceId(orderId);
+                        }
 
                         if (customerResponse.ResponseCode == (int)DbReturnValue.RecordExists && customerID == ((OrderCustomer)customerResponse.Results).CustomerId)
                         {
@@ -2881,5 +2894,135 @@ namespace OrderService.Controllers
 
             }
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="token" in="Header"></param>
+        /// <returns></returns>
+        [Route("GetCustomerIDImages")]
+        [HttpPost]
+        public async Task<IActionResult> GetCustomerIDImages([FromHeader(Name = "Grid-Authorization-Token")] string token)
+        {
+            try
+            {
+                AuthHelper helper = new AuthHelper(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    {                       
+
+                        //first get order NRIC details order documents  
+
+                        OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+
+                        DatabaseResponse nRICresponse = await _orderAccess.GetCustomerNRICDetails(((AuthTokenResponse)tokenAuthResponse.Results).CustomerID);
+
+                        if ((nRICresponse.ResponseCode == (int)DbReturnValue.RecordExists) && ((OrderNRICDetails)nRICresponse.Results).DocumentID > 0)
+                        {
+                            //get image bytes from s3
+
+                            // DownloadFile
+
+                                DatabaseResponse awsConfigResponse = await _orderAccess.GetConfiguration(ConfiType.AWS.ToString());
+
+                                if (awsConfigResponse != null && awsConfigResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                                {
+                                    MiscHelper configHelper = new MiscHelper();
+
+                                    GridAWSS3Config awsConfig = configHelper.GetGridAwsConfig((List<Dictionary<string, string>>)awsConfigResponse.Results);
+
+                                    AmazonS3 s3Helper = new AmazonS3(awsConfig);
+
+                                    DownloadResponse FrontImageDownloadResponse = await s3Helper.DownloadFile(((OrderNRICDetails)nRICresponse.Results).DocumentURL);
+
+                                    DownloadResponse BackImageDownloadResponse = await s3Helper.DownloadFile(((OrderNRICDetails)nRICresponse.Results).DocumentBackURL);
+
+                                    DownloadNRIC nRICDownloadObject = new DownloadNRIC { FrontImage= FrontImageDownloadResponse.FileObject != null ? FrontImageDownloadResponse.FileObject.ToArray() : null , BackImage= BackImageDownloadResponse.FileObject != null ? BackImageDownloadResponse.FileObject.ToArray() : null };
+                                     
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = true,
+                                        Message = EnumExtensions.GetDescription(DbReturnValue.RecordExists),
+                                        ReturnedObject = nRICDownloadObject
+
+                                    });
+                                }
+                                else
+                                {
+                                    // unable to get aws config
+                                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToGetConfiguration));
+
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = false,
+                                        Message = EnumExtensions.GetDescription(CommonErrors.FailedToGetConfiguration)                                       
+
+                                    });
+                                }                                             
+
+                        }
+                        else
+                        {
+                            // NRIC details not exists
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = true,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                       
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+
+                }
+
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
+
+
     }
 }

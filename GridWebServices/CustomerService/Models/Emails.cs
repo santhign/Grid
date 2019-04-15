@@ -22,4 +22,10 @@ namespace CustomerService.Models
         public string Email { get; set; }
 
     }
+
+    public class EmailValidationResponse
+    {
+        public bool IsValid { get; set; }
+        public string Status { get; set; }
+    }
 }

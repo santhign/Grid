@@ -648,6 +648,8 @@ namespace OrderService.DataAccess
                                             BillingPostCode = model.Field<string>("BillingPostCode"),
                                             BillingContactNumber = model.Field<string>("BillingContactNumber"),
                                             ReferralCode = model.Field<string>("ReferralCode"),
+                                            PromotionCode = model.Field<string>("PromotionCode"),
+                                            HaveDocuments = model.Field<bool>("HaveDocuments"),
                                             Name = model.Field<string>("Name"),
                                             Email = model.Field<string>("Email"),
                                             IDType = model.Field<string>("IDType"),
@@ -685,11 +687,14 @@ namespace OrderService.DataAccess
                                                 IsPrimaryNumber = model.Field<int>("IsPrimaryNumber"),
                                                 PlanMarketingName = model.Field<string>("PlanMarketingName"),
                                                 PortalDescription = model.Field<string>("PortalDescription"),
-                                                TotalData = model.Field<string>("TotalData"),
+                                                PortalSummaryDescription = model.Field<string>("PortalSummaryDescription"),
+                                                TotalData = model.Field<double?>("TotalData"),
                                                 TotalSMS = model.Field<double?>("TotalSMS"),
                                                 TotalVoice = model.Field<double?>("TotalVoice"),
+                                                ActualSubscriptionFee = model.Field<double?>("ActualSubscriptionFee"),
                                                 ApplicableSubscriptionFee = model.Field<double?>("ApplicableSubscriptionFee"),
                                                 ServiceName = model.Field<string>("ServiceName"),
+                                                ActualServiceFee = model.Field<double?>("ActualServiceFee"),
                                                 ApplicableServiceFee = model.Field<double?>("ApplicableServiceFee"),
                                                 PremiumType = model.Field<int>("PremiumType"),
                                                 IsPorted = model.Field<int>("IsPorted"),
@@ -701,6 +706,24 @@ namespace OrderService.DataAccess
                                             }).ToList();
 
                             orderDetails.Bundles = orderBundles;
+
+                        }
+
+                        List<ServiceCharge> orderServiceCharges = new List<ServiceCharge>();
+
+                        if (ds.Tables[2] != null && ds.Tables[2].Rows.Count > 0)
+                        {
+
+                            orderServiceCharges = (from model in ds.Tables[2].AsEnumerable()
+                                            select new ServiceCharge()
+                                            {
+                                                PortalServiceName = model.Field<string>("PortalServiceName"),
+                                                ServiceFee = model.Field<double?>("ServiceFee"),
+                                                IsRecurring = model.Field<int>("IsRecurring"),
+                                                IsGSTIncluded = model.Field<int>("IsGSTIncluded"),
+                                            }).ToList();
+
+                            orderDetails.ServiceCharges = orderServiceCharges;
 
                         }
                     }
@@ -743,6 +766,134 @@ namespace OrderService.DataAccess
                 parameters[0].Value = orderId;
 
                 _DataHelper = new DataAccessHelper("Order_GetCustomerIDByOrderID", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt); // 105 /102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 105)
+                {
+
+                    OrderCustomer customer = new OrderCustomer();
+
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+
+                        customer = (from model in dt.AsEnumerable()
+                                    select new OrderCustomer()
+                                    {
+                                        CustomerId = model.Field<int>("CustomerID"),
+
+                                    }).FirstOrDefault();
+
+
+
+
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = customer };
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> GetCustomerIdFromChangeRequestId(int orderId)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@ChangeRequestID",  SqlDbType.Int )
+
+                };
+
+                parameters[0].Value = orderId;
+
+                _DataHelper = new DataAccessHelper("Order_GetCustomerIDByChangeRequestID", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt); // 105 /102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 105)
+                {
+
+                    OrderCustomer customer = new OrderCustomer();
+
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+
+                        customer = (from model in dt.AsEnumerable()
+                                    select new OrderCustomer()
+                                    {
+                                        CustomerId = model.Field<int>("CustomerID"),
+
+                                    }).FirstOrDefault();
+
+
+
+
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = customer };
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> GetCustomerIdFromAccountInvoiceId(int orderId)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@AccountInvoiceID",  SqlDbType.Int )
+
+                };
+
+                parameters[0].Value = orderId;
+
+                _DataHelper = new DataAccessHelper("Order_GetCustomerIDByAccountInvoiceID", parameters, _configuration);
 
                 DataTable dt = new DataTable();
 
@@ -861,6 +1012,7 @@ namespace OrderService.DataAccess
                     new SqlParameter( "@IDNumber",  SqlDbType.NVarChar),
                     new SqlParameter( "@IDImageUrl",  SqlDbType.NVarChar),
                     new SqlParameter( "@NameInNRIC",  SqlDbType.NVarChar),
+                    new SqlParameter( "@DisplayName",  SqlDbType.NVarChar),
                     new SqlParameter( "@Gender",  SqlDbType.NVarChar),
                     new SqlParameter( "@DOB",  SqlDbType.Date),
                     new SqlParameter( "@ContactNumber",  SqlDbType.NVarChar),
@@ -874,11 +1026,12 @@ namespace OrderService.DataAccess
                 parameters[2].Value = personalDetails.IDNumber;
                 parameters[3].Value = personalDetails.IDFrontImageUrl;
                 parameters[4].Value = personalDetails.NameInNRIC;
-                parameters[5].Value = personalDetails.Gender;
-                parameters[6].Value = personalDetails.DOB;
-                parameters[7].Value = personalDetails.ContactNumber;
-                parameters[8].Value = personalDetails.Nationality;
-                parameters[9].Value = personalDetails.IDBackImageUrl;
+                parameters[5].Value = personalDetails.DisplayName;
+                parameters[6].Value = personalDetails.Gender;
+                parameters[7].Value = personalDetails.DOB;
+                parameters[8].Value = personalDetails.ContactNumber;
+                parameters[9].Value = personalDetails.Nationality;
+                parameters[10].Value = personalDetails.IDBackImageUrl;
 
                 _DataHelper = new DataAccessHelper("Orders_UpdateOrderBasicDetails", parameters, _configuration);
 
@@ -1638,6 +1791,60 @@ namespace OrderService.DataAccess
                 }
 
                 response = new DatabaseResponse { Results = assetRequest };
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> GetCustomerNRICDetails(int CustomerID)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int)                   
+                };
+
+                parameters[0].Value = CustomerID;              
+
+                _DataHelper = new DataAccessHelper("Order_GetCustomerNRICDetails", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+               int result= await _DataHelper.RunAsync(dt);
+                
+                DatabaseResponse response = new DatabaseResponse();
+
+                OrderNRICDetails nRICDetails = new OrderNRICDetails();
+
+                if (dt!=null && dt.Rows.Count > 0)
+                {
+                    nRICDetails = (from model in dt.AsEnumerable()
+                                    select new OrderNRICDetails()
+                                    {
+                                         CustomerID = model.Field<int>("CustomerID"),
+                                         DocumentID  = model.Field<int>("DocumentID"),
+                                         DocumentURL = model.Field<string>("DocumentURL"),
+                                         DocumentBackURL = model.Field<string>("DocumentBackURL"),
+                                         IdentityCardNumber = model.Field<string>("IdentityCardNumber"),
+                                         IdentityCardType = model.Field<string>("IdentityCardType"),
+
+                                    }).FirstOrDefault();
+                }
+
+                response = new DatabaseResponse {ResponseCode= result, Results = nRICDetails };
 
                 return response;
             }

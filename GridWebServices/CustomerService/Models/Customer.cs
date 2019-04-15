@@ -396,6 +396,13 @@ namespace CustomerService.Models
         public string SubscriptionType { get; set; }
 
         /// <summary>
+        /// Gets or sets the status of the plan.
+        /// </summary>
+        /// <value>
+        /// The status of the subscription.
+        /// </value>
+        public string PlanStatus { get; set; }
+        /// <summary>
         /// Gets or sets the type of the PlanMarketingName.
         /// </summary>
         /// <value>

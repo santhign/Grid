@@ -209,6 +209,7 @@
             "IDImageFront" : FileInput,
             "IDImageBack" : FileInput,
             "NameInNRIC" : "Name as in NRIC",
+            "DisplayName" : "DisplayName",
             "Gender":"Male",
             "DOB":"15/12/2000", //dd/MM/yyyy
             "ContactNumber":"95421232", 
@@ -329,7 +330,7 @@
             </summary>
             <param name="token" in="Header"></param>     
             <param name="orderId">Initial OrderID/ChangeRequestID in case of sim replacement/planchange/numberchange</param>
-            <param name="orderType"> Initial Order = 1, ChangeSim = 2, ChangeNumber = 3, ChangePlan = 4</param>
+            <param name="orderType"> Initial Order = 1, ChangeRequest = 2, AccountInvoices = 4</param>
             <returns>OperationsResponse</returns>
         </member>
         <member name="M:OrderService.Controllers.OrdersController.UpdateCheckOutResponse(System.String,OrderService.Models.CheckOutResponseUpdate)">
@@ -371,6 +372,13 @@
             }
             </param>
             <returns>OperationResponse</returns>
+        </member>
+        <member name="M:OrderService.Controllers.OrdersController.GetCustomerIDImages(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="token" in="Header"></param>
+            <returns></returns>
         </member>
         <member name="M:OrderService.DataAccess.ChangeRequestDataAccess.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
             <summary>
@@ -1428,6 +1436,14 @@
             The name in nric.
             </value>
         </member>
+        <member name="P:OrderService.Models.UpdateOrderPersonalDetailsRequest.DisplayName">
+            <summary>
+            Gets or sets the display name.
+            </summary>
+            <value>
+            The display name.
+            </value>
+        </member>
         <member name="P:OrderService.Models.UpdateOrderPersonalDetailsRequest.Gender">
             <summary>
             Gets or sets the gender.
@@ -1503,6 +1519,14 @@
             </summary>
             <value>
             The name in nric.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.UpdateOrderPersonalDetails.DisplayName">
+            <summary>
+            Gets or sets the display name.
+            </summary>
+            <value>
+            The display name.
             </value>
         </member>
         <member name="P:OrderService.Models.UpdateOrderPersonalDetails.Gender">

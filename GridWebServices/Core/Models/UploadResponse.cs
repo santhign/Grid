@@ -12,4 +12,21 @@ namespace Core.Models
 
         public string Message { get; set; }
     }
+
+    public class DownloadResponse
+    {
+        public bool HasSucceed { get; set; }        
+
+        public byte[] FileObject { get; set; }
+
+        public string Message { get; set; }
+    }
+
+    public class DownloadNRIC
+    {       
+        public byte[] FrontImage { get; set; }
+
+        public byte[] BackImage { get; set; }
+    }
+
 }

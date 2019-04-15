@@ -9,16 +9,12 @@ namespace OrderService.Enums
         [Description("Initial Order")]
         Orders = 1,
 
-        [EnumMember(Value = "ChangeSim")]
-        [Description("Sim Change Request")]
+        [EnumMember(Value = "ChangeRequest")]
+        [Description("Change Request")]
         ChangeSim = 2,
 
-        [EnumMember(Value = "ChangeNumber")]
-        [Description("Change Number Request")]
-        ChangeNumber = 3,
-
-        [EnumMember(Value = "ChangePlan")]
-        [Description("ChangevPlan Request")]
-        ChangePlan = 4,       
+        [EnumMember(Value = "AccountInvoices")]
+        [Description("Account Invoices")]
+        ChangeNumber = 3,       
     }
 }

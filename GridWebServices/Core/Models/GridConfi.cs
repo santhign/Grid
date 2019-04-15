@@ -74,6 +74,10 @@ namespace Core.Models
         [DataMember(Name = "AWSUser")]
         public string AWSUser { get; set; }
 
+        [DataMember(Name = "AWSEndPoint")]
+        public string AWSEndPoint { get; set; }
+        
+
     }
 
 
