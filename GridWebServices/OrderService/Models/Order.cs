@@ -18,6 +18,7 @@ namespace OrderService.Models
         public string BillingPostCode { get; set; }
         public string BillingContactNumber { get; set; }
         public string ReferralCode { get; set; }
+        public string PromotionCode { get; set; }
         public string Name { get; set; }
         public string Email { get; set; }
         public string IDType { get; set; }
@@ -40,6 +41,15 @@ namespace OrderService.Models
         public DateTime? ScheduledDate { get; set; }
         public double? ServiceFee { get; set; }
         public List<Bundle> Bundles { get; set; }
+        public List<ServiceCharge> ServiceCharges { get; set; }
+    }
+
+    public class ServiceCharge
+    {
+        public string PortalServiceName { get; set; }
+        public double? ServiceFee { get; set; }
+        public int? IsRecurring { get; set; }
+        public int? IsGSTIncluded { get; set; }
     }
 
     public class Bundle
@@ -50,11 +60,14 @@ namespace OrderService.Models
         public int IsPrimaryNumber { get; set; }
         public string PlanMarketingName { get; set; }
         public string PortalDescription { get; set; }
-        public string TotalData { get; set; }
+        public string PortalSummaryDescription { get; set; }
+        public double? TotalData { get; set; }
         public double? TotalSMS { get; set; }
         public double? TotalVoice { get; set; }
+        public double? ActualSubscriptionFee { get; set; }
         public double? ApplicableSubscriptionFee { get; set; }
         public string ServiceName { get; set; }
+        public double? ActualServiceFee { get; set; }
         public double? ApplicableServiceFee { get; set; }
         public int PremiumType { get; set; }
         public int IsPorted { get; set; }

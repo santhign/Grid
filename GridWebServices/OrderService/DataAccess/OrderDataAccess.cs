@@ -648,6 +648,7 @@ namespace OrderService.DataAccess
                                             BillingPostCode = model.Field<string>("BillingPostCode"),
                                             BillingContactNumber = model.Field<string>("BillingContactNumber"),
                                             ReferralCode = model.Field<string>("ReferralCode"),
+                                            PromotionCode = model.Field<string>("PromotionCode"),
                                             Name = model.Field<string>("Name"),
                                             Email = model.Field<string>("Email"),
                                             IDType = model.Field<string>("IDType"),
@@ -685,11 +686,14 @@ namespace OrderService.DataAccess
                                                 IsPrimaryNumber = model.Field<int>("IsPrimaryNumber"),
                                                 PlanMarketingName = model.Field<string>("PlanMarketingName"),
                                                 PortalDescription = model.Field<string>("PortalDescription"),
-                                                TotalData = model.Field<string>("TotalData"),
+                                                PortalSummaryDescription = model.Field<string>("PortalSummaryDescription"),
+                                                TotalData = model.Field<double?>("TotalData"),
                                                 TotalSMS = model.Field<double?>("TotalSMS"),
                                                 TotalVoice = model.Field<double?>("TotalVoice"),
+                                                ActualSubscriptionFee = model.Field<double?>("ActualSubscriptionFee"),
                                                 ApplicableSubscriptionFee = model.Field<double?>("ApplicableSubscriptionFee"),
                                                 ServiceName = model.Field<string>("ServiceName"),
+                                                ActualServiceFee = model.Field<double?>("ActualServiceFee"),
                                                 ApplicableServiceFee = model.Field<double?>("ApplicableServiceFee"),
                                                 PremiumType = model.Field<int>("PremiumType"),
                                                 IsPorted = model.Field<int>("IsPorted"),
@@ -701,6 +705,24 @@ namespace OrderService.DataAccess
                                             }).ToList();
 
                             orderDetails.Bundles = orderBundles;
+
+                        }
+
+                        List<ServiceCharge> orderServiceCharges = new List<ServiceCharge>();
+
+                        if (ds.Tables[2] != null && ds.Tables[2].Rows.Count > 0)
+                        {
+
+                            orderServiceCharges = (from model in ds.Tables[2].AsEnumerable()
+                                            select new ServiceCharge()
+                                            {
+                                                PortalServiceName = model.Field<string>("PortalServiceName"),
+                                                ServiceFee = model.Field<double?>("ServiceFee"),
+                                                IsRecurring = model.Field<int>("IsRecurring"),
+                                                IsGSTIncluded = model.Field<int>("IsGSTIncluded"),
+                                            }).ToList();
+
+                            orderDetails.ServiceCharges = orderServiceCharges;
 
                         }
                     }

@@ -373,7 +373,7 @@ namespace OrderService.Controllers
 
                                 return Ok(new OperationResponse
                                 {
-                                    HasSucceeded = false,
+                                    HasSucceeded = true,
                                     Message = EnumExtensions.GetDescription(DbReturnValue.RecordExists),
                                     IsDomainValidationErrors = false,
                                     ReturnedObject = orderDetailsResponse.Results
