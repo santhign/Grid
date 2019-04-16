@@ -15,7 +15,7 @@ using InfrastructureService;
 using Core.Helpers;
 using System.IO;
 using OrderService.Enums;
-
+using Newtonsoft.Json;
 
 namespace OrderService.Controllers
 {
@@ -2564,10 +2564,36 @@ namespace OrderService.Controllers
                             var details = await _messageQueueDataAccess.GetMessageDetails(updateRequest.MPGSOrderID);
                             if(details != null)
                             {
-                                var msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(details.ChangeRequestID);
-                                if(details.RequestTypeID == (int)Core.Enums.RequestType.ChangeSim)
+                                MessageBodyForCR msgBody = new MessageBodyForCR();
+                                try
                                 {
-                                    await _messageQueueDataAccess.PublishMessageToMessageQueue(msgBody, ConfigKey.SNS_Topic_ChangeRequest);
+
+                                    msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(details.ChangeRequestID);
+                                    if (details.RequestTypeID == (int)Core.Enums.RequestType.ReplaceSIM)
+                                    {
+                                        await _messageQueueDataAccess.PublishMessageToMessageQueue(msgBody, ConfigKey.SNS_Topic_ChangeRequest);
+                                    }
+
+                                    MessageQueueRequest queueRequest = new MessageQueueRequest();
+                                    queueRequest.CreatedOn = DateTime.Now;
+                                    queueRequest.LastTriedOn = DateTime.Now;
+                                    queueRequest.MessageAttribute = ConfigKey.SNS_Topic_ChangeRequest.GetDescription();
+                                    queueRequest.MessageBody = JsonConvert.SerializeObject(msgBody);
+                                    queueRequest.CreatedOn = DateTime.Now;
+                                    queueRequest.Status = 1;
+                                    await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                                }
+                                catch(Exception ex)
+                                {
+                                    LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                                    MessageQueueRequest queueRequest = new MessageQueueRequest();
+                                    queueRequest.CreatedOn = DateTime.Now;
+                                    queueRequest.LastTriedOn = DateTime.Now;
+                                    queueRequest.MessageAttribute = ConfigKey.SNS_Topic_ChangeRequest.GetDescription();
+                                    queueRequest.MessageBody = JsonConvert.SerializeObject(msgBody);
+                                    queueRequest.CreatedOn = DateTime.Now;
+                                    queueRequest.Status = 0;
+                                    await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
                                 }
                                 
                             }

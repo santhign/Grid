@@ -8,21 +8,21 @@ namespace Core.Enums
         [EnumMember(Value = "DefaultOrder")]
         [Description("DefaultOrder")]
         DefaultOrder = 1,
-        [EnumMember(Value = "Addition")]
-        [Description("Addition")]
+        [EnumMember(Value = "AddVAS")]
+        [Description("AddVAS")]
         Addition = 2,
-        [EnumMember(Value = "Removal")]
-        [Description("Removal")]
+        [EnumMember(Value = "RemoveVAS")]
+        [Description("RemoveVAS")]
         Removal = 3,
-        [EnumMember(Value = "Termination")]
-        [Description("Termination")]
+        [EnumMember(Value = "Terminate")]
+        [Description("Terminate")]
         Termination = 4,
-        [EnumMember(Value = "Suspension")]
-        [Description("Suspension")]
+        [EnumMember(Value = "Suspend")]
+        [Description("Suspend")]
         Suspension = 5,
-        [EnumMember(Value = "ChangeSim")]
-        [Description("ChangeSim")]
-        ChangeSim = 6,
+        [EnumMember(Value = "ReplaceSIM")]
+        [Description("ReplaceSIM")]
+        ReplaceSIM = 6,
         [EnumMember(Value = "ChangeNumber")]
         [Description("ChangeNumber")]
         ChangeNumber = 7

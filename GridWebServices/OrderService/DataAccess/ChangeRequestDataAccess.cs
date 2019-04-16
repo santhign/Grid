@@ -145,7 +145,7 @@ namespace OrderService.DataAccess
 
                 parameters[0].Value = customerId;
                 parameters[1].Value = mobileNumber;
-                parameters[2].Value = Core.Enums.RequestType.ChangeSim.GetDescription();
+                parameters[2].Value = Core.Enums.RequestType.ReplaceSIM.GetDescription();
 
                 _DataHelper = new DataAccessHelper(DbObjectNames.Order_CR_SIMReplacementRequest, parameters, _configuration);
 
