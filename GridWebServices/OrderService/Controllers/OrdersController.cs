@@ -3025,11 +3025,11 @@ namespace OrderService.Controllers
         /// 
         /// </summary>
         /// <param name="token" in="Header"></param>
-        /// <param name="OrderID" in="Body"></param>
+        /// <param name="OrderID"></param>
         /// <returns></returns>
-        [Route("GetCustomerIDImages")]
-        [HttpPost]
-        public async Task<IActionResult> GetCustomerIDImages([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] int OrderID)
+        [Route("GetCustomerIDImages/{OrderID}")]
+        [HttpGet]
+        public async Task<IActionResult> GetCustomerIDImages([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int OrderID)
         {
             try
             {

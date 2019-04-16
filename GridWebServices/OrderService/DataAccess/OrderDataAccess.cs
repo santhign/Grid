@@ -640,6 +640,8 @@ namespace OrderService.DataAccess
                                             OrderID = model.Field<int>("OrderID"),
                                             OrderNumber = model.Field<string>("OrderNumber"),
                                             OrderDate = model.Field<DateTime>("OrderDate"),
+                                            IdentityCardType = model.Field<string>("IdentityCardType"),
+                                            IdentityCardNumber = model.Field<string>("IdentityCardNumber"),
                                             BillingUnit = model.Field<string>("BillingUnit"),
                                             BillingFloor = model.Field<string>("BillingFloor"),
                                             BillingBuildingNumber = model.Field<string>("BillingBuildingNumber"),

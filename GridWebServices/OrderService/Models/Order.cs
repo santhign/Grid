@@ -10,6 +10,8 @@ namespace OrderService.Models
         public int OrderID { get; set; }
         public string OrderNumber { get; set; }
         public DateTime OrderDate { get; set; }
+        public string IdentityCardType { get; set; }
+        public string IdentityCardNumber { get; set; }
         public string BillingUnit { get; set; }
         public string BillingFloor { get; set; }
         public string BillingBuildingNumber { get; set; }

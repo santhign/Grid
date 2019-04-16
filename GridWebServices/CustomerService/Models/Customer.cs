@@ -45,6 +45,8 @@ namespace CustomerService.Models
         /// <value>
         /// The referral code.
         /// </value>
+        public string IdentityCardType { get; set; }
+        public string IdentityCardNumber { get; set; }
         public string ReferralCode { get; set; }
         /// <summary>
         /// Gets or sets the nationality.
