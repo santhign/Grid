@@ -38,6 +38,14 @@ namespace OrderService.Controllers
         {
             try
             {
+                if(string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+                    
+                });
+
                 AuthHelper helper = new AuthHelper(_iconfiguration);
 
                 DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
@@ -148,6 +156,13 @@ namespace OrderService.Controllers
         {
             try
             {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
                 AuthHelper helper = new AuthHelper(_iconfiguration);
 
                 DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
@@ -361,6 +376,13 @@ namespace OrderService.Controllers
         {
             try
             {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
                 AuthHelper helper = new AuthHelper(_iconfiguration);
 
                 DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
@@ -584,6 +606,13 @@ namespace OrderService.Controllers
         {
             try
             {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
                 AuthHelper helper = new AuthHelper(_iconfiguration);
 
                 DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
@@ -694,6 +723,13 @@ namespace OrderService.Controllers
         {
             try
             {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
                 AuthHelper helper = new AuthHelper(_iconfiguration);
 
                 DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
