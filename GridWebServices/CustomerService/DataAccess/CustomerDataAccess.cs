@@ -111,8 +111,14 @@ namespace CustomerService.DataAccess
         {
             try
             {
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@CustomerID",  SqlDbType.NVarChar )
+                };
 
-                _DataHelper = new DataAccessHelper("Admin_GetCustomerListing", _configuration);
+                parameters[0].Value = customerId;
+
+                _DataHelper = new DataAccessHelper("Customer_GetDetails", parameters, _configuration);
 
                 DataTable dt = new DataTable();
 
@@ -130,13 +136,15 @@ namespace CustomerService.DataAccess
                                     Email = model.Field<string>("Email"),
                                     Password = model.Field<string>("Password"),
                                     MobileNumber = model.Field<string>("MobileNumber"),
+                                    IdentityCardType = model.Field<string>("IdentityCardType"),
+                                    IdentityCardNumber = model.Field<string>("IdentityCardNumber"),
                                     ReferralCode = model.Field<string>("ReferralCode"),
                                     Nationality = model.Field<string>("Nationality"),
                                     Gender = model.Field<string>("Gender"),
                                     SMSSubscription = model.Field<string>("SMSSubscription"),
                                     EmailSubscription = model.Field<string>("EmailSubscription"),
                                     Status = model.Field<string>("Status")
-                                }).Where(c => c.CustomerID == customerId).FirstOrDefault();
+                                }).FirstOrDefault();
                 }
 
                 return customer;
