@@ -507,13 +507,7 @@ namespace CustomerService.Controllers
         {
             try
             {
-                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
-                {
-                    HasSucceeded = false,
-                    IsDomainValidationErrors = true,
-                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
-
-                });
+               
 
                 if (!ModelState.IsValid)
                 {
