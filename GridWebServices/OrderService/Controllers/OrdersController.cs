@@ -2899,10 +2899,11 @@ namespace OrderService.Controllers
         /// 
         /// </summary>
         /// <param name="token" in="Header"></param>
+        /// <param name="OrderID" in="Body"></param>
         /// <returns></returns>
         [Route("GetCustomerIDImages")]
         [HttpPost]
-        public async Task<IActionResult> GetCustomerIDImages([FromHeader(Name = "Grid-Authorization-Token")] string token)
+        public async Task<IActionResult> GetCustomerIDImages([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] int OrderID)
         {
             try
             {
@@ -2913,19 +2914,21 @@ namespace OrderService.Controllers
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
                     if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
-                    {                       
-
+                    {
+                        int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
                         //first get order NRIC details order documents  
 
                         OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
-
-                        DatabaseResponse nRICresponse = await _orderAccess.GetCustomerNRICDetails(((AuthTokenResponse)tokenAuthResponse.Results).CustomerID);
-
-                        if ((nRICresponse.ResponseCode == (int)DbReturnValue.RecordExists) && ((OrderNRICDetails)nRICresponse.Results).DocumentID > 0)
+                        DatabaseResponse customerResponse = await _orderAccess.GetCustomerIdFromOrderId(OrderID);
+                        if (customerResponse.ResponseCode == (int)DbReturnValue.RecordExists && customerID == ((OrderCustomer)customerResponse.Results).CustomerId)
                         {
-                            //get image bytes from s3
+                            DatabaseResponse nRICresponse = await _orderAccess.GetOrderNRICDetails(OrderID);
 
-                            // DownloadFile
+                            if ((nRICresponse.ResponseCode == (int)DbReturnValue.RecordExists) && ((OrderNRICDetails)nRICresponse.Results).DocumentID > 0)
+                            {
+                                //get image bytes from s3
+
+                                // DownloadFile
 
                                 DatabaseResponse awsConfigResponse = await _orderAccess.GetConfiguration(ConfiType.AWS.ToString());
 
@@ -2941,8 +2944,8 @@ namespace OrderService.Controllers
 
                                     DownloadResponse BackImageDownloadResponse = await s3Helper.DownloadFile(((OrderNRICDetails)nRICresponse.Results).DocumentBackURL);
 
-                                    DownloadNRIC nRICDownloadObject = new DownloadNRIC { FrontImage= FrontImageDownloadResponse.FileObject != null ? FrontImageDownloadResponse.FileObject.ToArray() : null , BackImage= BackImageDownloadResponse.FileObject != null ? BackImageDownloadResponse.FileObject.ToArray() : null };
-                                     
+                                    DownloadNRIC nRICDownloadObject = new DownloadNRIC { FrontImage = FrontImageDownloadResponse.FileObject != null ? FrontImageDownloadResponse.FileObject.ToArray() : null, BackImage = BackImageDownloadResponse.FileObject != null ? BackImageDownloadResponse.FileObject.ToArray() : null };
+
                                     return Ok(new OperationResponse
                                     {
                                         HasSucceeded = true,
@@ -2959,23 +2962,34 @@ namespace OrderService.Controllers
                                     return Ok(new OperationResponse
                                     {
                                         HasSucceeded = false,
-                                        Message = EnumExtensions.GetDescription(CommonErrors.FailedToGetConfiguration)                                       
+                                        Message = EnumExtensions.GetDescription(CommonErrors.FailedToGetConfiguration)
 
                                     });
-                                }                                             
+                                }
 
+                            }
+                            else
+                            {
+                                // NRIC details not exists
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = true,
+                                    Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
+                                    IsDomainValidationErrors = false
+                                });
+                            }
                         }
                         else
                         {
-                            // NRIC details not exists
+                            // failed to locate customer
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToGetCustomer));
                             return Ok(new OperationResponse
                             {
-                                HasSucceeded = true,
+                                HasSucceeded = false,
                                 Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
                                 IsDomainValidationErrors = false
                             });
                         }
-                       
                     }
 
                     else

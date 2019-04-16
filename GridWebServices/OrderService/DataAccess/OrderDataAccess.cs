@@ -1807,17 +1807,17 @@ namespace OrderService.DataAccess
             }
         }
 
-        public async Task<DatabaseResponse> GetCustomerNRICDetails(int CustomerID)
+        public async Task<DatabaseResponse> GetOrderNRICDetails(int OrderID)
         {
             try
             {
 
                 SqlParameter[] parameters =
                {
-                    new SqlParameter( "@CustomerID",  SqlDbType.Int)                   
+                    new SqlParameter( "@OrderID",  SqlDbType.Int)                   
                 };
 
-                parameters[0].Value = CustomerID;              
+                parameters[0].Value = OrderID;              
 
                 _DataHelper = new DataAccessHelper("Order_GetCustomerNRICDetails", parameters, _configuration);
 
