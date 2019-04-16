@@ -3064,11 +3064,11 @@ namespace OrderService.Controllers
         /// 
         /// </summary>
         /// <param name="token" in="Header"></param>
-        /// <param name="OrderID" in="Body"></param>
+        /// <param name="OrderID"></param>
         /// <returns></returns>
-        [Route("GetCustomerIDImages")]
-        [HttpPost]
-        public async Task<IActionResult> GetCustomerIDImages([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] int OrderID)
+        [Route("GetCustomerIDImages/{OrderID}")]
+        [HttpGet]
+        public async Task<IActionResult> GetCustomerIDImages([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int OrderID)
         {
             try
             {
@@ -3111,10 +3111,9 @@ namespace OrderService.Controllers
                                     GridAWSS3Config awsConfig = configHelper.GetGridAwsConfig((List<Dictionary<string, string>>)awsConfigResponse.Results);
 
                                     AmazonS3 s3Helper = new AmazonS3(awsConfig);
+                                    DownloadResponse FrontImageDownloadResponse = await s3Helper.DownloadFile(((OrderNRICDetails)nRICresponse.Results).DocumentURL.Remove(0, awsConfig.AWSEndPoint.Length));
 
-                                    DownloadResponse FrontImageDownloadResponse = await s3Helper.DownloadFile(((OrderNRICDetails)nRICresponse.Results).DocumentURL);
-
-                                    DownloadResponse BackImageDownloadResponse = await s3Helper.DownloadFile(((OrderNRICDetails)nRICresponse.Results).DocumentBackURL);
+                                    DownloadResponse BackImageDownloadResponse = await s3Helper.DownloadFile(((OrderNRICDetails)nRICresponse.Results).DocumentBackURL.Remove(0, awsConfig.AWSEndPoint.Length));
 
                                     DownloadNRIC nRICDownloadObject = new DownloadNRIC { FrontImage = FrontImageDownloadResponse.FileObject != null ? FrontImageDownloadResponse.FileObject.ToArray() : null, BackImage = BackImageDownloadResponse.FileObject != null ? BackImageDownloadResponse.FileObject.ToArray() : null };
 
