@@ -197,7 +197,8 @@ namespace OrderService.Models
         /// <value>
         /// The mobile number.
         /// </value>
-        [MaxLength(8, ErrorMessage = "Maximum 8 characters allowed")]
+        [MaxLength(8, ErrorMessage = "Maximum 8 digits allowed")]
+        [MinLength(8, ErrorMessage = "Minimum 8 digits Required")]
         [Required(ErrorMessage = "MobileNumber is required")]
         public string MobileNumber { get; set; }
         /// <summary>
@@ -231,7 +232,8 @@ namespace OrderService.Models
         /// <value>
         /// The old mobile number.
         /// </value>
-        [MaxLength(8, ErrorMessage = "Maximum 8 characters allowed")]
+        [MaxLength(8, ErrorMessage = "Maximum 8 digits allowed")]
+        [MinLength(8, ErrorMessage = "Minimum 8 digits Required")]
         [Required(ErrorMessage = "OldMobileNumber is required")]
         public string OldMobileNumber { get; set; }
         /// <summary>
@@ -274,7 +276,8 @@ namespace OrderService.Models
         /// <value>
         /// The old mobile number.
         /// </value>
-        [MaxLength(8, ErrorMessage = "Maximum 8 characters allowed")]
+        [MaxLength(8, ErrorMessage = "Maximum 8 digits allowed")]
+        [MinLength(8, ErrorMessage = "Minimum 8 digits Required")]
         [Required(ErrorMessage = "OldMobileNumber is required")]
         public string OldMobileNumber { get; set; }
 
@@ -284,7 +287,8 @@ namespace OrderService.Models
         /// <value>
         /// The new mobile number.
         /// </value>
-        [MaxLength(8, ErrorMessage = "Maximum 8 characters allowed")]
+        [MaxLength(8, ErrorMessage = "Maximum 8 digits allowed")]
+        [MinLength(8, ErrorMessage = "Minimum 8 digits Required")]
         [Required(ErrorMessage = "New MobileNumber is required")]
         public string NewMobileNumber { get; set; }
 
@@ -358,7 +362,8 @@ namespace OrderService.Models
         /// <value>
         /// The old mobile number.
         /// </value>
-        [MaxLength(8, ErrorMessage = "Maximum 8 characters allowed")]
+        [MaxLength(8, ErrorMessage = "Maximum 8 digits allowed")]
+        [MinLength(8, ErrorMessage = "Minimum 8 digits Required")]
         [Required(ErrorMessage = "OldMobileNumber is required")]
         public string OldMobileNumber { get; set; }
 
@@ -368,7 +373,8 @@ namespace OrderService.Models
         /// <value>
         /// The new mobile number.
         /// </value>
-        [MaxLength(8, ErrorMessage = "Maximum 8 characters allowed")]
+        [MaxLength(8, ErrorMessage = "Maximum 8 digits allowed")]
+        [MinLength(8, ErrorMessage = "Minimum 8 digits Required")]
         [Required(ErrorMessage = "New MobileNumber is required")]
         public string NewMobileNumber { get; set; }
 
@@ -525,7 +531,8 @@ namespace OrderService.Models
         /// <value>
         /// The contact number.
         /// </value>
-        [MaxLength(8, ErrorMessage = "Maximum 8 characters allowed")]
+        [MaxLength(8, ErrorMessage = "Maximum 8 digits allowed")]
+        [MinLength(8, ErrorMessage = "Minimum 8 digits Required")]
         [Required(ErrorMessage = "ContactNumber is required")]
         public string ContactNumber { get; set; }
 
@@ -692,7 +699,8 @@ namespace OrderService.Models
         /// <value>
         /// The contact number.
         /// </value>
-        [MaxLength(8, ErrorMessage = "Maximum 8 characters allowed")]
+        [MaxLength(8, ErrorMessage = "Maximum 8 digits allowed")]
+        [MinLength(8, ErrorMessage = "Minimum 8 digits Required")]
         [Required(ErrorMessage = "ContactNumber is required")]
         public string ContactNumber { get; set; }       
 
@@ -772,7 +780,8 @@ namespace OrderService.Models
         /// <value>
         /// The contact number.
         /// </value>
-        [MaxLength(8, ErrorMessage = "Maximum 8 characters allowed")]
+        [MaxLength(8, ErrorMessage = "Maximum 8 digits allowed")]
+        [MinLength(8, ErrorMessage = "Minimum 8 digits Required")]
         [Required(ErrorMessage = "ContactNumber is required")]
         public string ContactNumber { get; set; }
         /// <summary>
@@ -842,7 +851,8 @@ namespace OrderService.Models
         /// <value>
         /// The contact number.
         /// </value>
-        [MaxLength(8, ErrorMessage = "Maximum 8 characters allowed")]
+        [MaxLength(8, ErrorMessage = "Maximum 8 digits allowed")]
+        [MinLength(8, ErrorMessage = "Minimum 8 digits Required")]
         [Required(ErrorMessage = "ContactNumber is required")]
         public string ContactNumber { get; set; }
 
@@ -919,7 +929,8 @@ namespace OrderService.Models
         /// <value>
         /// The contact number.
         /// </value>
-        [MaxLength(8, ErrorMessage = "Maximum 8 characters allowed")]      
+        [MaxLength(8, ErrorMessage = "Maximum 8 digits allowed")]
+        [MinLength(8, ErrorMessage = "Minimum 8 digits Required")]
         public string ContactNumber { get; set; }
 
         /// <summary>
@@ -970,7 +981,8 @@ namespace OrderService.Models
         /// <value>
         /// The mobile number.
         /// </value>
-        [MaxLength(8, ErrorMessage = "Maximum 8 characters allowed in Mobile Number")]
+        [MaxLength(8, ErrorMessage = "Maximum 8 digits allowed")]
+        [MinLength(8, ErrorMessage = "Minimum 8 digits Required")]
         [Required(ErrorMessage = "Mobile Number is required")]
         public string MobileNumber { get; set; }
         
@@ -996,7 +1008,8 @@ namespace OrderService.Models
         /// <value>
         /// The old number.
         /// </value>
-        [MaxLength(8, ErrorMessage = "Maximum 8 characters allowed in Mobile Number")]
+        [MaxLength(8, ErrorMessage = "Maximum 8 digits allowed")]
+        [MinLength(8, ErrorMessage = "Minimum 8 digits Required")]
         [Required(ErrorMessage = "Mobile Number is required")]
         public string OldNumber { get; set; }
 

@@ -52,6 +52,14 @@ namespace CustomerService.Controllers
         {
             try
             {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+
                 AuthHelper helper = new AuthHelper(_iconfiguration);
 
                 DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
@@ -159,6 +167,14 @@ namespace CustomerService.Controllers
         {
             try
             {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+
                 AuthHelper helper = new AuthHelper(_iconfiguration);
 
                 DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
@@ -269,6 +285,14 @@ namespace CustomerService.Controllers
         {
             try
             {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+
                 AuthHelper helper = new AuthHelper(_iconfiguration);
 
                 DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
@@ -372,6 +396,14 @@ namespace CustomerService.Controllers
         {
             try
             {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+
                 AuthHelper helper = new AuthHelper(_iconfiguration);
 
                 DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
@@ -475,6 +507,14 @@ namespace CustomerService.Controllers
         {
             try
             {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+
                 if (!ModelState.IsValid)
                 {
                     return StatusCode((int)HttpStatusCode.OK, new OperationResponse
@@ -545,6 +585,14 @@ namespace CustomerService.Controllers
         {
             try
             {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+
                 AuthHelper helper = new AuthHelper(_iconfiguration);
 
                 DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
@@ -647,6 +695,14 @@ namespace CustomerService.Controllers
         {
             try
             {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+
                 AuthHelper helper = new AuthHelper(_iconfiguration);
 
                 DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
@@ -754,6 +810,14 @@ namespace CustomerService.Controllers
         {
             try
             {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+
                 AuthHelper helper = new AuthHelper(_iconfiguration);
 
                 DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
@@ -860,6 +924,14 @@ namespace CustomerService.Controllers
         {
             try
             {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+
                 AuthHelper helper = new AuthHelper(_iconfiguration);
 
                 DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token); 
@@ -1051,6 +1123,14 @@ namespace CustomerService.Controllers
         {
             try
             {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+
                 AuthHelper helper = new AuthHelper(_iconfiguration);
 
                 DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
@@ -1183,7 +1263,14 @@ namespace CustomerService.Controllers
         public async Task<IActionResult> UpdateReferralCode([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody]CustomerNewReferralCode customerReferralCode)
         {
             try
-            { 
+            {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
                 AuthHelper helper = new AuthHelper(_iconfiguration);
 
                 DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);               
