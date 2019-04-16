@@ -24,10 +24,12 @@ namespace OrderService.Controllers
     public class OrdersController : ControllerBase
     {
         IConfiguration _iconfiguration;
+        private readonly IMessageQueueDataAccess _messageQueueDataAccess;
 
-        public OrdersController(IConfiguration configuration)
+        public OrdersController(IConfiguration configuration, IMessageQueueDataAccess messageQueueDataAccess)
         {
             _iconfiguration = configuration;
+            _messageQueueDataAccess = messageQueueDataAccess;
         }
         /// <summary>
         /// This will return Order details for specific ID passed 
@@ -2446,6 +2448,17 @@ namespace OrderService.Controllers
 
                         if (paymentProcessingRespose.ResponseCode == (int)DbReturnValue.TransactionSuccess)
                         {
+
+                            var details = await _messageQueueDataAccess.GetMessageDetails(updateRequest.MPGSOrderID);
+                            if(details != null)
+                            {
+                                var msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(details.ChangeRequestID);
+                                if(details.RequestTypeID == (int)Core.Enums.RequestType.ChangeSim)
+                                {
+                                    await _messageQueueDataAccess.PublishMessageToMessageQueue(msgBody, ConfigKey.SNS_Topic_ChangeRequest);
+                                }
+                                
+                            }
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = true,

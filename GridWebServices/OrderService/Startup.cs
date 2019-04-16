@@ -40,6 +40,8 @@ namespace OrderService
             //to access configuration from controller
             services.AddSingleton(Configuration);
             services.AddScoped<OrderService.DataAccess.IChangeRequestDataAccess, OrderService.DataAccess.ChangeRequestDataAccess>();
+            services.AddScoped<OrderService.DataAccess.IMessageQueueDataAccess, OrderService.DataAccess.MessageQueueDataAccess>();
+            
 
             services.Configure<MvcOptions>(options =>
             {

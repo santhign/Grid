@@ -44,4 +44,17 @@ namespace Core.Enums
         [Description("Shared VAS")]
         Shared_VAS = 2,
     }
+
+    public enum ConfigKey
+    {
+        [EnumMember(Value = "SNS_Subject_CreateCustomer")]
+        [Description("SNS_Subject_CreateCustomer")]
+        SNS_Subject_CreateCustomer,
+        [EnumMember(Value = "SNS_Topic_ChangeRequest")]
+        [Description("SNS_Topic_ChangeRequest")]
+        SNS_Topic_ChangeRequest,
+        [EnumMember(Value = "SNS_Topic_CreateCustomer")]
+        [Description("SNS_Topic_CreateCustomer")]
+        SNS_Topic_CreateCustomer
+    }
 }
