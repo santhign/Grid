@@ -198,5 +198,161 @@ namespace AdminService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+
+        public async Task<DatabaseResponse> GetCustomerOrders(int CustomerID)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int )
+
+                };
+
+                parameters[0].Value = CustomerID;
+
+                _DataHelper = new DataAccessHelper("Admin_GetCustomerOrders", parameters, _configuration);
+
+                DataSet ds = new DataSet();
+
+                int result = await _DataHelper.RunAsync(ds); // 105 /102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 105)
+                {
+                    List<Order> orders = new List<Order>();
+                    foreach (DataRow dr in ds.Tables[0].Rows)
+                    {
+                        Order orderDetails = new Order();
+
+                        if (dr != null)
+                        {
+
+                            orderDetails.OrderID = Convert.ToInt32(dr["OrderID"]);
+                            orderDetails.OrderNumber = dr["OrderNumber"].ToString();
+                            orderDetails.OrderDate = Convert.ToDateTime(dr["OrderDate"]);
+                            orderDetails.OrderStatus = dr["OrderStatus"].ToString();
+                            orderDetails.IdentityCardType = dr["IdentityCardType"].ToString();
+                            orderDetails.IdentityCardNumber = dr["IdentityCardNumber"].ToString();
+                            orderDetails.BillingUnit = dr["BillingUnit"].ToString();
+                            orderDetails.BillingFloor = dr["BillingFloor"].ToString();
+                            orderDetails.BillingBuildingNumber = dr["BillingBuildingNumber"].ToString();
+                            orderDetails.BillingBuildingName = dr["BillingBuildingName"].ToString();
+                            orderDetails.BillingStreetName = dr["BillingStreetName"].ToString();
+                            orderDetails.BillingPostCode = dr["BillingPostCode"].ToString();
+                            orderDetails.BillingContactNumber = dr["BillingContactNumber"].ToString();
+                            orderDetails.ReferralCode = dr["ReferralCode"].ToString();
+                            orderDetails.PromotionCode = dr["PromotionCode"].ToString();
+                            orderDetails.HaveDocuments = Convert.ToBoolean(dr["HaveDocuments"]);
+                            orderDetails.Name = dr["Name"].ToString();
+                            orderDetails.Email = dr["Email"].ToString();
+                            orderDetails.IDType = dr["IDType"].ToString();
+                            orderDetails.IDNumber = dr["IDNumber"].ToString();
+                            orderDetails.IsSameAsBilling = Convert.ToInt32(dr["IsSameAsBilling"]);
+                            orderDetails.ShippingUnit = dr["ShippingUnit"].ToString();
+                            orderDetails.ShippingFloor = dr["ShippingFloor"].ToString();
+                            orderDetails.ShippingBuildingNumber = dr["ShippingBuildingNumber"].ToString();
+                            orderDetails.ShippingBuildingName = dr["ShippingBuildingName"].ToString();
+                            orderDetails.ShippingStreetName = dr["ShippingStreetName"].ToString();
+                            orderDetails.ShippingPostCode = dr["ShippingPostCode"].ToString();
+                            orderDetails.ShippingContactNumber = dr["ShippingContactNumber"].ToString();
+                            orderDetails.AlternateRecipientContact = dr["AlternateRecipientContact"].ToString();
+                            orderDetails.AlternateRecipientName = dr["AlternateRecipientName"].ToString();
+                            orderDetails.AlternateRecipientEmail = dr["AlternateRecipientEmail"].ToString();
+                            orderDetails.PortalSlotID = dr["PortalSlotID"].ToString();
+                            orderDetails.SlotDate = Convert.ToDateTime(dr["SlotDate"]);
+                            TimeSpan val;
+                            TimeSpan.TryParse(dr["SlotFromTime"].ToString(), out val);
+                            orderDetails.SlotFromTime = val;
+                            TimeSpan.TryParse(dr["SlotToTime"].ToString(), out val);
+                            orderDetails.SlotToTime = val;
+                            try { orderDetails.ScheduledDate = Convert.ToDateTime(dr["ScheduledDate"]); }
+                            catch { }
+                            try { orderDetails.ServiceFee = Convert.ToDouble(dr["ServiceFee"]); }
+                            catch { }
+
+                            List<Bundle> orderBundles = new List<Bundle>();
+
+                            if (ds.Tables[1] != null && ds.Tables[1].Rows.Count > 0)
+                            {
+
+                                orderBundles = (from model in ds.Tables[1].AsEnumerable()
+                                                select new Bundle()
+                                                {
+                                                    OrderID = model.Field<int>("OrderID"),
+                                                    BundleID = model.Field<int>("BundleID"),
+                                                    DisplayName = model.Field<string>("DisplayName"),
+                                                    MobileNumber = model.Field<string>("MobileNumber"),
+                                                    IsPrimaryNumber = model.Field<int>("IsPrimaryNumber"),
+                                                    PlanMarketingName = model.Field<string>("PlanMarketingName"),
+                                                    PortalDescription = model.Field<string>("PortalDescription"),
+                                                    PortalSummaryDescription = model.Field<string>("PortalSummaryDescription"),
+                                                    TotalData = model.Field<double?>("TotalData"),
+                                                    TotalSMS = model.Field<double?>("TotalSMS"),
+                                                    TotalVoice = model.Field<double?>("TotalVoice"),
+                                                    ActualSubscriptionFee = model.Field<double?>("ActualSubscriptionFee"),
+                                                    ApplicableSubscriptionFee = model.Field<double?>("ApplicableSubscriptionFee"),
+                                                    ServiceName = model.Field<string>("ServiceName"),
+                                                    ActualServiceFee = model.Field<double?>("ActualServiceFee"),
+                                                    ApplicableServiceFee = model.Field<double?>("ApplicableServiceFee"),
+                                                    PremiumType = model.Field<int>("PremiumType"),
+                                                    IsPorted = model.Field<int>("IsPorted"),
+                                                    IsOwnNumber = model.Field<int>("IsOwnNumber"),
+                                                    DonorProvider = model.Field<string>("DonorProvider"),
+                                                    PortedNumberTransferForm = model.Field<string>("PortedNumberTransferForm"),
+                                                    PortedNumberOwnedBy = model.Field<string>("PortedNumberOwnedBy"),
+                                                    PortedNumberOwnerRegistrationID = model.Field<string>("PortedNumberOwnerRegistrationID"),
+                                                }).Where(c => c.OrderID == orderDetails.OrderID).ToList();
+
+                                orderDetails.Bundles = orderBundles;
+
+                            }
+
+                            List<ServiceCharge> orderServiceCharges = new List<ServiceCharge>();
+
+                            if (ds.Tables[2] != null && ds.Tables[2].Rows.Count > 0)
+                            {
+
+                                orderServiceCharges = (from model in ds.Tables[2].AsEnumerable()
+                                                       select new ServiceCharge()
+                                                       {
+                                                           OrderID = model.Field<int>("OrderID"),
+                                                           PortalServiceName = model.Field<string>("PortalServiceName"),
+                                                           ServiceFee = model.Field<double?>("ServiceFee"),
+                                                           IsRecurring = model.Field<int>("IsRecurring"),
+                                                           IsGSTIncluded = model.Field<int>("IsGSTIncluded"),
+                                                       }).Where(c => c.OrderID == orderDetails.OrderID).ToList();
+
+                                orderDetails.ServiceCharges = orderServiceCharges;
+
+                            }
+                        }
+                        orders.Add(orderDetails);
+                    }
+                    response = new DatabaseResponse { ResponseCode = result, Results = orders };
+
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
     }
 }
