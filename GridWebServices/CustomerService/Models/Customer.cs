@@ -476,4 +476,28 @@ namespace CustomerService.Models
         public string ReferralCode { get; set; }
     }
 
+    public class customerBilling
+    {
+        public string Name { get; set; }
+        public string BillingUnit { get; set; }
+        public string BillingFloor { get; set; }
+        public string BillingStreetName { get; set; }
+        public string BillingBuildingNumber { get; set; }
+        public string BillingBuildingName { get; set; }
+        public string BillingContactNumber { get; set; }
+        public string BillingPostCode { get; set; }
+    }
+
+    public class customerPaymentMethod
+    {
+        public string CardHolderName { get; set; }
+        public string MaskedCardNumer { get; set; }
+        public string CardType { get; set; }
+        public int IsDefault { get; set; }
+        public int ExpiryMonth { get; set; }
+        public int ExpiryYear { get; set; }
+        public string CardFundMethod { get; set; }
+        public string CardIssuer { get; set; }
+    }
+
 }
