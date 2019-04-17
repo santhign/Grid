@@ -156,14 +156,13 @@ namespace CustomerService.Controllers
         /// <summary>
         /// Updates the customer profile.
         /// </summary>
-        /// <param name="token" in="Header"></param>
+        /// <param name="token">The token.</param>
         /// <param name="password">The password.</param>
         /// <param name="mobileNumber">The mobile number.</param>
-        /// <returns>
-        /// Success or Failure status code
-        /// </returns>
-        [HttpPut("UpdateCustomerProfile/{token}/{password}/{mobileNumber}")]
-        public async Task<IActionResult> UpdateCustomerProfile([FromHeader(Name = "Grid-Authorization-Token")] string token, string password, string mobileNumber)
+        /// <param name="email">The email.</param>
+        /// <returns></returns>
+        [HttpPut("UpdateCustomerProfile/{password}/{mobileNumber}/{email}")]
+        public async Task<IActionResult> UpdateCustomerProfile([FromHeader(Name = "Grid-Authorization-Token")] string token, string password, string mobileNumber, string email)
         {
             try
             {
@@ -200,7 +199,7 @@ namespace CustomerService.Controllers
 
                         var statusResponse = await customerAccess.UpdateCustomerProfile(new CustomerProfile
 
-                        { CustomerId = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID, MobileNumber = mobileNumber, Password = password });
+                        { CustomerId = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID, MobileNumber = mobileNumber, Password = password, Email = email });
 
                         if (statusResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
                         {

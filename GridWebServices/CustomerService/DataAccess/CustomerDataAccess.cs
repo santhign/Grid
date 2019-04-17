@@ -179,18 +179,18 @@ namespace CustomerService.DataAccess
                {
                     new SqlParameter( "@CustomerID",  SqlDbType.NVarChar ),
                     new SqlParameter( "@Password",  SqlDbType.NVarChar ),
-                    new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar)
+                    new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar),
+                    new SqlParameter( "@Email",  SqlDbType.NVarChar)
                 };
 
                 parameters[0].Value = customer.CustomerId;
                 parameters[1].Value = new Sha2().Hash(customer.Password);
                 parameters[2].Value = customer.MobileNumber;
+                parameters[3].Value = customer.Email;
 
-                _DataHelper = new DataAccessHelper("Customer_UpdateCustomerProfile", parameters, _configuration);
+                _DataHelper = new DataAccessHelper(DbObjectNames.Customer_UpdateCustomerProfile, parameters, _configuration);
 
-                int result = await _DataHelper.RunAsync();
-
-                
+                int result = await _DataHelper.RunAsync();                
 
                 return new DatabaseResponse { ResponseCode = result };
             }
