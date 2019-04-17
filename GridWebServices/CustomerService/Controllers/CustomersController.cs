@@ -536,8 +536,9 @@ namespace CustomerService.Controllers
                 {
                     //Pushed to message queue
                     var publisher = new InfrastructureService.MessageQueue.Publisher(_iconfiguration, ConfigHelper.GetValueByKey("SNS_Topic_CreateCustomer", _iconfiguration).Results.ToString().Trim());
-
-                    await publisher.PublishAsync(response.Results, ConfigHelper.GetValueByKey("SNS_Subject_CreateCustomer", _iconfiguration).Results.ToString().Trim());
+                    Dictionary<string, string> attr = new Dictionary<string, string>();
+                    attr.Add("evet_type", "NewCustomer");
+                    await publisher.PublishAsync(response.Results, attr);
 
                     return Ok(new OperationResponse
                     {

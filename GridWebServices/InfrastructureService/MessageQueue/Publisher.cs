@@ -78,23 +78,25 @@ namespace InfrastructureService.MessageQueue
             _initialised = true;
         }
 
-        public async Task PublishAsync(object message)
+        public async Task<string> PublishAsync(object message)
         {
             if (!_initialised)
                 await Initialise();
 
-            await _snsClient.PublishAsync(_topicArn, JsonConvert.SerializeObject(message));
+            PublishResponse response = await _snsClient.PublishAsync(_topicArn, JsonConvert.SerializeObject(message));
+            return response.HttpStatusCode.ToString();
         }
 
-        public async Task PublishAsync(object message, string subject)
+        public async Task<string> PublishAsync(object message, string subject)
         {
             if (!_initialised)
                 await Initialise();
 
-            await _snsClient.PublishAsync(_topicArn, JsonConvert.SerializeObject(message), subject);
+            PublishResponse response = await _snsClient.PublishAsync(_topicArn, JsonConvert.SerializeObject(message), subject);
+            return response.HttpStatusCode.ToString();
         }
 
-        public async Task PublishAsync(object message, Dictionary<string, string> attributes, string subject)
+        public async Task<string> PublishAsync(object message, Dictionary<string, string> attributes, string subject)
         {
             Dictionary<string, MessageAttributeValue> _messageattributes = new Dictionary<string, MessageAttributeValue>();
             foreach (string key in attributes.Keys)
@@ -113,10 +115,11 @@ namespace InfrastructureService.MessageQueue
                 Message = JsonConvert.SerializeObject(message),
                 Subject = subject
             };
-            await _snsClient.PublishAsync(request);
+            PublishResponse response = await _snsClient.PublishAsync(request);
+            return response.HttpStatusCode.ToString();
         }
 
-        public async Task PublishAsync(object message, Dictionary<string, string> attributes)
+        public async Task<string> PublishAsync(object message, Dictionary<string, string> attributes)
         {
             Dictionary<string, MessageAttributeValue> _messageattributes = new Dictionary<string, MessageAttributeValue>();
             foreach (string key in attributes.Keys)
@@ -135,7 +138,8 @@ namespace InfrastructureService.MessageQueue
                 Message = JsonConvert.SerializeObject(message)
                 
             };
-            await _snsClient.PublishAsync(request);
+            PublishResponse response = await _snsClient.PublishAsync(request);
+            return response.HttpStatusCode.ToString();
         }
 
         protected virtual void Dispose(bool disposing)
