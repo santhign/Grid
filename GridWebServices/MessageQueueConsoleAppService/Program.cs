@@ -23,10 +23,13 @@ namespace MessageQueueConsoleAppService
             Console.ReadLine();
         }
 
-        private static void TimerCallback(Object o)
+        private static async void TimerCallback(Object o)
         {
             // Display the date/time when this method got called.
-            Console.WriteLine("In TimerCallback: " + DateTime.Now);
+            Console.WriteLine("Start TimerCallback: " + DateTime.Now);
+            PublishMessageToQueueDataAccess publishMessageTo = new PublishMessageToQueueDataAccess();
+            await publishMessageTo.PushMessagesFromMessageQueueTable();
+            Console.WriteLine("End TimerCallback: " + DateTime.Now);
             // Force a garbage collection to occur for this demo.
             GC.Collect();
         }

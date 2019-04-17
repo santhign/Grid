@@ -92,16 +92,16 @@ namespace OrderService.DataAccess
                                    AlternateRecipientName = model.Field<string>("AlternateRecipientName"),
                                    AlternateRecipientEmail = model.Field<string>("AlternateRecipientEmail"),
                                    PortalSlotID = model.Field<string>("PortalSlotID"),
-                                   SlotDate = model.Field<DateTime>("SlotDate"),
-                                   SlotFromTime = model.Field<DateTime>("SlotFromTime"),
-                                   SlotToTime = model.Field<DateTime>("SlotToTime"),
-                                   ScheduledDate = model.Field<DateTime>("ScheduledDate")
+                                   SlotDate = model.Field<DateTime?>("SlotDate"),
+                                   SlotFromTime = model.Field<DateTime?>("SlotFromTime"),
+                                   SlotToTime = model.Field<DateTime?>("SlotToTime"),
+                                   ScheduledDate = model.Field<DateTime?>("ScheduledDate")
                                    //Title = model.Field<string>("Title"),
                                    //submissionDate = model.Field<string>("submissionDate"),
 
                                }).FirstOrDefault();
 
-                    if (msgBody != null)
+                    if (ds.Tables.Count > 1 && ds.Tables[1].Rows.Count != 0)
                     {
                         msgBody.subscriberDetails = (from model in ds.Tables[1].AsEnumerable()
                                                      select new SubscriberDetails()
@@ -118,8 +118,8 @@ namespace OrderService.DataAccess
                                                          //portedNumberOwnerRegistrationID = model.Field<string>("portedNumberOwnerRegistrationID"),
                                                      }).FirstOrDefault();
 
-
-                        msgBody.subscriberDetails.bundleDetails = (from model in ds.Tables[1].AsEnumerable()
+                        if(ds.Tables.Count > 2 && ds.Tables[2].Rows.Count != 0)
+                        msgBody.subscriberDetails.bundleDetails = (from model in ds.Tables[2].AsEnumerable()
                                                                    select new BundleDetails()
                                                                    {
                                                                        BundleID = model.Field<int>("BundleID"),

@@ -234,28 +234,28 @@ namespace OrderService.Models
         /// <value>
         /// The slot date.
         /// </value>
-        public DateTime SlotDate { get; set; }
+        public DateTime ? SlotDate { get; set; }
         /// <summary>
         /// Gets or sets the slot from time.
         /// </summary>
         /// <value>
         /// The slot from time.
         /// </value>
-        public DateTime SlotFromTime { get; set; }
+        public DateTime ? SlotFromTime { get; set; }
         /// <summary>
         /// Gets or sets the slot to time.
         /// </summary>
         /// <value>
         /// The slot to time.
         /// </value>
-        public DateTime SlotToTime { get; set; }
+        public DateTime ? SlotToTime { get; set; }
         /// <summary>
         /// Gets or sets the scheduled date.
         /// </summary>
         /// <value>
         /// The scheduled date.
         /// </value>
-        public DateTime ScheduledDate { get; set; }
+        public DateTime ? ScheduledDate { get; set; }
         /// <summary>
         /// Gets or sets the service fee.
         /// </summary>
@@ -418,10 +418,10 @@ namespace OrderService.Models
         public string MessageAttribute { get; set; }
         public object MessageBody { get; set; }
         public int Status { get; set; }
-        public DateTime PublishedOn { get; set; }
-        public DateTime CreatedOn { get; set; }
+        public DateTime ? PublishedOn { get; set; }
+        public DateTime ? CreatedOn { get; set; }
         public int NumberOfRetries { get; set; }
-        public DateTime LastTriedOn { get; set; }
+        public DateTime ? LastTriedOn { get; set; }
 
 
     }

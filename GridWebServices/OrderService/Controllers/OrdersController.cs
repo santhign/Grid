@@ -2541,7 +2541,7 @@ namespace OrderService.Controllers
                         DatabaseResponse updateCheckoutDetailsResponse = await _orderAccess.UpdateCheckOutResponse(updateRequest);
 
                         // retrieve transaction details from MPGS
-
+                        //Preeti : Validatechckoutdetails against customer ID
                         DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.MPGS.ToString());
 
                         PaymentHelper gatewayHelper = new PaymentHelper();
@@ -2585,9 +2585,9 @@ namespace OrderService.Controllers
                                     queueRequest.SNSTopic = topicName;
                                     queueRequest.CreatedOn = DateTime.Now;
                                     queueRequest.LastTriedOn = DateTime.Now;
+                                    queueRequest.PublishedOn = DateTime.Now;
                                     queueRequest.MessageAttribute = JsonConvert.SerializeObject(attribute);
-                                    queueRequest.MessageBody = JsonConvert.SerializeObject(msgBody);
-                                    queueRequest.CreatedOn = DateTime.Now;
+                                    queueRequest.MessageBody = JsonConvert.SerializeObject(msgBody);                                    
                                     queueRequest.Status = 1;
                                     await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
                                 }

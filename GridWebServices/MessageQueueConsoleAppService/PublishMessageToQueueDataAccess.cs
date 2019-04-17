@@ -32,13 +32,15 @@ namespace MessageQueueConsoleAppService
         }
         private async Task<MessageQueueResponse> GetMessageFromMessageQueueTable()
         {
+            var _DataHelper = new DataAccessHelper(Core.Enums.DbObjectNames.z_GetSingleMessageQueueRecord, _connectionString);
             try
             {
+
+                DataTable dt = new DataTable();
                 return await Task.Run(() =>
                 {
-                    DataTable dt = new DataTable();
                     MessageQueueResponse message = new MessageQueueResponse();
-                    var _DataHelper = new DataAccessHelper(Core.Enums.DbObjectNames.z_GetSingleMessageQueueRecord, _connectionString);
+                    
                     _DataHelper.Run(dt);
 
                     if (dt.Rows.Count > 0)
@@ -69,6 +71,10 @@ namespace MessageQueueConsoleAppService
                 Console.WriteLine("Critical error in GetMessageFromMessageQueueTable. Exception is as follows \n " + ex);
                 throw;
             }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
         }
 
         private async Task PublishMessageToQueue(string source, object messageBody, string subject, string topic, string messageAttribute)
@@ -85,17 +91,20 @@ namespace MessageQueueConsoleAppService
             //another approach.
             //var messageDict = messageAttribute.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
             //   .Select(part => part.Split('='))
-            //   .ToDictionary(split => split[0], split => split[1]);
+            //   .ToDictionary(split => split[0], split => split[1]);           
 
-            var messageDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(messageAttribute);
+            var messageDict = new Dictionary<string, string>();
+            messageDict.Add("EventType", messageAttribute);
+
             await publisher.PublishAsync(messageBody, messageDict, subject);
         }
 
         private async Task<DatabaseResponse> GetValue(string serviceCode)
         {
+            DataAccessHelper _DataHelper = new DataAccessHelper("Admin_GetConfigurations",  _connectionString);
             try
             {
-
+               
                 SqlParameter[] parameters =
                {
                     new SqlParameter( "@ConfigType",  SqlDbType.NVarChar )
@@ -104,7 +113,7 @@ namespace MessageQueueConsoleAppService
 
                 parameters[0].Value = serviceCode;
 
-                DataAccessHelper _DataHelper = new DataAccessHelper("Admin_GetConfigurations", parameters, _connectionString);
+                _DataHelper = new DataAccessHelper("Admin_GetConfigurations", parameters, _connectionString);
 
                 DataTable dt = new DataTable();
 
@@ -139,10 +148,16 @@ namespace MessageQueueConsoleAppService
             {
                 throw (ex);
             }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
         }
 
         private async Task<DatabaseResponse> GetValueByKey(string serviceKey)
         {
+
+            DataAccessHelper _DataHelper = new DataAccessHelper("Admin_GetConfigurationByKey",  _connectionString);
             try
             {
 
@@ -154,7 +169,7 @@ namespace MessageQueueConsoleAppService
 
                 parameters[0].Value = serviceKey;
 
-                DataAccessHelper _DataHelper = new DataAccessHelper("Admin_GetConfigurationByKey", parameters, _connectionString);
+                _DataHelper = new DataAccessHelper("Admin_GetConfigurationByKey", parameters, _connectionString);
 
                 DataTable dt = new DataTable();
 
@@ -182,10 +197,15 @@ namespace MessageQueueConsoleAppService
             {
                 throw (ex);
             }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
         }
 
         private async Task<int> UpdateMessageQueueObjectToTable(MessageQueueRequest updateQueue)
         {
+            var _DataHelper = new DataAccessHelper(Core.Enums.DbObjectNames.z_UpdateStatusInMessageQueueRequests,  _connectionString);
             try
             {
                 SqlParameter[] parameters =
@@ -203,7 +223,7 @@ namespace MessageQueueConsoleAppService
                 parameters[3].Value = updateQueue.NumberOfRetries;
                 parameters[4].Value = updateQueue.LastTriedOn;
 
-                var _DataHelper = new DataAccessHelper(Core.Enums.DbObjectNames.z_UpdateStatusInMessageQueueRequests, parameters, _connectionString);
+                _DataHelper = new DataAccessHelper(Core.Enums.DbObjectNames.z_UpdateStatusInMessageQueueRequests, parameters, _connectionString);
                 return await _DataHelper.RunAsync();
 
             }
@@ -212,6 +232,11 @@ namespace MessageQueueConsoleAppService
                 Console.WriteLine("Critical error in UpdateMessageQueueObjectToTable. Exception is as follows \n " + ex);
                 return 0;
             }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+
         }
 
         public async Task PushMessagesFromMessageQueueTable()
@@ -236,7 +261,7 @@ namespace MessageQueueConsoleAppService
 
                 await UpdateMessageQueueObjectToTable(messageQueueRequest);
             }
-            catch(Exception)
+            catch(Exception ex)
             {
                 MessageQueueRequest messageQueueRequest = new MessageQueueRequest();
                 messageQueueRequest.LastTriedOn = DateTime.Now;
@@ -246,7 +271,7 @@ namespace MessageQueueConsoleAppService
                 messageQueueRequest.Status = 0;
 
                 await UpdateMessageQueueObjectToTable(messageQueueRequest);
-                throw;
+                throw ex;
             }
 
 
