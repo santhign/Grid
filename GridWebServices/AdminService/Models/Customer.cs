@@ -65,7 +65,7 @@ namespace AdminService.Models
         /// <value>
         /// The DOB.
         /// </value>
-        public DateTime DOB { get; set; }
+        public DateTime? DOB { get; set; }
         /// <summary>
         /// Gets or sets the SMS subscription.
         /// </summary>
