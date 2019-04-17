@@ -161,7 +161,7 @@ namespace CustomerService.Controllers
         /// <param name="mobileNumber">The mobile number.</param>
         /// <param name="email">The email.</param>
         /// <returns></returns>
-        [HttpPut("UpdateCustomerProfile/{token}/{password}/{mobileNumber}/{email}")]
+        [HttpPut("UpdateCustomerProfile/{password}/{mobileNumber}/{email}")]
         public async Task<IActionResult> UpdateCustomerProfile([FromHeader(Name = "Grid-Authorization-Token")] string token, string password, string mobileNumber, string email)
         {
             try
