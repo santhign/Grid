@@ -64,9 +64,11 @@ namespace CustomerService.DataAccess
                                     ReferralCode = model.Field<string>("ReferralCode"),
                                     Nationality = model.Field<string>("Nationality"),
                                     Gender = model.Field<string>("Gender"),
+                                    DOB = model.Field<DateTime>("DOB"),
                                     SMSSubscription = model.Field<string>("SMSSubscription"),
                                     EmailSubscription = model.Field<string>("EmailSubscription"),
-                                    Status = model.Field<string>("Status")
+                                    Status = model.Field<string>("Status"),
+                                    JoinedOn = model.Field<DateTime>("JoinedOn")
                                 }).FirstOrDefault();
                 }
 

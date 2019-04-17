@@ -62,6 +62,7 @@ namespace CustomerService.Models
         /// The gender.
         /// </value>
         public string Gender { get; set; }
+        public DateTime DOB { get; set; }
         /// <summary>
         /// Gets or sets the SMS subscription.
         /// </summary>
@@ -83,6 +84,13 @@ namespace CustomerService.Models
         /// The status.
         /// </value>
         public string Status { get; set; }
+        /// <summary>
+        /// Gets or sets the joined on.
+        /// </summary>
+        /// <value>
+        /// The joined on.
+        /// </value>
+        public DateTime JoinedOn { get; set; }
     }
 
     /// <summary></summary>
