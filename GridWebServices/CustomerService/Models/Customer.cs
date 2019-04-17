@@ -93,13 +93,16 @@ namespace CustomerService.Models
         public DateTime JoinedOn { get; set; }
     }
 
-    /// <summary></summary>
+    /// <summary>
+    /// Customer Profile class
+    /// </summary>
     public class CustomerProfile
     {
         public int CustomerId { get; set; }
         public string Password { get; set; }
         public string MobileNumber { get; set; }
-        
+        public string Email { get; set; }
+
     }
 
     /// <summary>Change Phone Request</summary>
