@@ -56,6 +56,28 @@ namespace Core.Helpers
             command.Connection.Open();
         }
 
+        public DataAccessHelper(string sprocName, string connectionString)
+        {
+            //creating command object with connection name and proc name, and open connection for the command
+            command = new SqlCommand(sprocName, new SqlConnection(connectionString));
+            command.CommandType = CommandType.StoredProcedure;
+            command.Parameters.Add(
+                new SqlParameter("ReturnValue",
+                    SqlDbType.Int,
+                /* int size */ 4,
+                    ParameterDirection.ReturnValue,
+                /* bool isNullable */ false,
+                /* byte precision */ 0,
+                /* byte scale */ 0,
+                /* string srcColumn */ string.Empty,
+                    DataRowVersion.Default,
+                /* value */ null
+                )
+            );
+            command.CommandTimeout = 0;
+            command.Connection.Open();
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DataAccessHelper"/> class.
         /// </summary>
