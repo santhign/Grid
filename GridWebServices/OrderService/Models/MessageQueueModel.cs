@@ -416,7 +416,7 @@ namespace OrderService.Models
         public string Source { get; set; }
         public string SNSTopic { get; set; }
         public string MessageAttribute { get; set; }
-        public string MessageBody { get; set; }
+        public object MessageBody { get; set; }
         public int Status { get; set; }
         public DateTime PublishedOn { get; set; }
         public DateTime CreatedOn { get; set; }

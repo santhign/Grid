@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Net;
 using System.Threading.Tasks;
+using Amazon.SimpleNotificationService.Model;
 
 namespace InfrastructureService.MessageQueue
 {
@@ -29,6 +30,29 @@ namespace InfrastructureService.MessageQueue
                 DatabaseResponse configResponse = ConfigHelper.GetValue(ConfiType.AWS.ToString(), _configuration);
                 List<Dictionary<string, string>> _result = ((List<Dictionary<string, string>>)configResponse.Results);
                 var credentials = new BasicAWSCredentials(_result.Single(x => x["key"] == "AWSAccessKey")["value"], _result.Single(x => x["key"] == "AWSSecretKey")["value"]);
+
+                _snsClient = new AmazonSimpleNotificationServiceClient(credentials, Amazon.RegionEndpoint.APSoutheast1);
+                _topicName = topicName;
+            }
+            catch (ArgumentNullException ex)
+            {
+                LogInfo.Fatal(ex, "Error while publishing the message queue");
+            }
+            catch (WebException ex)
+            {
+                LogInfo.Fatal(ex, "Error while publishing the message queue");
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Fatal(ex, "Error while publishing the message queue");
+            }
+        }
+
+        public Publisher(string accessKey, string secretKey, string topicName)
+        {
+            try
+            {               
+                var credentials = new BasicAWSCredentials(accessKey, secretKey);
 
                 _snsClient = new AmazonSimpleNotificationServiceClient(credentials, Amazon.RegionEndpoint.APSoutheast1);
                 _topicName = topicName;
@@ -68,6 +92,50 @@ namespace InfrastructureService.MessageQueue
                 await Initialise();
 
             await _snsClient.PublishAsync(_topicArn, JsonConvert.SerializeObject(message), subject);
+        }
+
+        public async Task PublishAsync(object message, Dictionary<string, string> attributes, string subject)
+        {
+            Dictionary<string, MessageAttributeValue> _messageattributes = new Dictionary<string, MessageAttributeValue>();
+            foreach (string key in attributes.Keys)
+            {
+                MessageAttributeValue _attributeValue = new MessageAttributeValue();
+                _attributeValue.DataType = "String";
+                _attributeValue.StringValue = attributes[key];
+                _messageattributes.Add(key, _attributeValue);
+            }
+            if (!_initialised)
+                await Initialise();
+            PublishRequest request = new PublishRequest
+            {
+                TopicArn = _topicArn,
+                MessageAttributes = _messageattributes,
+                Message = JsonConvert.SerializeObject(message),
+                Subject = subject
+            };
+            await _snsClient.PublishAsync(request);
+        }
+
+        public async Task PublishAsync(object message, Dictionary<string, string> attributes)
+        {
+            Dictionary<string, MessageAttributeValue> _messageattributes = new Dictionary<string, MessageAttributeValue>();
+            foreach (string key in attributes.Keys)
+            {
+                MessageAttributeValue _attributeValue = new MessageAttributeValue();
+                _attributeValue.DataType = "String";
+                _attributeValue.StringValue = attributes[key];
+                _messageattributes.Add(key, _attributeValue);
+            }
+            if (!_initialised)
+                await Initialise();
+            PublishRequest request = new PublishRequest
+            {
+                TopicArn = _topicArn,
+                MessageAttributes = _messageattributes,
+                Message = JsonConvert.SerializeObject(message)
+                
+            };
+            await _snsClient.PublishAsync(request);
         }
 
         protected virtual void Dispose(bool disposing)

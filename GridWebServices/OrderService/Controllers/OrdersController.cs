@@ -2565,19 +2565,27 @@ namespace OrderService.Controllers
                             if(details != null)
                             {
                                 MessageBodyForCR msgBody = new MessageBodyForCR();
+                                string topicName = string.Empty, subject = string.Empty;
                                 try
                                 {
-
+                                    Dictionary<string, string> attribute = new Dictionary<string, string>();
+                                    
                                     msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(details.ChangeRequestID);
                                     if (details.RequestTypeID == (int)Core.Enums.RequestType.ReplaceSIM)
                                     {
-                                        await _messageQueueDataAccess.PublishMessageToMessageQueue(msgBody, ConfigKey.SNS_Topic_ChangeRequest);
+                                        topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration).Results.ToString().Trim();
+                                        subject = ConfigHelper.GetValueByKey(ConfigKey.SNS_Subject_CreateCustomer.GetDescription(), _iconfiguration).Results.ToString().Trim();
+                                        attribute.Add("EventType", Core.Enums.RequestType.ReplaceSIM.GetDescription());
+                                        await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute, subject);
                                     }
 
                                     MessageQueueRequest queueRequest = new MessageQueueRequest();
+                                    queueRequest.Source = "";
+                                    queueRequest.NumberOfRetries = 1;
+                                    queueRequest.SNSTopic = topicName;
                                     queueRequest.CreatedOn = DateTime.Now;
                                     queueRequest.LastTriedOn = DateTime.Now;
-                                    queueRequest.MessageAttribute = ConfigKey.SNS_Topic_ChangeRequest.GetDescription();
+                                    queueRequest.MessageAttribute = JsonConvert.SerializeObject(attribute);
                                     queueRequest.MessageBody = JsonConvert.SerializeObject(msgBody);
                                     queueRequest.CreatedOn = DateTime.Now;
                                     queueRequest.Status = 1;

@@ -11,6 +11,7 @@ using Core.Enums;
 using InfrastructureService;
 using Core.Models;
 using Core.Extensions;
+using Newtonsoft.Json;
 
 namespace OrderService.DataAccess
 {
@@ -191,13 +192,12 @@ namespace OrderService.DataAccess
 
         }
 
-        public async Task PublishMessageToMessageQueue(object msgBody, Core.Enums.ConfigKey key)
+        public async Task PublishMessageToMessageQueue(string topicName, object msgBody, Dictionary<string,string> messageAttribute, string subject)
         {
             try
             {
-                var publisher = new InfrastructureService.MessageQueue.Publisher(_configuration, ConfigHelper.GetValueByKey(key.GetDescription(), _configuration).Results.ToString().Trim());
-
-                await publisher.PublishAsync(msgBody, ConfigHelper.GetValueByKey(key.GetDescription(), _configuration).Results.ToString().Trim());
+                var publisher = new InfrastructureService.MessageQueue.Publisher(_configuration, topicName);
+                await publisher.PublishAsync(msgBody, messageAttribute, subject);
                 
             }
             catch (Exception)
@@ -205,6 +205,21 @@ namespace OrderService.DataAccess
                 throw;
             }
            
+        }
+
+        public async Task PublishMessageToMessageQueue(string topicName, object msgBody, Dictionary<string, string> messageAttribute)
+        {
+            try
+            {
+                var publisher = new InfrastructureService.MessageQueue.Publisher(_configuration, topicName);
+                await publisher.PublishAsync(msgBody, messageAttribute);
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+
         }
 
         public async Task<int> InsertMessageInMessageQueueRequest(MessageQueueRequest messageQueueRequest)
@@ -225,8 +240,8 @@ namespace OrderService.DataAccess
 
             parameters[0].Value = messageQueueRequest.Source;
             parameters[1].Value = messageQueueRequest.SNSTopic;
-            parameters[2].Value = messageQueueRequest.MessageAttribute;
-            parameters[3].Value = messageQueueRequest.MessageBody;
+            parameters[2].Value = JsonConvert.SerializeObject(messageQueueRequest.MessageAttribute);
+            parameters[3].Value = JsonConvert.SerializeObject(messageQueueRequest.MessageBody);
             parameters[4].Value = messageQueueRequest.Status;
             parameters[5].Value = messageQueueRequest.PublishedOn;
             parameters[6].Value = messageQueueRequest.CreatedOn;

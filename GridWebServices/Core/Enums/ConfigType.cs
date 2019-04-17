@@ -29,6 +29,14 @@ namespace Core.Enums
 
     }
 
+    public enum ConfigKeys
+    {
+        [EnumMember(Value = "SNS_Topic_ChangeRequest")]
+        [Description("SNS_Topic_ChangeRequest")]
+        SNS_Topic_ChangeRequest = 1
+        
+    }
+
     public enum OrderStatus
     {
         [EnumMember(Value = "New Order")]

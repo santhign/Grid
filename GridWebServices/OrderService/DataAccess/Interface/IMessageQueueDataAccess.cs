@@ -16,7 +16,7 @@ namespace OrderService.DataAccess
 
         Task<MessageDetailsForCROrOrder> GetMessageDetails(string MPGSOrderID);
 
-        Task PublishMessageToMessageQueue(object msgBody, Core.Enums.ConfigKey key);
+        Task PublishMessageToMessageQueue(string topicName, object msgBody, Dictionary<string, string> messageAttribute, string subject);
 
         Task<int> InsertMessageInMessageQueueRequest(MessageQueueRequest messageQueueRequest);
     }

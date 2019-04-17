@@ -60,6 +60,10 @@ namespace Core.Enums
         public const string CR_GetMessageBody = "CR_GetMessageBody";
 
         public const string z_InsertIntoMessageQueueRequests = "z_InsertIntoMessageQueueRequests";
+
+        public const string z_GetSingleMessageQueueRecord = "z_GetSingleMessageQueueRecord";
+
+        public const string z_UpdateStatusInMessageQueueRequests = "z_UpdateStatusInMessageQueueRequests";
     }
 
 }
