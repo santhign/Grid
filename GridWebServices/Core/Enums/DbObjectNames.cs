@@ -49,6 +49,10 @@ namespace Core.Enums
         /// The orders cr update cr shipping details
         /// </summary>
         public const string Orders_CR_UpdateCRShippingDetails = "Orders_CR_UpdateCRShippingDetails";
+        /// <summary>
+        /// The customer update customer profile
+        /// </summary>
+        public const string Customer_UpdateCustomerProfile = "Customer_UpdateCustomerProfile";
     }
 
 }
