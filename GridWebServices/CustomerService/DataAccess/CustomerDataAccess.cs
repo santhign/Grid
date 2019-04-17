@@ -678,5 +678,134 @@ namespace CustomerService.DataAccess
             }
         }
 
+        public async Task<DatabaseResponse> GetCustomerBillingDetails(int CustomerID)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+
+                };
+
+                parameters[0].Value = CustomerID;
+                _DataHelper = new DataAccessHelper("Customers_GetBillingDetails", parameters, _configuration);
+
+                var dt = new DataTable();
+
+                var result = await _DataHelper.RunAsync(dt); // 105 /119
+
+                DatabaseResponse response;
+
+                if (result == 105)
+                {
+
+                    var _customerBilling = new customerBilling();
+
+                    if (dt.Rows.Count > 0)
+                    {
+
+                        _customerBilling = (from model in dt.AsEnumerable()
+                                      select new customerBilling()
+                                      {
+                                          Name = model.Field<string>("Name"),
+                                          BillingUnit = model.Field<string>("BillingUnit"),
+                                          BillingFloor = model.Field<string>("BillingFloor"),
+                                          BillingStreetName = model.Field<string>("BillingStreetName"),
+                                          BillingBuildingNumber = model.Field<string>("BillingBuildingNumber"),
+                                          BillingBuildingName = model.Field<string>("BillingBuildingName"),
+                                          BillingContactNumber = model.Field<string>("BillingContactNumber"),
+                                          BillingPostCode = model.Field<string>("BillingPostCode")
+                                      }).FirstOrDefault();
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = _customerBilling };
+
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw;
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> GetPaymentMethod(int CustomerID)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+
+                };
+
+                parameters[0].Value = CustomerID;
+                _DataHelper = new DataAccessHelper("Customers_GetPaymentMethods", parameters, _configuration);
+
+                var dt = new DataTable();
+
+                var result = await _DataHelper.RunAsync(dt); // 105 /119
+
+                DatabaseResponse response;
+
+                if (result == 105)
+                {
+
+                    var _customerPaymentMethods = new List<customerPaymentMethod>();
+
+                    if (dt.Rows.Count > 0)
+                    {
+
+                        _customerPaymentMethods = (from model in dt.AsEnumerable()
+                                            select new customerPaymentMethod()
+                                            {
+                                                CardHolderName = model.Field<string>("CardHolderName"),
+                                                MaskedCardNumer = model.Field<string>("MaskedCardNumer"),
+                                                CardType = model.Field<string>("CardType"),
+                                                IsDefault = model.Field<int>("IsDefault"),
+                                                ExpiryMonth = model.Field<int>("ExpiryMonth"),
+                                                ExpiryYear = model.Field<int>("ExpiryYear"),
+                                                CardFundMethod = model.Field<string>("CardFundMethod"),
+                                                CardIssuer = model.Field<string>("CardIssuer")
+                                            }).ToList();
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = _customerPaymentMethods };
+
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw;
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
     }
 }
