@@ -62,7 +62,7 @@ namespace CustomerService.Models
         /// The gender.
         /// </value>
         public string Gender { get; set; }
-        public DateTime DOB { get; set; }
+        public DateTime? DOB { get; set; }
         /// <summary>
         /// Gets or sets the SMS subscription.
         /// </summary>
