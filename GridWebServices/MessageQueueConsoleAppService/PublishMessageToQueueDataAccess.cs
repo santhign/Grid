@@ -18,18 +18,27 @@ using Newtonsoft.Json;
 
 namespace MessageQueueConsoleAppService
 {
+    /// <summary>
+    /// Publish Message To Queue class
+    /// </summary>
     public class PublishMessageToQueueDataAccess
     {
+        /// <summary>
+        /// The connection string
+        /// </summary>
         private readonly string _connectionString;
-        public PublishMessageToQueueDataAccess()
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PublishMessageToQueueDataAccess"/> class.
+        /// </summary>
+        /// <param name="connectionString">The connection string.</param>
+        public PublishMessageToQueueDataAccess(string connectionString)
         {
-            var builder = new ConfigurationBuilder()
-        .SetBasePath(Directory.GetCurrentDirectory())
-        .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-
-            IConfigurationRoot configuration = builder.Build();
-            _connectionString = configuration.GetConnectionString("DefaultConnection");
+            _connectionString = connectionString;
         }
+        /// <summary>
+        /// Gets the message from message queue table.
+        /// </summary>
+        /// <returns></returns>
         private async Task<MessageQueueResponse> GetMessageFromMessageQueueTable()
         {
             var _DataHelper = new DataAccessHelper(Core.Enums.DbObjectNames.z_GetSingleMessageQueueRecord, _connectionString);
@@ -40,7 +49,7 @@ namespace MessageQueueConsoleAppService
                 return await Task.Run(() =>
                 {
                     MessageQueueResponse message = new MessageQueueResponse();
-                    
+
                     _DataHelper.Run(dt);
 
                     if (dt.Rows.Count > 0)
@@ -53,7 +62,7 @@ namespace MessageQueueConsoleAppService
                                        Status = model.Field<int>("Status"),
                                        CreatedOn = model.Field<DateTime>("CreatedOn"),
                                        MessageAttribute = model.Field<string>("MessageAttribute"),
-                                       MessageBody = model.Field<string>("MessageBody"),
+                                       MessageBody = model.Field<object>("MessageBody"),
                                        NumberOfRetries = model.Field<int>("NumberOfRetries"),
                                        PublishedOn = model.Field<DateTime>("PublishedOn"),
                                        SNSTopic = model.Field<string>("SNSTopic"),
@@ -61,10 +70,8 @@ namespace MessageQueueConsoleAppService
 
                                    }).FirstOrDefault();
 
-                        return message;
-
                     }
-                    return null;
+                    return message;
                 });
             }
 
@@ -79,7 +86,16 @@ namespace MessageQueueConsoleAppService
             }
         }
 
-        private async Task<string> PublishMessageToQueue(string source, string messageBody, string subject, string topic, string messageAttribute)
+        /// <summary>
+        /// Publishes the message to queue.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="messageBody">The message body.</param>
+        /// <param name="subject">The subject.</param>
+        /// <param name="topic">The topic.</param>
+        /// <param name="messageAttribute">The message attribute.</param>
+        /// <returns></returns>
+        private async Task PublishMessageToQueue(string source, object messageBody, string subject, string topic, string messageAttribute)
         {
 
             var configResponse = await GetValue(ConfiType.AWS.ToString());
@@ -90,18 +106,28 @@ namespace MessageQueueConsoleAppService
 
 
             var publisher = new InfrastructureService.MessageQueue.Publisher(accessKey, secretKey, topic);
-              
+            //another approach.
+            //var messageDict = messageAttribute.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+            //   .Select(part => part.Split('='))
+            //   .ToDictionary(split => split[0], split => split[1]);           
+
             var messageDict = new Dictionary<string, string>();
-            messageDict.Add("EventType", messageAttribute);            
-            return await publisher.PublishAsync(messageBody, messageDict, subject);
+            messageDict.Add("EventType", messageAttribute);
+
+            await publisher.PublishAsync(messageBody, messageDict, subject);
         }
 
+        /// <summary>
+        /// Gets the value.
+        /// </summary>
+        /// <param name="serviceCode">The service code.</param>
+        /// <returns></returns>
         private async Task<DatabaseResponse> GetValue(string serviceCode)
         {
-            DataAccessHelper _DataHelper = new DataAccessHelper("Admin_GetConfigurations",  _connectionString);
+            DataAccessHelper _DataHelper = new DataAccessHelper("Admin_GetConfigurations", _connectionString);
             try
             {
-               
+
                 SqlParameter[] parameters =
                {
                     new SqlParameter( "@ConfigType",  SqlDbType.NVarChar )
@@ -151,10 +177,15 @@ namespace MessageQueueConsoleAppService
             }
         }
 
+        /// <summary>
+        /// Gets the value by key.
+        /// </summary>
+        /// <param name="serviceKey">The service key.</param>
+        /// <returns></returns>
         private async Task<DatabaseResponse> GetValueByKey(string serviceKey)
         {
 
-            DataAccessHelper _DataHelper = new DataAccessHelper("Admin_GetConfigurationByKey",  _connectionString);
+            DataAccessHelper _DataHelper = new DataAccessHelper("Admin_GetConfigurationByKey", _connectionString);
             try
             {
 
@@ -200,9 +231,14 @@ namespace MessageQueueConsoleAppService
             }
         }
 
+        /// <summary>
+        /// Updates the message queue object to table.
+        /// </summary>
+        /// <param name="updateQueue">The update queue.</param>
+        /// <returns></returns>
         private async Task<int> UpdateMessageQueueObjectToTable(MessageQueueRequest updateQueue)
         {
-            var _DataHelper = new DataAccessHelper(Core.Enums.DbObjectNames.z_UpdateStatusInMessageQueueRequests,  _connectionString);
+            var _DataHelper = new DataAccessHelper(Core.Enums.DbObjectNames.z_UpdateStatusInMessageQueueRequests, _connectionString);
             try
             {
                 SqlParameter[] parameters =
@@ -236,6 +272,10 @@ namespace MessageQueueConsoleAppService
 
         }
 
+        /// <summary>
+        /// Pushes the messages from message queue table.
+        /// </summary>
+        /// <returns></returns>
         public async Task PushMessagesFromMessageQueueTable()
         {
             MessageQueueResponse responseData = new MessageQueueResponse();
@@ -243,34 +283,22 @@ namespace MessageQueueConsoleAppService
             {
                 //Get 1 first message from table
                 responseData = await GetMessageFromMessageQueueTable();
-                if (responseData != null)
-                {//Push message
-                    var pushResult = await PublishMessageToQueue(responseData.Source, responseData.MessageBody, null, responseData.SNSTopic, responseData.MessageAttribute);
-                    if (pushResult.Trim().ToUpper() == "OK")
-                    {//Update the message queue
-                        MessageQueueRequest messageQueueRequest = new MessageQueueRequest();
-                        messageQueueRequest.LastTriedOn = DateTime.Now;
-                        messageQueueRequest.MessageQueueRequestID = responseData.MessageQueueRequestID;
-                        messageQueueRequest.NumberOfRetries = responseData.NumberOfRetries + 1;
-                        messageQueueRequest.PublishedOn = DateTime.Now;
-                        messageQueueRequest.Status = 1;
 
-                        await UpdateMessageQueueObjectToTable(messageQueueRequest);
-                    }
-                    else
-                    {
-                        MessageQueueRequest messageQueueRequest = new MessageQueueRequest();
-                        messageQueueRequest.LastTriedOn = DateTime.Now;
-                        messageQueueRequest.MessageQueueRequestID = responseData.MessageQueueRequestID;
-                        messageQueueRequest.NumberOfRetries = responseData.NumberOfRetries + 1;
-                        messageQueueRequest.PublishedOn = responseData.PublishedOn;
-                        messageQueueRequest.Status = 0;
+                //Push message
+                await PublishMessageToQueue(responseData.Source, responseData.MessageBody, null, responseData.SNSTopic, responseData.MessageAttribute);
 
-                        await UpdateMessageQueueObjectToTable(messageQueueRequest);
-                    }
-                }
+
+                //Update the message queue
+                MessageQueueRequest messageQueueRequest = new MessageQueueRequest();
+                messageQueueRequest.LastTriedOn = DateTime.Now;
+                messageQueueRequest.MessageQueueRequestID = responseData.MessageQueueRequestID;
+                messageQueueRequest.NumberOfRetries = responseData.NumberOfRetries + 1;
+                messageQueueRequest.PublishedOn = DateTime.Now;
+                messageQueueRequest.Status = 1;
+
+                await UpdateMessageQueueObjectToTable(messageQueueRequest);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 MessageQueueRequest messageQueueRequest = new MessageQueueRequest();
                 messageQueueRequest.LastTriedOn = DateTime.Now;
@@ -288,4 +316,4 @@ namespace MessageQueueConsoleAppService
     }
 
 }
-    
+
