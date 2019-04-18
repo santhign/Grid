@@ -53,7 +53,7 @@ namespace MessageQueueConsoleAppService
                                        Status = model.Field<int>("Status"),
                                        CreatedOn = model.Field<DateTime>("CreatedOn"),
                                        MessageAttribute = model.Field<string>("MessageAttribute"),
-                                       MessageBody = model.Field<object>("MessageBody"),
+                                       MessageBody = model.Field<string>("MessageBody"),
                                        NumberOfRetries = model.Field<int>("NumberOfRetries"),
                                        PublishedOn = model.Field<DateTime>("PublishedOn"),
                                        SNSTopic = model.Field<string>("SNSTopic"),
@@ -61,8 +61,10 @@ namespace MessageQueueConsoleAppService
 
                                    }).FirstOrDefault();
 
+                        return message;
+
                     }
-                    return message;
+                    return null;
                 });
             }
 
@@ -77,7 +79,7 @@ namespace MessageQueueConsoleAppService
             }
         }
 
-        private async Task PublishMessageToQueue(string source, object messageBody, string subject, string topic, string messageAttribute)
+        private async Task<string> PublishMessageToQueue(string source, string messageBody, string subject, string topic, string messageAttribute)
         {
 
             var configResponse = await GetValue(ConfiType.AWS.ToString());
@@ -88,15 +90,10 @@ namespace MessageQueueConsoleAppService
 
 
             var publisher = new InfrastructureService.MessageQueue.Publisher(accessKey, secretKey, topic);
-            //another approach.
-            //var messageDict = messageAttribute.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
-            //   .Select(part => part.Split('='))
-            //   .ToDictionary(split => split[0], split => split[1]);           
-
+              
             var messageDict = new Dictionary<string, string>();
-            messageDict.Add("EventType", messageAttribute);
-
-            await publisher.PublishAsync(messageBody, messageDict, subject);
+            messageDict.Add("EventType", messageAttribute);            
+            return await publisher.PublishAsync(messageBody, messageDict, subject);
         }
 
         private async Task<DatabaseResponse> GetValue(string serviceCode)
@@ -246,20 +243,32 @@ namespace MessageQueueConsoleAppService
             {
                 //Get 1 first message from table
                 responseData = await GetMessageFromMessageQueueTable();
+                if (responseData != null)
+                {//Push message
+                    var pushResult = await PublishMessageToQueue(responseData.Source, responseData.MessageBody, null, responseData.SNSTopic, responseData.MessageAttribute);
+                    if (pushResult.Trim().ToUpper() == "OK")
+                    {//Update the message queue
+                        MessageQueueRequest messageQueueRequest = new MessageQueueRequest();
+                        messageQueueRequest.LastTriedOn = DateTime.Now;
+                        messageQueueRequest.MessageQueueRequestID = responseData.MessageQueueRequestID;
+                        messageQueueRequest.NumberOfRetries = responseData.NumberOfRetries + 1;
+                        messageQueueRequest.PublishedOn = DateTime.Now;
+                        messageQueueRequest.Status = 1;
 
-                //Push message
-                await PublishMessageToQueue(responseData.Source, responseData.MessageBody, null, responseData.SNSTopic, responseData.MessageAttribute);
+                        await UpdateMessageQueueObjectToTable(messageQueueRequest);
+                    }
+                    else
+                    {
+                        MessageQueueRequest messageQueueRequest = new MessageQueueRequest();
+                        messageQueueRequest.LastTriedOn = DateTime.Now;
+                        messageQueueRequest.MessageQueueRequestID = responseData.MessageQueueRequestID;
+                        messageQueueRequest.NumberOfRetries = responseData.NumberOfRetries + 1;
+                        messageQueueRequest.PublishedOn = responseData.PublishedOn;
+                        messageQueueRequest.Status = 0;
 
-
-                //Update the message queue
-                MessageQueueRequest messageQueueRequest = new MessageQueueRequest();
-                messageQueueRequest.LastTriedOn = DateTime.Now;
-                messageQueueRequest.MessageQueueRequestID = responseData.MessageQueueRequestID;
-                messageQueueRequest.NumberOfRetries = responseData.NumberOfRetries+1;
-                messageQueueRequest.PublishedOn = DateTime.Now;
-                messageQueueRequest.Status = 1;
-
-                await UpdateMessageQueueObjectToTable(messageQueueRequest);
+                        await UpdateMessageQueueObjectToTable(messageQueueRequest);
+                    }
+                }
             }
             catch(Exception ex)
             {

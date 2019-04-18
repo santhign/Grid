@@ -192,12 +192,12 @@ namespace OrderService.DataAccess
 
         }
 
-        public async Task PublishMessageToMessageQueue(string topicName, object msgBody, Dictionary<string,string> messageAttribute, string subject)
+        public async Task<string> PublishMessageToMessageQueue(string topicName, object msgBody, Dictionary<string,string> messageAttribute, string subject)
         {
             try
             {
                 var publisher = new InfrastructureService.MessageQueue.Publisher(_configuration, topicName);
-                await publisher.PublishAsync(msgBody, messageAttribute, subject);
+                return await publisher.PublishAsync(msgBody, messageAttribute, subject);
                 
             }
             catch (Exception)
@@ -207,12 +207,12 @@ namespace OrderService.DataAccess
            
         }
 
-        public async Task PublishMessageToMessageQueue(string topicName, object msgBody, Dictionary<string, string> messageAttribute)
+        public async Task<string> PublishMessageToMessageQueue(string topicName, object msgBody, Dictionary<string, string> messageAttribute)
         {
             try
             {
                 var publisher = new InfrastructureService.MessageQueue.Publisher(_configuration, topicName);
-                await publisher.PublishAsync(msgBody, messageAttribute);
+                return await publisher.PublishAsync(msgBody, messageAttribute);
 
             }
             catch (Exception)
@@ -240,8 +240,8 @@ namespace OrderService.DataAccess
 
             parameters[0].Value = messageQueueRequest.Source;
             parameters[1].Value = messageQueueRequest.SNSTopic;
-            parameters[2].Value = JsonConvert.SerializeObject(messageQueueRequest.MessageAttribute);
-            parameters[3].Value = JsonConvert.SerializeObject(messageQueueRequest.MessageBody);
+            parameters[2].Value = messageQueueRequest.MessageAttribute;
+            parameters[3].Value = messageQueueRequest.MessageBody;
             parameters[4].Value = messageQueueRequest.Status;
             parameters[5].Value = messageQueueRequest.PublishedOn;
             parameters[6].Value = messageQueueRequest.CreatedOn;
