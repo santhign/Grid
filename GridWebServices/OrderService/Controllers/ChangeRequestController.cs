@@ -21,13 +21,31 @@ using Newtonsoft.Json;
 
 namespace OrderService.Controllers
 {
+    /// <summary>
+    /// Change Request Controller class
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class ChangeRequestController : ControllerBase
     {
+        /// <summary>
+        /// The iconfiguration
+        /// </summary>
         private readonly IConfiguration _iconfiguration;
+        /// <summary>
+        /// The change request data access
+        /// </summary>
         private readonly IChangeRequestDataAccess _changeRequestDataAccess;
+        /// <summary>
+        /// The message queue data access
+        /// </summary>
         private readonly IMessageQueueDataAccess _messageQueueDataAccess;
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ChangeRequestController"/> class.
+        /// </summary>
+        /// <param name="configuration">The configuration.</param>
+        /// <param name="changeRequestDataAccess">The change request data access.</param>
+        /// <param name="messageQueueDataAccess">The message queue data access.</param>
         public ChangeRequestController(IConfiguration configuration, IChangeRequestDataAccess changeRequestDataAccess, IMessageQueueDataAccess messageQueueDataAccess)
         {
             _iconfiguration = configuration;
@@ -286,15 +304,17 @@ namespace OrderService.Controllers
                             {
 
 
-                                MessageQueueRequest queueRequest = new MessageQueueRequest();
-                                queueRequest.Source = "ChangeRequest";
-                                queueRequest.NumberOfRetries = 1;
-                                queueRequest.SNSTopic = topicName;
-                                queueRequest.CreatedOn = DateTime.Now;
-                                queueRequest.LastTriedOn = DateTime.Now;
-                                queueRequest.PublishedOn = DateTime.Now;
-                                queueRequest.MessageAttribute = Core.Enums.RequestType.Termination.GetDescription().ToString();
-                                queueRequest.MessageBody = JsonConvert.SerializeObject(msgBody);
+                                MessageQueueRequest queueRequest = new MessageQueueRequest
+                                {
+                                    Source = "ChangeRequest",
+                                    NumberOfRetries = 1,
+                                    SNSTopic = topicName,
+                                    CreatedOn = DateTime.Now,
+                                    LastTriedOn = DateTime.Now,
+                                    PublishedOn = DateTime.Now,
+                                    MessageAttribute = Core.Enums.RequestType.Termination.GetDescription().ToString(),
+                                    MessageBody = JsonConvert.SerializeObject(msgBody)
+                                };
                                 queueRequest.CreatedOn = DateTime.Now;
                                 queueRequest.Status = 1;
                                 await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
@@ -318,15 +338,17 @@ namespace OrderService.Controllers
                         catch (Exception ex)
                         {
                             LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-                            MessageQueueRequest queueRequest = new MessageQueueRequest();
-                            queueRequest.Source = "ChangeRequest";
-                            queueRequest.NumberOfRetries = 1;
-                            queueRequest.SNSTopic = topicName;
-                            queueRequest.CreatedOn = DateTime.Now;
-                            queueRequest.LastTriedOn = DateTime.Now;
-                            queueRequest.PublishedOn = DateTime.Now;
-                            queueRequest.MessageAttribute = JsonConvert.SerializeObject(attribute);
-                            queueRequest.MessageBody = JsonConvert.SerializeObject(msgBody);
+                            MessageQueueRequest queueRequest = new MessageQueueRequest
+                            {
+                                Source = "ChangeRequest",
+                                NumberOfRetries = 1,
+                                SNSTopic = topicName,
+                                CreatedOn = DateTime.Now,
+                                LastTriedOn = DateTime.Now,
+                                PublishedOn = DateTime.Now,
+                                MessageAttribute = JsonConvert.SerializeObject(attribute),
+                                MessageBody = JsonConvert.SerializeObject(msgBody)
+                            };
                             queueRequest.CreatedOn = DateTime.Now;
                             queueRequest.Status = 1;
                             await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
@@ -385,7 +407,7 @@ namespace OrderService.Controllers
         /// <summary>
         /// Subscribers the sim replacement request.
         /// </summary>
-        /// <param name="token" in="Header">The token.</param>
+        /// <param name="token">The token.</param>
         /// <param name="mobileNumber">The mobile number.</param>
         /// <returns></returns>
         [HttpPost]
@@ -530,58 +552,62 @@ namespace OrderService.Controllers
 
                             topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration)
                             .Results.ToString().Trim();
-                            //Ninad K : Need to update Subject
-                            subject = ConfigHelper.GetValueByKey(ConfigKey.SNS_Subject_CreateCustomer.GetDescription(), _iconfiguration)
-                                .Results.ToString().Trim();
+                           
                                 attribute.Add("EventType", Core.Enums.RequestType.Suspension.GetDescription());
-                                var pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute, subject);
+                                var pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
                             if (pushResult.Trim().ToUpper() == "OK")
                             {
 
 
-                                MessageQueueRequest queueRequest = new MessageQueueRequest();
-                                queueRequest.Source = "ChangeRequest";
-                                queueRequest.NumberOfRetries = 1;
-                                queueRequest.SNSTopic = topicName;
-                                queueRequest.CreatedOn = DateTime.Now;
-                                queueRequest.LastTriedOn = DateTime.Now;
-                                queueRequest.PublishedOn = DateTime.Now;
-                                queueRequest.MessageAttribute = Core.Enums.RequestType.Suspension.GetDescription().ToString();
-                                queueRequest.MessageBody = JsonConvert.SerializeObject(msgBody);
-                                queueRequest.CreatedOn = DateTime.Now;
-                                queueRequest.Status = 1;
+                                MessageQueueRequest queueRequest = new MessageQueueRequest
+                                {
+                                    Source = "ChangeRequest",
+                                    NumberOfRetries = 1,
+                                    SNSTopic = topicName,
+                                    CreatedOn = DateTime.Now,
+                                    LastTriedOn = DateTime.Now,
+                                    PublishedOn = DateTime.Now,
+                                    MessageAttribute = Core.Enums.RequestType.Suspension.GetDescription().ToString(),
+                                    MessageBody = JsonConvert.SerializeObject(msgBody),
+                                    Status = 1
+                                };
+                                
                                 await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
                             }
                             else
                             {
-                                MessageQueueRequest queueRequest = new MessageQueueRequest();
-                                queueRequest.Source = "ChangeRequest";
-                                queueRequest.NumberOfRetries = 1;
-                                queueRequest.SNSTopic = topicName;
-                                queueRequest.CreatedOn = DateTime.Now;
-                                queueRequest.LastTriedOn = DateTime.Now;
-                                queueRequest.PublishedOn = DateTime.Now;
-                                queueRequest.MessageAttribute = Core.Enums.RequestType.Suspension.GetDescription().ToString();
-                                queueRequest.MessageBody = JsonConvert.SerializeObject(msgBody);
-                                queueRequest.CreatedOn = DateTime.Now;
-                                queueRequest.Status = 0;
+                                MessageQueueRequest queueRequest = new MessageQueueRequest
+                                {
+                                    Source = "ChangeRequest",
+                                    NumberOfRetries = 1,
+                                    SNSTopic = topicName,
+                                    CreatedOn = DateTime.Now,
+                                    LastTriedOn = DateTime.Now,
+                                    PublishedOn = DateTime.Now,
+                                    MessageAttribute = Core.Enums.RequestType.Suspension.GetDescription().ToString(),
+                                    MessageBody = JsonConvert.SerializeObject(msgBody),
+                                    Status = 0
+                                };
+                                
                                 await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
                             }
                         }
                         catch (Exception ex)
                         {
                             LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-                            MessageQueueRequest queueRequest = new MessageQueueRequest();
-                            queueRequest.Source = "ChangeRequest";
-                            queueRequest.NumberOfRetries = 1;
-                            queueRequest.SNSTopic = topicName;
-                            queueRequest.CreatedOn = DateTime.Now;
-                            queueRequest.LastTriedOn = DateTime.Now;
-                            queueRequest.PublishedOn = DateTime.Now;
-                            queueRequest.MessageAttribute = Core.Enums.RequestType.Suspension.GetDescription().ToString();
-                            queueRequest.MessageBody = JsonConvert.SerializeObject(msgBody);
-                            queueRequest.CreatedOn = DateTime.Now;
-                            queueRequest.Status = 0;
+                            MessageQueueRequest queueRequest = new MessageQueueRequest
+                            {
+                                Source = "ChangeRequest",
+                                NumberOfRetries = 1,
+                                SNSTopic = topicName,
+                                CreatedOn = DateTime.Now,
+                                LastTriedOn = DateTime.Now,
+                                PublishedOn = DateTime.Now,
+                                MessageAttribute = Core.Enums.RequestType.Suspension.GetDescription().ToString(),
+                                MessageBody = JsonConvert.SerializeObject(msgBody),
+                                Status = 0
+                            };
+                           
                             await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
                         }
 
@@ -724,6 +750,12 @@ namespace OrderService.Controllers
             }
         }
 
+        /// <summary>
+        /// Updates the cr shipping details.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="shippingDetails">The shipping details.</param>
+        /// <returns></returns>
         [HttpPost]
         [Route("UpdateCRShippingDetails")]
         public async Task<IActionResult> UpdateCRShippingDetails([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody]UpdateCRShippingDetailsRequest shippingDetails)

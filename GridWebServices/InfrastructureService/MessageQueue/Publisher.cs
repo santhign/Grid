@@ -119,6 +119,13 @@ namespace InfrastructureService.MessageQueue
             return response.HttpStatusCode.ToString();
         }
 
+        /// <summary>
+        /// Publishes the asynchronous.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <param name="attributes">The attributes.</param>
+        /// <param name="subject">The subject.</param>
+        /// <returns>HttpStatusCode</returns>
         public async Task<string> PublishAsync(string message, Dictionary<string, string> attributes, string subject)
         {
             Dictionary<string, MessageAttributeValue> _messageattributes = new Dictionary<string, MessageAttributeValue>();

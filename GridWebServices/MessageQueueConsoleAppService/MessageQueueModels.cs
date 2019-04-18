@@ -113,7 +113,7 @@ namespace MessageQueueConsoleAppService
         /// <value>
         /// The message body.
         /// </value>
-        public object MessageBody { get; set; }
+        public string MessageBody { get; set; }
         /// <summary>
         /// Gets or sets the created on.
         /// </summary>
