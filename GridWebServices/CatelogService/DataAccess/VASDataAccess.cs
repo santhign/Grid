@@ -6,7 +6,7 @@ using Core.Helpers;
 using CatelogService.Models;
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Data.SqlClient;
 
 namespace CatelogService.DataAccess
 {
@@ -25,12 +25,17 @@ namespace CatelogService.DataAccess
             _configuration = configuration;
         }
 
-        public async Task<List<VAS>> GetVASes()
+        public async Task<List<VAS>> GetVASes(int CustomerID)
         {
             try
             {
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@CustomerID",  SqlDbType.VarChar )
+                };
 
-                _DataHelper = new DataAccessHelper("Catelog_GetVASListing", _configuration);
+                parameters[0].Value = CustomerID;
+                _DataHelper = new DataAccessHelper("Catelog_GetVASListing", parameters, _configuration);
 
                 DataTable dt = new DataTable();
 
@@ -52,7 +57,8 @@ namespace CatelogService.DataAccess
                                        SMS = model.Field<double>("SMS"),
                                        Voice = model.Field<double>("Voice"),
                                        SubscriptionFee = model.Field<double>("SubscriptionFee"),
-                                       IsRecurring = model.Field<string>("IsRecurring")                                     
+                                       IsRecurring = model.Field<string>("IsRecurring"),
+                                       SubscriptionCount = model.Field<int>("SubscriptionCount")
                                   }).ToList();
                 }
 

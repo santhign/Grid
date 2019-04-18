@@ -135,6 +135,7 @@ namespace CustomerService.DataAccess
                                     CustomerID = model.Field<int>("CustomerID"),
                                     Email = model.Field<string>("Email"),
                                     Password = model.Field<string>("Password"),
+                                    Name = model.Field<string>("Name"),
                                     MobileNumber = model.Field<string>("MobileNumber"),
                                     IdentityCardType = model.Field<string>("IdentityCardType"),
                                     IdentityCardNumber = model.Field<string>("IdentityCardNumber"),

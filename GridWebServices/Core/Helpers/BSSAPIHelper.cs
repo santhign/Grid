@@ -347,7 +347,8 @@ namespace Core.Helpers
                 numbers = (from asset in assets
                            select new FreeNumber
                            {
-                               MobileNumber = asset.asset_id
+                               MobileNumber = asset.asset_id,
+                               ServiceCode = asset.category_type
                            }).ToList();
 
                 return numbers;
