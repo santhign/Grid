@@ -507,7 +507,6 @@ namespace CustomerService.Controllers
         {
             try
             {
-
                 if (!ModelState.IsValid)
                 {
                     return StatusCode((int)HttpStatusCode.OK, new OperationResponse
