@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Swashbuckle.AspNetCore.Swagger;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 
@@ -35,6 +37,12 @@ namespace OrderService
                        .AllowAnyMethod()
                        .AllowAnyHeader();
             }));
+            services.Configure<RequestLocalizationOptions>(options =>
+            {
+                options.DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture("en-SG");               
+            });
+
+
 
             services.AddMvc();
             //to access configuration from controller

@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>NotificationService</name>
+    </assembly>
+    <members>
+        <member name="M:NotificationService.Controllers.OutboundController.PushEmail(Core.Models.NotificationMessage)">
+             <summary>
+             This will send email
+             </summary>
+             <param name="emailSubscribers"></param>
+             <returns>send status</returns>
+             POST: api/SendEmail
+            Body: 
+            {
+              "Subject": "Email",
+              "Content": "email notify",
+              "BccAddress": "chinnu.rajan@gmail.com",
+              "EmailDetails":[ {
+                    "Userid": 1,
+                    "FName": "Chinnu",
+                    "EMAIL": "chinnu.rajan@gmail.com",
+                    "Param1": "",
+                    "Param2": "",
+                    "Param3": "",
+                    "Param4": "",
+                    "Param5": "",
+                    "Param6": "",
+                    "Param7": "",
+                    "Param8": "",
+                    "Param9": "",
+                    "Param10": ""
+                }]
+                }
+        </member>
+        <member name="M:NotificationService.Controllers.OutboundController.SendSMS(NotificationService.Models.Sms)">
+             <summary>
+             This will send SMS
+             </summary>
+             <param name="_smsdata"></param>
+             <returns>send status</returns>
+             POST: api/SendSMS
+            Body: 
+            {
+              "PhoneNumber":"1234","SMSText":"Ok","ToPhoneNumber":"34567","PostData":"xyz"
+             }
+        </member>
+    </members>
+</doc>

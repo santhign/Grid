@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.28711.60
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.168
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CatelogService", "CatelogService\CatelogService.csproj", "{997DF3CC-C2B1-49E1-8AAA-3B65870CD43C}"
 EndProject
@@ -19,31 +19,31 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NotificationService", "Noti
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AdminServiceTest", "AdminServiceTest", "{5473230B-9642-4130-93C5-E79C5769133D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdminServiceTests", "Tests\AdminServiceTests\AdminServiceTests.csproj", "{74A425D0-4709-4377-A292-9E834D4E2248}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminServiceTests", "Tests\AdminServiceTests\AdminServiceTests.csproj", "{74A425D0-4709-4377-A292-9E834D4E2248}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CatelogServiceTest", "CatelogServiceTest", "{3C7CCF78-9DDD-4270-AC3E-19CCB851C97E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CatelogServiceTests", "Tests\CatelogServiceTests\CatelogServiceTests.csproj", "{BBE7F602-C2FD-4675-93E7-9EE5378BBC38}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CatelogServiceTests", "Tests\CatelogServiceTests\CatelogServiceTests.csproj", "{BBE7F602-C2FD-4675-93E7-9EE5378BBC38}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CoreTest", "CoreTest", "{B95DEDE1-33BD-4F75-B0D5-BF466DF78E5A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoreTests", "Tests\CoreTests\CoreTests.csproj", "{6ED61E34-BF9C-40FC-8A68-F378CD5B5ADB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoreTests", "Tests\CoreTests\CoreTests.csproj", "{6ED61E34-BF9C-40FC-8A68-F378CD5B5ADB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CustomerServiceTest", "CustomerServiceTest", "{B14599C7-A38D-4793-A9C7-8AB33A527C94}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomerServiceTests", "Tests\CustomerServiceTests\CustomerServiceTests.csproj", "{03F32BAE-105C-42BE-AB11-0B9E9BCE983B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomerServiceTests", "Tests\CustomerServiceTests\CustomerServiceTests.csproj", "{03F32BAE-105C-42BE-AB11-0B9E9BCE983B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "InfrastructureServiceTest", "InfrastructureServiceTest", "{4FAE2DA1-06D5-45BC-A0D4-B4341FCAE940}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InfrastructureServiceTests", "Tests\InfrastructureServiceTests\InfrastructureServiceTests.csproj", "{F4BE3697-4734-4C6C-81D1-7F76435639CD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InfrastructureServiceTests", "Tests\InfrastructureServiceTests\InfrastructureServiceTests.csproj", "{F4BE3697-4734-4C6C-81D1-7F76435639CD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NotificationServiceTest", "NotificationServiceTest", "{E797F1A9-6DBE-4E46-AF8D-36A2185FF114}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotificationServiceTests", "Tests\NotificationServiceTests\NotificationServiceTests.csproj", "{F11CD7E6-4A43-48DB-90C7-E6EB7228D4F8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NotificationServiceTests", "Tests\NotificationServiceTests\NotificationServiceTests.csproj", "{F11CD7E6-4A43-48DB-90C7-E6EB7228D4F8}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OrderServiceTest", "OrderServiceTest", "{9BFA6656-7750-4941-ABC4-CF38456C100D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderServiceTests", "Tests\OrderServiceTests\OrderServiceTests.csproj", "{DF77402D-B30C-40D0-B314-AC0717EFAB7D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderServiceTests", "Tests\OrderServiceTests\OrderServiceTests.csproj", "{DF77402D-B30C-40D0-B314-AC0717EFAB7D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{C7A50D39-1A8D-4C54-B469-919697ACC171}"
 EndProject

@@ -507,11 +507,7 @@ namespace CustomerService.Controllers
         {
             try
             {
-<<<<<<< HEAD
-               
 
-=======
->>>>>>> development
                 if (!ModelState.IsValid)
                 {
                     return StatusCode((int)HttpStatusCode.OK, new OperationResponse
@@ -981,6 +977,8 @@ namespace CustomerService.Controllers
 
                             DatabaseResponse forgotPasswordMsgConfig = await _configAccess.GetConfiguration(ConfiType.ForgotPasswordMsg.ToString());
 
+                            DatabaseResponse forgotPasswordMsgTemplate = await _configAccess.GetEmailNotificationTemplate(NotificationEvent.ForgetPassword.ToString());
+
                             MiscHelper parser = new MiscHelper();                              
 
                             ForgotPasswordMsgConfig forgotPasswordConfig = parser.GetResetPasswordNotificationConfig((List<Dictionary<string, string>>)forgotPasswordMsgConfig.Results);
@@ -995,6 +993,8 @@ namespace CustomerService.Controllers
 
                                 NotificationParams msgParams = new NotificationParams();
 
+                                msgParams.emailaddress = passwordTokenDetails.Email;
+
                                 msgParams.name = passwordTokenDetails.Name;
 
                                 msgParams.param1 = passwordTokenDetails.Token;
@@ -1008,12 +1008,11 @@ namespace CustomerService.Controllers
 
                                     MessageType = NotificationMsgType.Email.ToString(),
 
-                                    MessageName= NotificationEvent.ForgotPassword.ToString(),                                     
+                                    MessageName= NotificationEvent.ForgetPassword.ToString(),                                     
 
-                                    Message = new MessageObject { emailaddress = passwordTokenDetails.Email, parameters= msgParamsList }
-
+                                    Message = new MessageObject {  parameters= msgParamsList, messagetemplate=((EmailTemplate)forgotPasswordMsgTemplate.Results).TemplateName }
+                                      
                                 };
-
 
                                 // Publish notification to topic
 

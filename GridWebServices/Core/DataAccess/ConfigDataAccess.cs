@@ -8,6 +8,8 @@ using Microsoft.Extensions.Configuration;
 using Core.Helpers;
 using Core.Models;
 using Core.Extensions;
+using System.Linq;
+
 
 namespace Core.DataAccess
 {
@@ -78,5 +80,120 @@ namespace Core.DataAccess
             }
         }
 
+        public async Task<DatabaseResponse> GetEmailNotificationTemplate(string templateName)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@TemplateName",  SqlDbType.NVarChar )
+
+                };
+
+                parameters[0].Value = templateName;
+
+                _DataHelper = new DataAccessHelper("z_GetEmailTemplateByName", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt); // 109 /105
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                EmailTemplate template = new EmailTemplate();
+
+                if (dt!=null && dt.Rows.Count > 0)
+                {
+                    template = (from model in dt.AsEnumerable()
+                                    select new EmailTemplate()
+                                    {
+                                         EmailTemplateID = model.Field<int>("EmailTemplateID"),
+                                         EmailBody = model.Field<string>("EmailBody"),
+                                         EmailSubject = model.Field<string>("EmailSubject"),
+                                         TemplateName = model.Field<string>("TemplateName")
+                                    }).FirstOrDefault();
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = template };
+                }            
+
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result  };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> CreateEMailNotificationLog(NotificationLog log)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+
+                    new SqlParameter( "@Email",  SqlDbType.NVarChar ),
+
+                    new SqlParameter( "@EmailSubject",  SqlDbType.NVarChar ),
+
+                    new SqlParameter( "@EmailBody",  SqlDbType.NVarChar ),
+
+                    new SqlParameter( "@ScheduledOn",  SqlDbType.DateTime ),
+
+                    new SqlParameter( "@EmailTemplateID",  SqlDbType.Int ),
+
+                    new SqlParameter( "@SendOn",  SqlDbType.DateTime ),
+
+                    new SqlParameter( "@Status",  SqlDbType.Int )
+
+                };
+
+                parameters[0].Value = log.CustomerID;
+                parameters[1].Value = log.Email;
+                parameters[2].Value = log.EmailSubject;
+                parameters[3].Value = log.EmailBody;
+                parameters[4].Value = log.ScheduledOn;
+                parameters[5].Value = log.EmailTemplateID;
+                parameters[6].Value = log.SendOn;
+                parameters[7].Value = log.Status;
+              
+
+                _DataHelper = new DataAccessHelper("z_EmailNotificationsLogEntry", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt); // 107 /100
+
+                DatabaseResponse response = new DatabaseResponse();
+               
+                response = new DatabaseResponse { ResponseCode = result };
+               
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+      
     }
 }

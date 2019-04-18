@@ -23,11 +23,31 @@ namespace Core.Enums
 
         [EnumMember(Value = "ForgotPassword")]
         [Description("ForgotPassword")]
-        ForgotPassword = 2,
+        ForgetPassword = 2,
 
         [EnumMember(Value = "OrderSuccess")]
         [Description("OrderSuccess")]
         OrderSuccess = 3,
+
+    }
+
+    public enum SNSNotification
+    {
+        [EnumMember(Value = "Invalid signature")]
+        [Description("Invalid signature")]
+        InvalidSignature = 1,
+
+        [EnumMember(Value = "Subscription Confirmed")]
+        [Description("Successfully confirmed endpoint subscription")]
+        SubscriptionConfirmed = 2,
+
+        [EnumMember(Value = "OrderSuccess")]
+        [Description("OrderSuccess")]
+        OrderSuccess = 3,
+
+        [EnumMember(Value = "EmptySNSTypeHeader")]
+        [Description("Empty SNS Header x-amz-sns-message-type")]
+        EmptySNSTypeHeader = 3,
 
     }
 
