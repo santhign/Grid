@@ -57,10 +57,33 @@ namespace OrderService.DataAccess
 
                 _DataHelper = new DataAccessHelper(DbObjectNames.Orders_CR_InsertRemoveVAS, parameters, _configuration);
 
+                DataTable dt = new DataTable();
+                var result = await _DataHelper.RunAsync(dt);    // 101 / 102 
 
-                var result = await _DataHelper.RunAsync();    // 101 / 102 
+                if (result != (int)Core.Enums.DbReturnValue.CreateSuccess)
+                    return new DatabaseResponse { ResponseCode = result };
 
-                return new DatabaseResponse { ResponseCode = result };
+                var removeVasResponse = new RemoveVASResponse();
+
+                if (dt.Rows.Count > 0)
+                {
+                    removeVasResponse = (from model in dt.AsEnumerable()
+                                      select new RemoveVASResponse()
+                                      {
+                                          ChangeRequestID = model.Field<int>("ChangeRequestId"),
+                                          BSSPlanCode = model.Field<string>("BSSPlanCode"),
+                                          PlanMarketingName = model.Field<string>("PlanMarketingName"),
+                                          CurrentDate = model.Field<DateTime>("CurrentDate"),
+                                          PlanID = model.Field<int>("PlanID")
+                                      }).FirstOrDefault();
+                }
+                else
+                {
+                    removeVasResponse = null;
+                }
+
+                var response = new DatabaseResponse { ResponseCode = result, Results = removeVasResponse };
+                return response;
             }
 
             catch (Exception ex)
@@ -105,9 +128,31 @@ namespace OrderService.DataAccess
 
 
                 _DataHelper = new DataAccessHelper(DbObjectNames.Orders_CR_BuyVAS, parameters, _configuration);
+                DataTable dt = new DataTable();
+                var result = await _DataHelper.RunAsync(dt);    // 101 / 102
+                if (result != (int)Core.Enums.DbReturnValue.CreateSuccess)
+                    return new DatabaseResponse { ResponseCode = result };
 
-                var result = await _DataHelper.RunAsync();    // 101 / 102
-                return new DatabaseResponse { ResponseCode = result };
+                var removeVASResponse = new BuyVASResponse();
+
+                if (dt.Rows.Count > 0)
+                {
+                    removeVASResponse = (from model in dt.AsEnumerable()
+                                    select new BuyVASResponse()
+                                    {
+                                        ChangeRequestID = model.Field<int>("ChangeRequestId"),
+                                        BSSPlanCode = model.Field<string>("BSSPlanCode"),
+                                        PlanMarketingName = model.Field<string>("PlanMarketingName"),
+                                        SubscriptionFee = model.Field<double>("SubscriptionFee")
+                                    }).FirstOrDefault();                   
+                }
+                else
+                {
+                    removeVASResponse = null;
+                }
+
+                var response = new DatabaseResponse { ResponseCode = result, Results = removeVASResponse };
+                return response;
             }
 
             catch (Exception ex)
