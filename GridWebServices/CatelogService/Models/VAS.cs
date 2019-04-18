@@ -17,5 +17,6 @@ namespace CatelogService.Models
         public double Voice { get; set; }
         public double SubscriptionFee { get; set; }
         public string IsRecurring { get; set; }
+        public int SubscriptionCount { get; set; }
     }
 }
