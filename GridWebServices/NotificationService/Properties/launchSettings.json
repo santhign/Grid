@@ -18,9 +18,9 @@
     "NotificationService": {
       "commandName": "Project",
       "launchBrowser": true,
-      "applicationUrl": "http://localhost:5000",
+      "applicationUrl": "http://*:5128",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Production"
       }
     }
   }
