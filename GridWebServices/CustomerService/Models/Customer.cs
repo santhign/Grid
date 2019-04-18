@@ -500,4 +500,10 @@ namespace CustomerService.Models
         public string CardIssuer { get; set; }
     }
 
+    public class customerSubscription
+    {
+        public int? EmailSubscription { get; set; }
+        public int? SMSSubscription { get; set; }
+    }
+
 }
