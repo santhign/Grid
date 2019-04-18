@@ -26,6 +26,9 @@ namespace Core.Enums
         [Description("ForgotPasswordMsg")]
         ForgotPasswordMsg = 5,
 
+        [EnumMember(Value = "Notification")]
+        [Description("Notification")]
+        Notification = 6,
 
     }
 

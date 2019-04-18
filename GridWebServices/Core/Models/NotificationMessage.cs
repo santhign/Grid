@@ -12,33 +12,30 @@ namespace Core.Models
         public string MessageType { get; set; }
 
         [DataMember(Name = "MessageName")]
-        public string MessageName { get; set; }
-
-        [DataMember(Name = "MessageTemplate")]
-        public string MessageTemplate { get; set; }
+        public string MessageName { get; set; }       
 
         [DataMember(Name = "Message")]
-        public MessageObject Message { get; set; }
+        public MessageObject Message { get; set; }        
 
     }
 
     public class MessageObject
-    {
-        [DataMember(Name = "emailaddress")]
-        public string emailaddress { get; set; }
-
-        [DataMember(Name = "mobilenumber")]
-        public string mobilenumber { get; set; }
+    {     
 
         [DataMember(Name = "messagetemplate")]
         public string messagetemplate { get; set; }
-
+        public string bccAddress { get; set; }
         public List<NotificationParams> parameters { get; set; }
     }
 
 
     public class NotificationParams
     {
+        [DataMember(Name = "emailaddress")]
+        public string emailaddress { get; set; }
+
+        [DataMember(Name = "mobilenumber")]
+        public string mobilenumber { get; set; }
         [DataMember(Name = "name")]
         public string name { get; set; }
 
@@ -73,6 +70,31 @@ namespace Core.Models
         public string param10 { get; set; }
     }
 
+    public class NotificationLog
+    {       
+        public int CustomerID { get; set; }
+        public string Email { get; set; }
+
+        public string EmailSubject { get; set; }
+
+        public string EmailBody { get; set; }
+
+        public DateTime ScheduledOn { get; set; }
+
+        public int EmailTemplateID { get; set; }
+
+        public DateTime SendOn { get; set; }
+
+        public int Status { get; set; }
+
+    }
+
+    public class NotificationConfig
+    {
+        public string SNSTopic { get; set; }
+        public string SQS { get; set; }
+
+    }
 }
    
 

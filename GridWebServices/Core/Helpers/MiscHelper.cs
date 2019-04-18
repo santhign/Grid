@@ -29,5 +29,13 @@ namespace Core.Helpers
             return config;
         }
 
+        public NotificationConfig GetNotificationConfig(List<Dictionary<string, string>> configDict)
+        {
+            NotificationConfig config = new NotificationConfig();
+            config.SNSTopic = configDict.Single(x => x["key"] == "SNSTopic")["value"];
+            config.SQS = configDict.Single(x => x["key"] == "SQS")["value"];
+            return config;
+        }
+
     }
 }

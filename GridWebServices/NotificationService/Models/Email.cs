@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Text;
 
 namespace NotificationService.Models
 {
@@ -26,6 +27,9 @@ namespace NotificationService.Models
         public string Subject { get; set; }
         public string Content { get; set; }
         public string BccAddress { get; set; }
-        public List<EmailDetails> EmailDetails { get; set; }
+        public List<EmailDetails> EmailDetails { get; set; }  
+
     }
+
+   
 }

@@ -48,6 +48,21 @@ namespace OrderService.Helpers
             }
         }
 
+        public static void InitSNSNotificationsFolder()
+        {
+            try
+            {
+                if (!Directory.Exists(GatewayApiConfig.WEBHOOKS_NOTIFICATION_FOLDER))
+                {
+                    Directory.CreateDirectory(GatewayApiConfig.WEBHOOKS_NOTIFICATION_FOLDER);
+                }
+            }
+            catch (IOException ex)
+            {
+                LogInfo.Fatal(ex, $": {EnumExtensions.GetDescription(MPGSAPIResponse.WebhookNotificationFolderError) + " : " + GatewayApiConfig.WEBHOOKS_NOTIFICATION_FOLDER}");
+            }
+        }
+
         public void CleanUpWebhooksNotificationsFolder() 
         {
             try

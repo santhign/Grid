@@ -13,6 +13,7 @@ using Core.Models;
 using Core.Enums;
 using Core.Extensions;
 using Core.Helpers;
+using Core.DataAccess;
 using InfrastructureService;
 using Serilog;
 using System.Collections.Generic;
@@ -59,7 +60,7 @@ namespace NotificationService.Controllers
         ///    }
         [HttpPost]
         [Route("SendEmail")]
-        public async Task<IActionResult> PushEmail([FromBody]NotificationEmail emailSubscribers)
+        public async Task<IActionResult> PushEmail([FromBody]NotificationMessage emailSubscribers)
         {
             try
             {
@@ -76,8 +77,25 @@ namespace NotificationService.Controllers
                                             .Select(x => x.ErrorMessage))
                     };
                 }
+
                 OutboundEmail _email = new OutboundEmail();
-                var response = await _email.SendEmail(emailSubscribers, _iconfiguration);
+
+                ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
+
+                DatabaseResponse forgotPasswordMsgTemplate = await _configAccess.GetEmailNotificationTemplate(NotificationEvent.ForgetPassword.ToString());
+
+                EmailTemplate template = (EmailTemplate)forgotPasswordMsgTemplate.Results;
+
+                var responses = await _email.SendEmail(emailSubscribers, _iconfiguration,template);
+             
+
+                foreach (Mandrill.Model.MandrillSendMessageResponse response in responses)
+                {
+                    //DatabaseResponse notificationLogResponse = await _configAccess.CreateEMailNotificationLog(new NotificationLog { Status=response.Status.ToString(), Email=response.Email });
+                }               
+
+                // log notificaiton in db
+             
 
                 return Ok(new ServerResponse
                 {

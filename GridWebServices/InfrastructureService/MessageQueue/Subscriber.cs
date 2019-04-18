@@ -39,6 +39,14 @@ namespace InfrastructureService.MessageQueue
             _queueName = queueName;
         }
 
+        public Subscriber(IConfiguration _configuration)
+        {
+            DatabaseResponse configResponse = ConfigHelper.GetValue(ConfiType.AWS.ToString(), _configuration);
+            List<Dictionary<string, string>> _result = ((List<Dictionary<string, string>>)configResponse.Results);
+            var credentials = new BasicAWSCredentials(_result.Single(x => x["key"] == "AWSAccessKey")["value"], _result.Single(x => x["key"] == "AWSSecretKey")["value"]);            
+            _snsClient = new AmazonSimpleNotificationServiceClient(credentials, Amazon.RegionEndpoint.APSoutheast1);           
+           
+        }
         public async Task Initialise()
         {
             _topicArn = (await _snsClient.CreateTopicAsync(_topicName)).TopicArn;
@@ -80,7 +88,10 @@ namespace InfrastructureService.MessageQueue
                 }
             }
         }
-
+        public AmazonSimpleNotificationServiceClient GetAmazonSimpleNotificationServiceClient()
+        {            
+            return _snsClient;
+        }
         protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)
@@ -97,9 +108,13 @@ namespace InfrastructureService.MessageQueue
             }
         }
 
+       
+
         public void Dispose()
         {
             Dispose(true);
         }
+
+
     }
 }
