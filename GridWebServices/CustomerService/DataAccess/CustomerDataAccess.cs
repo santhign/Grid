@@ -807,5 +807,78 @@ namespace CustomerService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+
+        public async Task<DatabaseResponse> UpdateSubscriptionDetails(int CustomerID, customerSubscription _subscription)
+
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+                    new SqlParameter( "@EmailSubscription",  SqlDbType.Int ),
+                    new SqlParameter( "@SMSSubscription",  SqlDbType.Int ),
+                };
+
+                parameters[0].Value = CustomerID;
+                _DataHelper = new DataAccessHelper("Customers_UpdateSubscriptionDetails", parameters, _configuration);
+
+                var dt = new DataTable();
+
+                var result = await _DataHelper.RunAsync(dt); // 105 /119
+
+                DatabaseResponse response;
+
+                if (result == 105)
+                {
+
+                    var _customer = new List<Customer>();
+
+                    if (dt.Rows.Count > 0)
+                    {
+
+                        _customer = (from model in dt.AsEnumerable()
+                                                   select new Customer()
+                                                   {
+                                                       CustomerID = model.Field<int>("CustomerID"),
+                                                       Email = model.Field<string>("Email"),
+                                                       Password = model.Field<string>("Password"),
+                                                       MobileNumber = model.Field<string>("MobileNumber"),
+                                                       IdentityCardType = model.Field<string>("IdentityCardType"),
+                                                       IdentityCardNumber = model.Field<string>("IdentityCardNumber"),
+                                                       ReferralCode = model.Field<string>("ReferralCode"),
+                                                       Nationality = model.Field<string>("Nationality"),
+                                                       Gender = model.Field<string>("Gender"),
+                                                       DOB = model.Field<DateTime?>("DOB"),
+                                                       SMSSubscription = model.Field<string>("SMSSubscription"),
+                                                       EmailSubscription = model.Field<string>("EmailSubscription"),
+                                                       Status = model.Field<string>("Status"),
+                                                       JoinedOn = model.Field<DateTime>("JoinedOn")
+                                                   }).ToList();
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = _customer };
+
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw;
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
     }
 }
