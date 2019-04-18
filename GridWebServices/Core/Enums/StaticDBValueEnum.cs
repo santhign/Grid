@@ -5,27 +5,50 @@ namespace Core.Enums
 {
     public enum RequestType
     {
-        [EnumMember(Value = "DefaultOrder")]
-        [Description("DefaultOrder")]
-        DefaultOrder = 1,
+        [EnumMember(Value = "NewCustomer")]
+        [Description("NewCustomer")]
+        NewCustomer = 1,
+        [EnumMember(Value = "NewService")]
+        [Description("NewService")]
+        NewService = 2,
         [EnumMember(Value = "AddVAS")]
         [Description("AddVAS")]
-        Addition = 2,
+        AddVAS = 3,
         [EnumMember(Value = "RemoveVAS")]
         [Description("RemoveVAS")]
-        Removal = 3,
-        [EnumMember(Value = "Terminate")]
-        [Description("Terminate")]
-        Termination = 4,
+        RemoveVAS = 4,
+        [EnumMember(Value = "ChangePlan")]
+        [Description("ChangePlan")]
+        ChangePlan = 5,
         [EnumMember(Value = "Suspend")]
         [Description("Suspend")]
-        Suspension = 5,
+        Suspend = 6,
+        [EnumMember(Value = "UnSuspend")]
+        [Description("UnSuspend")]
+        UnSuspend = 7,
+        [EnumMember(Value = "Terminate")]
+        [Description("Terminate")]
+        Terminate = 8,
         [EnumMember(Value = "ReplaceSIM")]
         [Description("ReplaceSIM")]
-        ReplaceSIM = 6,
+        ReplaceSIM = 9,
+        [EnumMember(Value = "EditBillAddress")]
+        [Description("EditBillAddress")]
+        EditBillAddress = 10,
+        [EnumMember(Value = "EditContact")]
+        [Description("EditContact")]
+        EditContact = 11,
+        [EnumMember(Value = "CancelOrder")]
+        [Description("CancelOrder")]
+        CancelOrder = 12,
+        [EnumMember(Value = "PayBill")]
+        [Description("PayBill")]
+        PayBill = 13,
         [EnumMember(Value = "ChangeNumber")]
         [Description("ChangeNumber")]
-        ChangeNumber = 7
+        ChangeNumber = 14
+
+
 
     }
 

@@ -52,7 +52,7 @@ namespace OrderService.DataAccess
                 parameters[0].Value = customerId;
                 parameters[1].Value = mobileNumber;
                 parameters[2].Value = planId;
-                parameters[3].Value = Core.Enums.RequestType.Removal.GetDescription();
+                parameters[3].Value = Core.Enums.RequestType.RemoveVAS.GetDescription();
 
 
                 _DataHelper = new DataAccessHelper(DbObjectNames.Orders_CR_InsertRemoveVAS, parameters, _configuration);
@@ -101,15 +101,12 @@ namespace OrderService.DataAccess
                 parameters[1].Value = mobileNumber;
                 parameters[2].Value = bundleId;
                 parameters[3].Value = quantity;
-                parameters[4].Value = Core.Enums.RequestType.Addition.GetDescription();
+                parameters[4].Value = Core.Enums.RequestType.AddVAS.GetDescription();
 
 
                 _DataHelper = new DataAccessHelper(DbObjectNames.Orders_CR_BuyVAS, parameters, _configuration);
 
-
-
-                var result = await _DataHelper.RunAsync();    // 101 / 102 
-
+                var result = await _DataHelper.RunAsync();    // 101 / 102
                 return new DatabaseResponse { ResponseCode = result };
             }
 

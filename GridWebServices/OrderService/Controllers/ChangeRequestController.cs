@@ -142,10 +142,6 @@ namespace OrderService.Controllers
 
             }
         }
-
-
-
-
         /// <summary>
         /// Buys the vas service.
         /// </summary>
@@ -282,7 +278,7 @@ namespace OrderService.Controllers
                 {
                     var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
 
-                    var statusResponse = await _changeRequestDataAccess.TerminationOrSuspensionRequest(aTokenResp.CustomerID, mobileNumber, Core.Enums.RequestType.Termination.GetDescription(), remark);
+                    var statusResponse = await _changeRequestDataAccess.TerminationOrSuspensionRequest(aTokenResp.CustomerID, mobileNumber, Core.Enums.RequestType.Terminate.GetDescription(), remark);
                     var TorSresponse = (TerminationOrSuspensionResponse)statusResponse.Results;
                     if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                     {
@@ -295,7 +291,7 @@ namespace OrderService.Controllers
 
                             topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration)
                             .Results.ToString().Trim();                            
-                            attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.Termination.GetDescription());
+                            attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.Terminate.GetDescription());
                             var pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
                             if (pushResult.Trim().ToUpper() == "OK")
                             {
@@ -309,7 +305,7 @@ namespace OrderService.Controllers
                                     CreatedOn = DateTime.Now,
                                     LastTriedOn = DateTime.Now,
                                     PublishedOn = DateTime.Now,
-                                    MessageAttribute = Core.Enums.RequestType.Termination.GetDescription().ToString(),
+                                    MessageAttribute = Core.Enums.RequestType.Terminate.GetDescription().ToString(),
                                     MessageBody = JsonConvert.SerializeObject(msgBody),
                                     Status = 1
                                 };
@@ -325,7 +321,7 @@ namespace OrderService.Controllers
                                     CreatedOn = DateTime.Now,
                                     LastTriedOn = DateTime.Now,
                                     PublishedOn = DateTime.Now,
-                                    MessageAttribute = Core.Enums.RequestType.Termination.GetDescription().ToString(),
+                                    MessageAttribute = Core.Enums.RequestType.Terminate.GetDescription().ToString(),
                                     MessageBody = JsonConvert.SerializeObject(msgBody),
                                     Status = 0
                                 };
@@ -343,7 +339,7 @@ namespace OrderService.Controllers
                                 CreatedOn = DateTime.Now,
                                 LastTriedOn = DateTime.Now,
                                 PublishedOn = DateTime.Now,
-                                MessageAttribute = Core.Enums.RequestType.Termination.GetDescription().ToString(),
+                                MessageAttribute = Core.Enums.RequestType.Terminate.GetDescription().ToString(),
                                 MessageBody = JsonConvert.SerializeObject(msgBody),
                                 Status = 0
                             };
@@ -536,7 +532,7 @@ namespace OrderService.Controllers
                     var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
 
                     var statusResponse = await _changeRequestDataAccess.TerminationOrSuspensionRequest(aTokenResp.CustomerID, mobileNumber, 
-                        Core.Enums.RequestType.Suspension.GetDescription(), remark);
+                        Core.Enums.RequestType.Suspend.GetDescription(), remark);
                     var TorSresponse = (TerminationOrSuspensionResponse) statusResponse.Results;
                     if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                     {
@@ -550,7 +546,7 @@ namespace OrderService.Controllers
                             topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration)
                             .Results.ToString().Trim();
                            
-                                attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.Suspension.GetDescription());
+                                attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.Suspend.GetDescription());
                                 var pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
                             if (pushResult.Trim().ToUpper() == "OK")
                             {
@@ -564,7 +560,7 @@ namespace OrderService.Controllers
                                     CreatedOn = DateTime.Now,
                                     LastTriedOn = DateTime.Now,
                                     PublishedOn = DateTime.Now,
-                                    MessageAttribute = Core.Enums.RequestType.Suspension.GetDescription().ToString(),
+                                    MessageAttribute = Core.Enums.RequestType.Suspend.GetDescription().ToString(),
                                     MessageBody = JsonConvert.SerializeObject(msgBody),
                                     Status = 1
                                 };
@@ -581,7 +577,7 @@ namespace OrderService.Controllers
                                     CreatedOn = DateTime.Now,
                                     LastTriedOn = DateTime.Now,
                                     PublishedOn = DateTime.Now,
-                                    MessageAttribute = Core.Enums.RequestType.Suspension.GetDescription().ToString(),
+                                    MessageAttribute = Core.Enums.RequestType.Suspend.GetDescription().ToString(),
                                     MessageBody = JsonConvert.SerializeObject(msgBody),
                                     Status = 0
                                 };
@@ -600,7 +596,7 @@ namespace OrderService.Controllers
                                 CreatedOn = DateTime.Now,
                                 LastTriedOn = DateTime.Now,
                                 PublishedOn = DateTime.Now,
-                                MessageAttribute = Core.Enums.RequestType.Suspension.GetDescription().ToString(),
+                                MessageAttribute = Core.Enums.RequestType.Suspend.GetDescription().ToString(),
                                 MessageBody = JsonConvert.SerializeObject(msgBody),
                                 Status = 0
                             };
@@ -822,6 +818,159 @@ namespace OrderService.Controllers
                         IsDomainValidationErrors = false
                     });
                 }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
+
+        [HttpPost]
+        [Route("UnsuspensionRequest/{mobileNumber}/{remark}")]
+        public async Task<IActionResult> UnsuspensionRequest([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] string mobileNumber, [FromRoute] string remark)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+
+                if (!ModelState.IsValid)
+                {
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                                                 .SelectMany(x => x.Errors)
+                                                 .Select(x => x.ErrorMessage))
+                    });
+                }
+
+                var helper = new AuthHelper(_iconfiguration);
+                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
+
+                    var statusResponse = await _changeRequestDataAccess.TerminationOrSuspensionRequest(aTokenResp.CustomerID, mobileNumber,
+                        Core.Enums.RequestType.UnSuspend.GetDescription(), remark);
+                    var TorSresponse = (TerminationOrSuspensionResponse)statusResponse.Results;
+                    if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
+                    {
+                        MessageBodyForCR msgBody = new MessageBodyForCR();
+                        Dictionary<string, string> attribute = new Dictionary<string, string>();
+                        string topicName = string.Empty, subject = string.Empty;
+                        try
+                        {
+                            msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(TorSresponse.ChangeRequestId);
+
+                            topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration)
+                            .Results.ToString().Trim();
+
+                            attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.UnSuspend.GetDescription());
+                            var pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
+                            if (pushResult.Trim().ToUpper() == "OK")
+                            {
+                                MessageQueueRequest queueRequest = new MessageQueueRequest
+                                {
+                                    Source = Source.ChangeRequest,
+                                    NumberOfRetries = 1,
+                                    SNSTopic = topicName,
+                                    CreatedOn = DateTime.Now,
+                                    LastTriedOn = DateTime.Now,
+                                    PublishedOn = DateTime.Now,
+                                    MessageAttribute = Core.Enums.RequestType.UnSuspend.GetDescription().ToString(),
+                                    MessageBody = JsonConvert.SerializeObject(msgBody),
+                                    Status = 1
+                                };
+
+                                await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                            }
+                            else
+                            {
+                                MessageQueueRequest queueRequest = new MessageQueueRequest
+                                {
+                                    Source = Source.ChangeRequest,
+                                    NumberOfRetries = 1,
+                                    SNSTopic = topicName,
+                                    CreatedOn = DateTime.Now,
+                                    LastTriedOn = DateTime.Now,
+                                    PublishedOn = DateTime.Now,
+                                    MessageAttribute = Core.Enums.RequestType.UnSuspend.GetDescription().ToString(),
+                                    MessageBody = JsonConvert.SerializeObject(msgBody),
+                                    Status = 0
+                                };
+
+                                await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                            MessageQueueRequest queueRequest = new MessageQueueRequest
+                            {
+                                Source = Source.ChangeRequest,
+                                NumberOfRetries = 1,
+                                SNSTopic = topicName,
+                                CreatedOn = DateTime.Now,
+                                LastTriedOn = DateTime.Now,
+                                PublishedOn = DateTime.Now,
+                                MessageAttribute = Core.Enums.RequestType.UnSuspend.GetDescription().ToString(),
+                                MessageBody = JsonConvert.SerializeObject(msgBody),
+                                Status = 0
+                            };
+
+                            await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                        }
+
+                        return Ok(new ServerResponse
+                        {
+                            HasSucceeded = true,
+                            Message = StatusMessages.SuccessMessage,
+                            Result = statusResponse
+                        });
+                    }
+                    else
+                    {
+                        LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = DbReturnValue.UpdationFailed.GetDescription(),
+                            IsDomainValidationErrors = false
+                        });
+                    }
+
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(DbReturnValue.TokenAuthFailed.GetDescription());
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = DbReturnValue.TokenAuthFailed.GetDescription(),
+                        IsDomainValidationErrors = false
+                    });
+                }
+
+
             }
             catch (Exception ex)
             {
