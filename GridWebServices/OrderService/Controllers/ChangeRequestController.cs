@@ -294,44 +294,41 @@ namespace OrderService.Controllers
                             msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(TorSresponse.ChangeRequestId);
 
                             topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration)
-                            .Results.ToString().Trim();
-                            //Ninad K : Need to update Subject
-                            //subject = ConfigHelper.GetValueByKey(ConfigKey.SNS_Subject_CreateCustomer.GetDescription(), _iconfiguration)
-                            //    .Results.ToString().Trim();
+                            .Results.ToString().Trim();                            
                             attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.Termination.GetDescription());
-                            var pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute, null);
+                            var pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
                             if (pushResult.Trim().ToUpper() == "OK")
                             {
 
 
                                 MessageQueueRequest queueRequest = new MessageQueueRequest
                                 {
-                                    Source = "ChangeRequest",
+                                    Source = Source.ChangeRequest,
                                     NumberOfRetries = 1,
                                     SNSTopic = topicName,
                                     CreatedOn = DateTime.Now,
                                     LastTriedOn = DateTime.Now,
                                     PublishedOn = DateTime.Now,
                                     MessageAttribute = Core.Enums.RequestType.Termination.GetDescription().ToString(),
-                                    MessageBody = JsonConvert.SerializeObject(msgBody)
+                                    MessageBody = JsonConvert.SerializeObject(msgBody),
+                                    Status = 1
                                 };
-                                queueRequest.CreatedOn = DateTime.Now;
-                                queueRequest.Status = 1;
                                 await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
                             }
                             else
                             {
-                                MessageQueueRequest queueRequest = new MessageQueueRequest();
-                                queueRequest.Source = "ChangeRequest";
-                                queueRequest.NumberOfRetries = 1;
-                                queueRequest.SNSTopic = topicName;
-                                queueRequest.CreatedOn = DateTime.Now;
-                                queueRequest.LastTriedOn = DateTime.Now;
-                                queueRequest.PublishedOn = DateTime.Now;
-                                queueRequest.MessageAttribute = Core.Enums.RequestType.Termination.GetDescription().ToString();
-                                queueRequest.MessageBody = JsonConvert.SerializeObject(msgBody);
-                                queueRequest.CreatedOn = DateTime.Now;
-                                queueRequest.Status = 0;
+                                MessageQueueRequest queueRequest = new MessageQueueRequest
+                                {
+                                    Source = Source.ChangeRequest,
+                                    NumberOfRetries = 1,
+                                    SNSTopic = topicName,
+                                    CreatedOn = DateTime.Now,
+                                    LastTriedOn = DateTime.Now,
+                                    PublishedOn = DateTime.Now,
+                                    MessageAttribute = Core.Enums.RequestType.Termination.GetDescription().ToString(),
+                                    MessageBody = JsonConvert.SerializeObject(msgBody),
+                                    Status = 0
+                                };
                                 await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
                             }
                         }
@@ -340,17 +337,17 @@ namespace OrderService.Controllers
                             LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
                             MessageQueueRequest queueRequest = new MessageQueueRequest
                             {
-                                Source = "ChangeRequest",
+                                Source = Source.ChangeRequest,
                                 NumberOfRetries = 1,
                                 SNSTopic = topicName,
                                 CreatedOn = DateTime.Now,
                                 LastTriedOn = DateTime.Now,
                                 PublishedOn = DateTime.Now,
-                                MessageAttribute = JsonConvert.SerializeObject(attribute),
-                                MessageBody = JsonConvert.SerializeObject(msgBody)
+                                MessageAttribute = Core.Enums.RequestType.Termination.GetDescription().ToString(),
+                                MessageBody = JsonConvert.SerializeObject(msgBody),
+                                Status = 0
                             };
-                            queueRequest.CreatedOn = DateTime.Now;
-                            queueRequest.Status = 1;
+                            
                             await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
                         }
 
@@ -561,7 +558,7 @@ namespace OrderService.Controllers
 
                                 MessageQueueRequest queueRequest = new MessageQueueRequest
                                 {
-                                    Source = "ChangeRequest",
+                                    Source = Source.ChangeRequest,
                                     NumberOfRetries = 1,
                                     SNSTopic = topicName,
                                     CreatedOn = DateTime.Now,
@@ -578,7 +575,7 @@ namespace OrderService.Controllers
                             {
                                 MessageQueueRequest queueRequest = new MessageQueueRequest
                                 {
-                                    Source = "ChangeRequest",
+                                    Source = Source.ChangeRequest,
                                     NumberOfRetries = 1,
                                     SNSTopic = topicName,
                                     CreatedOn = DateTime.Now,
@@ -597,7 +594,7 @@ namespace OrderService.Controllers
                             LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
                             MessageQueueRequest queueRequest = new MessageQueueRequest
                             {
-                                Source = "ChangeRequest",
+                                Source = Source.ChangeRequest,
                                 NumberOfRetries = 1,
                                 SNSTopic = topicName,
                                 CreatedOn = DateTime.Now,

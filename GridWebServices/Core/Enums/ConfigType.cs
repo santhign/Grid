@@ -46,8 +46,30 @@ namespace Core.Enums
        
     }
 
+    /// <summary>
+    /// Event Type String static class
+    /// </summary>
     public static class EventTypeString
     {
+        /// <summary>
+        /// The event type constant string
+        /// </summary>
         public const string EventType = "EventType";
+    }
+
+    /// <summary>
+    /// Source class
+    /// </summary>
+    public static class Source
+    {
+        /// <summary>
+        /// The change request constact value
+        /// </summary>
+        public const string ChangeRequest = "ChangeRequest";
+
+        /// <summary>
+        /// The order constant vvalue
+        /// </summary>
+        public const string Order = "Order";
     }
 }
