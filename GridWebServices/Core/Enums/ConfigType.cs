@@ -45,4 +45,9 @@ namespace Core.Enums
 
        
     }
+
+    public static class EventTypeString
+    {
+        public const string EventType = "EventType";
+    }
 }

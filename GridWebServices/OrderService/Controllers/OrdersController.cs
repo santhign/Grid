@@ -2575,7 +2575,7 @@ namespace OrderService.Controllers
                                     {
                                         topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration).Results.ToString().Trim();
                                         subject = ConfigHelper.GetValueByKey(ConfigKey.SNS_Subject_CreateCustomer.GetDescription(), _iconfiguration).Results.ToString().Trim();
-                                        attribute.Add("EventType", Core.Enums.RequestType.ReplaceSIM.GetDescription());
+                                        attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.ReplaceSIM.GetDescription());
                                         await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute, subject);
                                     }
 

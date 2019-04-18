@@ -298,7 +298,7 @@ namespace OrderService.Controllers
                             //Ninad K : Need to update Subject
                             //subject = ConfigHelper.GetValueByKey(ConfigKey.SNS_Subject_CreateCustomer.GetDescription(), _iconfiguration)
                             //    .Results.ToString().Trim();
-                            attribute.Add("EventType", Core.Enums.RequestType.Termination.GetDescription());
+                            attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.Termination.GetDescription());
                             var pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute, null);
                             if (pushResult.Trim().ToUpper() == "OK")
                             {
@@ -553,7 +553,7 @@ namespace OrderService.Controllers
                             topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration)
                             .Results.ToString().Trim();
                            
-                                attribute.Add("EventType", Core.Enums.RequestType.Suspension.GetDescription());
+                                attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.Suspension.GetDescription());
                                 var pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
                             if (pushResult.Trim().ToUpper() == "OK")
                             {

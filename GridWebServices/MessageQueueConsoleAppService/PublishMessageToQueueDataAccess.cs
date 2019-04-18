@@ -110,7 +110,7 @@ namespace MessageQueueConsoleAppService
             var publisher = new InfrastructureService.MessageQueue.Publisher(accessKey, secretKey, topic);
 
             var messageDict = new Dictionary<string, string>();
-            messageDict.Add("EventType", messageAttribute);
+            messageDict.Add(EventTypeString.EventType, messageAttribute);
             return await publisher.PublishAsync(messageBody, messageDict, subject);
         }
 
