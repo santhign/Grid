@@ -16,7 +16,9 @@ namespace OrderService.DataAccess
 
         Task<MessageDetailsForCROrOrder> GetMessageDetails(string MPGSOrderID);
 
-        Task PublishMessageToMessageQueue(string topicName, object msgBody, Dictionary<string, string> messageAttribute, string subject);
+        Task<string> PublishMessageToMessageQueue(string topicName, object msgBody, Dictionary<string, string> messageAttribute, string subject);
+
+        Task<string> PublishMessageToMessageQueue(string topicName, object msgBody, Dictionary<string, string> messageAttribute);
 
         Task<int> InsertMessageInMessageQueueRequest(MessageQueueRequest messageQueueRequest);
     }

@@ -119,6 +119,29 @@ namespace InfrastructureService.MessageQueue
             return response.HttpStatusCode.ToString();
         }
 
+        public async Task<string> PublishAsync(string message, Dictionary<string, string> attributes, string subject)
+        {
+            Dictionary<string, MessageAttributeValue> _messageattributes = new Dictionary<string, MessageAttributeValue>();
+            foreach (string key in attributes.Keys)
+            {
+                MessageAttributeValue _attributeValue = new MessageAttributeValue();
+                _attributeValue.DataType = "String";
+                _attributeValue.StringValue = attributes[key];
+                _messageattributes.Add(key, _attributeValue);
+            }
+            if (!_initialised)
+                await Initialise();
+            PublishRequest request = new PublishRequest
+            {
+                TopicArn = _topicArn,
+                MessageAttributes = _messageattributes,
+                Message = message,
+                Subject = subject
+            };
+            PublishResponse response = await _snsClient.PublishAsync(request);
+            return response.HttpStatusCode.ToString();
+        }
+
         public async Task<string> PublishAsync(object message, Dictionary<string, string> attributes)
         {
             Dictionary<string, MessageAttributeValue> _messageattributes = new Dictionary<string, MessageAttributeValue>();

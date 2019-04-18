@@ -23,8 +23,8 @@ namespace MessageQueueConsoleAppService
         public string Source { get; set; }
         public string SNSTopic { get; set; }
         public string MessageAttribute { get; set; }
-        public object MessageBody { get; set; }
+        public string MessageBody { get; set; }
         public DateTime CreatedOn { get; set; }
         
-    }
+    }    
 }
