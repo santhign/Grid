@@ -111,8 +111,14 @@ namespace CustomerService.DataAccess
         {
             try
             {
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@CustomerID",  SqlDbType.NVarChar )
+                };
 
-                _DataHelper = new DataAccessHelper("Admin_GetCustomerListing", _configuration);
+                parameters[0].Value = customerId;
+
+                _DataHelper = new DataAccessHelper("Customer_GetDetails", parameters, _configuration);
 
                 DataTable dt = new DataTable();
 
@@ -129,14 +135,19 @@ namespace CustomerService.DataAccess
                                     CustomerID = model.Field<int>("CustomerID"),
                                     Email = model.Field<string>("Email"),
                                     Password = model.Field<string>("Password"),
+                                    Name = model.Field<string>("Name"),
                                     MobileNumber = model.Field<string>("MobileNumber"),
+                                    IdentityCardType = model.Field<string>("IdentityCardType"),
+                                    IdentityCardNumber = model.Field<string>("IdentityCardNumber"),
                                     ReferralCode = model.Field<string>("ReferralCode"),
                                     Nationality = model.Field<string>("Nationality"),
                                     Gender = model.Field<string>("Gender"),
+                                    DOB = model.Field<DateTime?>("DOB"),
                                     SMSSubscription = model.Field<string>("SMSSubscription"),
                                     EmailSubscription = model.Field<string>("EmailSubscription"),
-                                    Status = model.Field<string>("Status")
-                                }).Where(c => c.CustomerID == customerId).FirstOrDefault();
+                                    Status = model.Field<string>("Status"),
+                                    JoinedOn = model.Field<DateTime>("JoinedOn")
+                                }).FirstOrDefault();
                 }
 
                 return customer;
@@ -169,18 +180,18 @@ namespace CustomerService.DataAccess
                {
                     new SqlParameter( "@CustomerID",  SqlDbType.NVarChar ),
                     new SqlParameter( "@Password",  SqlDbType.NVarChar ),
-                    new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar)
+                    new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar),
+                    new SqlParameter( "@Email",  SqlDbType.NVarChar)
                 };
 
                 parameters[0].Value = customer.CustomerId;
                 parameters[1].Value = new Sha2().Hash(customer.Password);
                 parameters[2].Value = customer.MobileNumber;
+                parameters[3].Value = customer.Email;
 
-                _DataHelper = new DataAccessHelper("Customer_UpdateCustomerProfile", parameters, _configuration);
+                _DataHelper = new DataAccessHelper(DbObjectNames.Customer_UpdateCustomerProfile, parameters, _configuration);
 
-                int result = await _DataHelper.RunAsync();
-
-                
+                int result = await _DataHelper.RunAsync();                
 
                 return new DatabaseResponse { ResponseCode = result };
             }
@@ -668,5 +679,207 @@ namespace CustomerService.DataAccess
             }
         }
 
+        public async Task<DatabaseResponse> GetCustomerBillingDetails(int CustomerID)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+
+                };
+
+                parameters[0].Value = CustomerID;
+                _DataHelper = new DataAccessHelper("Customers_GetBillingDetails", parameters, _configuration);
+
+                var dt = new DataTable();
+
+                var result = await _DataHelper.RunAsync(dt); // 105 /119
+
+                DatabaseResponse response;
+
+                if (result == 105)
+                {
+
+                    var _customerBilling = new customerBilling();
+
+                    if (dt.Rows.Count > 0)
+                    {
+
+                        _customerBilling = (from model in dt.AsEnumerable()
+                                      select new customerBilling()
+                                      {
+                                          Name = model.Field<string>("Name"),
+                                          BillingUnit = model.Field<string>("BillingUnit"),
+                                          BillingFloor = model.Field<string>("BillingFloor"),
+                                          BillingStreetName = model.Field<string>("BillingStreetName"),
+                                          BillingBuildingNumber = model.Field<string>("BillingBuildingNumber"),
+                                          BillingBuildingName = model.Field<string>("BillingBuildingName"),
+                                          BillingContactNumber = model.Field<string>("BillingContactNumber"),
+                                          BillingPostCode = model.Field<string>("BillingPostCode")
+                                      }).FirstOrDefault();
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = _customerBilling };
+
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw;
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> GetPaymentMethod(int CustomerID)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+
+                };
+
+                parameters[0].Value = CustomerID;
+                _DataHelper = new DataAccessHelper("Customers_GetPaymentMethods", parameters, _configuration);
+
+                var dt = new DataTable();
+
+                var result = await _DataHelper.RunAsync(dt); // 105 /119
+
+                DatabaseResponse response;
+
+                if (result == 105)
+                {
+
+                    var _customerPaymentMethods = new List<customerPaymentMethod>();
+
+                    if (dt.Rows.Count > 0)
+                    {
+
+                        _customerPaymentMethods = (from model in dt.AsEnumerable()
+                                            select new customerPaymentMethod()
+                                            {
+                                                CardHolderName = model.Field<string>("CardHolderName"),
+                                                MaskedCardNumer = model.Field<string>("MaskedCardNumer"),
+                                                CardType = model.Field<string>("CardType"),
+                                                IsDefault = model.Field<int>("IsDefault"),
+                                                ExpiryMonth = model.Field<int>("ExpiryMonth"),
+                                                ExpiryYear = model.Field<int>("ExpiryYear"),
+                                                CardFundMethod = model.Field<string>("CardFundMethod"),
+                                                CardIssuer = model.Field<string>("CardIssuer")
+                                            }).ToList();
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = _customerPaymentMethods };
+
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw;
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> UpdateSubscriptionDetails(int CustomerID, customerSubscription _subscription)
+
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+                    new SqlParameter( "@EmailSubscription",  SqlDbType.Int ),
+                    new SqlParameter( "@SMSSubscription",  SqlDbType.Int ),
+                };
+
+                parameters[0].Value = CustomerID;
+                _DataHelper = new DataAccessHelper("Customers_UpdateSubscriptionDetails", parameters, _configuration);
+
+                var dt = new DataTable();
+
+                var result = await _DataHelper.RunAsync(dt); // 105 /119
+
+                DatabaseResponse response;
+
+                if (result == 105)
+                {
+
+                    var _customer = new List<Customer>();
+
+                    if (dt.Rows.Count > 0)
+                    {
+
+                        _customer = (from model in dt.AsEnumerable()
+                                                   select new Customer()
+                                                   {
+                                                       CustomerID = model.Field<int>("CustomerID"),
+                                                       Email = model.Field<string>("Email"),
+                                                       Password = model.Field<string>("Password"),
+                                                       MobileNumber = model.Field<string>("MobileNumber"),
+                                                       IdentityCardType = model.Field<string>("IdentityCardType"),
+                                                       IdentityCardNumber = model.Field<string>("IdentityCardNumber"),
+                                                       ReferralCode = model.Field<string>("ReferralCode"),
+                                                       Nationality = model.Field<string>("Nationality"),
+                                                       Gender = model.Field<string>("Gender"),
+                                                       DOB = model.Field<DateTime?>("DOB"),
+                                                       SMSSubscription = model.Field<string>("SMSSubscription"),
+                                                       EmailSubscription = model.Field<string>("EmailSubscription"),
+                                                       Status = model.Field<string>("Status"),
+                                                       JoinedOn = model.Field<DateTime>("JoinedOn")
+                                                   }).ToList();
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = _customer };
+
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw;
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
     }
 }

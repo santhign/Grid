@@ -54,7 +54,7 @@ namespace Core.Helpers
             );
             command.CommandTimeout = 0;
             command.Connection.Open();
-        }
+        }        
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DataAccessHelper"/> class.
@@ -216,6 +216,82 @@ namespace Core.Helpers
             };
             dataAdapter.Fill(dataSet);
             return (int)command.Parameters["ReturnValue"].Value; 
+        }
+
+        public DataAccessHelper(string sprocName, string connectionString)
+        {
+            //creating command object with connection name and proc name, and open connection for the command
+            command = new SqlCommand(sprocName, new SqlConnection(connectionString));
+            command.CommandType = CommandType.StoredProcedure;
+            command.Parameters.Add(
+                new SqlParameter("ReturnValue",
+                    SqlDbType.Int,
+                /* int size */ 4,
+                    ParameterDirection.ReturnValue,
+                /* bool isNullable */ false,
+                /* byte precision */ 0,
+                /* byte scale */ 0,
+                /* string srcColumn */ string.Empty,
+                    DataRowVersion.Default,
+                /* value */ null
+                )
+            );
+            command.CommandTimeout = 0;
+            command.Connection.Open();
+        }
+
+        public DataAccessHelper(string sprocName, SqlParameter[] parameters, string connectionString)
+        {
+            // prepare a command object with procedure and parameters
+            command = new SqlCommand(sprocName, new SqlConnection(connectionString));
+            command.CommandType = CommandType.StoredProcedure;
+
+            foreach (SqlParameter parameter in parameters)
+                command.Parameters.Add(parameter);
+
+            command.Parameters.Add(
+                new SqlParameter("ReturnValue",
+                    SqlDbType.Int,
+                /* int size */ 4,
+                    ParameterDirection.ReturnValue,
+                /* bool isNullable */ false,
+                /* byte precision */ 0,
+                /* byte scale */ 0,
+                /* string srcColumn */ string.Empty,
+                    DataRowVersion.Default,
+                /* value */ null
+                )
+            );
+            command.CommandTimeout = 0;
+            command.Connection.Open();
+        }
+
+        /// <summary>
+        /// Runs the asynchronous.
+        /// </summary>
+        /// <param name="dataTable">The data table.</param>
+        /// <returns></returns>
+        public async Task<DataTable> RunAsyncAndReturnDataTable()
+        {
+
+            return await Task.Run(() =>
+            {
+                DataTable dataTable = new DataTable();
+                //	Fill a DataTable with the result of executing this stored procedure.
+                if (command == null)
+                    throw new ObjectDisposedException(GetType().FullName);
+
+                SqlDataAdapter dataAdapter = new SqlDataAdapter
+                {
+                    SelectCommand = command
+                };
+                dataAdapter.Fill(dataTable);
+
+                return dataTable;
+            });
+
+            // It should never come to this line as it should get return from above
+
         }
 
         /// <summary>

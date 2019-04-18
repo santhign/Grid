@@ -15,7 +15,7 @@ using InfrastructureService;
 using Core.Helpers;
 using System.IO;
 using OrderService.Enums;
-
+using Newtonsoft.Json;
 
 namespace OrderService.Controllers
 {
@@ -24,10 +24,12 @@ namespace OrderService.Controllers
     public class OrdersController : ControllerBase
     {
         IConfiguration _iconfiguration;
+        private readonly IMessageQueueDataAccess _messageQueueDataAccess;
 
-        public OrdersController(IConfiguration configuration)
+        public OrdersController(IConfiguration configuration, IMessageQueueDataAccess messageQueueDataAccess)
         {
             _iconfiguration = configuration;
+            _messageQueueDataAccess = messageQueueDataAccess;
         }
         /// <summary>
         /// This will return Order details for specific ID passed 
@@ -2539,7 +2541,7 @@ namespace OrderService.Controllers
                         DatabaseResponse updateCheckoutDetailsResponse = await _orderAccess.UpdateCheckOutResponse(updateRequest);
 
                         // retrieve transaction details from MPGS
-
+                        //Preeti : Validatechckoutdetails against customer ID
                         DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.MPGS.ToString());
 
                         PaymentHelper gatewayHelper = new PaymentHelper();
@@ -2558,6 +2560,51 @@ namespace OrderService.Controllers
 
                         if (paymentProcessingRespose.ResponseCode == (int)DbReturnValue.TransactionSuccess)
                         {
+
+                            var details = await _messageQueueDataAccess.GetMessageDetails(updateRequest.MPGSOrderID);
+                            if(details != null)
+                            {
+                                MessageBodyForCR msgBody = new MessageBodyForCR();
+                                string topicName = string.Empty, subject = string.Empty;
+                                try
+                                {
+                                    Dictionary<string, string> attribute = new Dictionary<string, string>();
+                                    
+                                    msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(details.ChangeRequestID);
+                                    if (details.RequestTypeID == (int)Core.Enums.RequestType.ReplaceSIM)
+                                    {
+                                        topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration).Results.ToString().Trim();
+                                        subject = ConfigHelper.GetValueByKey(ConfigKey.SNS_Subject_CreateCustomer.GetDescription(), _iconfiguration).Results.ToString().Trim();
+                                        attribute.Add("EventType", Core.Enums.RequestType.ReplaceSIM.GetDescription());
+                                        await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute, subject);
+                                    }
+
+                                    MessageQueueRequest queueRequest = new MessageQueueRequest();
+                                    queueRequest.Source = "";
+                                    queueRequest.NumberOfRetries = 1;
+                                    queueRequest.SNSTopic = topicName;
+                                    queueRequest.CreatedOn = DateTime.Now;
+                                    queueRequest.LastTriedOn = DateTime.Now;
+                                    queueRequest.PublishedOn = DateTime.Now;
+                                    queueRequest.MessageAttribute = JsonConvert.SerializeObject(attribute);
+                                    queueRequest.MessageBody = JsonConvert.SerializeObject(msgBody);                                    
+                                    queueRequest.Status = 1;
+                                    await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                                }
+                                catch(Exception ex)
+                                {
+                                    LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                                    MessageQueueRequest queueRequest = new MessageQueueRequest();
+                                    queueRequest.CreatedOn = DateTime.Now;
+                                    queueRequest.LastTriedOn = DateTime.Now;
+                                    queueRequest.MessageAttribute = ConfigKey.SNS_Topic_ChangeRequest.GetDescription();
+                                    queueRequest.MessageBody = JsonConvert.SerializeObject(msgBody);
+                                    queueRequest.CreatedOn = DateTime.Now;
+                                    queueRequest.Status = 0;
+                                    await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                                }
+                                
+                            }
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = true,
@@ -3025,11 +3072,11 @@ namespace OrderService.Controllers
         /// 
         /// </summary>
         /// <param name="token" in="Header"></param>
-        /// <param name="OrderID" in="Body"></param>
+        /// <param name="OrderID"></param>
         /// <returns></returns>
-        [Route("GetCustomerIDImages")]
-        [HttpPost]
-        public async Task<IActionResult> GetCustomerIDImages([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] int OrderID)
+        [Route("GetCustomerIDImages/{OrderID}")]
+        [HttpGet]
+        public async Task<IActionResult> GetCustomerIDImages([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int OrderID)
         {
             try
             {
@@ -3072,8 +3119,7 @@ namespace OrderService.Controllers
                                     GridAWSS3Config awsConfig = configHelper.GetGridAwsConfig((List<Dictionary<string, string>>)awsConfigResponse.Results);
 
                                     AmazonS3 s3Helper = new AmazonS3(awsConfig);
-
-                                    DownloadResponse FrontImageDownloadResponse = await s3Helper.DownloadFile(((OrderNRICDetails)nRICresponse.Results).DocumentURL.Remove(0,awsConfig.AWSEndPoint.Length));
+                                    DownloadResponse FrontImageDownloadResponse = await s3Helper.DownloadFile(((OrderNRICDetails)nRICresponse.Results).DocumentURL.Remove(0, awsConfig.AWSEndPoint.Length));
 
                                     DownloadResponse BackImageDownloadResponse = await s3Helper.DownloadFile(((OrderNRICDetails)nRICresponse.Results).DocumentBackURL.Remove(0, awsConfig.AWSEndPoint.Length));
 

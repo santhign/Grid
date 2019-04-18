@@ -59,12 +59,16 @@ namespace CustomerService.DataAccess
                                     Email = model.Field<string>("Email"),
                                     Password = model.Field<string>("Password"),
                                     MobileNumber = model.Field<string>("MobileNumber"),
+                                    IdentityCardType = model.Field<string>("IdentityCardType"),
+                                    IdentityCardNumber = model.Field<string>("IdentityCardNumber"),
                                     ReferralCode = model.Field<string>("ReferralCode"),
                                     Nationality = model.Field<string>("Nationality"),
                                     Gender = model.Field<string>("Gender"),
+                                    DOB = model.Field<DateTime?>("DOB"),
                                     SMSSubscription = model.Field<string>("SMSSubscription"),
                                     EmailSubscription = model.Field<string>("EmailSubscription"),
-                                    Status = model.Field<string>("Status")
+                                    Status = model.Field<string>("Status"),
+                                    JoinedOn = model.Field<DateTime>("JoinedOn")
                                 }).FirstOrDefault();
                 }
 

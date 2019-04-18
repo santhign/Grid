@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace OrderService.Models
+namespace AdminService.Models
 {
     public class Order
     {
         public int OrderID { get; set; }
         public string OrderNumber { get; set; }
+        public string OrderStatus { get; set; }
         public DateTime OrderDate { get; set; }
         public string IdentityCardType { get; set; }
         public string IdentityCardNumber { get; set; }
@@ -49,6 +50,7 @@ namespace OrderService.Models
 
     public class ServiceCharge
     {
+        public int? OrderID { get; set; }
         public string PortalServiceName { get; set; }
         public double? ServiceFee { get; set; }
         public int? IsRecurring { get; set; }
@@ -57,6 +59,7 @@ namespace OrderService.Models
 
     public class Bundle
     {
+        public int? OrderID { get; set; }
         public int? BundleID { get; set; }
         public string MobileNumber { get; set; }
         public string DisplayName { get; set; }
@@ -79,31 +82,5 @@ namespace OrderService.Models
         public string PortedNumberTransferForm { get; set; }
         public string PortedNumberOwnedBy { get; set; }
         public string PortedNumberOwnerRegistrationID { get; set; }
-    }
-
-    public class OrderCustomer
-    {
-        public int CustomerId { get; set; }
-    }
-
-    public class DeliverySlot
-    {
-        public string PortalSlotID { get; set; }
-        public DateTime SlotDate { get; set; }
-        public TimeSpan SlotFromTime { get; set; }
-        public TimeSpan SlotToTime { get; set; }
-        public string Slot { get; set; }
-        public double AdditionalCharge { get; set; }
-    }
-    public class OrderPending
-    {
-        public int OrderID { get; set; }
-        public string OrderNumber { get; set; }
-        public DateTime OrderDate { get; set; }
- }
-    public class BSSAccount
-    {
-        public int AccountID { get; set; }
-        public string AccountNumber { get; set; }        
     }
 }

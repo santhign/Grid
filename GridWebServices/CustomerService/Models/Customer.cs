@@ -33,6 +33,13 @@ namespace CustomerService.Models
         /// </value>
         public string Password { get; set; }
         /// <summary>
+        /// Gets or sets the Name.
+        /// </summary>
+        /// <value>
+        /// The Name.
+        /// </value>
+        public string Name { get; set; }
+        /// <summary>
         /// Gets or sets the mobile number.
         /// </summary>
         /// <value>
@@ -45,6 +52,8 @@ namespace CustomerService.Models
         /// <value>
         /// The referral code.
         /// </value>
+        public string IdentityCardType { get; set; }
+        public string IdentityCardNumber { get; set; }
         public string ReferralCode { get; set; }
         /// <summary>
         /// Gets or sets the nationality.
@@ -60,6 +69,7 @@ namespace CustomerService.Models
         /// The gender.
         /// </value>
         public string Gender { get; set; }
+        public DateTime? DOB { get; set; }
         /// <summary>
         /// Gets or sets the SMS subscription.
         /// </summary>
@@ -81,15 +91,25 @@ namespace CustomerService.Models
         /// The status.
         /// </value>
         public string Status { get; set; }
+        /// <summary>
+        /// Gets or sets the joined on.
+        /// </summary>
+        /// <value>
+        /// The joined on.
+        /// </value>
+        public DateTime JoinedOn { get; set; }
     }
 
-    /// <summary></summary>
+    /// <summary>
+    /// Customer Profile class
+    /// </summary>
     public class CustomerProfile
     {
         public int CustomerId { get; set; }
         public string Password { get; set; }
         public string MobileNumber { get; set; }
-        
+        public string Email { get; set; }
+
     }
 
     /// <summary>Change Phone Request</summary>
@@ -461,6 +481,36 @@ namespace CustomerService.Models
         /// The status.
         /// </value>
         public string ReferralCode { get; set; }
+    }
+
+    public class customerBilling
+    {
+        public string Name { get; set; }
+        public string BillingUnit { get; set; }
+        public string BillingFloor { get; set; }
+        public string BillingStreetName { get; set; }
+        public string BillingBuildingNumber { get; set; }
+        public string BillingBuildingName { get; set; }
+        public string BillingContactNumber { get; set; }
+        public string BillingPostCode { get; set; }
+    }
+
+    public class customerPaymentMethod
+    {
+        public string CardHolderName { get; set; }
+        public string MaskedCardNumer { get; set; }
+        public string CardType { get; set; }
+        public int IsDefault { get; set; }
+        public int ExpiryMonth { get; set; }
+        public int ExpiryYear { get; set; }
+        public string CardFundMethod { get; set; }
+        public string CardIssuer { get; set; }
+    }
+
+    public class customerSubscription
+    {
+        public int? EmailSubscription { get; set; }
+        public int? SMSSubscription { get; set; }
     }
 
 }

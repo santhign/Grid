@@ -156,14 +156,13 @@ namespace CustomerService.Controllers
         /// <summary>
         /// Updates the customer profile.
         /// </summary>
-        /// <param name="token" in="Header"></param>
+        /// <param name="token">The token.</param>
         /// <param name="password">The password.</param>
         /// <param name="mobileNumber">The mobile number.</param>
-        /// <returns>
-        /// Success or Failure status code
-        /// </returns>
-        [HttpPut("UpdateCustomerProfile/{token}/{password}/{mobileNumber}")]
-        public async Task<IActionResult> UpdateCustomerProfile([FromHeader(Name = "Grid-Authorization-Token")] string token, string password, string mobileNumber)
+        /// <param name="email">The email.</param>
+        /// <returns></returns>
+        [HttpPut("UpdateCustomerProfile/{password}/{mobileNumber}/{email}")]
+        public async Task<IActionResult> UpdateCustomerProfile([FromHeader(Name = "Grid-Authorization-Token")] string token, string password, string mobileNumber, string email)
         {
             try
             {
@@ -200,7 +199,7 @@ namespace CustomerService.Controllers
 
                         var statusResponse = await customerAccess.UpdateCustomerProfile(new CustomerProfile
 
-                        { CustomerId = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID, MobileNumber = mobileNumber, Password = password });
+                        { CustomerId = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID, MobileNumber = mobileNumber, Password = password, Email = email });
 
                         if (statusResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
                         {
@@ -537,8 +536,9 @@ namespace CustomerService.Controllers
                 {
                     //Pushed to message queue
                     var publisher = new InfrastructureService.MessageQueue.Publisher(_iconfiguration, ConfigHelper.GetValueByKey("SNS_Topic_CreateCustomer", _iconfiguration).Results.ToString().Trim());
-
-                    await publisher.PublishAsync(response.Results, ConfigHelper.GetValueByKey("SNS_Subject_CreateCustomer", _iconfiguration).Results.ToString().Trim());
+                    Dictionary<string, string> attr = new Dictionary<string, string>();
+                    attr.Add("evet_type", "NewCustomer");
+                    await publisher.PublishAsync(response.Results, attr);
 
                     return Ok(new OperationResponse
                     {
@@ -1343,6 +1343,334 @@ namespace CustomerService.Controllers
                         IsDomainValidationErrors = false
                     });
                 }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
+            
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="token" in="Header"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("GetBillingAddress")]
+        public async Task<IActionResult> GetBillingAddress([FromHeader(Name = "Grid-Authorization-Token")] string token)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+
+                AuthHelper helper = new AuthHelper(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    {
+                        int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+                        if (!ModelState.IsValid)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = string.Join("; ", ModelState.Values
+                                                           .SelectMany(x => x.Errors)
+                                                           .Select(x => x.ErrorMessage))
+                            });
+                        }
+                        var customerAccess = new CustomerDataAccess(_iconfiguration);
+
+                        var customerBilling = await customerAccess.GetCustomerBillingDetails(customerID);
+
+                        if (customerBilling == null)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                // I am marking HasSucceeded as true assuming that Customer can have 0 plan so its not an error.
+                                HasSucceeded = true,
+                                Message = DbReturnValue.NoRecords.GetDescription(),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                        else
+                        {
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = true,
+                                Message = StatusMessages.SuccessMessage,
+                                Result = customerBilling
+                            });
+                        }
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+
+                }
+
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="token" in="Header"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("GetPaymentMethod")]
+        public async Task<IActionResult> GetPaymentMethod([FromHeader(Name = "Grid-Authorization-Token")] string token)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+
+                AuthHelper helper = new AuthHelper(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    {
+                        int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+                        if (!ModelState.IsValid)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = string.Join("; ", ModelState.Values
+                                                           .SelectMany(x => x.Errors)
+                                                           .Select(x => x.ErrorMessage))
+                            });
+                        }
+                        var customerAccess = new CustomerDataAccess(_iconfiguration);
+
+                        var customerPaymentMethod = await customerAccess.GetPaymentMethod(customerID);
+
+                        if (customerPaymentMethod == null)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                // I am marking HasSucceeded as true assuming that Customer can have 0 plan so its not an error.
+                                HasSucceeded = true,
+                                Message = DbReturnValue.NoRecords.GetDescription(),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                        else
+                        {
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = true,
+                                Message = StatusMessages.SuccessMessage,
+                                Result = customerPaymentMethod
+                            });
+                        }
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+
+                }
+
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="token" in="Header"></param>
+        /// <param name="_subscription"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("UpdateSubscription")]
+        public async Task<IActionResult> UpdateSubscription([FromHeader(Name = "Grid-Authorization-Token")] string token, customerSubscription _subscription)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+
+                AuthHelper helper = new AuthHelper(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    {
+                        int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+                        if (!ModelState.IsValid)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = string.Join("; ", ModelState.Values
+                                                           .SelectMany(x => x.Errors)
+                                                           .Select(x => x.ErrorMessage))
+                            });
+                        }
+                        var customerAccess = new CustomerDataAccess(_iconfiguration);
+
+                        var customer = await customerAccess.UpdateSubscriptionDetails(customerID, _subscription);
+
+                        if (customer == null)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                // I am marking HasSucceeded as true assuming that Customer can have 0 plan so its not an error.
+                                HasSucceeded = true,
+                                Message = DbReturnValue.NoRecords.GetDescription(),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                        else
+                        {
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = true,
+                                Message = StatusMessages.SuccessMessage,
+                                Result = customer
+                            });
+                        }
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+
+                }
+
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+
             }
             catch (Exception ex)
             {

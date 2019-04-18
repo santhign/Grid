@@ -60,6 +60,13 @@ namespace AdminService.Models
         /// </value>
         public string Gender { get; set; }
         /// <summary>
+        /// Gets or sets the DOB.
+        /// </summary>
+        /// <value>
+        /// The DOB.
+        /// </value>
+        public DateTime? DOB { get; set; }
+        /// <summary>
         /// Gets or sets the SMS subscription.
         /// </summary>
         /// <value>
@@ -80,6 +87,13 @@ namespace AdminService.Models
         /// The status.
         /// </value>
         public string Status { get; set; }
+        /// <summary>
+        /// Gets or sets the joined on.
+        /// </summary>
+        /// <value>
+        /// The joined on.
+        /// </value>
+        public DateTime JoinedOn { get; set; }
     }
     /// <summary>
     /// CustomerSearch class
