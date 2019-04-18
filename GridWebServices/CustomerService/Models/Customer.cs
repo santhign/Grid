@@ -33,6 +33,13 @@ namespace CustomerService.Models
         /// </value>
         public string Password { get; set; }
         /// <summary>
+        /// Gets or sets the Name.
+        /// </summary>
+        /// <value>
+        /// The Name.
+        /// </value>
+        public string Name { get; set; }
+        /// <summary>
         /// Gets or sets the mobile number.
         /// </summary>
         /// <value>
