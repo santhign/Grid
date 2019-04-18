@@ -19,6 +19,7 @@ namespace Core.Models
     public class FreeNumber
     {
         public string MobileNumber { get; set; }
+        public string ServiceCode { get; set; }
     }
 
     public class PremiumNumbers
