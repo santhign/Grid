@@ -144,17 +144,14 @@ namespace CustomerService.Controllers
             }
         }
 
-
         /// <summary>
-        /// Validate reset password token
+        /// Authenticate customer against token given.
+        /// Returns logged in Principle with success status, auth token and logged customer details
         /// </summary>
-        /// <param name="passwordtoken"></param>
-        /// <returns>
-        /// OperationsResponse
-        /// </returns>
-
-        [HttpGet("ValidateResetPasswordToken/{passwordtoken}")]
-        public async Task<IActionResult> ValidateResetPasswordToken([FromRoute] string passwordtoken)
+        /// <param name="token"></param>
+        /// <returns>LoggedInPrinciple</returns>
+        [HttpGet("GetTokenDetails/{token}")]
+        public async Task<IActionResult> GetTokenDetails([FromRoute]string token)
         {
             try
             {
@@ -171,27 +168,25 @@ namespace CustomerService.Controllers
                     };
                 }
 
+
                 AccountDataAccess _AccountAccess = new AccountDataAccess(_iconfiguration);
 
-                DatabaseResponse response = await _AccountAccess.ValidateResetPasswordToken(passwordtoken);
+                DatabaseResponse response = await _AccountAccess.AuthenticateToken(token);
 
-                if (response.ResponseCode == ((int)DbReturnValue.ResetPasswordTokenValid))
+                if (response.ResponseCode == 105)
                 {
+                    //Authentication success
+
+                    var _accesstoken = new AccessToken();
+
+                    _accesstoken = (AccessToken)response.Results;
+
+                    // return basic user info (without password) and token to store client side
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = true,
-                        Message = EnumExtensions.GetDescription(DbReturnValue.ResetPasswordTokenValid),
-                        IsDomainValidationErrors = true
-                    });
-                }
-
-                else if (response.ResponseCode == ((int)DbReturnValue.ResetPasswordTokenExpired))
-                {
-                    return Ok(new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        Message = EnumExtensions.GetDescription(DbReturnValue.ResetPasswordTokenExpired),
-                        IsDomainValidationErrors = true
+                        Message = EnumExtensions.GetDescription(DbReturnValue.AuthSuccess),
+                        ReturnedObject = _accesstoken
                     });
                 }
 
@@ -200,97 +195,11 @@ namespace CustomerService.Controllers
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
-                        Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
+                        Message = EnumExtensions.GetDescription(DbReturnValue.ReasonUnknown),
                         IsDomainValidationErrors = true
                     });
                 }
 
-            }
-            catch (Exception ex)
-            {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-
-                return Ok(new OperationResponse
-                {
-                    HasSucceeded = false,
-                    Message = StatusMessages.ServerError,
-                    IsDomainValidationErrors = false
-                });
-
-            }
-        }
-
-        /// <summary>
-        /// Reset customer password
-        /// </summary>
-        /// <param name="passwordResetRequest">
-        /// body{
-        /// "NewPassword" :"",
-        /// "ResetToken" :"A4EDFE2A4EDFE23A4EDFE23A4EDFE23A4EDFE233",       
-        /// }
-        /// </param>
-        /// <returns>OperationsResponse</returns>
-        [HttpPost("ResetPassword")]
-        public async Task<IActionResult> ResetPassword([FromBody] ResetPassword passwordResetRequest)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return Ok(new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        IsDomainValidationErrors = true,
-                        Message = string.Join("; ", ModelState.Values
-                                                 .SelectMany(x => x.Errors)
-                                                 .Select(x => x.ErrorMessage))
-                    });
-                }
-
-                AccountDataAccess _accountDataAccess = new AccountDataAccess(_iconfiguration);
-
-                DatabaseResponse response = await _accountDataAccess.ResetPassword(passwordResetRequest);
-
-                if (response.ResponseCode == ((int)DbReturnValue.NotExists))
-                { //102
-                    return Ok(new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        Message = EnumExtensions.GetDescription(CommonErrors.TokenNotExists),
-                        IsDomainValidationErrors = true
-                    });
-                }
-
-                if (response.ResponseCode == ((int)DbReturnValue.UpdateSuccess))
-                { //101
-                    return Ok(new OperationResponse
-                    {
-                        HasSucceeded = true,
-                        Message = EnumExtensions.GetDescription(CommonErrors.PasswordResetSuccess),
-                        IsDomainValidationErrors = false
-                    });
-                }
-
-                if (response.ResponseCode == ((int)DbReturnValue.UpdationFailed))
-                {//106
-                    return Ok(new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        Message = EnumExtensions.GetDescription(CommonErrors.PasswordResetFailed),
-                        IsDomainValidationErrors = true
-                    });
-                }
-                else
-                {    //125              
-
-                    return Ok(new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        Message = EnumExtensions.GetDescription(DbReturnValue.ResetPasswordTokenExpired),
-                        IsDomainValidationErrors = false,
-                       
-                    });
-                }
             }
             catch (Exception ex)
             {

@@ -426,5 +426,44 @@ namespace AdminService.DataAccess
             }
         }
 
+        public async Task<DatabaseResponse> ValidatePassword(int AdminUserID, string Password)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                 {
+                    new SqlParameter( "@AdminUserID",  SqlDbType.VarChar ),
+                    new SqlParameter( "@Password",  SqlDbType.VarChar )
+                };
+
+                parameters[0].Value = AdminUserID;
+                parameters[1].Value = new Sha2().Hash(Password);
+
+                _DataHelper = new DataAccessHelper("Admin_ValidateAdminUserPassword", parameters, _configuration);
+                
+                int result = await _DataHelper.RunAsync();
+
+                AdminUsers adminuser = new AdminUsers();
+
+                if (result == 105)
+                {
+                    return new DatabaseResponse { ResponseCode = result, Results = "valid" };
+                }
+                else
+                {
+                    return new DatabaseResponse { ResponseCode = result, Results = "invalid" };
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw ex;
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
     }
 }

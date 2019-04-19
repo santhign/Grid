@@ -151,11 +151,8 @@ namespace AdminService.DataAccess
         /// <returns></returns>
         public async Task<List<CustomerSearch>> GetSearchCustomers(string SearchValue)
         {
-
             try
             {
-
-
                 SqlParameter[] parameters =
                     {
                     new SqlParameter("@SearchValue", SqlDbType.NVarChar)
@@ -235,6 +232,7 @@ namespace AdminService.DataAccess
                         {
 
                             orderDetails.OrderID = Convert.ToInt32(dr["OrderID"]);
+                            orderDetails.ListingStatus = dr["ListingStatus"].ToString();
                             orderDetails.OrderNumber = dr["OrderNumber"].ToString();
                             orderDetails.OrderDate = Convert.ToDateTime(dr["OrderDate"]);
                             orderDetails.OrderStatus = dr["OrderStatus"].ToString();
@@ -345,6 +343,48 @@ namespace AdminService.DataAccess
                 }
 
                 return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> GetCustomerAccessToken(int AdminUserID, int CustomerID)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                    {
+                    new SqlParameter("@AdminUserID", SqlDbType.Int),
+                    new SqlParameter("@CustomerID", SqlDbType.Int)
+                    };
+
+                parameters[0].Value = AdminUserID;
+                parameters[1].Value = CustomerID;
+                _DataHelper = new DataAccessHelper("Admin_GetAccessToken", parameters, _configuration);
+
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt);
+
+                string accesstoken = "";
+
+                if (result == 105)
+                {
+
+                    accesstoken = dt.Rows[0][0].ToString().Trim();
+                }
+
+                return new DatabaseResponse { ResponseCode = result, Results = accesstoken }; ;
             }
 
             catch (Exception ex)

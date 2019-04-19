@@ -9,7 +9,10 @@ using Core.Models;
 using Core.Enums;
 using CustomerService.Models;
 using InfrastructureService;
-
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 
 namespace CustomerService.DataAccess
 {
@@ -154,25 +157,108 @@ namespace CustomerService.DataAccess
             }
         }
 
-        public async Task<DatabaseResponse> ValidateResetPasswordToken(string token)
+        public async Task<DatabaseResponse> AuthenticateToken(string token)
         {
             try
             {
                 SqlParameter[] parameters =
-               {                  
+               {
                      new SqlParameter( "@Token",  SqlDbType.NVarChar )
 
                 };
+                parameters[0].Value = token;
 
-                 parameters[0].Value = token;               
+                _DataHelper = new DataAccessHelper("Customers_GetAccessTokenDetails", parameters, _configuration);
 
-                _DataHelper = new DataAccessHelper("Customer_ValidateResetPasswordToken", parameters, _configuration);               
+                DataTable dt = new DataTable();
 
-                int result = await _DataHelper.RunAsync(); // 124 /125
+                int result = await _DataHelper.RunAsync(dt); // 100 /105
 
                 DatabaseResponse response = new DatabaseResponse();
 
-                response = new DatabaseResponse { ResponseCode = result };                
+                if (result == 105)
+                {
+                    AccessToken tokenResponse = new AccessToken();
+
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+
+                        tokenResponse = (from model in dt.AsEnumerable()
+                                         select new AccessToken()
+                                         {
+                                             CustomerID = model.Field<int>("CustomerID"),
+                                             AdminUserID = model.Field<int>("AdminUserID"),
+                                             Token = model.Field<string>("Token")
+                                         }).FirstOrDefault();
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = tokenResponse };
+                }
+                else if(result == 113)
+                {
+                    //generate new token for the customer
+                    var tokenHandler = new JwtSecurityTokenHandler();
+
+                    var key = Encoding.ASCII.GetBytes("stratagile grid customer signin jwt hashing secret");
+
+                    var tokenDescriptor = new SecurityTokenDescriptor
+                    {
+                        Subject = new ClaimsIdentity(new Claim[]
+                        {
+                             new Claim(ClaimTypes.Name, dt.Rows[0][0].ToString().Trim())
+                        }),
+                        Expires = DateTime.UtcNow.AddDays(7), //  need to check with business needs
+                        SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                    };
+
+                    var newtoken = tokenHandler.CreateToken(tokenDescriptor);
+
+                    var tokenString = tokenHandler.WriteToken(newtoken);
+
+                    //log the loken agains customer
+
+                    SqlParameter[] tokenparameters =
+               {
+                     new SqlParameter( "@AccessToken",  SqlDbType.NVarChar ),
+                     new SqlParameter( "@Token",  SqlDbType.NVarChar )
+
+                };
+                    tokenparameters[0].Value = token;
+                    tokenparameters[1].Value = tokenString;
+
+                    _DataHelper = new DataAccessHelper("Customers_GetAccessNewTokenDetails", tokenparameters, _configuration);
+
+                    dt = new DataTable();
+
+                    result = await _DataHelper.RunAsync(dt); // 100 /105
+
+                    AccessToken tokenResponse = new AccessToken();
+
+                    if (result == 105)
+                    {
+                        if (dt != null && dt.Rows.Count > 0)
+                        {
+
+                            tokenResponse = (from model in dt.AsEnumerable()
+                                             select new AccessToken()
+                                             {
+                                                 CustomerID = model.Field<int>("CustomerID"),
+                                                 AdminUserID = model.Field<int>("AdminUserID"),
+                                                 Token = model.Field<string>("Token")
+                                             }).FirstOrDefault();
+                        }
+
+                        response = new DatabaseResponse { ResponseCode = result, Results = tokenResponse };
+                    }
+                    else
+                    {
+                        response = new DatabaseResponse { ResponseCode = result };
+                    }
+                }
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
 
                 return response;
             }
@@ -188,40 +274,5 @@ namespace CustomerService.DataAccess
                 _DataHelper.Dispose();
             }
         }
-        public async Task<DatabaseResponse> ResetPassword(ResetPassword resetPassword)
-        {
-            try
-            {
-
-                SqlParameter[] parameters =
-               {                   
-                    new SqlParameter( "@Token",  SqlDbType.NVarChar ),
-
-                    new SqlParameter( "@Password",  SqlDbType.NVarChar)
-                };
-
-                parameters[0].Value = resetPassword.ResetToken;
-
-                parameters[1].Value = new Sha2().Hash(resetPassword.NewPassword);                
-
-                _DataHelper = new DataAccessHelper("Customer_ResetPassword", parameters, _configuration);               
-
-                int result = await _DataHelper.RunAsync(); 
-                
-                return new DatabaseResponse { ResponseCode = result };
-            }
-
-            catch (Exception ex)
-            {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-
-                throw (ex);
-            }
-            finally
-            {
-                _DataHelper.Dispose();
-            }
-        }
-
     }
 }
