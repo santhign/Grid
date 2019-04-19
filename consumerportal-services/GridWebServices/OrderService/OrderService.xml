@@ -417,6 +417,22 @@
             <param name="OrderID"></param>
             <returns></returns>
         </member>
+        <member name="M:OrderService.Controllers.OrdersController.UpdateOrderPersonalIDDetails(System.String,OrderService.Models.UpdateOrderPersonalIDDetailsRequest)">
+            <summary>
+            This will update personal ID details of the customer for the order
+            </summary>
+            <param name="token"></param>
+            <param name="request">
+            Form{
+            "OrderID" :1,
+            "IDType" :"PAN",
+            "IDNumber":"P23FD",
+            "IDImageFront" : FileInput,
+            "IDImageBack" : FileInput        
+            }
+            </param>
+            <returns>OperationResponse</returns>
+        </member>
         <member name="M:OrderService.DataAccess.ChangeRequestDataAccess.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
             <summary>
             Constructor setting configuration
@@ -1508,22 +1524,6 @@
             The order identifier.
             </value>
         </member>
-        <member name="P:OrderService.Models.UpdateOrderPersonalDetailsRequest.IDType">
-            <summary>
-            Gets or sets the type of the identifier.
-            </summary>
-            <value>
-            The type of the identifier.
-            </value>
-        </member>
-        <member name="P:OrderService.Models.UpdateOrderPersonalDetailsRequest.IDNumber">
-            <summary>
-            Gets or sets the identifier number.
-            </summary>
-            <value>
-            The identifier number.
-            </value>
-        </member>
         <member name="P:OrderService.Models.UpdateOrderPersonalDetailsRequest.NameInNRIC">
             <summary>
             Gets or sets the name in nric.
@@ -1564,12 +1564,36 @@
             The contact number.
             </value>
         </member>
-        <member name="P:OrderService.Models.UpdateOrderPersonalDetailsRequest.Nationality">
+        <member name="P:OrderService.Models.UpdateOrderPersonalIDDetailsRequest.OrderID">
+            <summary>
+            Gets or sets the order identifier.
+            </summary>
+            <value>
+            The order identifier.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.UpdateOrderPersonalIDDetailsRequest.Nationality">
             <summary>
             Gets or sets the nationality.
             </summary>
             <value>
             The nationality.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.UpdateOrderPersonalIDDetailsRequest.IDType">
+            <summary>
+            Gets or sets the type of the identifier.
+            </summary>
+            <value>
+            The type of the identifier.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.UpdateOrderPersonalIDDetailsRequest.IDNumber">
+            <summary>
+            Gets or sets the identifier number.
+            </summary>
+            <value>
+            The identifier number.
             </value>
         </member>
         <member name="T:OrderService.Models.UpdateOrderPersonalDetails">

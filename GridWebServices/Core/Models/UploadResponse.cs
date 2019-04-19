@@ -24,9 +24,12 @@ namespace Core.Models
 
     public class DownloadNRIC
     {       
+        public int OrderID { get; set; }
         public string FrontImage { get; set; }
-
         public string  BackImage { get; set; }
+        public string IdentityCardNumber { get; set; }
+        public string IdentityCardType { get; set; }
+        public string Nationality { get; set; }
     }
 
 }
