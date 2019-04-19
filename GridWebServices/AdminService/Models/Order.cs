@@ -8,6 +8,7 @@ namespace AdminService.Models
     public class Order
     {
         public int OrderID { get; set; }
+        public string ListingStatus { get; set; }
         public string OrderNumber { get; set; }
         public string OrderStatus { get; set; }
         public DateTime OrderDate { get; set; }

@@ -235,6 +235,7 @@ namespace AdminService.DataAccess
                         {
 
                             orderDetails.OrderID = Convert.ToInt32(dr["OrderID"]);
+                            orderDetails.ListingStatus = dr["ListingStatus"].ToString();
                             orderDetails.OrderNumber = dr["OrderNumber"].ToString();
                             orderDetails.OrderDate = Convert.ToDateTime(dr["OrderDate"]);
                             orderDetails.OrderStatus = dr["OrderStatus"].ToString();
