@@ -143,5 +143,76 @@ namespace CustomerService.Controllers
 
             }
         }
+
+        /// <summary>
+        /// Authenticate customer against token given.
+        /// Returns logged in Principle with success status, auth token and logged customer details
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns>LoggedInPrinciple</returns>
+        [HttpGet("GetTokenDetails/{token}")]
+        public async Task<IActionResult> GetTokenDetails([FromRoute]string token)
+        {
+            try
+            {
+
+                if (!ModelState.IsValid)
+                {
+                    new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                                            .SelectMany(x => x.Errors)
+                                            .Select(x => x.ErrorMessage))
+                    };
+                }
+
+
+                AccountDataAccess _AccountAccess = new AccountDataAccess(_iconfiguration);
+
+                DatabaseResponse response = await _AccountAccess.AuthenticateToken(token);
+
+                if (response.ResponseCode == 105)
+                {
+                    //Authentication success
+
+                    var _accesstoken = new AccessToken();
+
+                    _accesstoken = (AccessToken)response.Results;
+
+                    // return basic user info (without password) and token to store client side
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = true,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.AuthSuccess),
+                        ReturnedObject = _accesstoken
+                    });
+                }
+
+                else
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.ReasonUnknown),
+                        IsDomainValidationErrors = true
+                    });
+                }
+
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
     }
 }

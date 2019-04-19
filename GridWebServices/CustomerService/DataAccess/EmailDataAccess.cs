@@ -56,7 +56,7 @@ namespace CustomerService.DataAccess
                     changePasswordToken = (from model in dt.AsEnumerable()
                                            select new ForgetPassword()
                                            {
-                                               CustomerId = model.Field<int>("CustomerId"),
+                                               CustomerId = model.Field<int>("CustomerID"),
                                                Token = model.Field<string>("Token"),
                                                Name= model.Field<string>("Name"),
                                                Email = model.Field<string>("Email")

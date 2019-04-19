@@ -278,7 +278,7 @@ namespace OrderService.Controllers
                 //change the config settings here
                Subscriber mpgsWhNotificationPublisher = new Subscriber(_iconfiguration, "WebhookNotification-Payment", "OrderPayment");
 
-               Action<object> MPGSOrderFinalProcessing = OrderPaymentSQSHandler.FinalProcessing;
+               Action<object> MPGSOrderFinalProcessing = SQSHandler.FinalProcessing;
 
                await   mpgsWhNotificationPublisher.ListenAsync(MPGSOrderFinalProcessing);
 

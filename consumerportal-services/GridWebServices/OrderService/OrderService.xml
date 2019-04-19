@@ -1322,6 +1322,7 @@
             <value>
             The old mobile number.
             </value>
+            
         </member>
         <member name="P:OrderService.Models.UpdateSubscriberPortingNumber.NewMobileNumber">
             <summary>
@@ -1760,6 +1761,7 @@
             <value>
             The contact number.
             </value>
+            
         </member>
         <member name="P:OrderService.Models.UpdateOrderLOADetailsRequest.EmailAdddress">
             <summary>
