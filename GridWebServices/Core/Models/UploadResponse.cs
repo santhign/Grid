@@ -24,9 +24,9 @@ namespace Core.Models
 
     public class DownloadNRIC
     {       
-        public byte[] FrontImage { get; set; }
+        public string FrontImage { get; set; }
 
-        public byte[] BackImage { get; set; }
+        public string  BackImage { get; set; }
     }
 
 }

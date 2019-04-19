@@ -3119,11 +3119,12 @@ namespace OrderService.Controllers
                                     GridAWSS3Config awsConfig = configHelper.GetGridAwsConfig((List<Dictionary<string, string>>)awsConfigResponse.Results);
 
                                     AmazonS3 s3Helper = new AmazonS3(awsConfig);
+
                                     DownloadResponse FrontImageDownloadResponse = await s3Helper.DownloadFile(((OrderNRICDetails)nRICresponse.Results).DocumentURL.Remove(0, awsConfig.AWSEndPoint.Length));
 
                                     DownloadResponse BackImageDownloadResponse = await s3Helper.DownloadFile(((OrderNRICDetails)nRICresponse.Results).DocumentBackURL.Remove(0, awsConfig.AWSEndPoint.Length));
 
-                                    DownloadNRIC nRICDownloadObject = new DownloadNRIC { FrontImage = FrontImageDownloadResponse.FileObject != null ? FrontImageDownloadResponse.FileObject.ToArray() : null, BackImage = BackImageDownloadResponse.FileObject != null ? BackImageDownloadResponse.FileObject.ToArray() : null };
+                                    DownloadNRIC nRICDownloadObject = new DownloadNRIC { FrontImage = FrontImageDownloadResponse.FileObject != null ? configHelper.GetBase64StringFromByteArray(FrontImageDownloadResponse.FileObject, ((OrderNRICDetails)nRICresponse.Results).DocumentURL.Remove(0, awsConfig.AWSEndPoint.Length)) : null, BackImage = BackImageDownloadResponse.FileObject != null ? configHelper.GetBase64StringFromByteArray(BackImageDownloadResponse.FileObject, ((OrderNRICDetails)nRICresponse.Results).DocumentBackURL.Remove(0, awsConfig.AWSEndPoint.Length)) : null };
 
                                     return Ok(new OperationResponse
                                     {

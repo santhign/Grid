@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Core.Models;
 using Core.Enums;
 using System.Linq;
+using System.IO;
 
 namespace Core.Helpers
 {
@@ -35,6 +36,18 @@ namespace Core.Helpers
             config.SNSTopic = configDict.Single(x => x["key"] == "SNSTopic")["value"];
             config.SQS = configDict.Single(x => x["key"] == "SQS")["value"];
             return config;
+        }
+
+        public string GetBase64StringFromByteArray(byte[] byteArray, string fileName)
+        {            
+            string base64String = Convert.ToBase64String(byteArray, 0, byteArray.Length);
+
+           return "data:" + GetContentTypeFromExtension(fileName) + ";base64," + base64String;
+        }
+
+        public string GetContentTypeFromExtension(string filename)
+        {
+            return MimeTypes.GetMimeType(filename);
         }
 
     }
