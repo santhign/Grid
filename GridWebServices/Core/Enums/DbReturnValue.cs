@@ -97,5 +97,12 @@ namespace Core.Enums
         [Description("Order completed, Number can not be deleted")]
         CompletedOrderDelete = 123,
 
+        [EnumMember(Value = "Reset Password Token Valid")]
+        [Description("Reset Password Token Valid")]
+        ResetPasswordTokenValid = 124,
+
+        [EnumMember(Value = "Reset Password Token Expired")]
+        [Description("Reset Password Token Expired")]
+        ResetPasswordTokenExpired = 125,       
     }
 }

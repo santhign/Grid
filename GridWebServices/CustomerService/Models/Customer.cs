@@ -164,6 +164,26 @@ namespace CustomerService.Models
         public string Password { get; set; }       
     }
 
+    public class ResetPassword
+    {
+        /// <summary>
+        /// New Password
+        /// </summary>
+        /// <value>
+        /// password
+        /// </value>
+        [Required(ErrorMessage = "NewPassword required")]       
+        public string NewPassword { get; set; }
+        /// <summary>
+        /// Gets or sets the password.
+        /// </summary>
+        /// <value>
+        /// The password.
+        /// </value>
+        [Required(ErrorMessage = "Token required")]
+        public string ResetToken { get; set; }
+    }
+
     /// <summary>
     /// LoginDto class
     /// </summary>
