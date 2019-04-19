@@ -973,11 +973,24 @@ namespace OrderService.Controllers
 
                             string AssetToSubscribe = bsshelper.GetAssetId(res);
 
+                            if (res != null)
+                            {
+                                BSSNumbers numbers = new BSSNumbers();
+
+                                numbers.FreeNumbers = bsshelper.GetFreeNumbers(res);
+
+                                //insert this AssetToSubscribe into database
+
+                                string json = bsshelper.GetJsonString(numbers.FreeNumbers); // json insert
+
+                                DatabaseResponse updateBssCallFeeNumbers = await _orderAccess.UpdateBSSCallNumbers(json, ((BSSAssetRequest)requestIdRes.Results).userid, ((BSSAssetRequest)requestIdRes.Results).BSSCallLogID);
+                            }
+
                             if (res != null && (int.Parse(res.Response.asset_details.total_record_count) > 0))
                             {
-                                //Block number                                    
-
-                                DatabaseResponse requestIdToUpdateRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.NewSession, "");
+                                //Block number                                   
+                                
+                                DatabaseResponse requestIdToUpdateRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.ExistingSession, AssetToSubscribe);
 
                                 BSSUpdateResponseObject bssUpdateResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateRes.Results, AssetToSubscribe, false);
 
@@ -2934,6 +2947,20 @@ namespace OrderService.Controllers
 
                             string NewNumber = bsshelper.GetAssetId(res);
 
+                            if (res != null)
+                            {
+                                BSSNumbers numbers = new BSSNumbers();
+
+                                numbers.FreeNumbers = bsshelper.GetFreeNumbers(res);
+
+                                //insert this AssetToSubscribe into database
+
+                                string json = bsshelper.GetJsonString(numbers.FreeNumbers); // json insert
+
+                                DatabaseResponse updateBssCallFeeNumbers = await _orderAccess.UpdateBSSCallNumbers(json, ((BSSAssetRequest)requestIdRes.Results).userid, ((BSSAssetRequest)requestIdRes.Results).BSSCallLogID);
+                            }
+
+
                             if (res != null && (int.Parse(res.Response.asset_details.total_record_count) > 0))
                             {
                                 //Block number                                    
@@ -3119,11 +3146,12 @@ namespace OrderService.Controllers
                                     GridAWSS3Config awsConfig = configHelper.GetGridAwsConfig((List<Dictionary<string, string>>)awsConfigResponse.Results);
 
                                     AmazonS3 s3Helper = new AmazonS3(awsConfig);
+
                                     DownloadResponse FrontImageDownloadResponse = await s3Helper.DownloadFile(((OrderNRICDetails)nRICresponse.Results).DocumentURL.Remove(0, awsConfig.AWSEndPoint.Length));
 
                                     DownloadResponse BackImageDownloadResponse = await s3Helper.DownloadFile(((OrderNRICDetails)nRICresponse.Results).DocumentBackURL.Remove(0, awsConfig.AWSEndPoint.Length));
 
-                                    DownloadNRIC nRICDownloadObject = new DownloadNRIC { FrontImage = FrontImageDownloadResponse.FileObject != null ? FrontImageDownloadResponse.FileObject.ToArray() : null, BackImage = BackImageDownloadResponse.FileObject != null ? BackImageDownloadResponse.FileObject.ToArray() : null };
+                                    DownloadNRIC nRICDownloadObject = new DownloadNRIC { FrontImage = FrontImageDownloadResponse.FileObject != null ? configHelper.GetBase64StringFromByteArray(FrontImageDownloadResponse.FileObject, ((OrderNRICDetails)nRICresponse.Results).DocumentURL.Remove(0, awsConfig.AWSEndPoint.Length)) : null, BackImage = BackImageDownloadResponse.FileObject != null ? configHelper.GetBase64StringFromByteArray(BackImageDownloadResponse.FileObject, ((OrderNRICDetails)nRICresponse.Results).DocumentBackURL.Remove(0, awsConfig.AWSEndPoint.Length)) : null };
 
                                     return Ok(new OperationResponse
                                     {

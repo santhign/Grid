@@ -197,7 +197,7 @@ namespace OrderService.Controllers
 
                         DatabaseResponse serviceCAF = await _orderAccess.GetBSSServiceCategoryAndFee(ServiceTypes.Free.ToString());
 
-                        DatabaseResponse requestIdResForFreeNumber = await _orderAccess.GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.GetAssets.ToString(), customerID, (int)BSSCalls.ExistingSession, "");
+                        DatabaseResponse requestIdResForFreeNumber = await _orderAccess.GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.GetAssets.ToString(), customerID, (int)BSSCalls.NewSession, "");
 
                         //Getting FreeNumbers
                         ResponseObject res = await bsshelper.GetAssetInventory(bssConfig, ((List<ServiceFees>)serviceCAF.Results).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdResForFreeNumber.Results, systemConfig.FreeNumberListCount);
@@ -405,8 +405,7 @@ namespace OrderService.Controllers
                         }
                         BSSAPIHelper bsshelper = new BSSAPIHelper();
 
-                        OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
-
+                        OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration); 
 
                         DatabaseResponse systemConfigResponse = await _orderAccess.GetConfiguration(ConfiType.System.ToString());
 
@@ -418,7 +417,7 @@ namespace OrderService.Controllers
 
                         DatabaseResponse serviceCAF = await _orderAccess.GetBSSServiceCategoryAndFee(ServiceTypes.Free.ToString());
 
-                        DatabaseResponse requestIdResForFreeNumber = await _orderAccess.GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.GetAssets.ToString(), customerID, (int)BSSCalls.ExistingSession, "");
+                        DatabaseResponse requestIdResForFreeNumber = await _orderAccess.GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.GetAssets.ToString(), customerID, (int)BSSCalls.NewSession, "");
 
                         BSSNumbers numbers = new BSSNumbers();
 
@@ -470,7 +469,7 @@ namespace OrderService.Controllers
                                     //get code and call premum 
                                     //  fee.PortalServiceName
 
-                                    DatabaseResponse requestIdResForPremium = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.GetAssets.ToString(), customerID, (int)BSSCalls.ExistingSession, "");
+                                    DatabaseResponse requestIdResForPremium = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.GetAssets.ToString(), customerID, (int)BSSCalls.NewSession, "");
 
                                     ResponseObject premumResponse = await bsshelper.GetAssetInventory(bssConfig, fee.ServiceCode, (BSSAssetRequest)requestIdResForPremium.Results, countPerPremium);
 

@@ -115,7 +115,12 @@ namespace Core.Helpers
             {
                 GridBSSConfi config = new GridBSSConfi();
                 config.GridId = int.Parse(configDict.Single(x => x["key"] == "GridId")["value"]);
+
+#if DEBUG
+                config.BSSAPIUrl = configDict.Single(x => x["key"] == "BSSAPILocalUrl")["value"];
+#else
                 config.BSSAPIUrl = configDict.Single(x => x["key"] == "BSSAPIUrl")["value"];
+#endif
                 config.GridDefaultAssetLimit = int.Parse(configDict.Single(x => x["key"] == "GridDefaultAssetLimit")["value"]);
                 config.GridDefaultLimit = int.Parse(configDict.Single(x => x["key"] == "GridDefaultLimit")["value"]);
                 config.GridDefaultOffset = int.Parse(configDict.Single(x => x["key"] == "GridDefaultOffset")["value"]);

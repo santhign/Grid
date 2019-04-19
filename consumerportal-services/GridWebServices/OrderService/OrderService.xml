@@ -60,6 +60,34 @@
             </param>
             <returns>OperationsResponse</returns>
         </member>
+        <member name="T:OrderService.Controllers.ChangeRequestController">
+            <summary>
+            Change Request Controller class
+            </summary>
+        </member>
+        <member name="F:OrderService.Controllers.ChangeRequestController._iconfiguration">
+            <summary>
+            The iconfiguration
+            </summary>
+        </member>
+        <member name="F:OrderService.Controllers.ChangeRequestController._changeRequestDataAccess">
+            <summary>
+            The change request data access
+            </summary>
+        </member>
+        <member name="F:OrderService.Controllers.ChangeRequestController._messageQueueDataAccess">
+            <summary>
+            The message queue data access
+            </summary>
+        </member>
+        <member name="M:OrderService.Controllers.ChangeRequestController.#ctor(Microsoft.Extensions.Configuration.IConfiguration,OrderService.DataAccess.IChangeRequestDataAccess,OrderService.DataAccess.IMessageQueueDataAccess)">
+            <summary>
+            Initializes a new instance of the <see cref="T:OrderService.Controllers.ChangeRequestController"/> class.
+            </summary>
+            <param name="configuration">The configuration.</param>
+            <param name="changeRequestDataAccess">The change request data access.</param>
+            <param name="messageQueueDataAccess">The message queue data access.</param>
+        </member>
         <member name="M:OrderService.Controllers.ChangeRequestController.RemoveVasService(System.String,System.String,System.Int32)">
             <summary>
             Removes the vas service.
@@ -92,7 +120,7 @@
             <summary>
             Subscribers the sim replacement request.
             </summary>
-            <param name="token" in="Header">The token.</param>
+            <param name="token">The token.</param>
             <param name="mobileNumber">The mobile number.</param>
             <returns></returns>
         </member>
@@ -111,6 +139,14 @@
             </summary>
             <param name="token">The token.</param>
             <param name="request">The request.</param>
+            <returns></returns>
+        </member>
+        <member name="M:OrderService.Controllers.ChangeRequestController.UpdateCRShippingDetails(System.String,OrderService.Models.UpdateCRShippingDetailsRequest)">
+            <summary>
+            Updates the cr shipping details.
+            </summary>
+            <param name="token">The token.</param>
+            <param name="shippingDetails">The shipping details.</param>
             <returns></returns>
         </member>
         <member name="M:OrderService.Controllers.OrdersController.Get(System.String,System.Int32)">
@@ -378,7 +414,7 @@
             
             </summary>
             <param name="token" in="Header"></param>
-            <param name="OrderID" in="Body"></param>
+            <param name="OrderID"></param>
             <returns></returns>
         </member>
         <member name="M:OrderService.DataAccess.ChangeRequestDataAccess.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
@@ -485,6 +521,64 @@
             Updates the cr shipping details.
             </summary>
             <param name="shippingDetails">The shipping details.</param>
+            <returns></returns>
+        </member>
+        <member name="T:OrderService.DataAccess.IMessageQueueDataAccess">
+            <summary>
+            IMessageQueueDataAccess interface
+            </summary>
+        </member>
+        <member name="M:OrderService.DataAccess.IMessageQueueDataAccess.GetMessageBodyByChangeRequest(System.Int32)">
+            <summary>
+            Gets the message body by change request.
+            </summary>
+            <param name="changeRequestId">The change request identifier.</param>
+            <returns></returns>
+        </member>
+        <member name="M:OrderService.DataAccess.IMessageQueueDataAccess.GetMessageDetails(System.String)">
+            <summary>
+            Gets the message details.
+            </summary>
+            <param name="MPGSOrderID">The MPGS order identifier.</param>
+            <returns></returns>
+        </member>
+        <member name="M:OrderService.DataAccess.IMessageQueueDataAccess.PublishMessageToMessageQueue(System.String,System.Object,System.Collections.Generic.Dictionary{System.String,System.String},System.String)">
+            <summary>
+            Publishes the message to message queue.
+            </summary>
+            <param name="topicName">Name of the topic.</param>
+            <param name="msgBody">The MSG body.</param>
+            <param name="messageAttribute">The message attribute.</param>
+            <param name="subject">The subject.</param>
+            <returns></returns>
+        </member>
+        <member name="M:OrderService.DataAccess.IMessageQueueDataAccess.PublishMessageToMessageQueue(System.String,System.Object,System.Collections.Generic.Dictionary{System.String,System.String})">
+            <summary>
+            Publishes the message to message queue.
+            </summary>
+            <param name="topicName">Name of the topic.</param>
+            <param name="msgBody">The MSG body.</param>
+            <param name="messageAttribute">The message attribute.</param>
+            <returns></returns>
+        </member>
+        <member name="M:OrderService.DataAccess.IMessageQueueDataAccess.InsertMessageInMessageQueueRequest(OrderService.Models.MessageQueueRequest)">
+            <summary>
+            Inserts the message in message queue request.
+            </summary>
+            <param name="messageQueueRequest">The message queue request.</param>
+            <returns></returns>
+        </member>
+        <member name="M:OrderService.DataAccess.MessageQueueDataAccess.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Constructor setting configuration
+            </summary>
+            <param name="configuration"></param>
+        </member>
+        <member name="M:OrderService.DataAccess.MessageQueueDataAccess.GetMessageBodyByChangeRequest(System.Int32)">
+            <summary>
+            Gets the message body by change request.
+            </summary>
+            <param name="changeRequestId">The change request identifier.</param>
             <returns></returns>
         </member>
         <member name="M:OrderService.DataAccess.OrderDataAccess.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
@@ -2003,6 +2097,446 @@
             <returns>
             NameValueCollection of all the nested JSON parameters
             </returns>
+        </member>
+        <member name="T:OrderService.Models.MessageBodyForCR">
+            <summary>
+            MEssage Body for Change Request class model
+            </summary>
+        </member>
+        <member name="M:OrderService.Models.MessageBodyForCR.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:OrderService.Models.MessageBodyForCR"/> class.
+            </summary>
+        </member>
+        <member name="P:OrderService.Models.MessageBodyForCR.AccountID">
+            <summary>
+            Gets or sets the account identifier.
+            </summary>
+            <value>
+            The account identifier.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.MessageBodyForCR.CustomerID">
+            <summary>
+            Gets or sets the customer identifier.
+            </summary>
+            <value>
+            The customer identifier.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.MessageBodyForCR.ChangeRequestID">
+            <summary>
+            Gets or sets the change request identifier.
+            </summary>
+            <value>
+            The change request identifier.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.MessageBodyForCR.OrderNumber">
+            <summary>
+            Gets or sets the order number.
+            </summary>
+            <value>
+            The order number.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.MessageBodyForCR.RequestOn">
+            <summary>
+            Gets or sets the request on.
+            </summary>
+            <value>
+            The request on.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.MessageBodyForCR.BillingUnit">
+            <summary>
+            Gets or sets the billing unit.
+            </summary>
+            <value>
+            The billing unit.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.MessageBodyForCR.BillingFloor">
+            <summary>
+            Gets or sets the billing floor.
+            </summary>
+            <value>
+            The billing floor.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.MessageBodyForCR.BillingBuildingNumber">
+            <summary>
+            Gets or sets the billing building number.
+            </summary>
+            <value>
+            The billing building number.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.MessageBodyForCR.BillingBuildingName">
+            <summary>
+            Gets or sets the name of the billing building.
+            </summary>
+            <value>
+            The name of the billing building.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.MessageBodyForCR.BillingStreetName">
+            <summary>
+            Gets or sets the name of the billing street.
+            </summary>
+            <value>
+            The name of the billing street.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.MessageBodyForCR.BillingPostCode">
+            <summary>
+            Gets or sets the billing post code.
+            </summary>
+            <value>
+            The billing post code.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.MessageBodyForCR.BillingContactNumber">
+            <summary>
+            Gets or sets the billing contact number.
+            </summary>
+            <value>
+            The billing contact number.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.MessageBodyForCR.ReferralCode">
+            <summary>
+            Gets or sets the referral code.
+            </summary>
+            <value>
+            The referral code.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.MessageBodyForCR.Name">
+            <summary>
+            Gets or sets the name.
+            </summary>
+            <value>
+            The name.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.MessageBodyForCR.Email">
+            <summary>
+            Gets or sets the email.
+            </summary>
+            <value>
+            The email.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.MessageBodyForCR.Nationality">
+            <summary>
+            Gets or sets the nationality.
+            </summary>
+            <value>
+            The nationality.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.MessageBodyForCR.IdentityCardType">
+            <summary>
+            Gets or sets the type of the identity card.
+            </summary>
+            <value>
+            The type of the identity card.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.MessageBodyForCR.IdentityCardNumber">
+            <summary>
+            Gets or sets the identity card number.
+            </summary>
+            <value>
+            The identity card number.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.MessageBodyForCR.IsSameAsBilling">
+            <summary>
+            Gets or sets the is same as billing.
+            </summary>
+            <value>
+            The is same as billing.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.MessageBodyForCR.ShippingUnit">
+            <summary>
+            Gets or sets the shipping unit.
+            </summary>
+            <value>
+            The shipping unit.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.MessageBodyForCR.ShippingFloor">
+            <summary>
+            Gets or sets the shipping floor.
+            </summary>
+            <value>
+            The shipping floor.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.MessageBodyForCR.ShippingBuildingNumber">
+            <summary>
+            Gets or sets the shipping building number.
+            </summary>
+            <value>
+            The shipping building number.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.MessageBodyForCR.ShippingBuildingName">
+            <summary>
+            Gets or sets the name of the shipping building.
+            </summary>
+            <value>
+            The name of the shipping building.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.MessageBodyForCR.ShippingStreetName">
+            <summary>
+            Gets or sets the name of the shipping street.
+            </summary>
+            <value>
+            The name of the shipping street.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.MessageBodyForCR.ShippingPostCode">
+            <summary>
+            Gets or sets the shipping post code.
+            </summary>
+            <value>
+            The shipping post code.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.MessageBodyForCR.ShippingContactNumber">
+            <summary>
+            Gets or sets the shipping contact number.
+            </summary>
+            <value>
+            The shipping contact number.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.MessageBodyForCR.AlternateRecipientContact">
+            <summary>
+            Gets or sets the alternate recipient contact.
+            </summary>
+            <value>
+            The alternate recipient contact.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.MessageBodyForCR.AlternateRecipientName">
+            <summary>
+            Gets or sets the name of the alternate recipient.
+            </summary>
+            <value>
+            The name of the alternate recipient.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.MessageBodyForCR.AlternateRecipientEmail">
+            <summary>
+            Gets or sets the alternate recipient email.
+            </summary>
+            <value>
+            The alternate recipient email.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.MessageBodyForCR.PortalSlotID">
+            <summary>
+            Gets or sets the portal slot identifier.
+            </summary>
+            <value>
+            The portal slot identifier.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.MessageBodyForCR.SlotDate">
+            <summary>
+            Gets or sets the slot date.
+            </summary>
+            <value>
+            The slot date.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.MessageBodyForCR.SlotFromTime">
+            <summary>
+            Gets or sets the slot from time.
+            </summary>
+            <value>
+            The slot from time.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.MessageBodyForCR.SlotToTime">
+            <summary>
+            Gets or sets the slot to time.
+            </summary>
+            <value>
+            The slot to time.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.MessageBodyForCR.ScheduledDate">
+            <summary>
+            Gets or sets the scheduled date.
+            </summary>
+            <value>
+            The scheduled date.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.MessageBodyForCR.ServiceFee">
+            <summary>
+            Gets or sets the service fee.
+            </summary>
+            <value>
+            The service fee.
+            </value>
+        </member>
+        <member name="F:OrderService.Models.MessageBodyForCR.subscriberDetails">
+            <summary>
+            The subscriber details
+            </summary>
+        </member>
+        <member name="T:OrderService.Models.SubscriberDetails">
+            <summary>
+            Subscriber details
+            </summary>
+        </member>
+        <member name="M:OrderService.Models.SubscriberDetails.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:OrderService.Models.SubscriberDetails"/> class.
+            </summary>
+        </member>
+        <member name="P:OrderService.Models.SubscriberDetails.SubscriberID">
+            <summary>
+            Gets or sets the subscriber identifier.
+            </summary>
+            <value>
+            The subscriber identifier.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.SubscriberDetails.MobileNumber">
+            <summary>
+            Gets or sets the mobile number.
+            </summary>
+            <value>
+            The mobile number.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.SubscriberDetails.DisplayName">
+            <summary>
+            Gets or sets the display name.
+            </summary>
+            <value>
+            The display name.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.SubscriberDetails.IsPrimary">
+            <summary>
+            Gets or sets the is primary.
+            </summary>
+            <value>
+            The is primary.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.SubscriberDetails.PremiumType">
+            <summary>
+            Gets or sets the type of the premium.
+            </summary>
+            <value>
+            The type of the premium.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.SubscriberDetails.IsPorted">
+            <summary>
+            Gets or sets the is ported.
+            </summary>
+            <value>
+            The is ported.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.SubscriberDetails.DonorProviderName">
+            <summary>
+            Gets or sets the name of the donor provider.
+            </summary>
+            <value>
+            The name of the donor provider.
+            </value>
+        </member>
+        <member name="F:OrderService.Models.SubscriberDetails.bundleDetails">
+            <summary>
+            The bundle details
+            </summary>
+        </member>
+        <member name="T:OrderService.Models.BundleDetails">
+            <summary>
+            Bundle details
+            </summary>
+        </member>
+        <member name="P:OrderService.Models.BundleDetails.BundleID">
+            <summary>
+            Gets or sets the bundle identifier.
+            </summary>
+            <value>
+            The bundle identifier.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.BundleDetails.BSSPlanCode">
+            <summary>
+            Gets or sets the BSS plan code.
+            </summary>
+            <value>
+            The BSS plan code.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.BundleDetails.BSSPlanName">
+            <summary>
+            Gets or sets the name of the BSS plan.
+            </summary>
+            <value>
+            The name of the BSS plan.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.BundleDetails.PlanType">
+            <summary>
+            Gets or sets the type of the plan.
+            </summary>
+            <value>
+            The type of the plan.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.BundleDetails.PlanMarketingName">
+            <summary>
+            Gets or sets the name of the plan marketing.
+            </summary>
+            <value>
+            The name of the plan marketing.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.BundleDetails.PortalDescription">
+            <summary>
+            Gets or sets the portal description.
+            </summary>
+            <value>
+            The portal description.
+            </value>
+        </member>
+        <member name="T:OrderService.Models.MessageDetailsForCROrOrder">
+            <summary>
+            MEssage details for sending to message Queue
+            </summary>
+        </member>
+        <member name="P:OrderService.Models.MessageDetailsForCROrOrder.RequestTypeID">
+            <summary>
+            Gets or sets the request type identifier.
+            </summary>
+            <value>
+            The request type identifier.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.MessageDetailsForCROrOrder.ChangeRequestID">
+            <summary>
+            Gets or sets the change request identifier.
+            </summary>
+            <value>
+            The change request identifier.
+            </value>
         </member>
         <member name="M:OrderService.Models.TransactionResponseModel.toTransactionResponseModel(System.String)">
             <summary>
