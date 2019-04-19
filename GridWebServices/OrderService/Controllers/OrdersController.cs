@@ -973,11 +973,24 @@ namespace OrderService.Controllers
 
                             string AssetToSubscribe = bsshelper.GetAssetId(res);
 
+                            if (res != null)
+                            {
+                                BSSNumbers numbers = new BSSNumbers();
+
+                                numbers.FreeNumbers = bsshelper.GetFreeNumbers(res);
+
+                                //insert this AssetToSubscribe into database
+
+                                string json = bsshelper.GetJsonString(numbers.FreeNumbers); // json insert
+
+                                DatabaseResponse updateBssCallFeeNumbers = await _orderAccess.UpdateBSSCallNumbers(json, ((BSSAssetRequest)requestIdRes.Results).userid, ((BSSAssetRequest)requestIdRes.Results).BSSCallLogID);
+                            }
+
                             if (res != null && (int.Parse(res.Response.asset_details.total_record_count) > 0))
                             {
-                                //Block number                                    
-
-                                DatabaseResponse requestIdToUpdateRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.NewSession, "");
+                                //Block number                                   
+                                
+                                DatabaseResponse requestIdToUpdateRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.ExistingSession, AssetToSubscribe);
 
                                 BSSUpdateResponseObject bssUpdateResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateRes.Results, AssetToSubscribe, false);
 
@@ -2933,6 +2946,20 @@ namespace OrderService.Controllers
                             ResponseObject res = await bsshelper.GetAssetInventory(config, (((List<ServiceFees>)serviceCAF.Results)).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdRes.Results);
 
                             string NewNumber = bsshelper.GetAssetId(res);
+
+                            if (res != null)
+                            {
+                                BSSNumbers numbers = new BSSNumbers();
+
+                                numbers.FreeNumbers = bsshelper.GetFreeNumbers(res);
+
+                                //insert this AssetToSubscribe into database
+
+                                string json = bsshelper.GetJsonString(numbers.FreeNumbers); // json insert
+
+                                DatabaseResponse updateBssCallFeeNumbers = await _orderAccess.UpdateBSSCallNumbers(json, ((BSSAssetRequest)requestIdRes.Results).userid, ((BSSAssetRequest)requestIdRes.Results).BSSCallLogID);
+                            }
+
 
                             if (res != null && (int.Parse(res.Response.asset_details.total_record_count) > 0))
                             {
