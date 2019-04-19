@@ -225,7 +225,7 @@ namespace CustomerService.DataAccess
 
                 };
                     tokenparameters[0].Value = token;
-                    tokenparameters[0].Value = tokenString;
+                    tokenparameters[1].Value = tokenString;
 
                     _DataHelper = new DataAccessHelper("Customers_GetAccessNewTokenDetails", tokenparameters, _configuration);
 
