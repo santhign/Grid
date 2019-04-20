@@ -10,4 +10,9 @@ namespace AdminService.Models
     {
         public string LookupText { get; set; }
     }
+    public class EmailValidationResponse
+    {
+        public bool IsValid { get; set; }
+        public string Status { get; set; }
+    }
 }
