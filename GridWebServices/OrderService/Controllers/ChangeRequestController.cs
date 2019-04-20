@@ -101,6 +101,8 @@ namespace OrderService.Controllers
                         MessageBodyForCR msgBody = new MessageBodyForCR();
                         Dictionary<string, string> attribute = new Dictionary<string, string>();
                         string topicName = string.Empty, subject = string.Empty;
+                        topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration)
+                            .Results.ToString().Trim();
                         try
                         {
                             msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(buyVASResponse.ChangeRequestID);
@@ -261,10 +263,11 @@ namespace OrderService.Controllers
                         string topicName = string.Empty, subject = string.Empty;
                         try
                         {
-                            msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(buyVASResponse.ChangeRequestID);
-
                             topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration)
                             .Results.ToString().Trim();
+                            msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(buyVASResponse.ChangeRequestID);
+
+                            
 
                             attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.AddVAS.GetDescription());
                             var pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
