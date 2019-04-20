@@ -398,5 +398,109 @@ namespace AdminService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+
+        public async Task<DatabaseResponse> GetCustomerChangeRequests(int CustomerID)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int )
+
+                };
+
+                parameters[0].Value = CustomerID;
+
+                _DataHelper = new DataAccessHelper("Admin_GetCustomerChangeRequests", parameters, _configuration);
+
+                DataSet ds = new DataSet();
+
+                int result = await _DataHelper.RunAsync(ds); // 105 /102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 105)
+                {
+                    List<ChangeRequest> orders = new List<ChangeRequest>();
+                    foreach (DataRow dr in ds.Tables[0].Rows)
+                    {
+                        ChangeRequest orderDetails = new ChangeRequest();
+
+                        if (dr != null)
+                        {
+
+                            orderDetails.ChangeRequestID = Convert.ToInt32(dr["ChangeRequestID"]);
+                            orderDetails.ListingStatus = dr["ListingStatus"].ToString();
+                            orderDetails.OrderNumber = dr["OrderNumber"].ToString();
+                            orderDetails.RequestOn = Convert.ToDateTime(dr["RequestOn"]);
+                            orderDetails.OrderStatus = dr["OrderStatus"].ToString();
+                            orderDetails.RequestType = dr["RequestType"].ToString();
+                            orderDetails.BillingUnit = dr["BillingUnit"].ToString();
+                            orderDetails.BillingFloor = dr["BillingFloor"].ToString();
+                            orderDetails.BillingBuildingNumber = dr["BillingBuildingNumber"].ToString();
+                            orderDetails.BillingBuildingName = dr["BillingBuildingName"].ToString();
+                            orderDetails.BillingStreetName = dr["BillingStreetName"].ToString();
+                            orderDetails.BillingPostCode = dr["BillingPostCode"].ToString();
+                            orderDetails.BillingContactNumber = dr["BillingContactNumber"].ToString();
+                            orderDetails.Name = dr["Name"].ToString();
+                            orderDetails.Email = dr["Email"].ToString();
+                            orderDetails.IDType = dr["IDType"].ToString();
+                            orderDetails.IDNumber = dr["IDNumber"].ToString();
+                            orderDetails.IsSameAsBilling = (dr["IsSameAsBilling"] == DBNull.Value ? 0 : Convert.ToInt32(dr["IsSameAsBilling"]));
+                            orderDetails.ShippingUnit = dr["ShippingUnit"].ToString();
+                            orderDetails.ShippingFloor = dr["ShippingFloor"].ToString();
+                            orderDetails.ShippingBuildingNumber = dr["ShippingBuildingNumber"].ToString();
+                            orderDetails.ShippingBuildingName = dr["ShippingBuildingName"].ToString();
+                            orderDetails.ShippingStreetName = dr["ShippingStreetName"].ToString();
+                            orderDetails.ShippingPostCode = dr["ShippingPostCode"].ToString();
+                            orderDetails.ShippingContactNumber = dr["ShippingContactNumber"].ToString();
+                            orderDetails.AlternateRecipientContact = dr["AlternateRecipientContact"].ToString();
+                            orderDetails.AlternateRecipientName = dr["AlternateRecipientName"].ToString();
+                            orderDetails.AlternateRecipientEmail = dr["AlternateRecipientEmail"].ToString();
+                            orderDetails.PortalSlotID = dr["PortalSlotID"].ToString();
+                            if (dr["SlotDate"] == DBNull.Value)
+                            {
+                                orderDetails.SlotDate = null;
+                            }
+                            else
+                            {
+                                orderDetails.SlotDate = Convert.ToDateTime(dr["SlotDate"]);
+                            }
+                            TimeSpan val;
+                            TimeSpan.TryParse(dr["SlotFromTime"].ToString(), out val);
+                            orderDetails.SlotFromTime = val;
+                            TimeSpan.TryParse(dr["SlotToTime"].ToString(), out val);
+                            orderDetails.SlotToTime = val;
+                            try { orderDetails.ScheduledDate = Convert.ToDateTime(dr["ScheduledDate"]); }
+                            catch { }
+                            try { orderDetails.ServiceFee = Convert.ToDouble(dr["ServiceFee"]); }
+                            catch { }                            
+                        }
+                        orders.Add(orderDetails);
+                    }
+                    response = new DatabaseResponse { ResponseCode = result, Results = orders };
+
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
     }
 }
