@@ -1237,16 +1237,11 @@ namespace OrderService.Controllers
         /// <param name="request">
         /// Form{
         /// "OrderID" :1,
-        /// "IDType" :"PAN",
-        /// "IDNumber":"P23FD",
-        /// "IDImageFront" : FileInput,
-        /// "IDImageBack" : FileInput,
         /// "NameInNRIC" : "Name as in NRIC",
         /// "DisplayName" : "DisplayName",
         /// "Gender":"Male",
         /// "DOB":"15/12/2000", //dd/MM/yyyy
-        /// "ContactNumber":"95421232", 
-        /// "Nationality":"singaporean",
+        /// "ContactNumber":"95421232"
         /// 
         /// }
         /// </param>
@@ -3224,6 +3219,7 @@ namespace OrderService.Controllers
         /// <param name="request">
         /// Form{
         /// "OrderID" :1,
+        /// "Nationality": "Singaporean"
         /// "IDType" :"PAN",
         /// "IDNumber":"P23FD",
         /// "IDImageFront" : FileInput,

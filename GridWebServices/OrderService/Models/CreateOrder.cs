@@ -301,7 +301,6 @@ namespace OrderService.Models
         /// <value>
         /// The display name.
         /// </value>
-        [Required(ErrorMessage = "DisplayName is required")]
         public string DisplayName { get; set; }
 
         /// <summary>
