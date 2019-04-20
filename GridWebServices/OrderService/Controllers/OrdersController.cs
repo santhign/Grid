@@ -3192,6 +3192,7 @@ namespace OrderService.Controllers
         /// <param name="request">
         /// Form{
         /// "OrderID" :1,
+        /// "Nationality": "Singaporean"
         /// "IDType" :"PAN",
         /// "IDNumber":"P23FD",
         /// "IDImageFront" : FileInput,

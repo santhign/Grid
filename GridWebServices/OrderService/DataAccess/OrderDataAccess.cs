@@ -1868,10 +1868,10 @@ namespace OrderService.DataAccess
 
                 parameters[0].Value = personalDetails.OrderID;
                 parameters[1].Value = personalDetails.Nationality;
-                parameters[1].Value = personalDetails.IDType;
-                parameters[2].Value = personalDetails.IDNumber;
-                parameters[3].Value = personalDetails.IDFrontImageUrl;
-                parameters[4].Value = personalDetails.IDBackImageUrl;
+                parameters[2].Value = personalDetails.IDType;
+                parameters[3].Value = personalDetails.IDNumber;
+                parameters[4].Value = personalDetails.IDFrontImageUrl;
+                parameters[5].Value = personalDetails.IDBackImageUrl;
 
                 _DataHelper = new DataAccessHelper("Orders_UpdateOrderPersonalIDDetails", parameters, _configuration);
 
