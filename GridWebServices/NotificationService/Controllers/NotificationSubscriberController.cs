@@ -148,6 +148,9 @@ namespace NotificationService.Controllers
         [NonAction]
         public async void ProcessNotification(object message)
         {
+            try
+            {
+           
             Amazon.SQS.Model.Message msg = (Amazon.SQS.Model.Message)message;
 
             string queMessage = msg.Body;
@@ -181,6 +184,14 @@ namespace NotificationService.Controllers
                     }
                 }
                 
+            }
+
+            }
+
+            catch(Exception ex)
+            {
+
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
             }
 
         }

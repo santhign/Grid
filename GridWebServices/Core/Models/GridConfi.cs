@@ -41,8 +41,10 @@ namespace Core.Models
         [DataMember(Name = "GridInvoiceRecordLimit")]
         public int GridInvoiceRecordLimit { get; set; }
 
-        
+        [DataMember(Name = "BSSAPILocalUrl")]
+        public string BSSAPILocalUrl { get; set; }
 
+        
     }
 
     [DataContract]

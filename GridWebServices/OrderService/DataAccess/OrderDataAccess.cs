@@ -1009,31 +1009,22 @@ namespace OrderService.DataAccess
             {
                 SqlParameter[] parameters =
                {
-                    new SqlParameter( "@OrderID",  SqlDbType.Int ),
-                    new SqlParameter( "@IDType",  SqlDbType.NVarChar ),
-                    new SqlParameter( "@IDNumber",  SqlDbType.NVarChar),
-                    new SqlParameter( "@IDImageUrl",  SqlDbType.NVarChar),
+                    new SqlParameter( "@OrderID",  SqlDbType.Int ),                  
                     new SqlParameter( "@NameInNRIC",  SqlDbType.NVarChar),
                     new SqlParameter( "@DisplayName",  SqlDbType.NVarChar),
                     new SqlParameter( "@Gender",  SqlDbType.NVarChar),
                     new SqlParameter( "@DOB",  SqlDbType.Date),
                     new SqlParameter( "@ContactNumber",  SqlDbType.NVarChar),
-                    new SqlParameter( "@Nationality",  SqlDbType.NVarChar),
-                    new SqlParameter( "@IDImageUrlBack",  SqlDbType.NVarChar),
-
+                    new SqlParameter( "@Nationality",  SqlDbType.NVarChar)
                 };
 
-                parameters[0].Value = personalDetails.OrderID;
-                parameters[1].Value = personalDetails.IDType;
-                parameters[2].Value = personalDetails.IDNumber;
-                parameters[3].Value = personalDetails.IDFrontImageUrl;
-                parameters[4].Value = personalDetails.NameInNRIC;
-                parameters[5].Value = personalDetails.DisplayName;
-                parameters[6].Value = personalDetails.Gender;
-                parameters[7].Value = personalDetails.DOB;
-                parameters[8].Value = personalDetails.ContactNumber;
-                parameters[9].Value = personalDetails.Nationality;
-                parameters[10].Value = personalDetails.IDBackImageUrl;
+                parameters[0].Value = personalDetails.OrderID;               
+                parameters[1].Value = personalDetails.NameInNRIC;
+                parameters[2].Value = personalDetails.DisplayName;
+                parameters[3].Value = personalDetails.Gender;
+                parameters[4].Value = personalDetails.DOB;
+                parameters[5].Value = personalDetails.ContactNumber;
+                parameters[6].Value = personalDetails.Nationality;             
 
                 _DataHelper = new DataAccessHelper("Orders_UpdateOrderBasicDetails", parameters, _configuration);
 
@@ -1052,8 +1043,7 @@ namespace OrderService.DataAccess
             {
                 _DataHelper.Dispose();
             }
-        }
-
+        }              
         public async Task<DatabaseResponse> UpdateOrderBillingDetails(UpdateOrderBillingDetailsRequest billingDetails)
         {
             try
@@ -1842,13 +1832,52 @@ namespace OrderService.DataAccess
                                          DocumentBackURL = model.Field<string>("DocumentBackURL"),
                                          IdentityCardNumber = model.Field<string>("IdentityCardNumber"),
                                          IdentityCardType = model.Field<string>("IdentityCardType"),
-
+                                          Nationality = model.Field<string>("Nationality"),
                                     }).FirstOrDefault();
                 }
 
                 response = new DatabaseResponse {ResponseCode= result, Results = nRICDetails };
 
                 return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> UpdateOrderPersonalIdDetails(UpdateOrderPersonalDetails personalDetails)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@OrderID",  SqlDbType.Int ),
+                    new SqlParameter( "@IDType",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@IDNumber",  SqlDbType.NVarChar),
+                    new SqlParameter( "@IDImageUrl",  SqlDbType.NVarChar),
+                    new SqlParameter( "@IDImageUrlBack",  SqlDbType.NVarChar),
+
+                };
+
+                parameters[0].Value = personalDetails.OrderID;
+                parameters[1].Value = personalDetails.IDType;
+                parameters[2].Value = personalDetails.IDNumber;
+                parameters[3].Value = personalDetails.IDFrontImageUrl;
+                parameters[4].Value = personalDetails.IDBackImageUrl;
+
+                _DataHelper = new DataAccessHelper("Orders_UpdateOrderPersonalIDDetails", parameters, _configuration);
+
+                int result = await _DataHelper.RunAsync();    // 101 / 109 
+
+                return new DatabaseResponse { ResponseCode = result };
             }
 
             catch (Exception ex)

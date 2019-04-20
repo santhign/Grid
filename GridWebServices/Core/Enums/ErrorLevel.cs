@@ -149,5 +149,17 @@ namespace Core.Enums
         [Description("Token header emapy")]
         TokenEmpty = 32,
 
+        [EnumMember(Value = "Token Not Exists")]
+        [Description("Token Not Exists")]
+        TokenNotExists = 33,
+
+        [EnumMember(Value = "Password Reset Success")]
+        [Description("Password Reset Success")]
+        PasswordResetSuccess = 34,
+
+        [EnumMember(Value = "Password Reset Failed")]
+        [Description("Password Reset Failed")]
+        PasswordResetFailed = 35,
+
     }
 }

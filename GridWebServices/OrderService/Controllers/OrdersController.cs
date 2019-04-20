@@ -973,11 +973,24 @@ namespace OrderService.Controllers
 
                             string AssetToSubscribe = bsshelper.GetAssetId(res);
 
+                            if (res != null)
+                            {
+                                BSSNumbers numbers = new BSSNumbers();
+
+                                numbers.FreeNumbers = bsshelper.GetFreeNumbers(res);
+
+                                //insert this AssetToSubscribe into database
+
+                                string json = bsshelper.GetJsonString(numbers.FreeNumbers); // json insert
+
+                                DatabaseResponse updateBssCallFeeNumbers = await _orderAccess.UpdateBSSCallNumbers(json, ((BSSAssetRequest)requestIdRes.Results).userid, ((BSSAssetRequest)requestIdRes.Results).BSSCallLogID);
+                            }
+
                             if (res != null && (int.Parse(res.Response.asset_details.total_record_count) > 0))
                             {
-                                //Block number                                    
-
-                                DatabaseResponse requestIdToUpdateRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.NewSession, "");
+                                //Block number                                   
+                                
+                                DatabaseResponse requestIdToUpdateRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.ExistingSession, AssetToSubscribe);
 
                                 BSSUpdateResponseObject bssUpdateResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateRes.Results, AssetToSubscribe, false);
 
@@ -1239,8 +1252,8 @@ namespace OrderService.Controllers
         /// </param>
         /// <returns>OperationResponse</returns>
         [Route("updateorderpersonaldetails")]
-        [HttpPost, DisableRequestSizeLimit]
-        public async Task<IActionResult> UpdateOrderPersonalDetails([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromForm] UpdateOrderPersonalDetailsRequest request)
+        [HttpPost]
+        public async Task<IActionResult> UpdateOrderPersonalDetails([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] UpdateOrderPersonalDetailsRequest request)
         {
             try
             {
@@ -1278,11 +1291,7 @@ namespace OrderService.Controllers
                         DatabaseResponse customerResponse = await _orderAccess.GetCustomerIdFromOrderId(request.OrderID);
 
                         if (customerResponse.ResponseCode == (int)DbReturnValue.RecordExists && customerID == ((OrderCustomer)customerResponse.Results).CustomerId)
-                        {
-                            IFormFile frontImage = request.IDImageFront;
-
-                            IFormFile backImage = request.IDImageBack;
-
+                        {                            
                             BSSAPIHelper bsshelper = new BSSAPIHelper();
 
                             MiscHelper configHelper = new MiscHelper();
@@ -1292,61 +1301,11 @@ namespace OrderService.Controllers
                                 OrderID = request.OrderID,
                                 ContactNumber = request.ContactNumber,
                                 DOB = request.DOB,
-                                Gender = request.Gender,
-                                IDNumber = request.IDNumber,
-                                IDType = request.IDType,
+                                Gender = request.Gender,                             
                                 NameInNRIC = request.NameInNRIC,
-                                DisplayName = request.DisplayName,
-                                Nationality = request.Nationality
-                            };
-
-                            //process file if uploaded - non null
-
-                            if (frontImage != null && backImage != null)
-                            {
-                                DatabaseResponse awsConfigResponse = await _orderAccess.GetConfiguration(ConfiType.AWS.ToString());
-
-                                if (awsConfigResponse != null && awsConfigResponse.ResponseCode == (int)DbReturnValue.RecordExists)
-                                {
-                                    GridAWSS3Config awsConfig = configHelper.GetGridAwsConfig((List<Dictionary<string, string>>)awsConfigResponse.Results);
-
-                                    AmazonS3 s3Helper = new AmazonS3(awsConfig);
-
-                                    string fileNameFront = "Grid_IDNUMBER_Front_" + DateTime.UtcNow.ToString("yyyymmddhhmmss") + Path.GetExtension(frontImage.FileName); //Grid_IDNUMBER_yyyymmddhhmmss.extension
-
-                                    UploadResponse s3UploadResponse = await s3Helper.UploadFile(frontImage, fileNameFront);
-
-                                    if (s3UploadResponse.HasSucceed)
-                                    {
-                                        personalDetails.IDFrontImageUrl = awsConfig.AWSEndPoint + s3UploadResponse.FileName;
-                                    }
-                                    else
-                                    {
-                                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.S3UploadFailed));
-                                    }
-
-                                    string fileNameBack = "Grid_IDNUMBER_Back_" + DateTime.UtcNow.ToString("yyyymmddhhmmss") + Path.GetExtension(frontImage.FileName); //Grid_IDNUMBER_yyyymmddhhmmss.extension
-
-                                    s3UploadResponse = await s3Helper.UploadFile(backImage, fileNameBack);
-
-                                    if (s3UploadResponse.HasSucceed)
-                                    {
-                                        personalDetails.IDBackImageUrl = awsConfig.AWSEndPoint + s3UploadResponse.FileName;
-                                    }
-                                    else
-                                    {
-                                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.S3UploadFailed));
-                                    }
-                                }
-                                else
-                                {
-                                    // unable to get aws config
-                                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToGetConfiguration));
-
-                                }
-                            }    //file     
-
-
+                                DisplayName = request.DisplayName
+                               
+                            };  
 
                             //update personal details
                             DatabaseResponse updatePersoanDetailsResponse = await _orderAccess.UpdateOrderPersonalDetails(personalDetails);
@@ -2961,6 +2920,20 @@ namespace OrderService.Controllers
 
                             string NewNumber = bsshelper.GetAssetId(res);
 
+                            if (res != null)
+                            {
+                                BSSNumbers numbers = new BSSNumbers();
+
+                                numbers.FreeNumbers = bsshelper.GetFreeNumbers(res);
+
+                                //insert this AssetToSubscribe into database
+
+                                string json = bsshelper.GetJsonString(numbers.FreeNumbers); // json insert
+
+                                DatabaseResponse updateBssCallFeeNumbers = await _orderAccess.UpdateBSSCallNumbers(json, ((BSSAssetRequest)requestIdRes.Results).userid, ((BSSAssetRequest)requestIdRes.Results).BSSCallLogID);
+                            }
+
+
                             if (res != null && (int.Parse(res.Response.asset_details.total_record_count) > 0))
                             {
                                 //Block number                                    
@@ -3146,11 +3119,12 @@ namespace OrderService.Controllers
                                     GridAWSS3Config awsConfig = configHelper.GetGridAwsConfig((List<Dictionary<string, string>>)awsConfigResponse.Results);
 
                                     AmazonS3 s3Helper = new AmazonS3(awsConfig);
+
                                     DownloadResponse FrontImageDownloadResponse = await s3Helper.DownloadFile(((OrderNRICDetails)nRICresponse.Results).DocumentURL.Remove(0, awsConfig.AWSEndPoint.Length));
 
                                     DownloadResponse BackImageDownloadResponse = await s3Helper.DownloadFile(((OrderNRICDetails)nRICresponse.Results).DocumentBackURL.Remove(0, awsConfig.AWSEndPoint.Length));
 
-                                    DownloadNRIC nRICDownloadObject = new DownloadNRIC { FrontImage = FrontImageDownloadResponse.FileObject != null ? FrontImageDownloadResponse.FileObject.ToArray() : null, BackImage = BackImageDownloadResponse.FileObject != null ? BackImageDownloadResponse.FileObject.ToArray() : null };
+                                    DownloadNRIC nRICDownloadObject = new DownloadNRIC { OrderID= OrderID, FrontImage = FrontImageDownloadResponse.FileObject != null ? configHelper.GetBase64StringFromByteArray(FrontImageDownloadResponse.FileObject, ((OrderNRICDetails)nRICresponse.Results).DocumentURL.Remove(0, awsConfig.AWSEndPoint.Length)) : null, BackImage = BackImageDownloadResponse.FileObject != null ? configHelper.GetBase64StringFromByteArray(BackImageDownloadResponse.FileObject, ((OrderNRICDetails)nRICresponse.Results).DocumentBackURL.Remove(0, awsConfig.AWSEndPoint.Length)) : null, IdentityCardNumber= ((OrderNRICDetails)nRICresponse.Results).IdentityCardNumber, IdentityCardType= ((OrderNRICDetails)nRICresponse.Results).IdentityCardType, Nationality= ((OrderNRICDetails)nRICresponse.Results).Nationality };
 
                                     return Ok(new OperationResponse
                                     {
@@ -3242,7 +3216,203 @@ namespace OrderService.Controllers
 
             }
         }
+        
+        /// <summary>
+        /// This will update personal ID details of the customer for the order
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="request">
+        /// Form{
+        /// "OrderID" :1,
+        /// "IDType" :"PAN",
+        /// "IDNumber":"P23FD",
+        /// "IDImageFront" : FileInput,
+        /// "IDImageBack" : FileInput        
+        /// }
+        /// </param>
+        /// <returns>OperationResponse</returns>
+        [Route("updateorderpersonalIDdetails")]
+        [HttpPost, DisableRequestSizeLimit]
+        public async Task<IActionResult> UpdateOrderPersonalIDDetails([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromForm] UpdateOrderPersonalIDDetailsRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+                AuthHelper helper = new AuthHelper(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    {
+                        int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+
+                        if (!ModelState.IsValid)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = string.Join("; ", ModelState.Values
+                                                          .SelectMany(x => x.Errors)
+                                                          .Select(x => x.ErrorMessage))
+                            });
+                        }
+
+                        OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+
+                        DatabaseResponse customerResponse = await _orderAccess.GetCustomerIdFromOrderId(request.OrderID);
+
+                        if (customerResponse.ResponseCode == (int)DbReturnValue.RecordExists && customerID == ((OrderCustomer)customerResponse.Results).CustomerId)
+                        {
+                            IFormFile frontImage = request.IDImageFront;
+
+                            IFormFile backImage = request.IDImageBack;
+
+                            BSSAPIHelper bsshelper = new BSSAPIHelper();
+
+                            MiscHelper configHelper = new MiscHelper();
+
+                            UpdateOrderPersonalDetails personalDetails = new UpdateOrderPersonalDetails
+                            {
+                                OrderID = request.OrderID,  
+                                Nationality=request.Nationality,
+                                IDNumber = request.IDNumber,
+                                IDType = request.IDType                             
+                            };
+
+                            //process file if uploaded - non null
+
+                            if (frontImage != null && backImage != null)
+                            {
+                                DatabaseResponse awsConfigResponse = await _orderAccess.GetConfiguration(ConfiType.AWS.ToString());
+
+                                if (awsConfigResponse != null && awsConfigResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                                {
+                                    GridAWSS3Config awsConfig = configHelper.GetGridAwsConfig((List<Dictionary<string, string>>)awsConfigResponse.Results);
+
+                                    AmazonS3 s3Helper = new AmazonS3(awsConfig);
+
+                                    string fileNameFront = "Grid_IDNUMBER_Front_" + DateTime.UtcNow.ToString("yyyymmddhhmmss") + Path.GetExtension(frontImage.FileName); //Grid_IDNUMBER_yyyymmddhhmmss.extension
+
+                                    UploadResponse s3UploadResponse = await s3Helper.UploadFile(frontImage, fileNameFront);
+
+                                    if (s3UploadResponse.HasSucceed)
+                                    {
+                                        personalDetails.IDFrontImageUrl = awsConfig.AWSEndPoint + s3UploadResponse.FileName;
+                                    }
+                                    else
+                                    {
+                                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.S3UploadFailed));
+                                    }
+
+                                    string fileNameBack = "Grid_IDNUMBER_Back_" + DateTime.UtcNow.ToString("yyyymmddhhmmss") + Path.GetExtension(frontImage.FileName); //Grid_IDNUMBER_yyyymmddhhmmss.extension
+
+                                    s3UploadResponse = await s3Helper.UploadFile(backImage, fileNameBack);
+
+                                    if (s3UploadResponse.HasSucceed)
+                                    {
+                                        personalDetails.IDBackImageUrl = awsConfig.AWSEndPoint + s3UploadResponse.FileName;
+                                    }
+                                    else
+                                    {
+                                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.S3UploadFailed));
+                                    }
+                                }
+                                else
+                                {
+                                    // unable to get aws config
+                                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToGetConfiguration));
+
+                                }
+                            }    //file     
 
 
+
+                            //update personal details
+                            DatabaseResponse updatePersoanDetailsResponse = await _orderAccess.UpdateOrderPersonalIdDetails(personalDetails);
+
+                            if (updatePersoanDetailsResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
+                            {
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = true,
+                                    Message = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess),
+                                    IsDomainValidationErrors = false
+                                });
+                            }
+                            else
+                            {
+                                LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedUpdatePersonalDetails));
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = false,
+                                    Message = EnumExtensions.GetDescription(DbReturnValue.UpdationFailed),
+                                    IsDomainValidationErrors = false
+                                });
+                            }
+                        }
+
+                        else
+                        {
+                            // failed to locate customer
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToGetCustomer));
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
     }
 }

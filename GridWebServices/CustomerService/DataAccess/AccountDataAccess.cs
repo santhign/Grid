@@ -92,8 +92,7 @@ namespace CustomerService.DataAccess
                 _DataHelper.Dispose();
             }
         }
-
-
+       
         public async Task<DatabaseResponse> LogCustomerToken(int customerId, string token)
         {
             try
@@ -275,5 +274,75 @@ namespace CustomerService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+
+        public async Task<DatabaseResponse> ValidateResetPasswordToken(string token)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                     new SqlParameter( "@Token",  SqlDbType.NVarChar )
+
+                };
+
+                parameters[0].Value = token;
+
+                _DataHelper = new DataAccessHelper("Customer_ValidateResetPasswordToken", parameters, _configuration);
+
+                int result = await _DataHelper.RunAsync(); // 124 /125
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                response = new DatabaseResponse { ResponseCode = result };
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+        public async Task<DatabaseResponse> ResetPassword(ResetPassword resetPassword)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@Token",  SqlDbType.NVarChar ),
+
+                    new SqlParameter( "@Password",  SqlDbType.NVarChar)
+                };
+
+                parameters[0].Value = resetPassword.ResetToken;
+
+                parameters[1].Value = new Sha2().Hash(resetPassword.NewPassword);
+
+                _DataHelper = new DataAccessHelper("Customer_ResetPassword", parameters, _configuration);
+
+                int result = await _DataHelper.RunAsync();
+
+                return new DatabaseResponse { ResponseCode = result };
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
     }
 }
