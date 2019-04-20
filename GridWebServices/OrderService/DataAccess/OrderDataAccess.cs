@@ -1014,8 +1014,7 @@ namespace OrderService.DataAccess
                     new SqlParameter( "@DisplayName",  SqlDbType.NVarChar),
                     new SqlParameter( "@Gender",  SqlDbType.NVarChar),
                     new SqlParameter( "@DOB",  SqlDbType.Date),
-                    new SqlParameter( "@ContactNumber",  SqlDbType.NVarChar),
-                    new SqlParameter( "@Nationality",  SqlDbType.NVarChar)
+                    new SqlParameter( "@ContactNumber",  SqlDbType.NVarChar)
                 };
 
                 parameters[0].Value = personalDetails.OrderID;               
@@ -1023,8 +1022,7 @@ namespace OrderService.DataAccess
                 parameters[2].Value = personalDetails.DisplayName;
                 parameters[3].Value = personalDetails.Gender;
                 parameters[4].Value = personalDetails.DOB;
-                parameters[5].Value = personalDetails.ContactNumber;
-                parameters[6].Value = personalDetails.Nationality;             
+                parameters[5].Value = personalDetails.ContactNumber;           
 
                 _DataHelper = new DataAccessHelper("Orders_UpdateOrderBasicDetails", parameters, _configuration);
 
@@ -1860,6 +1858,7 @@ namespace OrderService.DataAccess
                 SqlParameter[] parameters =
                {
                     new SqlParameter( "@OrderID",  SqlDbType.Int ),
+                    new SqlParameter( "@Nationality",  SqlDbType.NVarChar ),
                     new SqlParameter( "@IDType",  SqlDbType.NVarChar ),
                     new SqlParameter( "@IDNumber",  SqlDbType.NVarChar),
                     new SqlParameter( "@IDImageUrl",  SqlDbType.NVarChar),
@@ -1868,6 +1867,7 @@ namespace OrderService.DataAccess
                 };
 
                 parameters[0].Value = personalDetails.OrderID;
+                parameters[1].Value = personalDetails.Nationality;
                 parameters[1].Value = personalDetails.IDType;
                 parameters[2].Value = personalDetails.IDNumber;
                 parameters[3].Value = personalDetails.IDFrontImageUrl;
