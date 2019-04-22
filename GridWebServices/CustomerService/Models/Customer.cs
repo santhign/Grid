@@ -98,6 +98,13 @@ namespace CustomerService.Models
         /// The joined on.
         /// </value>
         public DateTime JoinedOn { get; set; }
+        /// <summary>
+        /// Gets paid order count.
+        /// </summary>
+        /// <value>
+        /// The number of paid orders if greater then 0 then redirect to dashboard.
+        /// </value>
+        public int OrderCount { get; set; }
     }
 
     /// <summary>
@@ -235,6 +242,7 @@ namespace CustomerService.Models
         /// The token.
         /// </value>
         public string Token { get; set; }
+
     }
     
 
@@ -484,8 +492,13 @@ namespace CustomerService.Models
         /// The expiry date.
         /// </value>
         public DateTime ? ExpiryDate { get; set; }
-     
-
+        /// <summary>
+        /// Gets removable flag.
+        /// </summary>
+        /// <value>
+        /// 1=Yes, 0=N0.
+        /// </value>
+        public int Removable { get; set; }
     }
 
 
