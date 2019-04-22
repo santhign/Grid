@@ -11,10 +11,10 @@ namespace OrderService.Enums
 
         [EnumMember(Value = "ChangeRequest")]
         [Description("Change Request")]
-        ChangeSim = 2,
+        ChangeRequest = 2,
 
         [EnumMember(Value = "AccountInvoices")]
         [Description("Account Invoices")]
-        ChangeNumber = 3,       
+        AccountInvoices = 3,       
     }
 }

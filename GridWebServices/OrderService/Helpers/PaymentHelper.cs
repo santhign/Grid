@@ -131,6 +131,107 @@ namespace OrderService.Helpers
                   
         }
 
+        public static GatewayApiRequest CreateTokenizationApiRequest(GatewayApiConfig gatewayApiConfig, string apiOperation = null, string sessionId = null)
+        {
+            GatewayApiRequest gatewayApiRequest = new GatewayApiRequest(gatewayApiConfig)
+            {
+                SessionId = sessionId,
+                OrderId = PaymentHelper.GenerateOrderId(),
+                TransactionId = PaymentHelper.GenerateOrderId(),
+                ApiOperation = apiOperation,
+                OrderAmount = "",
+                OrderCurrency = gatewayApiConfig.Currency
+            };
+
+            gatewayApiRequest.buildRequestUrl();
+
+            if (apiOperation == "CAPTURE" || apiOperation == "REFUND")
+            {
+                gatewayApiRequest.TransactionAmount = "";
+                gatewayApiRequest.TransactionCurrency = gatewayApiConfig.Currency;
+                gatewayApiRequest.OrderId = null;
+            }
+            if (apiOperation == "VOID" || apiOperation == "UPDATE_AUTHORIZATION")
+            {
+                gatewayApiRequest.OrderId = null;
+            }
+            if (apiOperation == "RETRIEVE_ORDER" || apiOperation == "RETRIEVE_TRANSACTION")
+            {
+                gatewayApiRequest.ApiMethod = "GET";
+                gatewayApiRequest.OrderId = null;
+                gatewayApiRequest.TransactionId = null;
+            }
+
+            gatewayApiRequest.buildPayload();
+
+            return gatewayApiRequest;
+        }
+
+
+        public Checkout CreateTokenizationCheckoutSession(GridMPGSConfig mpgsConfig, string apiOperation = null, string sessionId = null)
+        {
+            try
+            {
+                LogInfo.Information(EnumExtensions.GetDescription(MPGSAPIOperation.CREATE_CHECKOUT_SESSION));
+
+                GatewayApiConfig config = new GatewayApiConfig(mpgsConfig);            
+
+                GatewayApiRequest gatewayApiRequest = new GatewayApiRequest(config)
+                {
+                    SessionId = sessionId,
+                    OrderId = GenerateOrderId(),
+                    TransactionId = GenerateOrderId(),
+                    ApiOperation = apiOperation,
+                    OrderAmount = "",
+                    OrderCurrency = config.Currency
+                };
+
+                gatewayApiRequest.buildRequestUrl();
+
+                if (apiOperation == "CAPTURE" || apiOperation == "REFUND")
+                {
+                    gatewayApiRequest.TransactionAmount = "";
+                    gatewayApiRequest.TransactionCurrency = config.Currency;
+                    gatewayApiRequest.OrderId = null;
+                }
+                if (apiOperation == "VOID" || apiOperation == "UPDATE_AUTHORIZATION")
+                {
+                    gatewayApiRequest.OrderId = null;
+                }
+                if (apiOperation == "RETRIEVE_ORDER" || apiOperation == "RETRIEVE_TRANSACTION")
+                {
+                    gatewayApiRequest.ApiMethod = "GET";
+                    gatewayApiRequest.OrderId = null;
+                    gatewayApiRequest.TransactionId = null;
+                }
+                gatewayApiRequest.buildPayload();                        
+
+                Checkout checkOut = new Checkout();
+
+                checkOut.CheckoutJsUrl = $@"{config.GatewayUrl}/form/version/{config.Version}/merchant/{config.MerchantId}/session.js";              
+
+                checkOut.MerchantId = config.MerchantId;
+
+                checkOut.OrderId = gatewayApiRequest.OrderId;
+
+                checkOut.CheckoutSession = null;
+
+                checkOut.Currency = config.Currency;
+
+                checkOut.TransactionID = gatewayApiRequest.TransactionId;
+
+                return checkOut;
+
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw ex;
+            }
+
+        }
+
         public TransactionRetrieveResponseOperation RetrieveCheckOutTransaction(GridMPGSConfig mpgsConfig,CheckOutResponseUpdate responseUpdate)
         {
             try
