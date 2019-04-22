@@ -3522,7 +3522,7 @@ namespace OrderService.Controllers
         /// <param name="token" in="Header"></param>  
         /// <param name="request"></param>      
         /// <returns>OperationsResponse</returns>
-        [HttpGet("GetTokenizationCheckOutDetails")]
+        [HttpPost("GetTokenizationCheckOutDetails")]
         public async Task<IActionResult> GetTokenizationCheckOutDetails([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] TokenizeRequest request)
         {
             try
