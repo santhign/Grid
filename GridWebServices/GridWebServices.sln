@@ -47,7 +47,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderServiceTests", "Tests\
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{C7A50D39-1A8D-4C54-B469-919697ACC171}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageQueueConsoleAppService", "MessageQueueConsoleAppService\MessageQueueConsoleAppService.csproj", "{0F6FD3D7-937D-4529-910F-6EDD1A60DDB8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageQueueConsoleAppService", "MessageQueueConsoleAppService\MessageQueueConsoleAppService.csproj", "{0F6FD3D7-937D-4529-910F-6EDD1A60DDB8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

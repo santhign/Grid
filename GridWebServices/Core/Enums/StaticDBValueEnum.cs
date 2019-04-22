@@ -48,8 +48,6 @@ namespace Core.Enums
         [Description("ChangeNumber")]
         ChangeNumber = 14
 
-
-
     }
 
     /// <summary>Different PlanType </summary>

@@ -1115,4 +1115,24 @@ namespace OrderService.Models
         public string Nationality { get; set; }
 
     }
+
+    public class TokenizeRequest
+    {
+        public int OrderId { get; set; }
+        public int OrderType { get; set; }
+
+    }
+    public class OrderSource
+    {
+        public string SourceType { get; set; }
+
+        public int SourceID { get; set; }
+
+    }
+
+    public class OrderCount
+    {     
+        public int SuccessfulOrders { get; set; }
+
+    }
 }

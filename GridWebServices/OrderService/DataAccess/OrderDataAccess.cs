@@ -1892,5 +1892,170 @@ namespace OrderService.DataAccess
             }
         }
 
+        public async Task<DatabaseResponse> GetTokenizationCheckoutRequestDetails(CheckOutRequestDBUpdateModel checkOutRequest)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                     new SqlParameter( "@Source",  SqlDbType.NVarChar ),
+                     new SqlParameter( "@SourceID",  SqlDbType.Int ),
+                     new SqlParameter( "@MPGSOrderID",  SqlDbType.NVarChar ),
+                     new SqlParameter( "@CheckOutSessionID",  SqlDbType.NVarChar ),
+                     new SqlParameter( "@SuccessIndicator",  SqlDbType.NVarChar ),
+                     new SqlParameter( "@CheckoutVersion",  SqlDbType.NVarChar ),
+                     new SqlParameter( "@TransactionID",  SqlDbType.NVarChar )
+                };
+
+                parameters[0].Value = checkOutRequest.Source;
+                parameters[1].Value = checkOutRequest.SourceID;
+                parameters[2].Value = checkOutRequest.MPGSOrderID;
+                parameters[3].Value = checkOutRequest.CheckOutSessionID;
+                parameters[4].Value = checkOutRequest.SuccessIndicator;
+                parameters[5].Value = checkOutRequest.CheckoutVersion;
+                parameters[6].Value = checkOutRequest.TransactionID;
+
+                _DataHelper = new DataAccessHelper("Orders_GetTokenizationCheckoutRequestDetails", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt);    // 105 / 102
+                DatabaseResponse response = new DatabaseResponse();
+                if (result == 105)
+                {
+                    Checkout checkOut = new Checkout();
+
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+
+                        checkOut = (from model in dt.AsEnumerable()
+                                    select new Checkout()
+                                    {
+                                        Amount = model.Field<double>("Amount"),
+                                    }).FirstOrDefault();
+
+                    }
+
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = checkOut };
+                }
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> GetSourceTypeByMPGSSOrderId(string MPGSOrderID)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@MPGSOrderID",  SqlDbType.NVarChar)
+                };
+
+                parameters[0].Value = MPGSOrderID;
+
+                _DataHelper = new DataAccessHelper("Orders_GetSourceTypeByMpgsOrderId", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt); //105/102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                OrderSource orderSource = new OrderSource();
+
+                if (dt != null && dt.Rows.Count > 0)
+                {
+                    orderSource = (from model in dt.AsEnumerable()
+                                   select new OrderSource()
+                                   {
+                                        SourceType = model.Field<string>("SourceType"), 
+                                        SourceID = model.Field<int>("SourceID")
+                                   }).FirstOrDefault();
+                }
+
+                response = new DatabaseResponse { ResponseCode = result, Results = orderSource };
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> GetCustomerOrderCount(int CustomerID)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int)
+                };
+
+                parameters[0].Value = CustomerID;
+
+                _DataHelper = new DataAccessHelper("Orders_GetCustomerOrderCount", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt); //105/102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                OrderCount orderCount= new OrderCount();
+
+                if (dt != null && dt.Rows.Count > 0)
+                {
+                    orderCount = (from model in dt.AsEnumerable()
+                                   select new OrderCount()
+                                   {
+                                        SuccessfulOrders = model.Field<int>("OrderCount"),
+                                      
+                                   }).FirstOrDefault();
+                }
+
+                response = new DatabaseResponse { ResponseCode = result, Results = orderCount };
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        
     }
 }

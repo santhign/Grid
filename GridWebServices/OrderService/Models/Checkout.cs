@@ -32,7 +32,9 @@ namespace OrderService.Models
       public double Amount { get; set; }
       public string Currency { get; set; }
       public string MerchantId { get; set; }
-      public CheckoutSessionModel CheckoutSession { get; set; } 
+      public CheckoutSessionModel CheckoutSession { get; set; }
+      public string TransactionID { get; set; }
+        
 
     }
 
@@ -46,6 +48,8 @@ namespace OrderService.Models
         public string SuccessIndicator { get; set; }
 
         public string CheckoutVersion { get; set; }
+
+        public string TransactionID { get; set; }        
 
     }
     public class CheckOutResponseUpdate

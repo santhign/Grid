@@ -52,6 +52,8 @@ namespace OrderService.DataAccess
         /// <param name="messageQueueRequest">The message queue request.</param>
         /// <returns></returns>
         Task<int> InsertMessageInMessageQueueRequest(MessageQueueRequest messageQueueRequest);
-        
+        Task<DatabaseResponse> GetOrderMessageQueueBody(int orderId);
+
+
     }
 }
