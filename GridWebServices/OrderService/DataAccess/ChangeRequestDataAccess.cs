@@ -439,5 +439,68 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+
+        /// <summary>
+        /// Buys the shared service.
+        /// </summary>
+        /// <param name="customerId">The customer identifier.</param>
+        /// <param name="bundleId">The bundle identifier.</param>
+        /// <returns></returns>
+        public async Task<DatabaseResponse> BuySharedService(int customerId, int bundleId)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),                   
+                    new SqlParameter( "@BundleID",  SqlDbType.Int),
+                    new SqlParameter( "@RequestType",  SqlDbType.NVarChar)
+                };
+
+                parameters[0].Value = customerId;               
+                parameters[1].Value = bundleId;                
+                parameters[2].Value = Core.Enums.RequestType.AddVAS.GetDescription();
+
+
+                _DataHelper = new DataAccessHelper(DbObjectNames.Orders_CR_BuySharedVAS, parameters, _configuration);
+                DataTable dt = new DataTable();
+                var result = await _DataHelper.RunAsync(dt);    // 101 / 102
+                if (result != (int)Core.Enums.DbReturnValue.CreateSuccess)
+                    return new DatabaseResponse { ResponseCode = result };
+
+                var removeVASResponse = new BuyVASResponse();
+
+                if (dt.Rows.Count > 0)
+                {
+                    removeVASResponse = (from model in dt.AsEnumerable()
+                                         select new BuyVASResponse()
+                                         {
+                                             ChangeRequestID = model.Field<int>("ChangeRequestId"),
+                                             BSSPlanCode = model.Field<string>("BSSPlanCode"),
+                                             PlanMarketingName = model.Field<string>("PlanMarketingName"),
+                                             SubscriptionFee = model.Field<double>("SubscriptionFee")
+                                         }).FirstOrDefault();
+                }
+                else
+                {
+                    removeVASResponse = null;
+                }
+
+                var response = new DatabaseResponse { ResponseCode = result, Results = removeVASResponse };
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw;
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
     }
 }

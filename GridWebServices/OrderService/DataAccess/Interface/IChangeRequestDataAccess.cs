@@ -59,5 +59,7 @@ namespace OrderService.DataAccess
         /// <returns></returns>
         Task<DatabaseResponse> UpdateCRShippingDetails(UpdateCRShippingDetailsRequest shippingDetails);
 
+        Task<DatabaseResponse> BuySharedService(int customerId, int bundleId);
+
     }
 }
