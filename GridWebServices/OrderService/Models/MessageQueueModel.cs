@@ -39,6 +39,30 @@ namespace OrderService.Models
         /// The change request identifier.
         /// </value>
         public int ChangeRequestID { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the premium.
+        /// </summary>
+        /// <value>
+        /// The type of the premium.
+        /// </value>
+        public int ? PremiumType { get; set; }
+        /// <summary>
+        /// Gets or sets the is own number.
+        /// </summary>
+        /// <value>
+        /// The is own number.
+        /// </value>
+        public int? IsOwnNumber { get; set; }
+        
+
+        /// <summary>
+        /// Gets or sets the is ported.
+        /// </summary>
+        /// <value>
+        /// The is ported.
+        /// </value>
+        public int? IsPorted { get; set; }
         /// <summary>
         /// Gets or sets the order number.
         /// </summary>
@@ -46,6 +70,18 @@ namespace OrderService.Models
         /// The order number.
         /// </value>
         public string OrderNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the donor provider.
+        /// </summary>
+        /// <value>
+        /// The name of the donor provider.
+        /// </value>
+        public string DonorProviderName { get; set; }
+        public string PortedNumberTransferForm { get; set; }
+        public string PortedNumberOwnedBy { get; set; }
+        public string PortedNumberOwnerRegistrationID { get; set; }
+        public string Title { get; set; }
         /// <summary>
         /// Gets or sets the request on.
         /// </summary>
@@ -102,6 +138,13 @@ namespace OrderService.Models
         /// The billing contact number.
         /// </value>
         public string BillingContactNumber { get; set; }
+        /// <summary>
+        /// Gets or sets the mobile number.
+        /// </summary>
+        /// <value>
+        /// The mobile number.
+        /// </value>
+        public string MobileNumber { get; set; }
         /// <summary>
         /// Gets or sets the referral code.
         /// </summary>
@@ -242,6 +285,8 @@ namespace OrderService.Models
         /// The slot from time.
         /// </value>
         public DateTime ? SlotFromTime { get; set; }
+        public DateTime? SubmissionDate { get; set; }
+        
         /// <summary>
         /// Gets or sets the slot to time.
         /// </summary>
@@ -262,7 +307,28 @@ namespace OrderService.Models
         /// <value>
         /// The service fee.
         /// </value>
-        public double ServiceFee { get; set; }
+        public double ? ServiceFee { get; set; }
+
+        public double ? AmountPaid { get; set; }
+
+        public string PaymentMode { get; set; }
+        public string MPGSOrderID { get; set; }
+        public string MaskedCardNumber { get; set; }
+        public string Token { get; set; }
+        public string CardType { get; set; }
+        public string CardHolderName { get; set; }
+        public int ? ExpiryMonth { get; set; }
+        public int ? ExpiryYear { get; set; }
+        public string CardFundMethod { get; set; }
+        public string CardBrand { get; set; }
+        public string CardIssuer { get; set; }
+        public DateTime DateofBirth { get; set; }
+        public DateTime? ProcessedOn { get; set; }
+        public string InvoiceNumber { get; set; }
+        public string InvoiceUrl { get; set; }
+        public DateTime CreatedOn { get; set; }
+       
+
 
 
         /// <summary>
@@ -290,7 +356,7 @@ namespace OrderService.Models
         /// <value>
         /// The subscriber identifier.
         /// </value>
-        public int SubscriberID { get; set; }
+        public int? SubscriberID { get; set; }
         /// <summary>
         /// Gets or sets the mobile number.
         /// </summary>
@@ -311,21 +377,21 @@ namespace OrderService.Models
         /// <value>
         /// The is primary.
         /// </value>
-        public int IsPrimary { get; set; }
+        public int? IsPrimary { get; set; }
         /// <summary>
         /// Gets or sets the type of the premium.
         /// </summary>
         /// <value>
         /// The type of the premium.
         /// </value>
-        public int PremiumType { get; set; }
+        public int? PremiumType { get; set; }
         /// <summary>
         /// Gets or sets the is ported.
         /// </summary>
         /// <value>
         /// The is ported.
         /// </value>
-        public int IsPorted { get; set; }
+        public int? IsPorted { get; set; }
         /// <summary>
         /// Gets or sets the name of the donor provider.
         /// </summary>
@@ -333,6 +399,20 @@ namespace OrderService.Models
         /// The name of the donor provider.
         /// </value>
         public string DonorProviderName { get; set; }
+        public int? IsOwnNumber { get; set; }
+        public string DonorProvider { get; set; }
+        public double? DepositFee { get; set; }
+        public int? IsBuddyLine { get; set; }
+        public int? LinkedSubscriberID { get; set; }
+        public string PortedNumberTransferForm { get; set; }
+        
+        public string PortedNumberOwnedBy { get; set; }
+        public string PortedNumberOwnerRegistrationID { get; set; }
+
+        public int? RefOrderSubscriberID { get; set; }
+        
+
+
 
         /// <summary>
         /// The bundle details
@@ -345,48 +425,13 @@ namespace OrderService.Models
     /// </summary>
     public class BundleDetails
     {
-        /// <summary>
-        /// Gets or sets the bundle identifier.
-        /// </summary>
-        /// <value>
-        /// The bundle identifier.
-        /// </value>
-        public int BundleID { get; set; }
-        /// <summary>
-        /// Gets or sets the BSS plan code.
-        /// </summary>
-        /// <value>
-        /// The BSS plan code.
-        /// </value>
-        public string BSSPlanCode { get; set; }
-        /// <summary>
-        /// Gets or sets the name of the BSS plan.
-        /// </summary>
-        /// <value>
-        /// The name of the BSS plan.
-        /// </value>
-        public string BSSPlanName { get; set; }
-        /// <summary>
-        /// Gets or sets the type of the plan.
-        /// </summary>
-        /// <value>
-        /// The type of the plan.
-        /// </value>
-        public int PlanType { get; set; }
-        /// <summary>
-        /// Gets or sets the name of the plan marketing.
-        /// </summary>
-        /// <value>
-        /// The name of the plan marketing.
-        /// </value>
-        public string PlanMarketingName { get; set; }
-        /// <summary>
-        /// Gets or sets the portal description.
-        /// </summary>
-        /// <value>
-        /// The portal description.
-        /// </value>
-        public string PortalDescription { get; set; }
+        public int ChangeRequestID { get; set; }
+        public int? SubscriberID { get; set; }
+        public string PortalServiceName { get; set; }
+        public double? ServiceFee { get; set; }
+        public int? IsRecurring { get; set; }
+        public int? IsGSTIncluded { get; set; }
+      
 
     }
 

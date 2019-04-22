@@ -54,7 +54,7 @@ namespace OrderService.DataAccess
 
                 var result = await _DataHelper.RunAsync(ds);
 
-                
+
                 var msgBody = new MessageBodyForCR();
 
                 if (ds.Tables.Count > 0)
@@ -63,10 +63,10 @@ namespace OrderService.DataAccess
                                select new MessageBodyForCR()
                                {
                                    ChangeRequestID = model.Field<int>("ChangeRequestID"),
+                                   AccountID = model.Field<int>("AccountID"),
                                    CustomerID = model.Field<int>("CustomerID"),
                                    OrderNumber = model.Field<string>("OrderNumber"),
                                    RequestOn = model.Field<DateTime>("RequestOn"),
-                                   AccountID = model.Field<int>("AccountID"),
                                    BillingUnit = model.Field<string>("BillingUnit"),
                                    BillingFloor = model.Field<string>("BillingFloor"),
                                    BillingBuildingNumber = model.Field<string>("BillingBuildingNumber"),
@@ -74,9 +74,19 @@ namespace OrderService.DataAccess
                                    BillingStreetName = model.Field<string>("BillingStreetName"),
                                    BillingPostCode = model.Field<string>("BillingPostCode"),
                                    BillingContactNumber = model.Field<string>("BillingContactNumber"),
+                                   MobileNumber = model.Field<string>("MobileNumber"),
+                                   PremiumType = model.Field<int?>("PremiumType"),
+                                   IsPorted = model.Field<int?>("IsPorted"),
+                                   IsOwnNumber = model.Field<int?>("IsOwnNumber"),
+                                   DonorProviderName = model.Field<string>("DonorProviderName"),
+                                   PortedNumberTransferForm = model.Field<string>("PortedNumberTransferForm"),
+                                   PortedNumberOwnedBy = model.Field<string>("PortedNumberOwnedBy"),
+                                   PortedNumberOwnerRegistrationID = model.Field<string>("PortedNumberOwnerRegistrationID"),
                                    ReferralCode = model.Field<string>("ReferralCode"),
+                                   Title = model.Field<string>("Title"),
                                    Name = model.Field<string>("Name"),
                                    Email = model.Field<string>("Email"),
+                                   Nationality = model.Field<string>("Nationality"),
                                    IdentityCardType = model.Field<string>("IdentityCardType"),
                                    IdentityCardNumber = model.Field<string>("IdentityCardNumber"),
                                    IsSameAsBilling = model.Field<string>("IsSameAsBilling"),
@@ -85,7 +95,6 @@ namespace OrderService.DataAccess
                                    ShippingBuildingNumber = model.Field<string>("ShippingBuildingNumber"),
                                    ShippingBuildingName = model.Field<string>("ShippingBuildingName"),
                                    ShippingStreetName = model.Field<string>("ShippingStreetName"),
-                                   Nationality = model.Field<string>("Nationality"),
                                    ShippingPostCode = model.Field<string>("ShippingPostCode"),
                                    ShippingContactNumber = model.Field<string>("ShippingContactNumber"),
                                    AlternateRecipientContact = model.Field<string>("AlternateRecipientContact"),
@@ -95,9 +104,28 @@ namespace OrderService.DataAccess
                                    SlotDate = model.Field<DateTime?>("SlotDate"),
                                    SlotFromTime = model.Field<DateTime?>("SlotFromTime"),
                                    SlotToTime = model.Field<DateTime?>("SlotToTime"),
-                                   ScheduledDate = model.Field<DateTime?>("ScheduledDate")
-                                   //Title = model.Field<string>("Title"),
-                                   //submissionDate = model.Field<string>("submissionDate"),
+                                   ScheduledDate = model.Field<DateTime?>("ScheduledDate"),
+                                   SubmissionDate = model.Field<DateTime?>("SubmissionDate"),
+                                   ServiceFee = model.Field<double?>("ServiceFee"),
+                                   AmountPaid = model.Field<double?>("AmountPaid"),
+                                   PaymentMode = model.Field<string>("PaymentMode"),
+                                   MPGSOrderID = model.Field<string>("MPGSOrderID"),
+                                   MaskedCardNumber = model.Field<string>("MaskedCardNumber"),
+                                   Token = model.Field<string>("Token"),
+                                   CardType = model.Field<string>("CardType"),
+                                   CardHolderName = model.Field<string>("CardHolderName"),
+                                   ExpiryMonth = model.Field<int?>("ExpiryMonth"),
+                                   ExpiryYear = model.Field<int?>("ExpiryYear"),
+                                   CardFundMethod = model.Field<string>("CardFundMethod"),
+                                   CardBrand = model.Field<string>("CardBrand"),
+                                   CardIssuer = model.Field<string>("CardIssuer"),
+                                   DateofBirth = model.Field<DateTime>("DateofBirth"),
+                                   ProcessedOn = model.Field<DateTime?>("ProcessedOn"),
+                                   InvoiceNumber = model.Field<string>("InvoiceNumber"),
+                                   InvoiceUrl = model.Field<string>("InvoiceUrl"),
+                                   CreatedOn = model.Field<DateTime>("CreatedOn"),
+
+
 
                                }).FirstOrDefault();
 
@@ -106,40 +134,43 @@ namespace OrderService.DataAccess
                         msgBody.subscriberDetails = (from model in ds.Tables[1].AsEnumerable()
                                                      select new SubscriberDetails()
                                                      {
-                                                         SubscriberID = model.Field<int>("SubscriberID"),
+                                                         SubscriberID = model.Field<int?>("SubscriberID"),
                                                          MobileNumber = model.Field<string>("MobileNumber"),
                                                          DisplayName = model.Field<string>("DisplayName"),
                                                          IsPrimary = model.Field<int>("IsPrimary"),
-                                                         PremiumType = model.Field<int>("PremiumType"),
-                                                         IsPorted = model.Field<int>("IsPorted"),
-                                                         DonorProviderName = model.Field<string>("DonorProviderName")
-                                                         //portedNumberTransferForm = model.Field<string>("portedNumberTransferForm"),
-                                                         //portedNumberOwnedBy = model.Field<string>("portedNumberOwnedBy"),
-                                                         //portedNumberOwnerRegistrationID = model.Field<string>("portedNumberOwnerRegistrationID"),
+                                                         PremiumType = model.Field<int?>("PremiumType"),
+                                                         IsPorted = model.Field<int?>("IsPorted"),
+
+                                                         IsOwnNumber = model.Field<int?>("IsOwnNumber"),
+                                                         DonorProvider = model.Field<string>("DonorProvider"),
+                                                         DepositFee = model.Field<double?>("DepositFee"),
+                                                         IsBuddyLine = model.Field<int?>("IsBuddyLine"),
+                                                         LinkedSubscriberID = model.Field<int?>("LinkedSubscriberID"),
+                                                         RefOrderSubscriberID = model.Field<int?>("RefOrderSubscriberID"),
+
+                                                         DonorProviderName = model.Field<string>("DonorProviderName"),
+                                                         PortedNumberTransferForm = model.Field<string>("PortedNumberTransferForm"),
+                                                         PortedNumberOwnedBy = model.Field<string>("PortedNumberOwnedBy"),
+                                                         PortedNumberOwnerRegistrationID = model.Field<string>("PortedNumberOwnerRegistrationID"),
                                                      }).FirstOrDefault();
 
-                        if(ds.Tables.Count > 2 && ds.Tables[2].Rows.Count != 0)
-                        msgBody.subscriberDetails.bundleDetails = (from model in ds.Tables[2].AsEnumerable()
-                                                                   select new BundleDetails()
-                                                                   {
-                                                                       BundleID = model.Field<int>("BundleID"),
-                                                                       BSSPlanCode = model.Field<string>("BSSPlanCode"),
-                                                                       BSSPlanName = model.Field<string>("BSSPlanName"),
-                                                                       PlanType = model.Field<int>("PlanType"),
-                                                                       PlanMarketingName = model.Field<string>("PlanMarketingName"),
-                                                                       PortalDescription = model.Field<string>("PortalDescription")
-                                                                       //totalData = model.Field<string>("totalData"),
-                                                                       //totalSMS = model.Field<string>("totalSMS"),
-                                                                       //totalVoice = model.Field<string>("totalVoice"),
-                                                                       //applicableSubscriptionFee = model.Field<string>("applicableSubscriptionFee"),
-                                                                       //serviceName = model.Field<string>("serviceName"),
-                                                                       //applicableServiceFee = model.Field<string>("applicableServiceFee")                                                                       
+                        if (ds.Tables.Count > 2 && ds.Tables[2].Rows.Count != 0)
+                            msgBody.subscriberDetails.bundleDetails = (from model in ds.Tables[2].AsEnumerable()
+                                                                       select new BundleDetails()
+                                                                       {
+                                                                           ChangeRequestID = model.Field<int>("ChangeRequestID"),
+                                                                           SubscriberID = model.Field<int?>("SubscriberID"),
+                                                                           PortalServiceName = model.Field<string>("PortalServiceName"),
+                                                                           ServiceFee = model.Field<double?>("ServiceFee"),
+                                                                           IsRecurring = model.Field<int?>("IsRecurring"),
+                                                                           IsGSTIncluded = model.Field<int?>("IsGSTIncluded"),
 
-                                                                   }).ToList();
+
+                                                                       }).ToList();
 
                     }
                 }
-                
+
                 return msgBody;
             }
 
