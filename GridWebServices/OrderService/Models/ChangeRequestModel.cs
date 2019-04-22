@@ -471,4 +471,23 @@ namespace OrderService.Models
         public string PortalSlotID { get; set; }
 
     }
+
+    public class BuyVASResponse
+    {
+        public int ChangeRequestID { get; set; }
+        public string BSSPlanCode { get; set; }
+        public string PlanMarketingName { get; set; }
+        public double SubscriptionFee { get; set; }
+        
+    }
+
+    public class RemoveVASResponse
+    {
+        public int ChangeRequestID { get; set; }
+        public int PlanID { get; set; }
+        public DateTime CurrentDate { get; set; }
+        public string BSSPlanCode { get; set; }
+        public string PlanMarketingName { get; set; }
+
+    }
 }

@@ -667,6 +667,8 @@ namespace OrderService.DataAccess
                                             AlternateRecipientContact = model.Field<string>("AlternateRecipientContact"),
                                             AlternateRecipientName = model.Field<string>("AlternateRecipientName"),
                                             AlternateRecipientEmail = model.Field<string>("AlternateRecipientEmail"),
+                                            AlternateRecioientIDType = model.Field<string>("AlternateRecioientIDType"),
+                                            AlternateRecioientIDNumber = model.Field<string>("AlternateRecioientIDNumber"),
                                             PortalSlotID = model.Field<string>("PortalSlotID"),
                                             SlotDate = model.Field<DateTime?>("SlotDate"),
                                             SlotFromTime = model.Field<TimeSpan?>("SlotFromTime"),

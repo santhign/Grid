@@ -251,6 +251,7 @@ namespace CustomerService.DataAccess
                                          SubscriptionType = model.Field<string>("SubscriptionType"),
                                          IsRecurring = model.Field<int>("IsRecurring"),
                                          ExpiryDate = model.Field<DateTime?>("ExpiryDate"),
+                                         Removable = model.Field<int>("Removable"),
                                      }).ToList();
                 }
 
@@ -323,6 +324,7 @@ namespace CustomerService.DataAccess
                                          SubscriptionType = model.Field<string>("SubscriptionType"),
                                          IsRecurring = model.Field<int>("IsRecurring"),
                                          ExpiryDate = model.Field<DateTime?>("ExpiryDate"),
+                                         Removable = model.Field<int>("Removable"),
                                      }).ToList();
                 }
 

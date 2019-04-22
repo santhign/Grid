@@ -37,6 +37,8 @@ namespace OrderService.Models
         public string AlternateRecipientContact { get; set; }
         public string AlternateRecipientName { get; set; }
         public string AlternateRecipientEmail { get; set; }
+        public string AlternateRecioientIDType { get; set; }
+        public string AlternateRecioientIDNumber { get; set; }
         public string PortalSlotID { get; set; }
         public DateTime? SlotDate { get; set; }
         public TimeSpan? SlotFromTime { get; set; }
