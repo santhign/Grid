@@ -67,6 +67,7 @@ namespace OrderService.DataAccess
                                    CustomerID = model.Field<int>("CustomerID"),
                                    OrderNumber = model.Field<string>("OrderNumber"),
                                    RequestOn = model.Field<DateTime>("RequestOn"),
+                                   EffectiveDate = model.Field<DateTime?>("EffectiveDate"),
                                    BillingUnit = model.Field<string>("BillingUnit"),
                                    BillingFloor = model.Field<string>("BillingFloor"),
                                    BillingBuildingNumber = model.Field<string>("BillingBuildingNumber"),
@@ -78,7 +79,7 @@ namespace OrderService.DataAccess
                                    PremiumType = model.Field<int?>("PremiumType"),
                                    IsPorted = model.Field<int?>("IsPorted"),
                                    IsOwnNumber = model.Field<int?>("IsOwnNumber"),
-                                   DonorProviderName = model.Field<string>("DonorProviderName"),
+                                   DonorProvider = model.Field<string>("DonorProvider"),
                                    PortedNumberTransferForm = model.Field<string>("PortedNumberTransferForm"),
                                    PortedNumberOwnedBy = model.Field<string>("PortedNumberOwnedBy"),
                                    PortedNumberOwnerRegistrationID = model.Field<string>("PortedNumberOwnerRegistrationID"),
@@ -101,62 +102,42 @@ namespace OrderService.DataAccess
                                    AlternateRecipientName = model.Field<string>("AlternateRecipientName"),
                                    AlternateRecipientEmail = model.Field<string>("AlternateRecipientEmail"),
                                    PortalSlotID = model.Field<string>("PortalSlotID"),
-                                   SlotDate = model.Field<DateTime?>("SlotDate"),
+                                   PublicDateTimeSlotDate = model.Field<DateTime?>("PublicDateTimeSlotDate"),
                                    SlotFromTime = model.Field<DateTime?>("SlotFromTime"),
                                    SlotToTime = model.Field<DateTime?>("SlotToTime"),
-                                   ScheduledDate = model.Field<DateTime?>("ScheduledDate"),
-                                   SubmissionDate = model.Field<DateTime?>("SubmissionDate"),
-                                   ServiceFee = model.Field<double?>("ServiceFee"),
-                                   AmountPaid = model.Field<double?>("AmountPaid"),
-                                   PaymentMode = model.Field<string>("PaymentMode"),
-                                   MPGSOrderID = model.Field<string>("MPGSOrderID"),
-                                   MaskedCardNumber = model.Field<string>("MaskedCardNumber"),
-                                   Token = model.Field<string>("Token"),
-                                   CardType = model.Field<string>("CardType"),
-                                   CardHolderName = model.Field<string>("CardHolderName"),
-                                   ExpiryMonth = model.Field<int?>("ExpiryMonth"),
-                                   ExpiryYear = model.Field<int?>("ExpiryYear"),
-                                   CardFundMethod = model.Field<string>("CardFundMethod"),
-                                   CardBrand = model.Field<string>("CardBrand"),
-                                   CardIssuer = model.Field<string>("CardIssuer"),
-                                   DateofBirth = model.Field<DateTime>("DateofBirth"),
-                                   ProcessedOn = model.Field<DateTime?>("ProcessedOn"),
-                                   InvoiceNumber = model.Field<string>("InvoiceNumber"),
-                                   InvoiceUrl = model.Field<string>("InvoiceUrl"),
-                                   CreatedOn = model.Field<DateTime>("CreatedOn"),
-
-
+                                   PublicDateTimescheduledDate = model.Field<DateTime?>("PublicDateTimescheduledDate"),
+                                   OldMobileNumber = model.Field<string>("OldMobileNumber"),
+                                   NewMobileNumber = model.Field<string>("NewMobileNumber"),
+                                   OldSIM = model.Field<string>("OldSIM")
 
                                }).FirstOrDefault();
 
                     if (ds.Tables.Count > 1 && ds.Tables[1].Rows.Count != 0)
                     {
                         msgBody.subscriberDetails = (from model in ds.Tables[1].AsEnumerable()
-                                                     select new SubscriberDetails()
+                                                     select new BundleDetails()
                                                      {
-                                                         SubscriberID = model.Field<int?>("SubscriberID"),
-                                                         MobileNumber = model.Field<string>("MobileNumber"),
-                                                         DisplayName = model.Field<string>("DisplayName"),
-                                                         IsPrimary = model.Field<int>("IsPrimary"),
-                                                         PremiumType = model.Field<int?>("PremiumType"),
-                                                         IsPorted = model.Field<int?>("IsPorted"),
+                                                         BundleID = model.Field<int?>("BundleID"),
+                                                         BSSPlanCode = model.Field<string>("BSSPlanCode"),
+                                                         BSSPlanName = model.Field<string>("BSSPlanName"),
+                                                         PlanType = model.Field<int?>("PlanType"),
+                                                         OldBundleID = model.Field<int?>("OldBundleID"),
+                                                         PlanMarketingName = model.Field<string>("PlanMarketingName"),
+                                                         PortalDescription = model.Field<string>("PortalDescription"),
 
-                                                         IsOwnNumber = model.Field<int?>("IsOwnNumber"),
-                                                         DonorProvider = model.Field<string>("DonorProvider"),
-                                                         DepositFee = model.Field<double?>("DepositFee"),
-                                                         IsBuddyLine = model.Field<int?>("IsBuddyLine"),
-                                                         LinkedSubscriberID = model.Field<int?>("LinkedSubscriberID"),
-                                                         RefOrderSubscriberID = model.Field<int?>("RefOrderSubscriberID"),
+                                                         TotalData = model.Field<double?>("TotalData"),
+                                                         TotalSMS = model.Field<double?>("TotalSMS"),
+                                                         TotalVoice = model.Field<double?>("TotalVoice"),
+                                                         ApplicableSubscriptionFee = model.Field<double?>("ApplicableSubscriptionFee"),
+                                                         OldPlanID = model.Field<int?>("OldPlanID"),
+                                                         OldBSSPlanId = model.Field<int?>("OldBSSPlanId"),
 
-                                                         DonorProviderName = model.Field<string>("DonorProviderName"),
-                                                         PortedNumberTransferForm = model.Field<string>("PortedNumberTransferForm"),
-                                                         PortedNumberOwnedBy = model.Field<string>("PortedNumberOwnedBy"),
-                                                         PortedNumberOwnerRegistrationID = model.Field<string>("PortedNumberOwnerRegistrationID"),
+                                                         OldBSSPlanName = model.Field<string>("OldBSSPlanName"),                                                         
                                                      }).FirstOrDefault();
 
                         if (ds.Tables.Count > 2 && ds.Tables[2].Rows.Count != 0)
-                            msgBody.subscriberDetails.bundleDetails = (from model in ds.Tables[2].AsEnumerable()
-                                                                       select new BundleDetails()
+                            msgBody.subscriberDetails.chargesDetails = (from model in ds.Tables[2].AsEnumerable()
+                                                                       select new ChargesDetails()
                                                                        {
                                                                            ChangeRequestID = model.Field<int>("ChangeRequestID"),
                                                                            SubscriberID = model.Field<int?>("SubscriberID"),
