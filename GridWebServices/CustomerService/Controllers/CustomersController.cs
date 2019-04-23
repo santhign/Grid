@@ -16,6 +16,7 @@ using CustomerService.DataAccess;
 using Serilog;
 using System.Net.Mail;
 using InfrastructureService.MessageQueue;
+using Newtonsoft.Json;
 
 namespace CustomerService.Controllers
 {
@@ -157,12 +158,10 @@ namespace CustomerService.Controllers
         /// Updates the customer profile.
         /// </summary>
         /// <param name="token">The token.</param>
-        /// <param name="password">The password.</param>
-        /// <param name="mobileNumber">The mobile number.</param>
-        /// <param name="email">The email.</param>
+        /// <param name="_profile">The profile details.</param>
         /// <returns></returns>
-        [HttpPut("UpdateCustomerProfile/{password}/{mobileNumber}/{email}")]
-        public async Task<IActionResult> UpdateCustomerProfile([FromHeader(Name = "Grid-Authorization-Token")] string token, string password, string mobileNumber, string email)
+        [HttpPost("UpdateCustomerProfile")]
+        public async Task<IActionResult> UpdateCustomerProfile([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] CustomerProfile _profile)
         {
             try
             {
@@ -197,12 +196,65 @@ namespace CustomerService.Controllers
 
                         var customerAccess = new CustomerDataAccess(_iconfiguration);
 
-                        var statusResponse = await customerAccess.UpdateCustomerProfile(new CustomerProfile
-
-                        { CustomerId = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID, MobileNumber = mobileNumber, Password = password, Email = email });
+                        var statusResponse = await customerAccess.UpdateCustomerProfile(((AuthTokenResponse)tokenAuthResponse.Results).CustomerID, new CustomerProfile
+                        {
+                            MobileNumber = _profile.MobileNumber,
+                            Password = _profile.Password,
+                            Email = _profile.Email
+                        });
 
                         if (statusResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
                         {
+                            ProfileMQ msgBody = new ProfileMQ();
+                            Dictionary<string, string> attribute = new Dictionary<string, string>();
+                            string topicName = string.Empty, subject = string.Empty;
+                            MQDataAccess _MQDataAccess = new MQDataAccess(_iconfiguration);
+                            try
+                            {
+                                msgBody = await _MQDataAccess.GetProfileUpdateMessageBody(((AuthTokenResponse)tokenAuthResponse.Results).CustomerID);
+
+                                topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration).Results.ToString().Trim();
+                                attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.Terminate.GetDescription());
+                                var pushResult = await _MQDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
+                                if (pushResult.Trim().ToUpper() == "OK")
+                                {
+
+
+                                    MessageQueueRequest queueRequest = new MessageQueueRequest
+                                    {
+                                        Source = Source.ChangeRequest,
+                                        NumberOfRetries = 1,
+                                        SNSTopic = topicName,
+                                        CreatedOn = DateTime.Now,
+                                        LastTriedOn = DateTime.Now,
+                                        PublishedOn = DateTime.Now,
+                                        MessageAttribute = Core.Enums.RequestType.Terminate.GetDescription().ToString(),
+                                        MessageBody = JsonConvert.SerializeObject(msgBody),
+                                        Status = 1
+                                    };
+                                    await _MQDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                                }
+                                else
+                                {
+                                    MessageQueueRequest queueRequest = new MessageQueueRequest
+                                    {
+                                        Source = Source.ChangeRequest,
+                                        NumberOfRetries = 1,
+                                        SNSTopic = topicName,
+                                        CreatedOn = DateTime.Now,
+                                        LastTriedOn = DateTime.Now,
+                                        PublishedOn = DateTime.Now,
+                                        MessageAttribute = Core.Enums.RequestType.Terminate.GetDescription().ToString(),
+                                        MessageBody = JsonConvert.SerializeObject(msgBody),
+                                        Status = 0
+                                    };
+                                    await _MQDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                            }
                             return Ok(new ServerResponse
                             {
                                 HasSucceeded = true,

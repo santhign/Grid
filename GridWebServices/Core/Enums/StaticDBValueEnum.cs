@@ -76,6 +76,9 @@ namespace Core.Enums
         SNS_Topic_ChangeRequest,
         [EnumMember(Value = "SNS_Topic_CreateCustomer")]
         [Description("SNS_Topic_CreateCustomer")]
-        SNS_Topic_CreateCustomer
+        SNS_Topic_CreateCustomer,
+        [EnumMember(Value = "SNS_Topic_ProfileUpdate")]
+        [Description("SNS_Topic_ProfileUpdate")]
+        SNS_Topic_ProfileUpdate
     }
 }
