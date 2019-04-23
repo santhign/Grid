@@ -54,6 +54,6 @@ namespace OrderService.DataAccess
         Task<int> InsertMessageInMessageQueueRequest(MessageQueueRequest messageQueueRequest);
         Task<DatabaseResponse> GetOrderMessageQueueBody(int orderId);
 
-
+        Task InsertMessageInMessageQueueRequestException(MessageQueueRequestException messageQueueRequestException);
     }
 }
