@@ -150,7 +150,7 @@ namespace OrderService.Controllers
                         catch (Exception ex)
                         {
                             LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-                            MessageQueueRequest queueRequest = new MessageQueueRequest
+                            MessageQueueRequestException queueRequest = new MessageQueueRequestException
                             {
                                 Source = Source.ChangeRequest,
                                 NumberOfRetries = 1,
@@ -160,8 +160,14 @@ namespace OrderService.Controllers
                                 PublishedOn = DateTime.Now,
                                 MessageAttribute = Core.Enums.RequestType.RemoveVAS.GetDescription().ToString(),
                                 MessageBody = JsonConvert.SerializeObject(msgBody),
-                                Status = 0
+                                Status = 0,
+                                Remark = "Error Occured in RemoveVASService",
+                                Exception = ex.StackTrace.ToString()
+
+
                             };
+
+                            await _messageQueueDataAccess.InsertMessageInMessageQueueRequestException(queueRequest);
 
                             await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
                         }
@@ -309,7 +315,7 @@ namespace OrderService.Controllers
                         catch (Exception ex)
                         {
                             LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-                            MessageQueueRequest queueRequest = new MessageQueueRequest
+                            MessageQueueRequestException queueRequest = new MessageQueueRequestException
                             {
                                 Source = Source.ChangeRequest,
                                 NumberOfRetries = 1,
@@ -319,10 +325,14 @@ namespace OrderService.Controllers
                                 PublishedOn = DateTime.Now,
                                 MessageAttribute = Core.Enums.RequestType.AddVAS.GetDescription().ToString(),
                                 MessageBody = JsonConvert.SerializeObject(msgBody),
-                                Status = 0
+                                Status = 0,
+                                Remark = "Error Occured in BuyVASService",
+                                Exception = ex.StackTrace.ToString()
+
+
                             };
 
-                            await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                            await _messageQueueDataAccess.InsertMessageInMessageQueueRequestException(queueRequest);
                         }
 
                         return Ok(new ServerResponse
@@ -468,7 +478,7 @@ namespace OrderService.Controllers
                         catch (Exception ex)
                         {
                             LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-                            MessageQueueRequest queueRequest = new MessageQueueRequest
+                            MessageQueueRequestException queueRequest = new MessageQueueRequestException
                             {
                                 Source = Source.ChangeRequest,
                                 NumberOfRetries = 1,
@@ -478,10 +488,14 @@ namespace OrderService.Controllers
                                 PublishedOn = DateTime.Now,
                                 MessageAttribute = Core.Enums.RequestType.Terminate.GetDescription().ToString(),
                                 MessageBody = JsonConvert.SerializeObject(msgBody),
-                                Status = 0
+                                Status = 0,
+                                Remark = "Error Occured in TerminationRequestService",
+                                Exception = ex.StackTrace.ToString()
+
+
                             };
-                            
-                            await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+
+                            await _messageQueueDataAccess.InsertMessageInMessageQueueRequestException(queueRequest);
                         }
 
                         return Ok(new ServerResponse
@@ -725,7 +739,7 @@ namespace OrderService.Controllers
                         catch (Exception ex)
                         {
                             LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-                            MessageQueueRequest queueRequest = new MessageQueueRequest
+                            MessageQueueRequestException queueRequest = new MessageQueueRequestException
                             {
                                 Source = Source.ChangeRequest,
                                 NumberOfRetries = 1,
@@ -735,10 +749,14 @@ namespace OrderService.Controllers
                                 PublishedOn = DateTime.Now,
                                 MessageAttribute = Core.Enums.RequestType.Suspend.GetDescription().ToString(),
                                 MessageBody = JsonConvert.SerializeObject(msgBody),
-                                Status = 0
+                                Status = 0,
+                                Remark = "Error Occured in SuspensionRequestService",
+                                Exception = ex.StackTrace.ToString()
+
+
                             };
-                           
-                            await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+
+                            await _messageQueueDataAccess.InsertMessageInMessageQueueRequestException(queueRequest);
                         }
 
                         return Ok(new ServerResponse
@@ -1058,7 +1076,7 @@ namespace OrderService.Controllers
                         catch (Exception ex)
                         {
                             LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-                            MessageQueueRequest queueRequest = new MessageQueueRequest
+                            MessageQueueRequestException queueRequest = new MessageQueueRequestException
                             {
                                 Source = Source.ChangeRequest,
                                 NumberOfRetries = 1,
@@ -1068,10 +1086,14 @@ namespace OrderService.Controllers
                                 PublishedOn = DateTime.Now,
                                 MessageAttribute = Core.Enums.RequestType.UnSuspend.GetDescription().ToString(),
                                 MessageBody = JsonConvert.SerializeObject(msgBody),
-                                Status = 0
+                                Status = 0,
+                                Remark = "Error Occured in UnsuspensionService",
+                                Exception = ex.StackTrace.ToString()
+
+
                             };
 
-                            await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                            await _messageQueueDataAccess.InsertMessageInMessageQueueRequestException(queueRequest);
                         }
 
                         return Ok(new ServerResponse
@@ -1221,7 +1243,7 @@ namespace OrderService.Controllers
                         catch (Exception ex)
                         {
                             LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-                            MessageQueueRequest queueRequest = new MessageQueueRequest
+                            MessageQueueRequestException queueRequest = new MessageQueueRequestException
                             {
                                 Source = Source.ChangeRequest,
                                 NumberOfRetries = 1,
@@ -1231,10 +1253,14 @@ namespace OrderService.Controllers
                                 PublishedOn = DateTime.Now,
                                 MessageAttribute = Core.Enums.RequestType.AddVAS.GetDescription().ToString(),
                                 MessageBody = JsonConvert.SerializeObject(msgBody),
-                                Status = 0
+                                Status = 0,
+                                Remark = "Error Occured in BuySharedVASService",
+                                Exception = ex.StackTrace.ToString()
+
+
                             };
 
-                            await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                            await _messageQueueDataAccess.InsertMessageInMessageQueueRequestException(queueRequest);
                         }
 
                         return Ok(new ServerResponse

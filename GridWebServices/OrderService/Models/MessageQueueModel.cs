@@ -445,4 +445,10 @@ namespace OrderService.Models
 
 
     }
+
+    public class MessageQueueRequestException : MessageQueueRequest
+    {
+        public string Remark { get; set; }
+        public string Exception { get; set; }
+    }
 }
