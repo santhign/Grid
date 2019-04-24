@@ -214,7 +214,7 @@ namespace CustomerService.Controllers
                                 msgBody = await _MQDataAccess.GetProfileUpdateMessageBody(((AuthTokenResponse)tokenAuthResponse.Results).CustomerID);
 
                                 topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration).Results.ToString().Trim();
-                                attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.EditBillAddress.GetDescription());
+                                attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.EditContact.GetDescription());
                                 var pushResult = await _MQDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
                                 if (pushResult.Trim().ToUpper() == "OK")
                                 {
