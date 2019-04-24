@@ -180,7 +180,7 @@ namespace OrderService.Models
         public List<OrderSubscriptionQM> Bundles { get; set; }
 
         [DataMember(Name = "OrderCharges")]
-        public List<OrderServiceCharge> ServiceCharges { get; set; }
+        public List<OrderServiceCharge> Charges { get; set; }
        
     }
 

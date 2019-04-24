@@ -416,7 +416,7 @@ namespace OrderService.DataAccess
                                                        isGSTIncluded = model.Field<int>("isGSTIncluded"),
                                                    }).ToList();
 
-                            order.ServiceCharges = serviceCharges;
+                            order.Charges = serviceCharges;
 
                         }
                     }
