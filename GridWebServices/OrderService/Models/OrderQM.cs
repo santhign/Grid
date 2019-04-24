@@ -174,10 +174,10 @@ namespace OrderService.Models
         public DateTime CreatedOn { get; set; }
 
         [DataMember(Name = "OrderSubscribers")]
-        public List<OrderSubscriber> OrderSubscribers { get; set; }
+        public List<OrderSubscriber> Subscribers { get; set; }
 
         [DataMember(Name = "OrderSubscriptions")]
-        public List<OrderSubscriptionQM> OrderSubscriptions { get; set; }
+        public List<OrderSubscriptionQM> Bundles { get; set; }
 
         [DataMember(Name = "OrderCharges")]
         public List<OrderServiceCharge> ServiceCharges { get; set; }
