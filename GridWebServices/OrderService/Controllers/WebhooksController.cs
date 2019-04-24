@@ -112,11 +112,15 @@ namespace OrderService.Controllers
 
         //}
         [HttpPost("process-webhook")]
-        public IActionResult ProcessWebhook([FromBody] WebhookNotificationModel notification, [FromHeader(Name = "X-Notification-Secret")] string notificationSecret)
+        public  IActionResult ProcessWebhook([FromBody] WebhookNotificationModel notification, [FromHeader(Name = "X-Notification-Secret")] string notificationSecret)
         {
             try
             {
                 _notificationModel = notification;
+
+                Publisher mpgsWhNotificationPublisher = new Publisher(_iconfiguration, "WebhookNotification-Payment");
+
+                 var response=  mpgsWhNotificationPublisher.PublishAsync(notification);
 
                 notification.Timestamp = Convert.ToInt64((DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds);
 
