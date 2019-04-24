@@ -1,348 +1,153 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 
 namespace OrderService.Models
-{   
+{
 
     /// <summary>
     /// MEssage Body for Change Request class model
-    /// </summary>
+    /// </summary>   
+    [DataContract]
     public class MessageBodyForCR
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MessageBodyForCR"/> class.
-        /// </summary>
-        public MessageBodyForCR()
-        {
-            subscriberDetails = new BundleDetails();
-        }
-        /// <summary>
-        /// Gets or sets the account identifier.
-        /// </summary>
-        /// <value>
-        /// The account identifier.
-        /// </value>
-        public int AccountID { get; set; }
-        /// <summary>
-        /// Gets or sets the customer identifier.
-        /// </summary>
-        /// <value>
-        /// The customer identifier.
-        /// </value>
-        public int CustomerID { get; set; }
-        /// <summary>
-        /// Gets or sets the change request identifier.
-        /// </summary>
-        /// <value>
-        /// The change request identifier.
-        /// </value>
+        [DataMember]
         public int ChangeRequestID { get; set; }
-
-        /// <summary>
-        /// Gets or sets the type of the premium.
-        /// </summary>
-        /// <value>
-        /// The type of the premium.
-        /// </value>
-        public int ? PremiumType { get; set; }
-        /// <summary>
-        /// Gets or sets the is own number.
-        /// </summary>
-        /// <value>
-        /// The is own number.
-        /// </value>
-        public int? IsOwnNumber { get; set; }
-        
-
-        /// <summary>
-        /// Gets or sets the is ported.
-        /// </summary>
-        /// <value>
-        /// The is ported.
-        /// </value>
-        public int? IsPorted { get; set; }
-        /// <summary>
-        /// Gets or sets the order number.
-        /// </summary>
-        /// <value>
-        /// The order number.
-        /// </value>
+        [DataMember]
+        public int AccountID { get; set; }
+        [DataMember]
+        public int CustomerID { get; set; }
+        [DataMember]
         public string OrderNumber { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name of the donor provider.
-        /// </summary>
-        /// <value>
-        /// The name of the donor provider.
-        /// </value>
-        public string DonorProvider { get; set; }
-        public string PortedNumberTransferForm { get; set; }
-        public string PortedNumberOwnedBy { get; set; }
-        public string PortedNumberOwnerRegistrationID { get; set; }
-        public string Title { get; set; }
-        /// <summary>
-        /// Gets or sets the request on.
-        /// </summary>
-        /// <value>
-        /// The request on.
-        /// </value>
+        [DataMember]
         public DateTime RequestOn { get; set; }
-
+        [DataMember]
         public DateTime? EffectiveDate { get; set; }
-        /// <summary>
-        /// Gets or sets the billing unit.
-        /// </summary>
-        /// <value>
-        /// The billing unit.
-        /// </value>
+        [DataMember]
         public string BillingUnit { get; set; }
-        /// <summary>
-        /// Gets or sets the billing floor.
-        /// </summary>
-        /// <value>
-        /// The billing floor.
-        /// </value>
+        [DataMember]
         public string BillingFloor { get; set; }
-        /// <summary>
-        /// Gets or sets the billing building number.
-        /// </summary>
-        /// <value>
-        /// The billing building number.
-        /// </value>
+        [DataMember]
         public string BillingBuildingNumber { get; set; }
-        /// <summary>
-        /// Gets or sets the name of the billing building.
-        /// </summary>
-        /// <value>
-        /// The name of the billing building.
-        /// </value>
+        [DataMember]
         public string BillingBuildingName { get; set; }
-        /// <summary>
-        /// Gets or sets the name of the billing street.
-        /// </summary>
-        /// <value>
-        /// The name of the billing street.
-        /// </value>
+        [DataMember]
         public string BillingStreetName { get; set; }
-        /// <summary>
-        /// Gets or sets the billing post code.
-        /// </summary>
-        /// <value>
-        /// The billing post code.
-        /// </value>
+        [DataMember]
         public string BillingPostCode { get; set; }
-        /// <summary>
-        /// Gets or sets the billing contact number.
-        /// </summary>
-        /// <value>
-        /// The billing contact number.
-        /// </value>
+        [DataMember]
         public string BillingContactNumber { get; set; }
-        /// <summary>
-        /// Gets or sets the mobile number.
-        /// </summary>
-        /// <value>
-        /// The mobile number.
-        /// </value>
+        [DataMember]
         public string MobileNumber { get; set; }
-        /// <summary>
-        /// Gets or sets the referral code.
-        /// </summary>
-        /// <value>
-        /// The referral code.
-        /// </value>
-        public string ReferralCode { get; set; }
-        /// <summary>
-        /// Gets or sets the name.
-        /// </summary>
-        /// <value>
-        /// The name.
-        /// </value>
+        [DataMember]
+        public int ? PremiumType { get; set; }
+        [DataMember]
+        public int? IsPorted { get; set; }
+        [DataMember]
+        public int? IsOwnNumber { get; set; }
+        [DataMember]
+        public string DonorProvider { get; set; }
+        [DataMember]
+        public string PortedNumberTransferForm { get; set; }
+        [DataMember]
+        public string PortedNumberOwnedBy { get; set; }
+        [DataMember]
+        public string PortedNumberOwnerRegistrationID { get; set; }
+        [DataMember]
+        public string Title { get; set; }
+        [DataMember]
         public string Name { get; set; }
-        /// <summary>
-        /// Gets or sets the email.
-        /// </summary>
-        /// <value>
-        /// The email.
-        /// </value>
+        [DataMember]
         public string Email { get; set; }
-        /// <summary>
-        /// Gets or sets the nationality.
-        /// </summary>
-        /// <value>
-        /// The nationality.
-        /// </value>
+        [DataMember]
         public string Nationality { get; set; }
-        /// <summary>
-        /// Gets or sets the type of the identity card.
-        /// </summary>
-        /// <value>
-        /// The type of the identity card.
-        /// </value>
+        [DataMember]
         public string IdentityCardType { get; set; }
-        /// <summary>
-        /// Gets or sets the identity card number.
-        /// </summary>
-        /// <value>
-        /// The identity card number.
-        /// </value>
+        [DataMember]
         public string IdentityCardNumber { get; set; }
-        /// <summary>
-        /// Gets or sets the is same as billing.
-        /// </summary>
-        /// <value>
-        /// The is same as billing.
-        /// </value>
+        [DataMember]
         public string IsSameAsBilling { get; set; }
-        /// <summary>
-        /// Gets or sets the shipping unit.
-        /// </summary>
-        /// <value>
-        /// The shipping unit.
-        /// </value>
+        [DataMember]
         public string ShippingUnit { get; set; }
-        /// <summary>
-        /// Gets or sets the shipping floor.
-        /// </summary>
-        /// <value>
-        /// The shipping floor.
-        /// </value>
+        [DataMember]
         public string ShippingFloor { get; set; }
-        /// <summary>
-        /// Gets or sets the shipping building number.
-        /// </summary>
-        /// <value>
-        /// The shipping building number.
-        /// </value>
+        [DataMember]
         public string ShippingBuildingNumber { get; set; }
-        /// <summary>
-        /// Gets or sets the name of the shipping building.
-        /// </summary>
-        /// <value>
-        /// The name of the shipping building.
-        /// </value>
+        [DataMember]
         public string ShippingBuildingName { get; set; }
-        /// <summary>
-        /// Gets or sets the name of the shipping street.
-        /// </summary>
-        /// <value>
-        /// The name of the shipping street.
-        /// </value>
+        [DataMember]
         public string ShippingStreetName { get; set; }
-        /// <summary>
-        /// Gets or sets the shipping post code.
-        /// </summary>
-        /// <value>
-        /// The shipping post code.
-        /// </value>
+        [DataMember]
         public string ShippingPostCode { get; set; }
-        /// <summary>
-        /// Gets or sets the shipping contact number.
-        /// </summary>
-        /// <value>
-        /// The shipping contact number.
-        /// </value>
+        [DataMember]
         public string ShippingContactNumber { get; set; }
-        /// <summary>
-        /// Gets or sets the alternate recipient contact.
-        /// </summary>
-        /// <value>
-        /// The alternate recipient contact.
-        /// </value>
+        [DataMember]
         public string AlternateRecipientContact { get; set; }
-        /// <summary>
-        /// Gets or sets the name of the alternate recipient.
-        /// </summary>
-        /// <value>
-        /// The name of the alternate recipient.
-        /// </value>
+        [DataMember]
         public string AlternateRecipientName { get; set; }
-        /// <summary>
-        /// Gets or sets the alternate recipient email.
-        /// </summary>
-        /// <value>
-        /// The alternate recipient email.
-        /// </value>
+        [DataMember]
         public string AlternateRecipientEmail { get; set; }
-        /// <summary>
-        /// Gets or sets the portal slot identifier.
-        /// </summary>
-        /// <value>
-        /// The portal slot identifier.
-        /// </value>
+        [DataMember]
         public string PortalSlotID { get; set; }
+        [DataMember]
+        public DateTime? PublicDateTimeSlotDate { get; set; }
 
-        public string OldMobileNumber { get; set; }
-
-        public string NewMobileNumber { get; set; }
-
-        public string OldSIM { get; set; }
-        /// <summary>
-        /// Gets or sets the slot date.
-        /// </summary>
-        /// <value>
-        /// The slot date.
-        /// </value>
-        public DateTime ? PublicDateTimeSlotDate { get; set; }
-        /// <summary>
-        /// Gets or sets the slot from time.
-        /// </summary>
-        /// <value>
-        /// The slot from time.
-        /// </value>
+        [DataMember]
         public DateTime ? SlotFromTime { get; set; }
+        [DataMember]
+        public DateTime? SlotToTime { get; set; }
+        [DataMember]
+        public DateTime? PublicDateTimescheduledDate { get; set; }
+        [DataMember]
+        public string OldMobileNumber { get; set; }
+        [DataMember]
+        public string NewMobileNumber { get; set; }
+        [DataMember]
+        public string OldSIM { get; set; }
+        [DataMember]
         public DateTime? SubmissionDate { get; set; }
         
-        /// <summary>
-        /// Gets or sets the slot to time.
-        /// </summary>
-        /// <value>
-        /// The slot to time.
-        /// </value>
-        public DateTime ? SlotToTime { get; set; }
-        /// <summary>
-        /// Gets or sets the scheduled date.
-        /// </summary>
-        /// <value>
-        /// The scheduled date.
-        /// </value>
-        public DateTime ? PublicDateTimescheduledDate { get; set; }
+        
+        
         /// <summary>
         /// Gets or sets the service fee.
         /// </summary>
         /// <value>
         /// The service fee.
         /// </value>
-        public double ? ServiceFee { get; set; }
+        //public double ? ServiceFee { get; set; }
 
-        public double ? AmountPaid { get; set; }
+        //public double ? AmountPaid { get; set; }
 
-        public string PaymentMode { get; set; }
-        public string MPGSOrderID { get; set; }
-        public string MaskedCardNumber { get; set; }
-        public string Token { get; set; }
-        public string CardType { get; set; }
-        public string CardHolderName { get; set; }
-        public int ? ExpiryMonth { get; set; }
-        public int ? ExpiryYear { get; set; }
-        public string CardFundMethod { get; set; }
-        public string CardBrand { get; set; }
-        public string CardIssuer { get; set; }
-        public DateTime DateofBirth { get; set; }
-        public DateTime? ProcessedOn { get; set; }
-        public string InvoiceNumber { get; set; }
-        public string InvoiceUrl { get; set; }
-        public DateTime CreatedOn { get; set; }
+        //public string PaymentMode { get; set; }
+        //public string MPGSOrderID { get; set; }
+        //public string MaskedCardNumber { get; set; }
+        //public string Token { get; set; }
+        //public string CardType { get; set; }
+        //public string CardHolderName { get; set; }
+        //public int ? ExpiryMonth { get; set; }
+        //public int ? ExpiryYear { get; set; }
+        //public string CardFundMethod { get; set; }
+        //public string CardBrand { get; set; }
+        //public string CardIssuer { get; set; }
+        //public DateTime DateofBirth { get; set; }
+        //public DateTime? ProcessedOn { get; set; }
+        //public string InvoiceNumber { get; set; }
+        //public string InvoiceUrl { get; set; }
+        //public DateTime CreatedOn { get; set; }
+
+
+
+
        
+        [DataMember(Name = "Bundles")]
+        public List<BundleDetails> Bundles { get; set; }
 
-
-
-        /// <summary>
-        /// The subscriber details
-        /// </summary>
-        public BundleDetails subscriberDetails;
+       
+        [DataMember(Name = "Charges")]
+        public IList<ChargesDetails> Charges { get; set; }
     }
 
     /// <summary>
@@ -350,49 +155,35 @@ namespace OrderService.Models
     /// </summary>
     public class BundleDetails
     {
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SubscriberDetails"/> class.
-        /// </summary>
-        public BundleDetails()
-        {
-            chargesDetails = new List<ChargesDetails>();
-        }
-        /// <summary>
-        /// Gets or sets the subscriber identifier.
-        /// </summary>
-        /// <value>
-        /// The subscriber identifier.
-        /// </value>
+        [DataMember]
         public int? BundleID { get; set; }
-
+        [DataMember]
         public string BSSPlanCode { get; set; }
-        /// <summary>
-        /// Gets or sets the mobile number.
-        /// </summary>
-        /// <value>
-        /// The mobile number.
-        /// </value>
+        [DataMember]
         public string BSSPlanName { get; set; }
+        [DataMember]
         public int? PlanType { get; set; }
+        [DataMember]
         public int? OldBundleID { get; set; }
+        [DataMember]
         public string PlanMarketingName { get; set; }
+        [DataMember]
         public string PortalDescription { get; set; }
+        [DataMember]
         public double? TotalData { get; set; }
+        [DataMember]
         public double? TotalSMS { get; set; }
+        [DataMember]
         public double? TotalVoice { get; set; }
+        [DataMember]
         public double? ApplicableSubscriptionFee { get; set; }
+        [DataMember]
         public int? OldPlanID { get; set; }
+        [DataMember]
         public int? OldBSSPlanId { get; set; }
+        [DataMember]
         public string OldBSSPlanName { get; set; }
 
-
-
-
-        /// <summary>
-        /// The bundle details
-        /// </summary>
-        public IList<ChargesDetails> chargesDetails;
     }
 
     /// <summary>
@@ -400,11 +191,16 @@ namespace OrderService.Models
     /// </summary>
     public class ChargesDetails
     {
-        public int ChangeRequestID { get; set; }
+        //public int ChangeRequestID { get; set; }
+        [DataMember]
         public int? SubscriberID { get; set; }
+        [DataMember]
         public string PortalServiceName { get; set; }
+        [DataMember]
         public double? ServiceFee { get; set; }
+        [DataMember]
         public int? IsRecurring { get; set; }
+        [DataMember]
         public int? IsGSTIncluded { get; set; }
       
 
