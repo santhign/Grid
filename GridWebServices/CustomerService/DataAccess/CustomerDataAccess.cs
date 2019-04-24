@@ -169,13 +169,13 @@ namespace CustomerService.DataAccess
         /// <summary>
         /// Updates the customer profile.
         /// </summary>
+        /// <param name="CustomerID"></param>
         /// <param name="customer">The customer.</param>
         /// <returns></returns>
-        public async Task<DatabaseResponse> UpdateCustomerProfile(CustomerProfile customer)
+        public async Task<DatabaseResponse> UpdateCustomerProfile(int CustomerID, CustomerProfile customer)
         {
             try
             {
-
                 SqlParameter[] parameters =
                {
                     new SqlParameter( "@CustomerID",  SqlDbType.NVarChar ),
@@ -184,8 +184,11 @@ namespace CustomerService.DataAccess
                     new SqlParameter( "@Email",  SqlDbType.NVarChar)
                 };
 
-                parameters[0].Value = customer.CustomerId;
-                parameters[1].Value = new Sha2().Hash(customer.Password);
+                parameters[0].Value = CustomerID;
+                if (customer.Password == null || customer.Password == "")
+                { parameters[1].Value = DBNull.Value; }
+                else
+                { parameters[1].Value = new Sha2().Hash(customer.Password); }
                 parameters[2].Value = customer.MobileNumber;
                 parameters[3].Value = customer.Email;
 

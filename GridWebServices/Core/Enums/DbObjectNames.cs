@@ -64,6 +64,8 @@ namespace Core.Enums
         public const string z_GetSingleMessageQueueRecord = "z_GetSingleMessageQueueRecord";
 
         public const string z_UpdateStatusInMessageQueueRequests = "z_UpdateStatusInMessageQueueRequests";
+
+        public const string Orders_CR_BuySharedVAS = "Orders_CR_BuySharedVAS";
     }
 
 }

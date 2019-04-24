@@ -16,7 +16,7 @@ namespace OrderService.Models
         /// </summary>
         public MessageBodyForCR()
         {
-            subscriberDetails = new SubscriberDetails();
+            subscriberDetails = new BundleDetails();
         }
         /// <summary>
         /// Gets or sets the account identifier.
@@ -39,6 +39,30 @@ namespace OrderService.Models
         /// The change request identifier.
         /// </value>
         public int ChangeRequestID { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the premium.
+        /// </summary>
+        /// <value>
+        /// The type of the premium.
+        /// </value>
+        public int ? PremiumType { get; set; }
+        /// <summary>
+        /// Gets or sets the is own number.
+        /// </summary>
+        /// <value>
+        /// The is own number.
+        /// </value>
+        public int? IsOwnNumber { get; set; }
+        
+
+        /// <summary>
+        /// Gets or sets the is ported.
+        /// </summary>
+        /// <value>
+        /// The is ported.
+        /// </value>
+        public int? IsPorted { get; set; }
         /// <summary>
         /// Gets or sets the order number.
         /// </summary>
@@ -46,6 +70,18 @@ namespace OrderService.Models
         /// The order number.
         /// </value>
         public string OrderNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the donor provider.
+        /// </summary>
+        /// <value>
+        /// The name of the donor provider.
+        /// </value>
+        public string DonorProvider { get; set; }
+        public string PortedNumberTransferForm { get; set; }
+        public string PortedNumberOwnedBy { get; set; }
+        public string PortedNumberOwnerRegistrationID { get; set; }
+        public string Title { get; set; }
         /// <summary>
         /// Gets or sets the request on.
         /// </summary>
@@ -53,6 +89,8 @@ namespace OrderService.Models
         /// The request on.
         /// </value>
         public DateTime RequestOn { get; set; }
+
+        public DateTime? EffectiveDate { get; set; }
         /// <summary>
         /// Gets or sets the billing unit.
         /// </summary>
@@ -102,6 +140,13 @@ namespace OrderService.Models
         /// The billing contact number.
         /// </value>
         public string BillingContactNumber { get; set; }
+        /// <summary>
+        /// Gets or sets the mobile number.
+        /// </summary>
+        /// <value>
+        /// The mobile number.
+        /// </value>
+        public string MobileNumber { get; set; }
         /// <summary>
         /// Gets or sets the referral code.
         /// </summary>
@@ -228,13 +273,19 @@ namespace OrderService.Models
         /// The portal slot identifier.
         /// </value>
         public string PortalSlotID { get; set; }
+
+        public string OldMobileNumber { get; set; }
+
+        public string NewMobileNumber { get; set; }
+
+        public string OldSIM { get; set; }
         /// <summary>
         /// Gets or sets the slot date.
         /// </summary>
         /// <value>
         /// The slot date.
         /// </value>
-        public DateTime ? SlotDate { get; set; }
+        public DateTime ? PublicDateTimeSlotDate { get; set; }
         /// <summary>
         /// Gets or sets the slot from time.
         /// </summary>
@@ -242,6 +293,8 @@ namespace OrderService.Models
         /// The slot from time.
         /// </value>
         public DateTime ? SlotFromTime { get; set; }
+        public DateTime? SubmissionDate { get; set; }
+        
         /// <summary>
         /// Gets or sets the slot to time.
         /// </summary>
@@ -255,34 +308,55 @@ namespace OrderService.Models
         /// <value>
         /// The scheduled date.
         /// </value>
-        public DateTime ? ScheduledDate { get; set; }
+        public DateTime ? PublicDateTimescheduledDate { get; set; }
         /// <summary>
         /// Gets or sets the service fee.
         /// </summary>
         /// <value>
         /// The service fee.
         /// </value>
-        public double ServiceFee { get; set; }
+        public double ? ServiceFee { get; set; }
+
+        public double ? AmountPaid { get; set; }
+
+        public string PaymentMode { get; set; }
+        public string MPGSOrderID { get; set; }
+        public string MaskedCardNumber { get; set; }
+        public string Token { get; set; }
+        public string CardType { get; set; }
+        public string CardHolderName { get; set; }
+        public int ? ExpiryMonth { get; set; }
+        public int ? ExpiryYear { get; set; }
+        public string CardFundMethod { get; set; }
+        public string CardBrand { get; set; }
+        public string CardIssuer { get; set; }
+        public DateTime DateofBirth { get; set; }
+        public DateTime? ProcessedOn { get; set; }
+        public string InvoiceNumber { get; set; }
+        public string InvoiceUrl { get; set; }
+        public DateTime CreatedOn { get; set; }
+       
+
 
 
         /// <summary>
         /// The subscriber details
         /// </summary>
-        public SubscriberDetails subscriberDetails;
+        public BundleDetails subscriberDetails;
     }
 
     /// <summary>
     /// Subscriber details
     /// </summary>
-    public class SubscriberDetails
+    public class BundleDetails
     {
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SubscriberDetails"/> class.
         /// </summary>
-        public SubscriberDetails()
+        public BundleDetails()
         {
-            bundleDetails = new List<BundleDetails>();
+            chargesDetails = new List<ChargesDetails>();
         }
         /// <summary>
         /// Gets or sets the subscriber identifier.
@@ -290,103 +364,49 @@ namespace OrderService.Models
         /// <value>
         /// The subscriber identifier.
         /// </value>
-        public int SubscriberID { get; set; }
+        public int? BundleID { get; set; }
+
+        public string BSSPlanCode { get; set; }
         /// <summary>
         /// Gets or sets the mobile number.
         /// </summary>
         /// <value>
         /// The mobile number.
         /// </value>
-        public string MobileNumber { get; set; }
-        /// <summary>
-        /// Gets or sets the display name.
-        /// </summary>
-        /// <value>
-        /// The display name.
-        /// </value>
-        public string DisplayName { get; set; }
-        /// <summary>
-        /// Gets or sets the is primary.
-        /// </summary>
-        /// <value>
-        /// The is primary.
-        /// </value>
-        public int IsPrimary { get; set; }
-        /// <summary>
-        /// Gets or sets the type of the premium.
-        /// </summary>
-        /// <value>
-        /// The type of the premium.
-        /// </value>
-        public int PremiumType { get; set; }
-        /// <summary>
-        /// Gets or sets the is ported.
-        /// </summary>
-        /// <value>
-        /// The is ported.
-        /// </value>
-        public int IsPorted { get; set; }
-        /// <summary>
-        /// Gets or sets the name of the donor provider.
-        /// </summary>
-        /// <value>
-        /// The name of the donor provider.
-        /// </value>
-        public string DonorProviderName { get; set; }
+        public string BSSPlanName { get; set; }
+        public int? PlanType { get; set; }
+        public int? OldBundleID { get; set; }
+        public string PlanMarketingName { get; set; }
+        public string PortalDescription { get; set; }
+        public double? TotalData { get; set; }
+        public double? TotalSMS { get; set; }
+        public double? TotalVoice { get; set; }
+        public double? ApplicableSubscriptionFee { get; set; }
+        public int? OldPlanID { get; set; }
+        public int? OldBSSPlanId { get; set; }
+        public string OldBSSPlanName { get; set; }
+
+
+
 
         /// <summary>
         /// The bundle details
         /// </summary>
-        public IList<BundleDetails> bundleDetails;
+        public IList<ChargesDetails> chargesDetails;
     }
 
     /// <summary>
     /// Bundle details
     /// </summary>
-    public class BundleDetails
+    public class ChargesDetails
     {
-        /// <summary>
-        /// Gets or sets the bundle identifier.
-        /// </summary>
-        /// <value>
-        /// The bundle identifier.
-        /// </value>
-        public int BundleID { get; set; }
-        /// <summary>
-        /// Gets or sets the BSS plan code.
-        /// </summary>
-        /// <value>
-        /// The BSS plan code.
-        /// </value>
-        public string BSSPlanCode { get; set; }
-        /// <summary>
-        /// Gets or sets the name of the BSS plan.
-        /// </summary>
-        /// <value>
-        /// The name of the BSS plan.
-        /// </value>
-        public string BSSPlanName { get; set; }
-        /// <summary>
-        /// Gets or sets the type of the plan.
-        /// </summary>
-        /// <value>
-        /// The type of the plan.
-        /// </value>
-        public int PlanType { get; set; }
-        /// <summary>
-        /// Gets or sets the name of the plan marketing.
-        /// </summary>
-        /// <value>
-        /// The name of the plan marketing.
-        /// </value>
-        public string PlanMarketingName { get; set; }
-        /// <summary>
-        /// Gets or sets the portal description.
-        /// </summary>
-        /// <value>
-        /// The portal description.
-        /// </value>
-        public string PortalDescription { get; set; }
+        public int ChangeRequestID { get; set; }
+        public int? SubscriberID { get; set; }
+        public string PortalServiceName { get; set; }
+        public double? ServiceFee { get; set; }
+        public int? IsRecurring { get; set; }
+        public int? IsGSTIncluded { get; set; }
+      
 
     }
 
@@ -424,5 +444,11 @@ namespace OrderService.Models
         public DateTime ? LastTriedOn { get; set; }
 
 
+    }
+
+    public class MessageQueueRequestException : MessageQueueRequest
+    {
+        public string Remark { get; set; }
+        public string Exception { get; set; }
     }
 }

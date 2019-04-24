@@ -112,9 +112,15 @@ namespace CustomerService.Models
     /// </summary>
     public class CustomerProfile
     {
-        public int CustomerId { get; set; }
         public string Password { get; set; }
+
+        [MaxLength(8, ErrorMessage = "Maximum 8 digits allowed")]
+        [MinLength(8, ErrorMessage = "Minimum 8 digits Required")]
+        [Required(ErrorMessage = "MobileNumber is required")]
         public string MobileNumber { get; set; }
+
+        [Required(ErrorMessage = "Email address required")]
+        [EmailAddress(ErrorMessage = "Enter valid email address")]
         public string Email { get; set; }
 
     }
