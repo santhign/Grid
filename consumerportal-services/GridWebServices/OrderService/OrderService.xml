@@ -240,16 +240,11 @@
             <param name="request">
             Form{
             "OrderID" :1,
-            "IDType" :"PAN",
-            "IDNumber":"P23FD",
-            "IDImageFront" : FileInput,
-            "IDImageBack" : FileInput,
             "NameInNRIC" : "Name as in NRIC",
             "DisplayName" : "DisplayName",
             "Gender":"Male",
             "DOB":"15/12/2000", //dd/MM/yyyy
-            "ContactNumber":"95421232", 
-            "Nationality":"singaporean",
+            "ContactNumber":"95421232"
             
             }
             </param>
@@ -425,6 +420,7 @@
             <param name="request">
             Form{
             "OrderID" :1,
+            "Nationality": "Singaporean"
             "IDType" :"PAN",
             "IDNumber":"P23FD",
             "IDImageFront" : FileInput,
@@ -432,6 +428,14 @@
             }
             </param>
             <returns>OperationResponse</returns>
+        </member>
+        <member name="M:OrderService.Controllers.OrdersController.GetTokenizationCheckOutDetails(System.String,OrderService.Models.TokenizeRequest)">
+            <summary>
+            This will create a checkout session and returns the details to call MPGS 
+            </summary>
+            <param name="token" in="Header"></param>  
+            <param name="request"></param>      
+            <returns>OperationsResponse</returns>
         </member>
         <member name="M:OrderService.DataAccess.ChangeRequestDataAccess.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
             <summary>
@@ -2561,6 +2565,13 @@
             <value>
             The change request identifier.
             </value>
+        </member>
+        <member name="M:OrderService.Models.TokenResponse.ToTokenResponse(System.String)">
+            <summary>
+            Convert response JSON to TokenResponse object
+            </summary>
+            <returns>The Token response.</returns>
+            <param name="response">Response.</param>
         </member>
         <member name="M:OrderService.Models.TransactionResponseModel.toTransactionResponseModel(System.String)">
             <summary>

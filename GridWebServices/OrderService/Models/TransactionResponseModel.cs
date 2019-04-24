@@ -74,22 +74,7 @@ namespace OrderService.Models
             model.PaymentStatus = transactionList[0]["order"]["status"].ToObject<String>();
             model.CustomerIP = transactionList[0]["device"]["ipAddress"].ToObject<String>();
             return model;
-        }
-
-
-        public static TransactionResponseModel fromMasterpassResponseToTransactionResponseModel(string response)
-        {
-            TransactionResponseModel model = new TransactionResponseModel();
-
-            JObject jObject = JObject.Parse(response);
-            model.GatewayCode = jObject["response"]["gatewayCode"].ToObject<String>();
-            model.ApiResult = jObject["result"].ToObject<String>();
-            model.OrderAmount = jObject["order"]["amount"].ToObject<String>();
-            model.OrderCurrency = jObject["order"]["currency"].ToObject<String>();
-            model.OrderId = jObject["order"]["id"].ToObject<String>();
-
-            return model;
-        }
+        }       
 
        
     }
