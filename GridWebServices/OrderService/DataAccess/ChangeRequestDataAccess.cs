@@ -70,7 +70,7 @@ namespace OrderService.DataAccess
                     removeVasResponse = (from model in dt.AsEnumerable()
                                       select new RemoveVASResponse()
                                       {
-                                          ChangeRequestID = model.Field<int>("ChangeRequestId"),
+                                          ChangeRequestID = model.Field<int>("ChangeRequestID"),
                                           BSSPlanCode = model.Field<string>("BSSPlanCode"),
                                           PlanMarketingName = model.Field<string>("PlanMarketingName"),
                                           CurrentDate = model.Field<DateTime>("CurrentDate"),
@@ -140,7 +140,7 @@ namespace OrderService.DataAccess
                     removeVASResponse = (from model in dt.AsEnumerable()
                                     select new BuyVASResponse()
                                     {
-                                        ChangeRequestID = model.Field<int>("ChangeRequestId"),
+                                        ChangeRequestID = model.Field<int>("ChangeRequestID"),
                                         BSSPlanCode = model.Field<string>("BSSPlanCode"),
                                         PlanMarketingName = model.Field<string>("PlanMarketingName"),
                                         SubscriptionFee = model.Field<double>("SubscriptionFee")
@@ -203,7 +203,7 @@ namespace OrderService.DataAccess
                     TorSresponse = (from model in ds.Tables[0].AsEnumerable()
                                     select new ChangeSimResponse()
                                     {
-                                        ChangeRequestId = model.Field<int>("ChangeRequestId"),
+                                        ChangeRequestId = model.Field<int>("ChangeRequestID"),
                                         OrderNumber = model.Field<string>("OrderNumber"),
                                         RequestOn = model.Field<DateTime>("RequestOn"),
                                         RequestTypeDescription = model.Field<string>("RequestTypeDescription"),
@@ -307,7 +307,7 @@ namespace OrderService.DataAccess
                     TorSresponse = (from model in ds.Tables[0].AsEnumerable()
                                     select new TerminationOrSuspensionResponse()
                                     {
-                                        ChangeRequestId = model.Field<int>("ChangeRequestId"),
+                                        ChangeRequestId = model.Field<int>("ChangeRequestID"),
                                         OrderNumber = model.Field<string>("OrderNumber"),
                                         RequestOn = model.Field<DateTime>("RequestOn"),
                                         RequestTypeDescription = model.Field<string>("RequestTypeDescription")
@@ -476,7 +476,7 @@ namespace OrderService.DataAccess
                     removeVASResponse = (from model in dt.AsEnumerable()
                                          select new BuyVASResponse()
                                          {
-                                             ChangeRequestID = model.Field<int>("ChangeRequestId"),
+                                             ChangeRequestID = model.Field<int>("ChangeRequestID"),
                                              BSSPlanCode = model.Field<string>("BSSPlanCode"),
                                              PlanMarketingName = model.Field<string>("PlanMarketingName"),
                                              SubscriptionFee = model.Field<double>("SubscriptionFee")

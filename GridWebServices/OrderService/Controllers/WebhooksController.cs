@@ -19,6 +19,8 @@ using OrderService.Helpers;
 using OrderService.DataAccess;
 using InfrastructureService.MessageQueue;
 using InfrastructureService.Handlers;
+using OrderService.Enums;
+
 
 namespace OrderService.Controllers
 {
@@ -27,10 +29,14 @@ namespace OrderService.Controllers
     public class WebhooksController : ControllerBase
     {
         private WebhookNotificationModel _notificationModel;
-        IConfiguration _iconfiguration;
-        public WebhooksController( IConfiguration configuration)
-        {            
+
+        IConfiguration _iconfiguration;       
+        private readonly IMessageQueueDataAccess _messageQueueDataAccess;
+        public WebhooksController(IConfiguration configuration, IMessageQueueDataAccess messageQueueDataAccess)
+        {
             _iconfiguration = configuration;
+
+            _messageQueueDataAccess = messageQueueDataAccess;
         }
 
         //[HttpPost("process-webhook")]
@@ -112,11 +118,11 @@ namespace OrderService.Controllers
 
         //}
         [HttpPost("process-webhook")]
-        public IActionResult ProcessWebhook([FromBody] WebhookNotificationModel notification, [FromHeader(Name = "X-Notification-Secret")] string notificationSecret)
+        public  IActionResult ProcessWebhook([FromBody] WebhookNotificationModel notification, [FromHeader(Name = "X-Notification-Secret")] string notificationSecret)
         {
             try
             {
-                _notificationModel = notification;
+                _notificationModel = notification;                
 
                 notification.Timestamp = Convert.ToInt64((DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds);
 
@@ -363,11 +369,101 @@ namespace OrderService.Controllers
                 DatabaseResponse paymentProcessingRespose = new DatabaseResponse();
 
                 paymentProcessingRespose = await _orderAccess.UpdateCheckOutReceipt(transactionResponse.TrasactionResponse);
-
-                if (paymentProcessingRespose.ResponseCode == (int)DbReturnValue.TransactionSuccess)
+                               
+                if (paymentProcessingRespose.ResponseCode == (int)DbReturnValue.TransactionSuccess || paymentProcessingRespose.ResponseCode == (int)DbReturnValue.PaymentAlreadyProcessed)
                 {
                     LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess));
+
+                    DatabaseResponse sourceTyeResponse = new DatabaseResponse();
+                   
+                    sourceTyeResponse = await _orderAccess.GetSourceTypeByMPGSSOrderId(updateRequest.MPGSOrderID);
+
+                    OrderSource source = new OrderSource();
+
+                    source = (OrderSource)sourceTyeResponse.Results;
+
+                     DatabaseResponse orderMqResponse = new DatabaseResponse();
+
+                    orderMqResponse = await _messageQueueDataAccess.GetOrderMessageQueueBody(source.SourceID);
+
+                    OrderQM orderDetails = new OrderQM();
+
+                    string topicName = string.Empty;
+
+                    string pushResult = string.Empty;
+
+                    if (orderMqResponse != null && orderMqResponse.Results != null)
+                    {
+                        orderDetails = (OrderQM)orderMqResponse.Results;
+
+                        DatabaseResponse OrderCountResponse = await _orderAccess.GetCustomerOrderCount(orderDetails.customerID);
+
+                        try
+                        {
+                            Dictionary<string, string> attribute = new Dictionary<string, string>();
+
+                            topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration).Results.ToString().Trim();
+
+
+                            attribute.Add(EventTypeString.EventType, ((OrderCount)OrderCountResponse.Results).SuccessfulOrders == 1 ? Core.Enums.RequestType.NewCustomer.GetDescription() : Core.Enums.RequestType.NewService.GetDescription());
+
+                            pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, orderDetails, attribute);
+
+                            if (pushResult.Trim().ToUpper() == "OK")
+                            {
+                                MessageQueueRequest queueRequest = new MessageQueueRequest
+                                {
+                                    Source = CheckOutType.Orders.ToString(),
+                                    NumberOfRetries = 1,
+                                    SNSTopic = topicName,
+                                    CreatedOn = DateTime.Now,
+                                    LastTriedOn = DateTime.Now,
+                                    PublishedOn = DateTime.Now,
+                                    MessageAttribute = ((OrderCount)OrderCountResponse.Results).SuccessfulOrders == 1 ? Core.Enums.RequestType.NewCustomer.GetDescription() : Core.Enums.RequestType.NewService.GetDescription(),
+                                    MessageBody = JsonConvert.SerializeObject(orderDetails),
+                                    Status = 1
+                                };
+                                await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                            }
+                            else
+                            {
+                                MessageQueueRequest queueRequest = new MessageQueueRequest
+                                {
+                                    Source = CheckOutType.Orders.ToString(),
+                                    NumberOfRetries = 1,
+                                    SNSTopic = topicName,
+                                    CreatedOn = DateTime.Now,
+                                    LastTriedOn = DateTime.Now,
+                                    PublishedOn = DateTime.Now,
+                                    MessageAttribute = ((OrderCount)OrderCountResponse.Results).SuccessfulOrders == 1 ? Core.Enums.RequestType.NewCustomer.GetDescription() : Core.Enums.RequestType.NewService.GetDescription(),
+                                    MessageBody = JsonConvert.SerializeObject(orderDetails),
+                                    Status = 0
+                                };
+                                await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                            }
+
+                        }
+                        catch (Exception ex)
+                        {
+                            LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                            MessageQueueRequest queueRequest = new MessageQueueRequest
+                            {
+                                Source = CheckOutType.Orders.ToString(),
+                                NumberOfRetries = 1,
+                                SNSTopic = topicName,
+                                CreatedOn = DateTime.Now,
+                                LastTriedOn = DateTime.Now,
+                                PublishedOn = DateTime.Now,
+                                MessageAttribute = ((OrderCount)OrderCountResponse.Results).SuccessfulOrders == 1 ? Core.Enums.RequestType.NewCustomer.GetDescription() : Core.Enums.RequestType.NewService.GetDescription(),
+                                MessageBody = JsonConvert.SerializeObject(orderDetails),
+                                Status = 0
+                            };
+                            await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                        }
+                    }
+
                 }
+           
                 else
                 {
                     LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TransactionFailed));

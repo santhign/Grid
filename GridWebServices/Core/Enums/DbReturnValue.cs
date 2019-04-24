@@ -103,6 +103,10 @@ namespace Core.Enums
 
         [EnumMember(Value = "Reset Password Token Expired")]
         [Description("Reset Password Token Expired")]
-        ResetPasswordTokenExpired = 125,       
+        ResetPasswordTokenExpired = 125,
+
+        [EnumMember(Value = "Already processed payment")]
+        [Description("Already processed payment")]
+        PaymentAlreadyProcessed = 126,
     }
 }
