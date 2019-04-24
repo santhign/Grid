@@ -83,7 +83,7 @@ namespace OrderService.DataAccess
                                    PortedNumberTransferForm = model.Field<string>("PortedNumberTransferForm"),
                                    PortedNumberOwnedBy = model.Field<string>("PortedNumberOwnedBy"),
                                    PortedNumberOwnerRegistrationID = model.Field<string>("PortedNumberOwnerRegistrationID"),
-                                   ReferralCode = model.Field<string>("ReferralCode"),
+                                   //ReferralCode = model.Field<string>("ReferralCode"),
                                    Title = model.Field<string>("Title"),
                                    Name = model.Field<string>("Name"),
                                    Email = model.Field<string>("Email"),
@@ -114,7 +114,7 @@ namespace OrderService.DataAccess
 
                     if (ds.Tables.Count > 1 && ds.Tables[1].Rows.Count != 0)
                     {
-                        msgBody.subscriberDetails = (from model in ds.Tables[1].AsEnumerable()
+                        msgBody.Bundles = (from model in ds.Tables[1].AsEnumerable()
                                                      select new BundleDetails()
                                                      {
                                                          BundleID = model.Field<int?>("BundleID"),
@@ -133,13 +133,13 @@ namespace OrderService.DataAccess
                                                          OldBSSPlanId = model.Field<int?>("OldBSSPlanId"),
 
                                                          OldBSSPlanName = model.Field<string>("OldBSSPlanName"),                                                         
-                                                     }).FirstOrDefault();
+                                                     }).ToList();
 
                         if (ds.Tables.Count > 2 && ds.Tables[2].Rows.Count != 0)
-                            msgBody.subscriberDetails.chargesDetails = (from model in ds.Tables[2].AsEnumerable()
+                            msgBody.Charges = (from model in ds.Tables[2].AsEnumerable()
                                                                        select new ChargesDetails()
                                                                        {
-                                                                           ChangeRequestID = model.Field<int>("ChangeRequestID"),
+                                                                           //ChangeRequestID = model.Field<int>("ChangeRequestID"),
                                                                            SubscriberID = model.Field<int?>("SubscriberID"),
                                                                            PortalServiceName = model.Field<string>("PortalServiceName"),
                                                                            ServiceFee = model.Field<double?>("ServiceFee"),
