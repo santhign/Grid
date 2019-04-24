@@ -361,8 +361,32 @@ namespace OrderService.DataAccess
 
                         if (ds.Tables[1] != null && ds.Tables[1].Rows.Count > 0)
                         {
+                            List<OrderSubscriptionQM> Bundles = new List<OrderSubscriptionQM>();
 
-                           Subscribers = (from model in ds.Tables[1].AsEnumerable()
+                            if (ds.Tables[2] != null && ds.Tables[2].Rows.Count > 0)
+                            {
+
+                                Bundles = (from model in ds.Tables[2].AsEnumerable()
+                                           select new OrderSubscriptionQM()
+                                           {
+                                               SubscriberID = model.Field<int>("SubscriberID"),
+                                               bundleID = model.Field<int>("bundleID"),
+                                               bssPlanCode = model.Field<string>("bssPlanCode"),
+                                               bssPlanName = model.Field<string>("bssPlanName"),
+                                               planType = model.Field<int>("planType"),
+                                               planMarketingName = model.Field<string>("planMarketingName"),
+                                               portalDescription = model.Field<string>("portalDescription"),
+                                               totalData = model.Field<double?>("totalData"),
+                                               totalSMS = model.Field<double?>("totalSMS"),
+                                               totalVoice = model.Field<double?>("totalVoice"),
+                                               applicableSubscriptionFee = model.Field<double?>("applicableSubscriptionFee")
+                                           }).ToList();                              
+
+                            }
+
+
+
+                            Subscribers = (from model in ds.Tables[1].AsEnumerable()
                                             select new OrderSubscriber()
                                             {
                                                 OrderID = model.Field<int>("OrderID"),
@@ -380,37 +404,15 @@ namespace OrderService.DataAccess
                                                 RefOrderSubscriberID = model.Field<int?>("RefOrderSubscriberID"),
                                                 portedNumberTransferForm = model.Field<string>("portedNumberTransferForm"),
                                                 portedNumberOwnedBy = model.Field<string>("portedNumberOwnedBy"),
-                                                portedNumberOwnerRegistrationID = model.Field<string>("portedNumberOwnerRegistrationID")                                                
+                                                portedNumberOwnerRegistrationID = model.Field<string>("portedNumberOwnerRegistrationID"),                                                
+                                                Bundles= Bundles != null? Bundles.Where(b=>b.SubscriberID== model.Field<int>("subscriberID")).ToList():null
                                             }).ToList();
 
-                            order.Subscribers = Subscribers;
+                            order.Subscribers = Subscribers;                          
 
                         }
 
-                        List<OrderSubscriptionQM> Bundles = new List<OrderSubscriptionQM>();
-
-                        if (ds.Tables[2] != null && ds.Tables[2].Rows.Count > 0)
-                        {
-
-                            Bundles = (from model in ds.Tables[2].AsEnumerable()
-                                                select new OrderSubscriptionQM()
-                                                {
-                                                    SubscriberID = model.Field<int>("SubscriberID"),
-                                                    bundleID = model.Field<int>("bundleID"),
-                                                    bssPlanCode = model.Field<string>("bssPlanCode"),
-                                                    bssPlanName = model.Field<string>("bssPlanName"),
-                                                    planType = model.Field<int>("planType"),
-                                                    planMarketingName = model.Field<string>("planMarketingName"),
-                                                    portalDescription = model.Field<string>("portalDescription"),
-                                                    totalData = model.Field<double?>("totalData"),
-                                                    totalSMS = model.Field<double?>("totalSMS"),
-                                                    totalVoice = model.Field<double?>("totalVoice"),
-                                                    applicableSubscriptionFee = model.Field<double?>("applicableSubscriptionFee") 
-                                                }).ToList();
-
-                            order.Bundles = Bundles;
-
-                        }
+                       
                       
                         List<OrderServiceCharge> serviceCharges = new List<OrderServiceCharge>();
 
