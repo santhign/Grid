@@ -345,12 +345,12 @@ namespace OrderService.DataAccess
     
                                         }).FirstOrDefault();
 
-                        List<OrderSubscriber> orderSubscribers = new List<OrderSubscriber>();
+                        List<OrderSubscriber> Subscribers = new List<OrderSubscriber>();
 
                         if (ds.Tables[1] != null && ds.Tables[1].Rows.Count > 0)
                         {
 
-                            orderSubscribers = (from model in ds.Tables[1].AsEnumerable()
+                           Subscribers = (from model in ds.Tables[1].AsEnumerable()
                                             select new OrderSubscriber()
                                             {
                                                 OrderID = model.Field<int>("OrderID"),
@@ -371,16 +371,16 @@ namespace OrderService.DataAccess
                                                 portedNumberOwnerRegistrationID = model.Field<string>("portedNumberOwnerRegistrationID")                                                
                                             }).ToList();
 
-                            order.OrderSubscribers = orderSubscribers;
+                            order.Subscribers = Subscribers;
 
                         }
 
-                        List<OrderSubscriptionQM> orderSubscriptions = new List<OrderSubscriptionQM>();
+                        List<OrderSubscriptionQM> Bundles = new List<OrderSubscriptionQM>();
 
                         if (ds.Tables[2] != null && ds.Tables[2].Rows.Count > 0)
                         {
 
-                            orderSubscriptions = (from model in ds.Tables[2].AsEnumerable()
+                            Bundles = (from model in ds.Tables[2].AsEnumerable()
                                                 select new OrderSubscriptionQM()
                                                 {
                                                     SubscriberID = model.Field<int>("SubscriberID"),
@@ -396,7 +396,7 @@ namespace OrderService.DataAccess
                                                     applicableSubscriptionFee = model.Field<double?>("applicableSubscriptionFee") 
                                                 }).ToList();
 
-                            order.OrderSubscriptions = orderSubscriptions;
+                            order.Bundles = Bundles;
 
                         }
                       
