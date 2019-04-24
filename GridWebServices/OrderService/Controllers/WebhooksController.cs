@@ -118,7 +118,7 @@ namespace OrderService.Controllers
             {
                 _notificationModel = notification;
 
-                Publisher mpgsWhNotificationPublisher = new Publisher(_iconfiguration, "WebhookNotification-Payment");
+                Publisher mpgsWhNotificationPublisher = new Publisher(_iconfiguration, "portaltogrid");
 
                  var response=  mpgsWhNotificationPublisher.PublishAsync(notification);
 
