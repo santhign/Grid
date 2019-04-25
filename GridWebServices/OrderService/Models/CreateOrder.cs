@@ -1135,4 +1135,23 @@ namespace OrderService.Models
         public int SuccessfulOrders { get; set; }
 
     }
+
+    public class UpdateSubscriberBasicDetails
+    {
+        [Required(ErrorMessage = "OrderID is required")]
+        public int OrderID { get; set; }
+
+        [Required(ErrorMessage = "BundleID is required")]
+        public int BundleID { get; set; }
+
+        [Required(ErrorMessage = "DisplayName is required")]
+        public string DisplayName { get; set; }
+
+        [RegularExpression(@"^([0-9]{8})$", ErrorMessage = "Invalid Mobile Number")]
+        [MaxLength(8, ErrorMessage = "Maximum 8 digits allowed")]
+        [MinLength(8, ErrorMessage = "Minimum 8 digits Required")]       
+        [Required(ErrorMessage = "MobileNumber is required")]
+        public string MobileNumber { get; set; }
+
+    }
 }
