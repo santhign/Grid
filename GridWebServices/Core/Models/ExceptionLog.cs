@@ -22,6 +22,8 @@ namespace Core.Models
         public string ExceptionInnerException { get; set; }
 
         public string ExceptionSeverity { get; set; }
+
+        public string ExceptionStackTrace { get; set; }
         
     }
 }
