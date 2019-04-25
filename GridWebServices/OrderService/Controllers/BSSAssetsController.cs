@@ -642,18 +642,30 @@ namespace OrderService.Controllers
 
                         BSSQueryPlanResponse numbers = new BSSQueryPlanResponse();
 
-                        object usageHistory = await bsshelper.GetUsageHistory(bssConfig, mobileNumber, ((BSSAssetRequest)requestIdRes.Results).request_id);
+                        BSSQueryPlanResponseObject usageHistory = await bsshelper.GetUsageHistory(bssConfig, mobileNumber, ((BSSAssetRequest)requestIdRes.Results).request_id);
+                                             
 
-                        BSSQueryPlanResponse res = bsshelper.GetQueryPlan(usageHistory);
-
-                        //  if (helper.GetResponseCode(usageHistory) == "0")
-
-                        return Ok(new OperationResponse
+                        if (usageHistory != null && usageHistory.Response.result_code == "0")
                         {
-                            HasSucceeded = true,
-                            IsDomainValidationErrors = false,
-                            ReturnedObject = res
-                        });
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = true,
+                                IsDomainValidationErrors = false,
+                                ReturnedObject = usageHistory.Response.bundles,
+                                Message= usageHistory.Response.bundles!=null ? EnumExtensions.GetDescription(CommonErrors.UsageHistoryNotAvailable) : "",
+                            });
+
+                        }
+
+                        else
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = false,
+                                Message = EnumExtensions.GetDescription(CommonErrors.FailedToGetUsageHistory),
+                            });
+                        }
 
 
 

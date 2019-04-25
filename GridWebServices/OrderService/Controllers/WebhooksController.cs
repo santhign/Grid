@@ -370,7 +370,7 @@ namespace OrderService.Controllers
 
                 paymentProcessingRespose = await _orderAccess.UpdateCheckOutReceipt(transactionResponse.TrasactionResponse);
                                
-                if (paymentProcessingRespose.ResponseCode == (int)DbReturnValue.TransactionSuccess || paymentProcessingRespose.ResponseCode == (int)DbReturnValue.PaymentAlreadyProcessed)
+                if (paymentProcessingRespose.ResponseCode == (int)DbReturnValue.TransactionSuccess)
                 {
                     LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess));
 
