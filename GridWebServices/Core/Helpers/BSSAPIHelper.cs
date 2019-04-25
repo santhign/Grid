@@ -392,7 +392,7 @@ namespace Core.Helpers
         }
 
 
-        public async Task<object> GetUsageHistory(GridBSSConfi confi, string mobileNumber, string requestId)
+        public async Task<BSSQueryPlanResponseObject> GetUsageHistory(GridBSSConfi confi, string mobileNumber, string requestId)
         {
             try
             {
@@ -432,7 +432,7 @@ namespace Core.Helpers
 
                 req.Request = request;
 
-                return await client.PostAsync<object, QueryPlanRequestObject>(requestUrl, req);
+                return await client.PostAsync<BSSQueryPlanResponseObject, QueryPlanRequestObject>(requestUrl, req);
             }
             catch (Exception ex)
             {

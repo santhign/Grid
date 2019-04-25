@@ -71,8 +71,12 @@ namespace Core.Models
         public QueryPlanDataset dataSet { get; set; }
     }
 
-    public class RootObject
+    public class BSSQueryPlanResponseObject
     {
         public BSSQueryPlanResponse Response { get; set; }
     }
+
+
+
+
 }

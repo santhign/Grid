@@ -169,5 +169,13 @@ namespace Core.Enums
         [Description("Pay With Token Failed")]
         PayWithTokenFailed = 37,
 
+        [EnumMember(Value = "FailedToGetUsageHistory")]
+        [Description("Failed To Get Usage History")]
+        FailedToGetUsageHistory = 38,
+
+        [EnumMember(Value = "UsageHistoryNotAvailable")]
+        [Description("Usage History Not Available")]
+        UsageHistoryNotAvailable = 39,
+
     }
 }
