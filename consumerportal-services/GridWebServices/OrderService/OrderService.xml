@@ -447,6 +447,21 @@
             <param name="request"></param>      
             <returns>OperationsResponse</returns>
         </member>
+        <member name="M:OrderService.Controllers.OrdersController.UpdateSubscriberBasicDetails(System.String,OrderService.Models.UpdateSubscriberBasicDetails)">
+            <summary>
+            This will update Order subscription details
+            </summary>
+            <param name="token"></param>
+            <param name="request">
+            body{
+            "OrderID" :1,
+            "BundleID" :1, 
+            "DisplayName" : "test",      
+            "MobileNumber":"98745632",             
+            }
+            </param>
+            <returns>OperationResponse</returns>
+        </member>
         <member name="M:OrderService.DataAccess.ChangeRequestDataAccess.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
             <summary>
             Constructor setting configuration
