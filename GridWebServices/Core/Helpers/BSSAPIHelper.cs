@@ -412,7 +412,7 @@ namespace Core.Helpers
 
                 List<string> filters = new List<string>();
 
-                filters.Add("base_plan / addon");
+                filters.Add("base_plan/add_on");
 
                 dataset.filters = filters;
 
