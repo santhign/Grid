@@ -20,6 +20,8 @@ namespace OrderService.Models
         [DataMember]
         public int CustomerID { get; set; }
         [DataMember]
+        public int? SubscriberID { get; set; }
+        [DataMember]
         public string OrderNumber { get; set; }
         [DataMember]
         public DateTime RequestOn { get; set; }
@@ -64,9 +66,9 @@ namespace OrderService.Models
         [DataMember]
         public string Nationality { get; set; }
         [DataMember]
-        public string IdentityCardType { get; set; }
+        public string IdType { get; set; }
         [DataMember]
-        public string IdentityCardNumber { get; set; }
+        public string IdNumber { get; set; }
         [DataMember]
         public string IsSameAsBilling { get; set; }
         [DataMember]
@@ -92,56 +94,20 @@ namespace OrderService.Models
         [DataMember]
         public string PortalSlotID { get; set; }
         [DataMember]
-        public DateTime? PublicDateTimeSlotDate { get; set; }
-
+        public DateTime? SlotDate { get; set; }
         [DataMember]
         public DateTime ? SlotFromTime { get; set; }
         [DataMember]
         public DateTime? SlotToTime { get; set; }
         [DataMember]
-        public DateTime? PublicDateTimescheduledDate { get; set; }
+        public DateTime? ScheduledDate { get; set; }
         [DataMember]
         public string OldMobileNumber { get; set; }
         [DataMember]
         public string NewMobileNumber { get; set; }
         [DataMember]
         public string OldSIM { get; set; }
-        [DataMember]
-        public DateTime? SubmissionDate { get; set; }
         
-        
-        
-        /// <summary>
-        /// Gets or sets the service fee.
-        /// </summary>
-        /// <value>
-        /// The service fee.
-        /// </value>
-        //public double ? ServiceFee { get; set; }
-
-        //public double ? AmountPaid { get; set; }
-
-        //public string PaymentMode { get; set; }
-        //public string MPGSOrderID { get; set; }
-        //public string MaskedCardNumber { get; set; }
-        //public string Token { get; set; }
-        //public string CardType { get; set; }
-        //public string CardHolderName { get; set; }
-        //public int ? ExpiryMonth { get; set; }
-        //public int ? ExpiryYear { get; set; }
-        //public string CardFundMethod { get; set; }
-        //public string CardBrand { get; set; }
-        //public string CardIssuer { get; set; }
-        //public DateTime DateofBirth { get; set; }
-        //public DateTime? ProcessedOn { get; set; }
-        //public string InvoiceNumber { get; set; }
-        //public string InvoiceUrl { get; set; }
-        //public DateTime CreatedOn { get; set; }
-
-
-
-
-       
         [DataMember(Name = "Bundles")]
         public List<BundleDetails> Bundles { get; set; }
 
@@ -178,11 +144,17 @@ namespace OrderService.Models
         [DataMember]
         public double? ApplicableSubscriptionFee { get; set; }
         [DataMember]
+        public string ServiceName { get; set; }
+        [DataMember]
+        public double? ApplicableServiceFee { get; set; }
+        
+        [DataMember]
         public int? OldPlanID { get; set; }
         [DataMember]
         public int? OldBSSPlanId { get; set; }
         [DataMember]
         public string OldBSSPlanName { get; set; }
+        
 
     }
 
@@ -191,7 +163,8 @@ namespace OrderService.Models
     /// </summary>
     public class ChargesDetails
     {
-        //public int ChangeRequestID { get; set; }
+        [DataMember]
+        public int ChangeRequestID { get; set; }
         [DataMember]
         public int? SubscriberID { get; set; }
         [DataMember]

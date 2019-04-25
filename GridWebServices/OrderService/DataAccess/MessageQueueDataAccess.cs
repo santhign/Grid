@@ -65,6 +65,7 @@ namespace OrderService.DataAccess
                                    ChangeRequestID = model.Field<int>("ChangeRequestID"),
                                    AccountID = model.Field<int>("AccountID"),
                                    CustomerID = model.Field<int>("CustomerID"),
+                                   SubscriberID = model.Field<int?>("SubscriberID"),
                                    OrderNumber = model.Field<string>("OrderNumber"),
                                    RequestOn = model.Field<DateTime>("RequestOn"),
                                    EffectiveDate = model.Field<DateTime?>("EffectiveDate"),
@@ -82,14 +83,13 @@ namespace OrderService.DataAccess
                                    DonorProvider = model.Field<string>("DonorProvider"),
                                    PortedNumberTransferForm = model.Field<string>("PortedNumberTransferForm"),
                                    PortedNumberOwnedBy = model.Field<string>("PortedNumberOwnedBy"),
-                                   PortedNumberOwnerRegistrationID = model.Field<string>("PortedNumberOwnerRegistrationID"),
-                                   //ReferralCode = model.Field<string>("ReferralCode"),
+                                   PortedNumberOwnerRegistrationID = model.Field<string>("PortedNumberOwnerRegistrationID"),                                   
                                    Title = model.Field<string>("Title"),
                                    Name = model.Field<string>("Name"),
                                    Email = model.Field<string>("Email"),
                                    Nationality = model.Field<string>("Nationality"),
-                                   IdentityCardType = model.Field<string>("IdentityCardType"),
-                                   IdentityCardNumber = model.Field<string>("IdentityCardNumber"),
+                                   IdType = model.Field<string>("IDType"),
+                                   IdNumber = model.Field<string>("IDNumber"),
                                    IsSameAsBilling = model.Field<string>("IsSameAsBilling"),
                                    ShippingUnit = model.Field<string>("ShippingUnit"),
                                    ShippingFloor = model.Field<string>("ShippingFloor"),
@@ -102,10 +102,10 @@ namespace OrderService.DataAccess
                                    AlternateRecipientName = model.Field<string>("AlternateRecipientName"),
                                    AlternateRecipientEmail = model.Field<string>("AlternateRecipientEmail"),
                                    PortalSlotID = model.Field<string>("PortalSlotID"),
-                                   PublicDateTimeSlotDate = model.Field<DateTime?>("PublicDateTimeSlotDate"),
+                                   SlotDate = model.Field<DateTime?>("SlotDate"),
                                    SlotFromTime = model.Field<DateTime?>("SlotFromTime"),
                                    SlotToTime = model.Field<DateTime?>("SlotToTime"),
-                                   PublicDateTimescheduledDate = model.Field<DateTime?>("PublicDateTimescheduledDate"),
+                                   ScheduledDate = model.Field<DateTime?>("ScheduledDate"),
                                    OldMobileNumber = model.Field<string>("OldMobileNumber"),
                                    NewMobileNumber = model.Field<string>("NewMobileNumber"),
                                    OldSIM = model.Field<string>("OldSIM")
@@ -124,22 +124,21 @@ namespace OrderService.DataAccess
                                                          OldBundleID = model.Field<int?>("OldBundleID"),
                                                          PlanMarketingName = model.Field<string>("PlanMarketingName"),
                                                          PortalDescription = model.Field<string>("PortalDescription"),
-
                                                          TotalData = model.Field<double?>("TotalData"),
                                                          TotalSMS = model.Field<double?>("TotalSMS"),
                                                          TotalVoice = model.Field<double?>("TotalVoice"),
-                                                         ApplicableSubscriptionFee = model.Field<double?>("ApplicableSubscriptionFee"),
+                                                         ApplicableSubscriptionFee = model.Field<double?>("ApplicableSubscriptionFee"),                                                                                                                 
                                                          OldPlanID = model.Field<int?>("OldPlanID"),
                                                          OldBSSPlanId = model.Field<int?>("OldBSSPlanId"),
-
-                                                         OldBSSPlanName = model.Field<string>("OldBSSPlanName"),                                                         
+                                                         OldBSSPlanName = model.Field<string>("OldBSSPlanName"),
+                                                         
                                                      }).ToList();
 
                         if (ds.Tables.Count > 2 && ds.Tables[2].Rows.Count != 0)
                             msgBody.Charges = (from model in ds.Tables[2].AsEnumerable()
                                                                        select new ChargesDetails()
                                                                        {
-                                                                           //ChangeRequestID = model.Field<int>("ChangeRequestID"),
+                                                                           ChangeRequestID = model.Field<int>("ChangeRequestID"),
                                                                            SubscriberID = model.Field<int?>("SubscriberID"),
                                                                            PortalServiceName = model.Field<string>("PortalServiceName"),
                                                                            ServiceFee = model.Field<double?>("ServiceFee"),
