@@ -2058,6 +2058,74 @@ namespace OrderService.DataAccess
             }
         }
 
-        
+        public async Task<DatabaseResponse> UpdateMPGSCreateTokenSessionDetails(CreateTokenResponse tokenResponse)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {                   
+                     new SqlParameter( "@MPGSOrderID",  SqlDbType.NVarChar ),
+                     new SqlParameter( "@CheckOutSessionID",  SqlDbType.NVarChar ),
+                     new SqlParameter( "@SuccessIndicator",  SqlDbType.NVarChar ),
+                     new SqlParameter( "@CheckoutVersion",  SqlDbType.NVarChar ),
+                     new SqlParameter( "@TransactionID",  SqlDbType.NVarChar )
+                };
+
+                parameters[0].Value = tokenResponse.MPGSOrderID;
+                parameters[1].Value = tokenResponse.MPGSResponse.session.id;
+                parameters[2].Value = tokenResponse.MPGSResponse.session.updateStatus;
+                parameters[3].Value = tokenResponse.MPGSResponse.session.version;
+                parameters[4].Value = tokenResponse.TransactionID;              
+
+                _DataHelper = new DataAccessHelper("Orders_UpdateMPGSCreateTokenSessionDetails", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt);    // 105 / 102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 105)
+                {
+                    CreateTokenUpdatedDetails detailsToTokenize = new CreateTokenUpdatedDetails();
+
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+
+                        detailsToTokenize = (from model in dt.AsEnumerable()
+                                    select new CreateTokenUpdatedDetails()
+                                    {
+                                        MPGSOrderID = model.Field<string>("MPGSOrderID"),
+                                        TransactionID = model.Field<string>("TokenizeTransactionID"),
+                                        Amount = model.Field<double>("Amount"),
+                                        SessionID = model.Field<string>("CheckOutSessionID"),
+                                        OrderID = model.Field<int>("OrderID"),
+                                        CustomerID = model.Field<int>("OrderID")
+
+                                    }).FirstOrDefault();
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = detailsToTokenize };
+                }
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+
     }
 }

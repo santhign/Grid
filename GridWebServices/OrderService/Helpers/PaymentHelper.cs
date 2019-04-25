@@ -308,6 +308,128 @@ namespace OrderService.Helpers
             config.Currency = configDict.Single(x => x["key"] == "GatewayGridCurrency")["value"];
             config.WebhooksNotificationSecret = configDict.Single(x => x["key"] == "GatewayGridWebhookSecret")["value"];
             return config;
-        }        
+        }
+        public TokenResponse Tokenize(GridMPGSConfig mpgsConfig, CreateTokenResponse responseUpdate, CreateTokenUpdatedDetails updateTokenSesisonDetails)
+        {
+            try
+            {
+                LogInfo.Information($"Tokenization - response from UI with temperoty token:  {JsonConvert.SerializeObject(responseUpdate)}");
+
+                GatewayApiConfig config = new GatewayApiConfig(mpgsConfig);
+                //update session with order details
+
+                GatewayApiRequest gatewayUpdateSessionRequest = new GatewayApiRequest(config);
+
+                gatewayUpdateSessionRequest.ApiMethod = GatewayApiClient.PUT;
+
+                //update the url appending session id
+                gatewayUpdateSessionRequest.buildSessionRequestUrl(responseUpdate.MPGSResponse.session.id);
+
+                gatewayUpdateSessionRequest.OrderId = updateTokenSesisonDetails.MPGSOrderID;
+
+                gatewayUpdateSessionRequest.OrderCurrency = gatewayUpdateSessionRequest.OrderCurrency;
+
+                gatewayUpdateSessionRequest.OrderAmount = updateTokenSesisonDetails.Amount.ToString();
+
+                gatewayUpdateSessionRequest.TransactionId = updateTokenSesisonDetails.TransactionID;
+
+                //build payload with order info
+                gatewayUpdateSessionRequest.buildPayload();
+
+                GatewayApiClient gatewayApiClient = new GatewayApiClient(config);
+
+                String response = gatewayApiClient.SendTransaction(gatewayUpdateSessionRequest);                
+
+                LogInfo.Information($"Tokenize updated session : {response}");               
+
+                //generate token
+                GatewayApiRequest gatewayGenerateTokenRequest = new GatewayApiRequest(config);
+
+                gatewayGenerateTokenRequest.SessionId = gatewayUpdateSessionRequest.SessionId;
+
+                gatewayGenerateTokenRequest.ApiMethod = GatewayApiClient.POST;
+
+                gatewayGenerateTokenRequest.buildPayload();
+
+                gatewayGenerateTokenRequest.buildTokenUrl();
+
+                response = gatewayApiClient.SendTransaction(gatewayGenerateTokenRequest);
+               
+                TokenResponse tokenResponse = TokenResponse.ToTokenResponse(response);
+
+                LogInfo.Information($"Tokenize response :  {response}");
+
+                return tokenResponse;         
+
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw ex;
+            }
+        }
+
+        public TransactionResponseModel PayWithToken(GridMPGSConfig mpgsConfig, CreateTokenResponse responseUpdate, CreateTokenUpdatedDetails updateTokenSesisonDetails, TokenResponse tokenResponse)
+        {
+            try
+            {
+                LogInfo.Information($"Pay with token:  {JsonConvert.SerializeObject(responseUpdate)}");
+                //payment with token
+
+
+                //update session with order details
+
+                GatewayApiConfig config = new GatewayApiConfig(mpgsConfig);
+
+                GatewayApiRequest gatewayGeneratePaymentRequest = new GatewayApiRequest(config);
+
+                gatewayGeneratePaymentRequest.ApiOperation = "PAY";
+
+                gatewayGeneratePaymentRequest.ApiMethod = GatewayApiClient.PUT;
+
+                gatewayGeneratePaymentRequest.Token = tokenResponse.Token;
+
+                gatewayGeneratePaymentRequest.SessionId = responseUpdate.MPGSResponse.session.id;
+
+                gatewayGeneratePaymentRequest.OrderId = updateTokenSesisonDetails.MPGSOrderID;
+
+                gatewayGeneratePaymentRequest.TransactionId = updateTokenSesisonDetails.TransactionID;
+
+                gatewayGeneratePaymentRequest.buildPayload();
+
+                gatewayGeneratePaymentRequest.buildRequestUrl();
+
+                //payment response
+                GatewayApiClient gatewayApiClient = new GatewayApiClient(config);
+
+                string response= gatewayApiClient.SendTransaction(gatewayGeneratePaymentRequest);
+
+                LogInfo.Information($" {EnumExtensions.GetDescription(MPGSAPIResponse.HostedCheckoutRetrieveReceipt) + " " + response}");
+
+                TransactionResponseModel transactionResponseModel = null;
+
+                try
+                {
+                    transactionResponseModel = TransactionResponseModel.toTransactionResponseModel(response);
+
+                    return transactionResponseModel;
+
+                }
+                catch (Exception ex)
+                {
+                    LogInfo.Error($" : { EnumExtensions.GetDescription(MPGSAPIResponse.HostedCheckoutReceiptError) + " " + JsonConvert.SerializeObject(ex)}");
+
+                    throw ex;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw ex;
+            }
+        }
     }
 }

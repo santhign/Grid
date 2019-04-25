@@ -161,5 +161,13 @@ namespace Core.Enums
         [Description("Password Reset Failed")]
         PasswordResetFailed = 35,
 
+        [EnumMember(Value = "FailedToTokenizeCustomerAccount")]
+        [Description("Failed ToTokenize Customer Account")]
+        FailedToTokenizeCustomerAccount = 36,
+
+        [EnumMember(Value = "PayWithTokenFailed")]
+        [Description("Pay With Token Failed")]
+        PayWithTokenFailed = 37,
+
     }
 }

@@ -149,6 +149,16 @@
             <param name="shippingDetails">The shipping details.</param>
             <returns></returns>
         </member>
+        <member name="M:OrderService.Controllers.ChangeRequestController.BuySharedVasService(System.String,System.Int32)">
+            <summary>
+            Buys the vas service.
+            </summary>
+            <param name="token">The token.</param>
+            <param name="mobileNumber">The mobile number.</param>
+            <param name="bundleId">The bundle identifier.</param>
+            <param name="quantity">The quantity.</param>
+            <returns></returns>
+        </member>
         <member name="M:OrderService.Controllers.OrdersController.Get(System.String,System.Int32)">
             <summary>
             This will return Order details for specific ID passed 
@@ -240,16 +250,11 @@
             <param name="request">
             Form{
             "OrderID" :1,
-            "IDType" :"PAN",
-            "IDNumber":"P23FD",
-            "IDImageFront" : FileInput,
-            "IDImageBack" : FileInput,
             "NameInNRIC" : "Name as in NRIC",
             "DisplayName" : "DisplayName",
             "Gender":"Male",
             "DOB":"15/12/2000", //dd/MM/yyyy
-            "ContactNumber":"95421232", 
-            "Nationality":"singaporean",
+            "ContactNumber":"95421232"
             
             }
             </param>
@@ -425,6 +430,7 @@
             <param name="request">
             Form{
             "OrderID" :1,
+            "Nationality": "Singaporean"
             "IDType" :"PAN",
             "IDNumber":"P23FD",
             "IDImageFront" : FileInput,
@@ -432,6 +438,14 @@
             }
             </param>
             <returns>OperationResponse</returns>
+        </member>
+        <member name="M:OrderService.Controllers.OrdersController.GetTokenizationCheckOutDetails(System.String,OrderService.Models.TokenizeRequest)">
+            <summary>
+            This will create a checkout session and returns the details to call MPGS 
+            </summary>
+            <param name="token" in="Header"></param>  
+            <param name="request"></param>      
+            <returns>OperationsResponse</returns>
         </member>
         <member name="M:OrderService.DataAccess.ChangeRequestDataAccess.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
             <summary>
@@ -481,6 +495,14 @@
             Changes the phone request.
             </summary>
             <param name="changePhone">The change phone.</param>
+            <returns></returns>
+        </member>
+        <member name="M:OrderService.DataAccess.ChangeRequestDataAccess.BuySharedService(System.Int32,System.Int32)">
+            <summary>
+            Buys the shared service.
+            </summary>
+            <param name="customerId">The customer identifier.</param>
+            <param name="bundleId">The bundle identifier.</param>
             <returns></returns>
         </member>
         <member name="T:OrderService.DataAccess.IChangeRequestDataAccess">
@@ -2156,12 +2178,44 @@
             The change request identifier.
             </value>
         </member>
+        <member name="P:OrderService.Models.MessageBodyForCR.PremiumType">
+            <summary>
+            Gets or sets the type of the premium.
+            </summary>
+            <value>
+            The type of the premium.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.MessageBodyForCR.IsOwnNumber">
+            <summary>
+            Gets or sets the is own number.
+            </summary>
+            <value>
+            The is own number.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.MessageBodyForCR.IsPorted">
+            <summary>
+            Gets or sets the is ported.
+            </summary>
+            <value>
+            The is ported.
+            </value>
+        </member>
         <member name="P:OrderService.Models.MessageBodyForCR.OrderNumber">
             <summary>
             Gets or sets the order number.
             </summary>
             <value>
             The order number.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.MessageBodyForCR.DonorProvider">
+            <summary>
+            Gets or sets the name of the donor provider.
+            </summary>
+            <value>
+            The name of the donor provider.
             </value>
         </member>
         <member name="P:OrderService.Models.MessageBodyForCR.RequestOn">
@@ -2226,6 +2280,14 @@
             </summary>
             <value>
             The billing contact number.
+            </value>
+        </member>
+        <member name="P:OrderService.Models.MessageBodyForCR.MobileNumber">
+            <summary>
+            Gets or sets the mobile number.
+            </summary>
+            <value>
+            The mobile number.
             </value>
         </member>
         <member name="P:OrderService.Models.MessageBodyForCR.ReferralCode">
@@ -2372,7 +2434,7 @@
             The portal slot identifier.
             </value>
         </member>
-        <member name="P:OrderService.Models.MessageBodyForCR.SlotDate">
+        <member name="P:OrderService.Models.MessageBodyForCR.PublicDateTimeSlotDate">
             <summary>
             Gets or sets the slot date.
             </summary>
@@ -2396,7 +2458,7 @@
             The slot to time.
             </value>
         </member>
-        <member name="P:OrderService.Models.MessageBodyForCR.ScheduledDate">
+        <member name="P:OrderService.Models.MessageBodyForCR.PublicDateTimescheduledDate">
             <summary>
             Gets or sets the scheduled date.
             </summary>
@@ -2417,17 +2479,17 @@
             The subscriber details
             </summary>
         </member>
-        <member name="T:OrderService.Models.SubscriberDetails">
+        <member name="T:OrderService.Models.BundleDetails">
             <summary>
             Subscriber details
             </summary>
         </member>
-        <member name="M:OrderService.Models.SubscriberDetails.#ctor">
+        <member name="M:OrderService.Models.BundleDetails.#ctor">
             <summary>
-            Initializes a new instance of the <see cref="T:OrderService.Models.SubscriberDetails"/> class.
+            Initializes a new instance of the <see cref="!:SubscriberDetails"/> class.
             </summary>
         </member>
-        <member name="P:OrderService.Models.SubscriberDetails.SubscriberID">
+        <member name="P:OrderService.Models.BundleDetails.BundleID">
             <summary>
             Gets or sets the subscriber identifier.
             </summary>
@@ -2435,7 +2497,7 @@
             The subscriber identifier.
             </value>
         </member>
-        <member name="P:OrderService.Models.SubscriberDetails.MobileNumber">
+        <member name="P:OrderService.Models.BundleDetails.BSSPlanName">
             <summary>
             Gets or sets the mobile number.
             </summary>
@@ -2443,103 +2505,15 @@
             The mobile number.
             </value>
         </member>
-        <member name="P:OrderService.Models.SubscriberDetails.DisplayName">
-            <summary>
-            Gets or sets the display name.
-            </summary>
-            <value>
-            The display name.
-            </value>
-        </member>
-        <member name="P:OrderService.Models.SubscriberDetails.IsPrimary">
-            <summary>
-            Gets or sets the is primary.
-            </summary>
-            <value>
-            The is primary.
-            </value>
-        </member>
-        <member name="P:OrderService.Models.SubscriberDetails.PremiumType">
-            <summary>
-            Gets or sets the type of the premium.
-            </summary>
-            <value>
-            The type of the premium.
-            </value>
-        </member>
-        <member name="P:OrderService.Models.SubscriberDetails.IsPorted">
-            <summary>
-            Gets or sets the is ported.
-            </summary>
-            <value>
-            The is ported.
-            </value>
-        </member>
-        <member name="P:OrderService.Models.SubscriberDetails.DonorProviderName">
-            <summary>
-            Gets or sets the name of the donor provider.
-            </summary>
-            <value>
-            The name of the donor provider.
-            </value>
-        </member>
-        <member name="F:OrderService.Models.SubscriberDetails.bundleDetails">
+        <member name="F:OrderService.Models.BundleDetails.chargesDetails">
             <summary>
             The bundle details
             </summary>
         </member>
-        <member name="T:OrderService.Models.BundleDetails">
+        <member name="T:OrderService.Models.ChargesDetails">
             <summary>
             Bundle details
             </summary>
-        </member>
-        <member name="P:OrderService.Models.BundleDetails.BundleID">
-            <summary>
-            Gets or sets the bundle identifier.
-            </summary>
-            <value>
-            The bundle identifier.
-            </value>
-        </member>
-        <member name="P:OrderService.Models.BundleDetails.BSSPlanCode">
-            <summary>
-            Gets or sets the BSS plan code.
-            </summary>
-            <value>
-            The BSS plan code.
-            </value>
-        </member>
-        <member name="P:OrderService.Models.BundleDetails.BSSPlanName">
-            <summary>
-            Gets or sets the name of the BSS plan.
-            </summary>
-            <value>
-            The name of the BSS plan.
-            </value>
-        </member>
-        <member name="P:OrderService.Models.BundleDetails.PlanType">
-            <summary>
-            Gets or sets the type of the plan.
-            </summary>
-            <value>
-            The type of the plan.
-            </value>
-        </member>
-        <member name="P:OrderService.Models.BundleDetails.PlanMarketingName">
-            <summary>
-            Gets or sets the name of the plan marketing.
-            </summary>
-            <value>
-            The name of the plan marketing.
-            </value>
-        </member>
-        <member name="P:OrderService.Models.BundleDetails.PortalDescription">
-            <summary>
-            Gets or sets the portal description.
-            </summary>
-            <value>
-            The portal description.
-            </value>
         </member>
         <member name="T:OrderService.Models.MessageDetailsForCROrOrder">
             <summary>
@@ -2561,6 +2535,13 @@
             <value>
             The change request identifier.
             </value>
+        </member>
+        <member name="M:OrderService.Models.TokenResponse.ToTokenResponse(System.String)">
+            <summary>
+            Convert response JSON to TokenResponse object
+            </summary>
+            <returns>The Token response.</returns>
+            <param name="response">Response.</param>
         </member>
         <member name="M:OrderService.Models.TransactionResponseModel.toTransactionResponseModel(System.String)">
             <summary>

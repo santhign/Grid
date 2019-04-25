@@ -57,7 +57,7 @@ namespace Core.Enums
         /// <summary>
         /// The event type constant string
         /// </summary>
-        public const string EventType = "EventType";
+        public const string EventType = "event_type";
     }
 
     /// <summary>

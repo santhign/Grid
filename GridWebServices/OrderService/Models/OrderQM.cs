@@ -173,14 +173,11 @@ namespace OrderService.Models
         [DataMember(Name = "CreatedOn")]
         public DateTime CreatedOn { get; set; }
 
-        [DataMember(Name = "OrderSubscribers")]
-        public List<OrderSubscriber> Subscribers { get; set; }
+        [DataMember(Name = "Subscribers")]
+        public List<OrderSubscriber> Subscribers { get; set; }        
 
-        [DataMember(Name = "OrderSubscriptions")]
-        public List<OrderSubscriptionQM> Bundles { get; set; }
-
-        [DataMember(Name = "OrderCharges")]
-        public List<OrderServiceCharge> ServiceCharges { get; set; }
+        [DataMember(Name = "Charges")]
+        public List<OrderServiceCharge> Charges { get; set; }
        
     }
 
@@ -233,7 +230,10 @@ namespace OrderService.Models
 
         [DataMember(Name = "portedNumberOwnerRegistrationID")]
         public string portedNumberOwnerRegistrationID { get; set; }
-       
+
+        [DataMember(Name = "Bundles")]
+        public List<OrderSubscriptionQM> Bundles { get; set; }
+
     }
 
     public class OrderSubscriptionQM
@@ -270,6 +270,8 @@ namespace OrderService.Models
 
         [DataMember(Name = "applicableSubscriptionFee")]
         public double? applicableSubscriptionFee { get; set; }
+
+
     }
 
     public class OrderServiceCharge
