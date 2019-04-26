@@ -532,7 +532,7 @@ namespace OrderService.DataAccess
                 parameters[3].Value = Core.Enums.RequestType.RemoveVAS.GetDescription();
 
 
-                _DataHelper = new DataAccessHelper(DbObjectNames.Orders_CR_InsertRemoveVAS, parameters, _configuration);
+                _DataHelper = new DataAccessHelper(DbObjectNames.Orders_CR_InsertRemoveSharedVAS, parameters, _configuration);
 
                 DataTable dt = new DataTable();
                 var result = await _DataHelper.RunAsync(dt);    // 101 / 102 

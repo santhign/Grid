@@ -95,27 +95,26 @@ namespace OrderService.Controllers
                     var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
                     var statusResponse =
                         await _changeRequestDataAccess.RemoveVasService(aTokenResp.CustomerID, mobileNumber, subscriptionId, planId);
-                    var buyVASResponse = (RemoveVASResponse)statusResponse.Results;
+                    var removeVASResponse = (RemoveVASResponse)statusResponse.Results;
                     if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                     {
 
                         MessageBodyForCR msgBody = new MessageBodyForCR();
                         Dictionary<string, string> attribute = new Dictionary<string, string>();
                         string topicName = string.Empty, subject = string.Empty;
-                        topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration)
-                            .Results.ToString().Trim();
+                        
                         try
                         {
-                            msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(buyVASResponse.ChangeRequestID);
+                            msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(removeVASResponse.ChangeRequestID);
                             if(msgBody == null)
                             {
-                                throw new NullReferenceException("message body is null for ChangeRequest (" + buyVASResponse.ChangeRequestID + ") for RemoveVAS Service API");
+                                throw new NullReferenceException("message body is null for ChangeRequest (" + removeVASResponse.ChangeRequestID + ") for RemoveVAS Service API");
                             }
                             topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration)
                             .Results.ToString().Trim();
                             if (string.IsNullOrWhiteSpace(topicName))
                             {
-                                throw new NullReferenceException("topicName is null for ChangeRequest (" + buyVASResponse.ChangeRequestID + ") for RemoveVAS Request Service API");
+                                throw new NullReferenceException("topicName is null for ChangeRequest (" + removeVASResponse.ChangeRequestID + ") for RemoveVAS Request Service API");
                             }
                             attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.RemoveVAS.GetDescription());
                             var pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
@@ -1268,7 +1267,7 @@ namespace OrderService.Controllers
                     var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
                     var statusResponse =
                         await _changeRequestDataAccess.BuySharedService(aTokenResp.CustomerID, bundleId);
-                    var buyVASResponse = (BuyVASResponse)statusResponse.Results;
+                    var buySharedVASResponse = (BuyVASResponse)statusResponse.Results;
                     if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                     {
                         //Ninad K : Message Publish code
@@ -1281,13 +1280,13 @@ namespace OrderService.Controllers
                             .Results.ToString().Trim();
                             if (string.IsNullOrWhiteSpace(topicName))
                             {
-                                throw new NullReferenceException("topicName is null for ChangeRequest (" + buyVASResponse.ChangeRequestID + ") for BuyShared VAS Request Service API");
+                                throw new NullReferenceException("topicName is null for ChangeRequest (" + buySharedVASResponse.ChangeRequestID + ") for BuyShared VAS Request Service API");
                             }
-                            msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(buyVASResponse.ChangeRequestID);
+                            msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(buySharedVASResponse.ChangeRequestID);
 
                             if (msgBody == null)
                             {
-                                throw new NullReferenceException("message body is null for ChangeRequest (" + buyVASResponse.ChangeRequestID + ") for BuyShared VAS Request Service API");
+                                throw new NullReferenceException("message body is null for ChangeRequest (" + buySharedVASResponse.ChangeRequestID + ") for BuyShared VAS Request Service API");
                             }
 
 
@@ -1405,7 +1404,7 @@ namespace OrderService.Controllers
         /// <param name="planId"></param>
         /// <returns></returns>
         [HttpPost]
-        [Route("RemoveVasService/{accountSubscriptionId}/{planId}")]
+        [Route("RemoveSharedVasService/{accountSubscriptionId}/{planId}")]
         public async Task<IActionResult> RemoveSharedVasService([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int accountSubscriptionId, [FromRoute] int planId)
         {
 
@@ -1438,22 +1437,27 @@ namespace OrderService.Controllers
                     var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
                     var statusResponse =
                         await _changeRequestDataAccess.RemoveSharedVasService(aTokenResp.CustomerID, accountSubscriptionId, planId);
-                    var buyVASResponse = (RemoveVASResponse)statusResponse.Results;
+                    var removeVASResponse = (RemoveVASResponse)statusResponse.Results;
                     if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                     {
 
                         MessageBodyForCR msgBody = new MessageBodyForCR();
                         Dictionary<string, string> attribute = new Dictionary<string, string>();
                         string topicName = string.Empty, subject = string.Empty;
-                        topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration)
-                            .Results.ToString().Trim();
+                        
                         try
                         {
-                            msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(buyVASResponse.ChangeRequestID);
-
+                            msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(removeVASResponse.ChangeRequestID);
+                            if (msgBody == null)
+                            {
+                                throw new NullReferenceException("message body is null for ChangeRequest (" + removeVASResponse.ChangeRequestID + ") for Remove Shared VAS Request Service API");
+                            }
                             topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration)
                             .Results.ToString().Trim();
-
+                            if (string.IsNullOrWhiteSpace(topicName))
+                            {
+                                throw new NullReferenceException("topicName is null for ChangeRequest (" + removeVASResponse.ChangeRequestID + ") for Remove Shared VAS Request Service API");
+                            }
                             attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.RemoveVAS.GetDescription());
                             var pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
                             if (pushResult.Trim().ToUpper() == "OK")
