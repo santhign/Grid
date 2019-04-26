@@ -900,7 +900,7 @@ namespace CustomerService.DataAccess
 
                 parameters[0].Value = CustomerID;
 
-                _DataHelper = new DataAccessHelper("Admin_GetCustomerOrders", parameters, _configuration);
+                _DataHelper = new DataAccessHelper("Customers_GetOrders", parameters, _configuration);
 
                 DataSet ds = new DataSet();
 
@@ -961,50 +961,70 @@ namespace CustomerService.DataAccess
                             catch { }
                             try { orderDetails.ServiceFee = Convert.ToDouble(dr["ServiceFee"]); }
                             catch { }
-
-                            List<Bundle> orderBundles = new List<Bundle>();
-
-                            if (ds.Tables[1] != null && ds.Tables[1].Rows.Count > 0)
+                            orderDetails.InvoiceNumber = dr["InvoiceNumber"].ToString();
+                            orderDetails.MaskedCardNumber = dr["MaskedCardNumber"].ToString();
+                            orderDetails.CardBrand = dr["CardBrand"].ToString();
+                            orderDetails.ExpiryMonth = Convert.ToInt32(dr["ExpiryMonth"].ToString());
+                            orderDetails.ExpiryYear = Convert.ToInt32(dr["ExpiryYear"].ToString());
+                            try { orderDetails.PaymentOn = Convert.ToDateTime(dr["PaymentOn"]); }
+                            catch { }
+                            List<Subscribers> orderSubscribers = new List<Subscribers>();
+                            foreach (DataRow osdr in ds.Tables[1].Rows)
                             {
+                                Subscribers _subscriber = new Subscribers();
+                                _subscriber.OrderID = Convert.ToInt32(osdr["OrderID"]);
+                                _subscriber.SubscriberID = Convert.ToInt32(osdr["SubscriberID"]);
+                                _subscriber.OrderSubscriberID = Convert.ToInt32(osdr["OrderSubscriberID"]);
+                                _subscriber.DisplayName = osdr["DisplayName"].ToString();
+                                _subscriber.MobileNumber = osdr["MobileNumber"].ToString();
+                                _subscriber.IsPrimary = Convert.ToInt32(osdr["IsPrimary"]);
+                                try
+                                { _subscriber.ActivateOn = Convert.ToDateTime(osdr["ActivateOn"]); }
+                                catch { }
+                                try
+                                { _subscriber.DepositFee = Convert.ToDouble(osdr["DepositFee"]); }
+                                catch { }
+                                _subscriber.IsBuddyLine = Convert.ToInt32(osdr["IsBuddyLine"]);
+                                _subscriber.PremiumType = Convert.ToInt32(osdr["PremiumType"]);
+                                _subscriber.PremiumName = osdr["PremiumName"].ToString();
+                                _subscriber.IsPorted = Convert.ToInt32(osdr["IsPorted"]);
 
-                                orderBundles = (from model in ds.Tables[1].AsEnumerable()
-                                                select new Bundle()
-                                                {
-                                                    OrderID = model.Field<int>("OrderID"),
-                                                    BundleID = model.Field<int>("BundleID"),
-                                                    //DisplayName = model.Field<string>("DisplayName"),
-                                                    //MobileNumber = model.Field<string>("MobileNumber"),
-                                                    //IsPrimaryNumber = model.Field<int>("IsPrimaryNumber"),
-                                                    PlanMarketingName = model.Field<string>("PlanMarketingName"),
-                                                    PortalDescription = model.Field<string>("PortalDescription"),
-                                                    PortalSummaryDescription = model.Field<string>("PortalSummaryDescription"),
-                                                    TotalData = model.Field<double?>("TotalData"),
-                                                    TotalSMS = model.Field<double?>("TotalSMS"),
-                                                    TotalVoice = model.Field<double?>("TotalVoice"),
-                                                    ActualSubscriptionFee = model.Field<double?>("ActualSubscriptionFee"),
-                                                    ApplicableSubscriptionFee = model.Field<double?>("ApplicableSubscriptionFee"),
-                                                    ServiceName = model.Field<string>("ServiceName"),
-                                                    ActualServiceFee = model.Field<double?>("ActualServiceFee"),
-                                                    ApplicableServiceFee = model.Field<double?>("ApplicableServiceFee"),
-                                                    //PremiumType = model.Field<int>("PremiumType"),
-                                                    //IsPorted = model.Field<int>("IsPorted"),
-                                                    //IsOwnNumber = model.Field<int>("IsOwnNumber"),
-                                                    //DonorProvider = model.Field<string>("DonorProvider"),
-                                                    //PortedNumberTransferForm = model.Field<string>("PortedNumberTransferForm"),
-                                                    //PortedNumberOwnedBy = model.Field<string>("PortedNumberOwnedBy"),
-                                                    //PortedNumberOwnerRegistrationID = model.Field<string>("PortedNumberOwnerRegistrationID"),
-                                                }).Where(c => c.OrderID == orderDetails.OrderID).ToList();
+                                List<Bundle> orderBundles = new List<Bundle>();
 
-                                orderDetails.Bundles = orderBundles;
+                                if (ds.Tables[2] != null && ds.Tables[2].Rows.Count > 0)
+                                {
+                                    orderBundles = (from model in ds.Tables[2].AsEnumerable()
+                                                    select new Bundle()
+                                                    {
+                                                        OrderID = model.Field<int>("OrderID"),
+                                                        OrderSubscriberID = model.Field<int>("OrderSubscriberID"),
+                                                        BundleID = model.Field<int>("BundleID"),
+                                                        PlanMarketingName = model.Field<string>("PlanMarketingName"),
+                                                        PortalDescription = model.Field<string>("PortalDescription"),
+                                                        PortalSummaryDescription = model.Field<string>("PortalSummaryDescription"),
+                                                        TotalData = model.Field<double?>("TotalData"),
+                                                        TotalSMS = model.Field<double?>("TotalSMS"),
+                                                        TotalVoice = model.Field<double?>("TotalVoice"),
+                                                        ActualSubscriptionFee = model.Field<double?>("ActualSubscriptionFee"),
+                                                        ApplicableSubscriptionFee = model.Field<double?>("ApplicableSubscriptionFee"),
+                                                        ServiceName = model.Field<string>("ServiceName"),
+                                                        ActualServiceFee = model.Field<double?>("ActualServiceFee"),
+                                                        ApplicableServiceFee = model.Field<double?>("ApplicableServiceFee"),
+                                                    }).Where(c => c.OrderSubscriberID == _subscriber.OrderSubscriberID).ToList();
 
+                                    _subscriber.Bundles = orderBundles;
+                                }
+                                orderSubscribers.Add(_subscriber);
                             }
+
+                            orderDetails.Subscribers = orderSubscribers;
 
                             List<ServiceCharge> orderServiceCharges = new List<ServiceCharge>();
 
-                            if (ds.Tables[2] != null && ds.Tables[2].Rows.Count > 0)
+                            if (ds.Tables[3] != null && ds.Tables[3].Rows.Count > 0)
                             {
 
-                                orderServiceCharges = (from model in ds.Tables[2].AsEnumerable()
+                                orderServiceCharges = (from model in ds.Tables[3].AsEnumerable()
                                                        select new ServiceCharge()
                                                        {
                                                            OrderID = model.Field<int>("OrderID"),
@@ -1015,7 +1035,6 @@ namespace CustomerService.DataAccess
                                                        }).Where(c => c.OrderID == orderDetails.OrderID).ToList();
 
                                 orderDetails.ServiceCharges = orderServiceCharges;
-
                             }
                         }
                         orders.Add(orderDetails);

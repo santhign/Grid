@@ -3920,6 +3920,16 @@ namespace OrderService.Controllers
                                     IsDomainValidationErrors = false
                                 });
                             }
+                            else if (updatePersoanDetailsResponse.ResponseCode == (int)DbReturnValue.UpdateNotAllowed)
+                            {
+                                LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToUpdatedSubscriptionDetails));
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = false,
+                                    Message = EnumExtensions.GetDescription(DbReturnValue.UpdateNotAllowed),
+                                    IsDomainValidationErrors = false
+                                });
+                            }
                             else
                             {
                                 LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToUpdatedSubscriptionDetails));

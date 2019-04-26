@@ -108,5 +108,9 @@ namespace Core.Enums
         [EnumMember(Value = "Already processed payment")]
         [Description("Already processed payment")]
         PaymentAlreadyProcessed = 126,
+
+        [EnumMember(Value = "Update on active record is not allowed")]
+        [Description("Update on active record is not allowed")]
+        UpdateNotAllowed = 127,
     }
 }
