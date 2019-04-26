@@ -232,7 +232,7 @@ namespace OrderService.DataAccess
                                         AlternateRecipientEmail = model.Field<string>("AlternateRecipientEmail"),
                                         AlternateRecipientContact = model.Field<string>("AlternateRecipientContact"),
                                         AlternateRecipientIDNumber = model.Field<string>("AlternateRecipientIDNumber"),
-                                        AlternateRecipientIDType = model.Field<string>("AlternateRecioientIDType"),
+                                        AlternateRecipientIDType = model.Field<string>("AlternateRecipientIDType"),
                                         PortalSlotID = model.Field<string>("PortalSlotID"),
                                         ScheduledDate = model.Field<DateTime?>("ScheduledDate"),
                                         DeliveryVendor = model.Field<string>("DeliveryVendor"),
