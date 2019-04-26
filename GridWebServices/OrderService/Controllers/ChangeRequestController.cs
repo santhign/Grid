@@ -642,6 +642,17 @@ namespace OrderService.Controllers
                             Result = statusResponse
                         });
                     }
+                    else if (statusResponse.ResponseCode == (int)DbReturnValue.DuplicateCRExists)
+                    {
+                        LogInfo.Error(DbReturnValue.DuplicateCRExists.GetDescription());
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = DbReturnValue.DuplicateCRExists.GetDescription(),
+                            IsDomainValidationErrors = false
+                        });
+                    }
                     else
                     {
                         LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
@@ -1179,6 +1190,17 @@ namespace OrderService.Controllers
                         {
                             HasSucceeded = false,
                             Message = DbReturnValue.DuplicateCRExists.GetDescription(),
+                            IsDomainValidationErrors = false
+                        });
+                    }
+                    else if (statusResponse.ResponseCode == (int)DbReturnValue.UnSuspensionValidation)
+                    {
+                        LogInfo.Error(DbReturnValue.UnSuspensionValidation.GetDescription());
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = DbReturnValue.UnSuspensionValidation.GetDescription(),
                             IsDomainValidationErrors = false
                         });
                     }

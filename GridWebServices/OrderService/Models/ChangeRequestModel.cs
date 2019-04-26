@@ -91,6 +91,7 @@ namespace OrderService.Models
         /// The billing building number.
         /// </value>
         public string BillingBuildingNumber { get; set; }
+        public string BillingBuildingName { get; set; }
         /// <summary>
         /// Gets or sets the name of the billing street.
         /// </summary>
@@ -219,7 +220,7 @@ namespace OrderService.Models
         /// <value>
         /// The alternate recioient identifier number.
         /// </value>
-        public string AlternateRecioientIDNumber { get; set; }
+        public string AlternateRecipientIDNumber { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the alternate recioient identifier.
@@ -227,7 +228,7 @@ namespace OrderService.Models
         /// <value>
         /// The type of the alternate recioient identifier.
         /// </value>
-        public string AlternateRecioientIDType { get; set; }
+        public string AlternateRecipientIDType { get; set; }
         /// <summary>
         /// Gets or sets the portal slot identifier.
         /// </summary>
