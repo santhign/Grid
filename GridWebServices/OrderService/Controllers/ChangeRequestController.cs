@@ -56,13 +56,14 @@ namespace OrderService.Controllers
         /// <summary>
         /// Removes the vas service.
         /// </summary>
-        /// <param name="token">The token.</param>
-        /// <param name="mobileNumber">The mobile number.</param>
-        /// <param name="planId">The plan identifier.</param>
+        /// <param name="token"></param>
+        /// <param name="mobileNumber"></param>
+        /// <param name="subscriptionId"></param>
+        /// <param name="planId"></param>
         /// <returns></returns>
         [HttpPost]
-        [Route("RemoveVasService/{mobileNumber}/{planId}")]
-        public async Task<IActionResult> RemoveVasService([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] string mobileNumber, [FromRoute] int planId)
+        [Route("RemoveVasService/{mobileNumber}/{subscriptionId}/{planId}")]
+        public async Task<IActionResult> RemoveVasService([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] string mobileNumber, [FromRoute] int subscriptionId,  [FromRoute] int planId)
         {
 
             try
@@ -93,7 +94,7 @@ namespace OrderService.Controllers
                 {
                     var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
                     var statusResponse =
-                        await _changeRequestDataAccess.RemoveVasService(aTokenResp.CustomerID, mobileNumber, planId);
+                        await _changeRequestDataAccess.RemoveVasService(aTokenResp.CustomerID, mobileNumber, subscriptionId, planId);
                     var buyVASResponse = (RemoveVASResponse)statusResponse.Results;
                     if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                     {
@@ -165,9 +166,7 @@ namespace OrderService.Controllers
                                 Exception = ex.StackTrace.ToString()
 
 
-                            };
-
-                            await _messageQueueDataAccess.InsertMessageInMessageQueueRequestException(queueRequest);
+                            };                           
 
                             await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
                         }
@@ -177,6 +176,17 @@ namespace OrderService.Controllers
                             HasSucceeded = true,
                             Message = StatusMessages.SuccessMessage,
                             Result = statusResponse
+                        });
+                    }
+                    else if (statusResponse.ResponseCode == (int)DbReturnValue.DuplicateCRExists)
+                    {
+                        LogInfo.Error(DbReturnValue.DuplicateCRExists.GetDescription());
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = DbReturnValue.DuplicateCRExists.GetDescription(),
+                            IsDomainValidationErrors = false
                         });
                     }
                     else
@@ -437,7 +447,7 @@ namespace OrderService.Controllers
                             msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(TorSresponse.ChangeRequestId);
 
                             topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration)
-                            .Results.ToString().Trim();                            
+                            .Results.ToString().Trim();
                             attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.Terminate.GetDescription());
                             var pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
                             if (pushResult.Trim().ToUpper() == "OK")
@@ -505,6 +515,18 @@ namespace OrderService.Controllers
                             Result = statusResponse
                         });
                     }
+                    else if (statusResponse.ResponseCode == (int)DbReturnValue.DuplicateCRExists)
+                    {
+                        LogInfo.Error(DbReturnValue.DuplicateCRExists.GetDescription());
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = DbReturnValue.DuplicateCRExists.GetDescription(),
+                            IsDomainValidationErrors = false
+                        });
+                    }
+
                     else
                     {
                         LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
@@ -766,6 +788,17 @@ namespace OrderService.Controllers
                             Result = statusResponse
                         });
                     }
+                    else if (statusResponse.ResponseCode == (int)DbReturnValue.DuplicateCRExists)
+                    {
+                        LogInfo.Error(DbReturnValue.DuplicateCRExists.GetDescription());
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = DbReturnValue.DuplicateCRExists.GetDescription(),
+                            IsDomainValidationErrors = false
+                        });
+                    }
                     else
                     {
                         LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
@@ -778,7 +811,7 @@ namespace OrderService.Controllers
                         });
                     }
 
-                }
+                }                
                 else
                 {
                     // token auth failure
@@ -1103,6 +1136,17 @@ namespace OrderService.Controllers
                             Result = statusResponse
                         });
                     }
+                    else if (statusResponse.ResponseCode == (int)DbReturnValue.DuplicateCRExists)
+                    {
+                        LogInfo.Error(DbReturnValue.DuplicateCRExists.GetDescription());
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = DbReturnValue.DuplicateCRExists.GetDescription(),
+                            IsDomainValidationErrors = false
+                        });
+                    }
                     else
                     {
                         LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
@@ -1115,7 +1159,7 @@ namespace OrderService.Controllers
                         });
                     }
 
-                }
+                }                
                 else
                 {
                     // token auth failure
@@ -1268,6 +1312,179 @@ namespace OrderService.Controllers
                             HasSucceeded = true,
                             Message = StatusMessages.SuccessMessage,
                             Result = statusResponse
+                        });
+                    }
+                    else
+                    {
+                        LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = DbReturnValue.UpdationFailed.GetDescription(),
+                            IsDomainValidationErrors = false
+                        });
+                    }
+                }
+                else
+                {
+                    //Token expired
+                    LogInfo.Error(CommonErrors.ExpiredToken.GetDescription());
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = DbReturnValue.TokenExpired.GetDescription(),
+                        IsDomainValidationErrors = true
+                    });
+
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
+
+        /// <summary>
+        /// Remove Shared VAS Service
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="accountSubscriptionId"></param>
+        /// <param name="planId"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("RemoveVasService/{accountSubscriptionId}/{planId}")]
+        public async Task<IActionResult> RemoveSharedVasService([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int accountSubscriptionId, [FromRoute] int planId)
+        {
+
+            try
+            {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+                if (!ModelState.IsValid)
+                {
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                            .SelectMany(x => x.Errors)
+                            .Select(x => x.ErrorMessage))
+                    });
+                }
+
+                //var orderAccess = _changeRequestDataAccess;//new ChangeRequestDataAccess(_iconfiguration);
+                var helper = new AuthHelper(_iconfiguration);
+                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
+                    var statusResponse =
+                        await _changeRequestDataAccess.RemoveSharedVasService(aTokenResp.CustomerID, accountSubscriptionId, planId);
+                    var buyVASResponse = (RemoveVASResponse)statusResponse.Results;
+                    if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
+                    {
+
+                        MessageBodyForCR msgBody = new MessageBodyForCR();
+                        Dictionary<string, string> attribute = new Dictionary<string, string>();
+                        string topicName = string.Empty, subject = string.Empty;
+                        topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration)
+                            .Results.ToString().Trim();
+                        try
+                        {
+                            msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(buyVASResponse.ChangeRequestID);
+
+                            topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration)
+                            .Results.ToString().Trim();
+
+                            attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.RemoveVAS.GetDescription());
+                            var pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
+                            if (pushResult.Trim().ToUpper() == "OK")
+                            {
+                                MessageQueueRequest queueRequest = new MessageQueueRequest
+                                {
+                                    Source = Source.ChangeRequest,
+                                    NumberOfRetries = 1,
+                                    SNSTopic = topicName,
+                                    CreatedOn = DateTime.Now,
+                                    LastTriedOn = DateTime.Now,
+                                    PublishedOn = DateTime.Now,
+                                    MessageAttribute = Core.Enums.RequestType.RemoveVAS.GetDescription().ToString(),
+                                    MessageBody = JsonConvert.SerializeObject(msgBody),
+                                    Status = 1
+                                };
+
+                                await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                            }
+                            else
+                            {
+                                MessageQueueRequest queueRequest = new MessageQueueRequest
+                                {
+                                    Source = Source.ChangeRequest,
+                                    NumberOfRetries = 1,
+                                    SNSTopic = topicName,
+                                    CreatedOn = DateTime.Now,
+                                    LastTriedOn = DateTime.Now,
+                                    PublishedOn = DateTime.Now,
+                                    MessageAttribute = Core.Enums.RequestType.RemoveVAS.GetDescription().ToString(),
+                                    MessageBody = JsonConvert.SerializeObject(msgBody),
+                                    Status = 0
+                                };
+
+                                await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                            MessageQueueRequestException queueRequest = new MessageQueueRequestException
+                            {
+                                Source = Source.ChangeRequest,
+                                NumberOfRetries = 1,
+                                SNSTopic = topicName,
+                                CreatedOn = DateTime.Now,
+                                LastTriedOn = DateTime.Now,
+                                PublishedOn = DateTime.Now,
+                                MessageAttribute = Core.Enums.RequestType.RemoveVAS.GetDescription().ToString(),
+                                MessageBody = JsonConvert.SerializeObject(msgBody),
+                                Status = 0,
+                                Remark = "Error Occured in RemoveVASService",
+                                Exception = ex.StackTrace.ToString()
+
+
+                            };                            
+                            await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                        }
+
+                        return Ok(new ServerResponse
+                        {
+                            HasSucceeded = true,
+                            Message = StatusMessages.SuccessMessage,
+                            Result = statusResponse
+                        });
+                    }
+                    else if (statusResponse.ResponseCode == (int)DbReturnValue.DuplicateCRExists)
+                    {
+                        LogInfo.Error(DbReturnValue.DuplicateCRExists.GetDescription());
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = DbReturnValue.DuplicateCRExists.GetDescription(),
+                            IsDomainValidationErrors = false
                         });
                     }
                     else

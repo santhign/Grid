@@ -30,13 +30,14 @@ namespace OrderService.DataAccess
         }
 
         /// <summary>
-        /// Removes the vas service.
+        /// Remove VAS Data Access method
         /// </summary>
-        /// <param name="customerId">The customer identifier.</param>
-        /// <param name="mobileNumber">The mobile number.</param>
-        /// <param name="planId">The plan identifier.</param>
+        /// <param name="customerId"></param>
+        /// <param name="mobileNumber"></param>
+        /// <param name="subscriptionID"></param>
+        /// <param name="planId"></param>
         /// <returns></returns>
-        public async Task<DatabaseResponse> RemoveVasService(int customerId, string mobileNumber, int planId)
+        public async Task<DatabaseResponse> RemoveVasService(int customerId, string mobileNumber, int subscriptionID, int planId)
         {
             try
             {
@@ -44,15 +45,17 @@ namespace OrderService.DataAccess
                 SqlParameter[] parameters =
                 {
                     new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+                    new SqlParameter( "@SubscriptionID",  SqlDbType.Int ),
                     new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar ),
                     new SqlParameter( "@PlanID",  SqlDbType.Int),
                     new SqlParameter( "@RequestType",  SqlDbType.NVarChar )
                 };
 
                 parameters[0].Value = customerId;
-                parameters[1].Value = mobileNumber;
-                parameters[2].Value = planId;
-                parameters[3].Value = Core.Enums.RequestType.RemoveVAS.GetDescription();
+                parameters[1].Value = subscriptionID;
+                parameters[2].Value = mobileNumber;
+                parameters[3].Value = planId;
+                parameters[4].Value = Core.Enums.RequestType.RemoveVAS.GetDescription();
 
 
                 _DataHelper = new DataAccessHelper(DbObjectNames.Orders_CR_InsertRemoveVAS, parameters, _configuration);
@@ -68,14 +71,14 @@ namespace OrderService.DataAccess
                 if (dt.Rows.Count > 0)
                 {
                     removeVasResponse = (from model in dt.AsEnumerable()
-                                      select new RemoveVASResponse()
-                                      {
-                                          ChangeRequestID = model.Field<int>("ChangeRequestID"),
-                                          BSSPlanCode = model.Field<string>("BSSPlanCode"),
-                                          PlanMarketingName = model.Field<string>("PlanMarketingName"),
-                                          CurrentDate = model.Field<DateTime>("CurrentDate"),
-                                          PlanID = model.Field<int>("PlanID")
-                                      }).FirstOrDefault();
+                                         select new RemoveVASResponse()
+                                         {
+                                             ChangeRequestID = model.Field<int>("ChangeRequestID"),
+                                             BSSPlanCode = model.Field<string>("BSSPlanCode"),
+                                             PlanMarketingName = model.Field<string>("PlanMarketingName"),
+                                             CurrentDate = model.Field<DateTime>("CurrentDate"),
+                                             PlanID = model.Field<int>("PlanID")
+                                         }).FirstOrDefault();
                 }
                 else
                 {
@@ -138,13 +141,13 @@ namespace OrderService.DataAccess
                 if (dt.Rows.Count > 0)
                 {
                     removeVASResponse = (from model in dt.AsEnumerable()
-                                    select new BuyVASResponse()
-                                    {
-                                        ChangeRequestID = model.Field<int>("ChangeRequestID"),
-                                        BSSPlanCode = model.Field<string>("BSSPlanCode"),
-                                        PlanMarketingName = model.Field<string>("PlanMarketingName"),
-                                        SubscriptionFee = model.Field<double>("SubscriptionFee")
-                                    }).FirstOrDefault();                   
+                                         select new BuyVASResponse()
+                                         {
+                                             ChangeRequestID = model.Field<int>("ChangeRequestID"),
+                                             BSSPlanCode = model.Field<string>("BSSPlanCode"),
+                                             PlanMarketingName = model.Field<string>("PlanMarketingName"),
+                                             SubscriptionFee = model.Field<double>("SubscriptionFee")
+                                         }).FirstOrDefault();
                 }
                 else
                 {
@@ -453,13 +456,13 @@ namespace OrderService.DataAccess
 
                 SqlParameter[] parameters =
                 {
-                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),                   
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
                     new SqlParameter( "@BundleID",  SqlDbType.Int),
                     new SqlParameter( "@RequestType",  SqlDbType.NVarChar)
                 };
 
-                parameters[0].Value = customerId;               
-                parameters[1].Value = bundleId;                
+                parameters[0].Value = customerId;
+                parameters[1].Value = bundleId;
                 parameters[2].Value = Core.Enums.RequestType.AddVAS.GetDescription();
 
 
@@ -501,6 +504,76 @@ namespace OrderService.DataAccess
             {
                 _DataHelper.Dispose();
             }
+        }
+
+        /// <summary>
+        /// Remove Shared VAS Service 
+        /// </summary>
+        /// <param name="customerId"></param>
+        /// <param name="accountSubscriptionId"></param>
+        /// <param name="planId"></param>
+        /// <returns></returns>
+        public async Task<DatabaseResponse> RemoveSharedVasService(int customerId, int accountSubscriptionId, int planId)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ), 
+                    new SqlParameter( "@AccountSubscriptionID",  SqlDbType.Int ),
+                    new SqlParameter( "@PlanID",  SqlDbType.Int),
+                    new SqlParameter( "@RequestType",  SqlDbType.NVarChar )
+                };
+
+                parameters[0].Value = customerId;
+                parameters[1].Value = accountSubscriptionId;
+                parameters[2].Value = planId;
+                parameters[3].Value = Core.Enums.RequestType.RemoveVAS.GetDescription();
+
+
+                _DataHelper = new DataAccessHelper(DbObjectNames.Orders_CR_InsertRemoveVAS, parameters, _configuration);
+
+                DataTable dt = new DataTable();
+                var result = await _DataHelper.RunAsync(dt);    // 101 / 102 
+
+                if (result != (int)Core.Enums.DbReturnValue.CreateSuccess)
+                    return new DatabaseResponse { ResponseCode = result };
+
+                var removeVasResponse = new RemoveVASResponse();
+
+                if (dt.Rows.Count > 0)
+                {
+                    removeVasResponse = (from model in dt.AsEnumerable()
+                                         select new RemoveVASResponse()
+                                         {
+                                             ChangeRequestID = model.Field<int>("ChangeRequestID"),
+                                             BSSPlanCode = model.Field<string>("BSSPlanCode"),
+                                             PlanMarketingName = model.Field<string>("PlanMarketingName"),
+                                             CurrentDate = model.Field<DateTime>("CurrentDate"),
+                                             PlanID = model.Field<int>("PlanID")
+                                         }).FirstOrDefault();
+                }
+                else
+                {
+                    removeVasResponse = null;
+                }
+
+                var response = new DatabaseResponse { ResponseCode = result, Results = removeVasResponse };
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw;
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+
         }
     }
 }

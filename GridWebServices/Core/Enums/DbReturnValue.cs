@@ -112,5 +112,9 @@ namespace Core.Enums
         [EnumMember(Value = "Update on active record is not allowed")]
         [Description("Update on active record is not allowed")]
         UpdateNotAllowed = 127,
+
+        [EnumMember(Value = "Duplicate record Exist")]
+        [Description("Same request is already raised")]
+        DuplicateCRExists = 128,
     }
 }
