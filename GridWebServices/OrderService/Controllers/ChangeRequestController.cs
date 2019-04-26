@@ -107,10 +107,16 @@ namespace OrderService.Controllers
                         try
                         {
                             msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(buyVASResponse.ChangeRequestID);
-
+                            if(msgBody == null)
+                            {
+                                throw new NullReferenceException("message body is null for ChangeRequest (" + buyVASResponse.ChangeRequestID + ") for RemoveVAS Service API");
+                            }
                             topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration)
                             .Results.ToString().Trim();
-
+                            if (string.IsNullOrWhiteSpace(topicName))
+                            {
+                                throw new NullReferenceException("topicName is null for ChangeRequest (" + buyVASResponse.ChangeRequestID + ") for RemoveVAS Request Service API");
+                            }
                             attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.RemoveVAS.GetDescription());
                             var pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
                             if (pushResult.Trim().ToUpper() == "OK")
@@ -155,15 +161,15 @@ namespace OrderService.Controllers
                             {
                                 Source = Source.ChangeRequest,
                                 NumberOfRetries = 1,
-                                SNSTopic = topicName,
+                                SNSTopic = string.IsNullOrWhiteSpace(topicName) ? null : topicName,
                                 CreatedOn = DateTime.Now,
                                 LastTriedOn = DateTime.Now,
                                 PublishedOn = DateTime.Now,
                                 MessageAttribute = Core.Enums.RequestType.RemoveVAS.GetDescription().ToString(),
-                                MessageBody = JsonConvert.SerializeObject(msgBody),
+                                MessageBody = msgBody != null ? JsonConvert.SerializeObject(msgBody) : null,
                                 Status = 0,
                                 Remark = "Error Occured in RemoveVASService",
-                                Exception = ex.StackTrace.ToString()
+                                Exception = new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)
 
 
                             };                           
@@ -281,9 +287,17 @@ namespace OrderService.Controllers
                         {
                             topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration)
                             .Results.ToString().Trim();
+
+                            if (string.IsNullOrWhiteSpace(topicName))
+                            {
+                                throw new NullReferenceException("topicName is null for ChangeRequest (" +  buyVASResponse.ChangeRequestID + ") for BuyVAS Request Service API");
+                            }
                             msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(buyVASResponse.ChangeRequestID);
 
-                            
+                            if (msgBody == null)
+                            {
+                                throw new NullReferenceException("message body is null for ChangeRequest (" + buyVASResponse.ChangeRequestID + ") for BuyVAS Service API");
+                            }
 
                             attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.AddVAS.GetDescription());
                             var pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
@@ -329,15 +343,15 @@ namespace OrderService.Controllers
                             {
                                 Source = Source.ChangeRequest,
                                 NumberOfRetries = 1,
-                                SNSTopic = topicName,
+                                SNSTopic = string.IsNullOrWhiteSpace(topicName) ? null : topicName,
                                 CreatedOn = DateTime.Now,
                                 LastTriedOn = DateTime.Now,
                                 PublishedOn = DateTime.Now,
                                 MessageAttribute = Core.Enums.RequestType.AddVAS.GetDescription().ToString(),
-                                MessageBody = JsonConvert.SerializeObject(msgBody),
+                                MessageBody = msgBody != null ? JsonConvert.SerializeObject(msgBody) : null,
                                 Status = 0,
                                 Remark = "Error Occured in BuyVASService",
-                                Exception = ex.StackTrace.ToString()
+                                Exception = new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)
 
 
                             };
@@ -445,9 +459,16 @@ namespace OrderService.Controllers
                         try
                         {
                             msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(TorSresponse.ChangeRequestId);
-
+                            if (msgBody == null)
+                            {
+                                throw new NullReferenceException("message body is null for ChangeRequest (" + TorSresponse.ChangeRequestId + ") for Termination Request Service API");
+                            }
                             topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration)
                             .Results.ToString().Trim();
+                            if (string.IsNullOrWhiteSpace(topicName))
+                            {
+                                throw new NullReferenceException("topicName is null for ChangeRequest (" + TorSresponse.ChangeRequestId + ") for Termination Request Service API");
+                            }
                             attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.Terminate.GetDescription());
                             var pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
                             if (pushResult.Trim().ToUpper() == "OK")
@@ -492,15 +513,15 @@ namespace OrderService.Controllers
                             {
                                 Source = Source.ChangeRequest,
                                 NumberOfRetries = 1,
-                                SNSTopic = topicName,
+                                SNSTopic = string.IsNullOrWhiteSpace(topicName) ? null : topicName,
                                 CreatedOn = DateTime.Now,
                                 LastTriedOn = DateTime.Now,
                                 PublishedOn = DateTime.Now,
                                 MessageAttribute = Core.Enums.RequestType.Terminate.GetDescription().ToString(),
-                                MessageBody = JsonConvert.SerializeObject(msgBody),
+                                MessageBody = msgBody != null ? JsonConvert.SerializeObject(msgBody) : null,
                                 Status = 0,
                                 Remark = "Error Occured in TerminationRequestService",
-                                Exception = ex.StackTrace.ToString()
+                                Exception = new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)
 
 
                             };
@@ -715,11 +736,18 @@ namespace OrderService.Controllers
                         try
                         {
                             msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(TorSresponse.ChangeRequestId);
-
+                            if (msgBody == null)
+                            {
+                                throw new NullReferenceException("message body is null for ChangeRequest (" + TorSresponse.ChangeRequestId + ") for Suspension Request Service API");
+                            }
                             topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration)
                             .Results.ToString().Trim();
-                           
-                                attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.Suspend.GetDescription());
+                            if (string.IsNullOrWhiteSpace(topicName))
+                            {
+                                throw new NullReferenceException("topicName is null for ChangeRequest (" + TorSresponse.ChangeRequestId + ") for Suspension Request Service API");
+                            }
+
+                            attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.Suspend.GetDescription());
                                 var pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
                             if (pushResult.Trim().ToUpper() == "OK")
                             {
@@ -765,15 +793,15 @@ namespace OrderService.Controllers
                             {
                                 Source = Source.ChangeRequest,
                                 NumberOfRetries = 1,
-                                SNSTopic = topicName,
+                                SNSTopic = string.IsNullOrWhiteSpace(topicName) ? null : topicName,
                                 CreatedOn = DateTime.Now,
                                 LastTriedOn = DateTime.Now,
                                 PublishedOn = DateTime.Now,
                                 MessageAttribute = Core.Enums.RequestType.Suspend.GetDescription().ToString(),
-                                MessageBody = JsonConvert.SerializeObject(msgBody),
+                                MessageBody = msgBody != null ? JsonConvert.SerializeObject(msgBody) : null,
                                 Status = 0,
-                                Remark = "Error Occured in SuspensionRequestService",
-                                Exception = ex.StackTrace.ToString()
+                                Remark = "Error Occured in SuspensionRequest Service",
+                                Exception = new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)
 
 
                             };
@@ -1065,9 +1093,17 @@ namespace OrderService.Controllers
                         try
                         {
                             msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(TorSresponse.ChangeRequestId);
-
+                            if (msgBody == null)
+                            {
+                                throw new NullReferenceException("message body is null for ChangeRequest (" + TorSresponse.ChangeRequestId + ") for UnSuspension Request Service API");
+                            }
                             topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration)
                             .Results.ToString().Trim();
+
+                            if (string.IsNullOrWhiteSpace(topicName))
+                            {
+                                throw new NullReferenceException("topicName is null for ChangeRequest (" + TorSresponse.ChangeRequestId + ") for UnSuspension Request Service API");
+                            }
 
                             attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.UnSuspend.GetDescription());
                             var pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
@@ -1113,15 +1149,15 @@ namespace OrderService.Controllers
                             {
                                 Source = Source.ChangeRequest,
                                 NumberOfRetries = 1,
-                                SNSTopic = topicName,
+                                SNSTopic = string.IsNullOrWhiteSpace(topicName) ? null : topicName,
                                 CreatedOn = DateTime.Now,
                                 LastTriedOn = DateTime.Now,
                                 PublishedOn = DateTime.Now,
                                 MessageAttribute = Core.Enums.RequestType.UnSuspend.GetDescription().ToString(),
-                                MessageBody = JsonConvert.SerializeObject(msgBody),
+                                MessageBody = msgBody != null ? JsonConvert.SerializeObject(msgBody) : null,
                                 Status = 0,
-                                Remark = "Error Occured in UnsuspensionService",
-                                Exception = ex.StackTrace.ToString()
+                                Remark = "Error Occured in Unsuspension Service",
+                                Exception = new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)
 
 
                             };
@@ -1243,8 +1279,16 @@ namespace OrderService.Controllers
                         {
                             topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration)
                             .Results.ToString().Trim();
+                            if (string.IsNullOrWhiteSpace(topicName))
+                            {
+                                throw new NullReferenceException("topicName is null for ChangeRequest (" + buyVASResponse.ChangeRequestID + ") for BuyShared VAS Request Service API");
+                            }
                             msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(buyVASResponse.ChangeRequestID);
 
+                            if (msgBody == null)
+                            {
+                                throw new NullReferenceException("message body is null for ChangeRequest (" + buyVASResponse.ChangeRequestID + ") for BuyShared VAS Request Service API");
+                            }
 
 
                             attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.AddVAS.GetDescription());
@@ -1291,15 +1335,15 @@ namespace OrderService.Controllers
                             {
                                 Source = Source.ChangeRequest,
                                 NumberOfRetries = 1,
-                                SNSTopic = topicName,
+                                SNSTopic = string.IsNullOrWhiteSpace(topicName) ? null : topicName,
                                 CreatedOn = DateTime.Now,
                                 LastTriedOn = DateTime.Now,
                                 PublishedOn = DateTime.Now,
                                 MessageAttribute = Core.Enums.RequestType.AddVAS.GetDescription().ToString(),
-                                MessageBody = JsonConvert.SerializeObject(msgBody),
+                                MessageBody = msgBody != null ? JsonConvert.SerializeObject(msgBody) : null,
                                 Status = 0,
                                 Remark = "Error Occured in BuySharedVASService",
-                                Exception = ex.StackTrace.ToString()
+                                Exception = new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)
 
 
                             };
