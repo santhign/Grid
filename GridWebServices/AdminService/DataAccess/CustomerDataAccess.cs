@@ -502,5 +502,99 @@ namespace AdminService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+
+        public async Task<DatabaseResponse> OrderOffsetVoucher(int OrderID)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@OrderID",  SqlDbType.Int )
+
+                };
+
+                parameters[0].Value = OrderID;
+
+                _DataHelper = new DataAccessHelper("Admin_AssignOrderOffsetVoucher", parameters, _configuration);
+
+                DataSet ds = new DataSet();
+
+                int result = await _DataHelper.RunAsync(ds); // 105 /102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 105)
+                {
+                    response = new DatabaseResponse { ResponseCode = result, Results = "voucher has been assigned for selected order" };
+
+                }
+
+                else
+                {
+                    response = null;
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> ChangeRequestOffsetVoucher(int ChangeRequestID)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@ChangeRequestID",  SqlDbType.Int )
+
+                };
+
+                parameters[0].Value = ChangeRequestID;
+
+                _DataHelper = new DataAccessHelper("Admin_AssignChangeRequestOffsetVoucher", parameters, _configuration);
+
+                DataSet ds = new DataSet();
+
+                int result = await _DataHelper.RunAsync(ds); // 105 /102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 105)
+                {
+                    response = new DatabaseResponse { ResponseCode = result, Results = "voucher has been assigned for selected request" };
+
+                }
+
+                else
+                {
+                    response = null;
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
     }
 }

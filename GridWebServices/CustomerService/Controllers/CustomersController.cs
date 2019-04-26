@@ -956,190 +956,141 @@ namespace CustomerService.Controllers
 
         /// <summary>
         /// This will send forget password mail
-        /// </summary>
-        /// <param name="token" in="Header"></param>
+        /// </summary>      
         /// <param name="email">abcd@gmail.com</param>
         /// <returns>
         /// Customer Id and Token key
         /// </returns>
         [HttpGet]
         [Route("ForgetPassword/{email}")]
-        public async Task<IActionResult> ForgetPassword([FromHeader(Name = "Grid-Authorization-Token")] string token,[FromRoute] string email)
+        public async Task<IActionResult> ForgetPassword([FromRoute] string email)
         {
             try
             {
-                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                if (!ModelState.IsValid)
                 {
-                    HasSucceeded = false,
-                    IsDomainValidationErrors = true,
-                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
-
-                });
-
-                AuthHelper helper = new AuthHelper(_iconfiguration);
-
-                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token); 
-
-                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
-                {                   
-
-                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    return Ok(new OperationResponse
                     {
-                        if (!ModelState.IsValid)
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                                                   .SelectMany(x => x.Errors)
+                                                   .Select(x => x.ErrorMessage))
+                    });
+                }
+                try
+
+                {
+                    MailAddress m = new MailAddress(email);
+                }
+                catch
+                {
+                    Log.Error(StatusMessages.DomainValidationError);
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = EnumExtensions.GetDescription(CommonErrors.InvalidEmail),
+                    });
+
+                }
+
+                EmailDataAccess _emailDataAccess = new EmailDataAccess(_iconfiguration);
+
+                DatabaseResponse _forgetPassword = await _emailDataAccess.GetForgetPassword(email);
+
+                if (_forgetPassword.ResponseCode == (int)DbReturnValue.CreateSuccess)
+                {
+
+                    ForgetPassword passwordTokenDetails = new ForgetPassword();
+
+                    ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
+
+                    //Get password reset Url and aws notification topic name
+
+                    DatabaseResponse forgotPasswordMsgConfig = await _configAccess.GetConfiguration(ConfiType.ForgotPasswordMsg.ToString());
+
+                    DatabaseResponse forgotPasswordMsgTemplate = await _configAccess.GetEmailNotificationTemplate(NotificationEvent.ForgetPassword.ToString());
+
+                    MiscHelper parser = new MiscHelper();
+
+                    ForgotPasswordMsgConfig forgotPasswordConfig = parser.GetResetPasswordNotificationConfig((List<Dictionary<string, string>>)forgotPasswordMsgConfig.Results);
+
+                    if (_forgetPassword.Results != null)
+                    {
+                        passwordTokenDetails = (ForgetPassword)_forgetPassword.Results;
+
+                        NotificationMessage notificationMessage = new NotificationMessage();
+
+                        List<NotificationParams> msgParamsList = new List<NotificationParams>();
+
+                        NotificationParams msgParams = new NotificationParams();
+
+                        msgParams.emailaddress = passwordTokenDetails.Email;
+
+                        msgParams.name = passwordTokenDetails.Name;
+
+                        msgParams.param1 = passwordTokenDetails.Token;
+
+                        msgParams.param2 = forgotPasswordConfig.PasswordResetUrl;
+
+                        msgParamsList.Add(msgParams);
+
+                        notificationMessage = new NotificationMessage
                         {
-                            return Ok(new OperationResponse
-                            {
-                                HasSucceeded = false,
-                                IsDomainValidationErrors = true,
-                                Message = string.Join("; ", ModelState.Values
-                                                           .SelectMany(x => x.Errors)
-                                                           .Select(x => x.ErrorMessage))
-                            });
-                        }
-                        try
 
+                            MessageType = NotificationMsgType.Email.ToString(),
+
+                            MessageName = NotificationEvent.ForgetPassword.ToString(),
+
+                            Message = new MessageObject { parameters = msgParamsList, messagetemplate = ((EmailTemplate)forgotPasswordMsgTemplate.Results).TemplateName }
+
+                        };
+
+                        // Publish notification to topic
+
+                        Publisher forgotPassNotificationPublisher = new Publisher(_iconfiguration, forgotPasswordConfig.ForgotPasswordSNSTopic);
+
+                        await forgotPassNotificationPublisher.PublishAsync(notificationMessage);
+
+
+                        return Ok(new ServerResponse
                         {
-                            MailAddress m = new MailAddress(email);
-                        }
-                        catch
-                        {
-                            Log.Error(StatusMessages.DomainValidationError);
-                            return Ok(new OperationResponse
-                            {
-                                HasSucceeded = false,
-                                IsDomainValidationErrors = true,
-                                Message = EnumExtensions.GetDescription(CommonErrors.InvalidEmail),
-                            });
+                            HasSucceeded = true,
+                            Message = StatusMessages.ResetPassowrdLinkSent
 
-                        }
-
-                        EmailDataAccess _emailDataAccess = new EmailDataAccess(_iconfiguration);
-
-                        DatabaseResponse _forgetPassword = await _emailDataAccess.GetForgetPassword(email);
-
-                        if (_forgetPassword.ResponseCode == (int)DbReturnValue.CreateSuccess)
-                        {                           
-                          
-                            ForgetPassword passwordTokenDetails = new ForgetPassword();
-
-                            ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
-
-                            //Get password reset Url and aws notification topic name
-
-                            DatabaseResponse forgotPasswordMsgConfig = await _configAccess.GetConfiguration(ConfiType.ForgotPasswordMsg.ToString());
-
-                            DatabaseResponse forgotPasswordMsgTemplate = await _configAccess.GetEmailNotificationTemplate(NotificationEvent.ForgetPassword.ToString());
-
-                            MiscHelper parser = new MiscHelper();                              
-
-                            ForgotPasswordMsgConfig forgotPasswordConfig = parser.GetResetPasswordNotificationConfig((List<Dictionary<string, string>>)forgotPasswordMsgConfig.Results);
-                            
-                            if (_forgetPassword.Results != null)
-                            {
-                                passwordTokenDetails = (ForgetPassword)_forgetPassword.Results;
-
-                                NotificationMessage notificationMessage = new NotificationMessage();
-
-                                List<NotificationParams> msgParamsList = new List<NotificationParams>();
-
-                                NotificationParams msgParams = new NotificationParams();
-
-                                msgParams.emailaddress = passwordTokenDetails.Email;
-
-                                msgParams.name = passwordTokenDetails.Name;
-
-                                msgParams.param1 = passwordTokenDetails.Token;
-
-                                msgParams.param2 = forgotPasswordConfig.PasswordResetUrl;
-
-                                msgParamsList.Add(msgParams);
-
-                                notificationMessage = new NotificationMessage
-                                {
-
-                                    MessageType = NotificationMsgType.Email.ToString(),
-
-                                    MessageName= NotificationEvent.ForgetPassword.ToString(),                                     
-
-                                    Message = new MessageObject {  parameters= msgParamsList, messagetemplate=((EmailTemplate)forgotPasswordMsgTemplate.Results).TemplateName }
-                                      
-                                };
-
-                                // Publish notification to topic
-
-                                Publisher forgotPassNotificationPublisher = new Publisher(_iconfiguration, forgotPasswordConfig.ForgotPasswordSNSTopic);
-
-                                await forgotPassNotificationPublisher.PublishAsync(notificationMessage);
-                            
-
-                                return Ok(new ServerResponse
-                                {
-                                    HasSucceeded = true,
-                                    Message = StatusMessages.ResetPassowrdLinkSent                                    
-
-                                });
-                            }
-
-                            else
-                            {
-                                // unable to retrieve password token details
-
-                                return Ok(new ServerResponse
-                                {
-                                    HasSucceeded = false,
-                                    Message = EnumExtensions.GetDescription(CommonErrors.UnableToRetrievePasswordToken)
-                                });
-                            }
-
-                        }
-                        else if (_forgetPassword.ResponseCode == (int)DbReturnValue.CreationFailed)
-                        {
-                            return Ok(new ServerResponse
-                            {
-                                HasSucceeded = false,
-                                Message = EnumExtensions.GetDescription(CommonErrors.TokenGenerationFailed)
-
-                            });
-                        }
-
-                        else
-                        {
-                            return Ok(new ServerResponse
-                            {
-                                HasSucceeded = false,
-                                Message = EnumExtensions.GetDescription(DbReturnValue.EmailNotExists)
-
-                            });
-                        }
+                        });
                     }
 
                     else
                     {
-                        //Token expired
+                        // unable to retrieve password token details
 
-                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
-
-                        return Ok(new OperationResponse
+                        return Ok(new ServerResponse
                         {
                             HasSucceeded = false,
-                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
-                            IsDomainValidationErrors = true
+                            Message = EnumExtensions.GetDescription(CommonErrors.UnableToRetrievePasswordToken)
                         });
-
                     }
 
+                }
+                else if (_forgetPassword.ResponseCode == (int)DbReturnValue.CreationFailed)
+                {
+                    return Ok(new ServerResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(CommonErrors.TokenGenerationFailed)
+
+                    });
                 }
 
                 else
                 {
-                    // token auth failure
-                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
-
-                    return Ok(new OperationResponse
+                    return Ok(new ServerResponse
                     {
                         HasSucceeded = false,
-                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
-                        IsDomainValidationErrors = false
+                        Message = EnumExtensions.GetDescription(DbReturnValue.EmailNotExists)
+
                     });
                 }
 
@@ -1156,7 +1107,7 @@ namespace CustomerService.Controllers
                 });
 
             }
-        }      
+        }
 
         /// <summary>
         /// Updates the referral code.
@@ -1593,6 +1544,117 @@ namespace CustomerService.Controllers
                     IsDomainValidationErrors = false
                 });
 
+            }
+        }
+
+
+        // GET: api/Customers/orders/5
+        /// <summary>
+        /// Gets the customer orders.
+        /// </summary>
+        /// <param name="token" in="Header"></param>
+        /// <returns></returns>
+        [HttpGet("Orders")]
+        public async Task<IActionResult> GetCustomerOrders([FromHeader(Name = "Grid-Authorization-Token")] string token)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+
+                AuthHelper helper = new AuthHelper(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    {
+                        int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+                        if (!ModelState.IsValid)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = string.Join("; ", ModelState.Values
+                                                           .SelectMany(x => x.Errors)
+                                                           .Select(x => x.ErrorMessage))
+                            });
+                        }
+
+                        CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
+
+                        DatabaseResponse orderDetailsResponse = await _customerAccess.GetCustomerOrders(customerID);
+
+                        if (orderDetailsResponse.Results == null)
+                        {
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = true,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists)
+
+                            });
+                        }
+                        else
+                        {
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = true,
+                                Message = StatusMessages.SuccessMessage,
+                                Result = orderDetailsResponse.Results
+
+                            });
+                        }
+
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+
+                }
+
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
             }
         }
     }

@@ -392,7 +392,7 @@ namespace Core.Helpers
         }
 
 
-        public async Task<object> GetUsageHistory(GridBSSConfi confi, string mobileNumber, string requestId)
+        public async Task<BSSQueryPlanResponseObject> GetUsageHistory(GridBSSConfi confi, string mobileNumber, string requestId)
         {
             try
             {
@@ -412,7 +412,7 @@ namespace Core.Helpers
 
                 List<string> filters = new List<string>();
 
-                filters.Add("base_plan / addon");
+                filters.Add("base_plan/add_on");
 
                 dataset.filters = filters;
 
@@ -432,7 +432,7 @@ namespace Core.Helpers
 
                 req.Request = request;
 
-                return await client.PostAsync<object, QueryPlanRequestObject>(requestUrl, req);
+                return await client.PostAsync<BSSQueryPlanResponseObject, QueryPlanRequestObject>(requestUrl, req);
             }
             catch (Exception ex)
             {

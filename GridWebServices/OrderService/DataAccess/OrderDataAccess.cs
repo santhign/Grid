@@ -2126,6 +2126,45 @@ namespace OrderService.DataAccess
             }
         }
 
+        public async Task<DatabaseResponse> UpdateSubscriberDetails(UpdateSubscriberBasicDetails subscriberBasicDetails)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                     new SqlParameter( "@OrderID",  SqlDbType.Int ),
+                     new SqlParameter( "@BundleID",  SqlDbType.Int ),
+                     new SqlParameter( "@DisplayName",  SqlDbType.NVarChar ),
+                     new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar ),
+                };
 
+                parameters[0].Value = subscriberBasicDetails.OrderID;
+                parameters[1].Value = subscriberBasicDetails.BundleID;
+                parameters[2].Value = subscriberBasicDetails.DisplayName;
+                parameters[3].Value = subscriberBasicDetails.MobileNumber;
+
+                _DataHelper = new DataAccessHelper("Order_UpdateSubscriberBasicDetails", parameters, _configuration);
+            
+
+                int result = await _DataHelper.RunAsync();    // 101 / 106
+
+                DatabaseResponse response = new DatabaseResponse();
+                
+               response = new DatabaseResponse { ResponseCode = result };
+                
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
     }
 }
