@@ -384,7 +384,7 @@ namespace OrderService.Controllers
                                 catch (Exception ex)
                                 {
                                     LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.GetAssetFailed));
-
+                                    LogInfo.Fatal(ex, EnumExtensions.GetDescription(CommonErrors.GetAssetFailed));
                                     DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID);
 
                                     if (rollbackResponse.ResponseCode == (int)DbReturnValue.DeleteSuccess)

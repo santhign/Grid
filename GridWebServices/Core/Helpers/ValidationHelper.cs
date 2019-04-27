@@ -5,8 +5,6 @@ using System.Threading.Tasks;
 using Core.Models;
 using Core.Enums;
 using System.Linq;
-using NeverBounce;
-using NeverBounce.Models;
 using System.Net;
 using System.IO;
 using Newtonsoft.Json;

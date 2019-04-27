@@ -802,7 +802,7 @@ namespace AdminService.Controllers
         /// Offset delivery fee for selected CR.
         /// </summary>
         /// <param name="token" in="Header"></param>
-        /// <param name="OrderID">The identifier.</param>
+        /// <param name="ChangeRequestID">The identifier.</param>
         /// <returns></returns>
         [HttpGet("CROffsetVoucher/{ChangeRequestID}")]
         public async Task<IActionResult> CROffsetVoucher([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int ChangeRequestID)
