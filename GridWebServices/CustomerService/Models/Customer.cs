@@ -364,6 +364,8 @@ namespace CustomerService.Models
         /// The state.
         /// </value>
         public string State { get; set; }
+        public int SuspensionRaised { get; set; }
+        public int TerminationRaised { get; set; }
     }
 
     /// <summary>
