@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
 
 namespace CustomerService.Models
@@ -436,6 +433,8 @@ namespace CustomerService.Models
         /// The customer identifier.
         /// </value>
         public int CustomerID { get; set; }
+
+        public int SubscriptionID { get; set; }
         /// <summary>
         /// Gets or sets the plan identifier.
         /// </summary>

@@ -116,5 +116,9 @@ namespace Core.Enums
         [EnumMember(Value = "Duplicate record Exist")]
         [Description("Same request is already raised")]
         DuplicateCRExists = 128,
+
+        [EnumMember(Value = "Unsuspension Validation")]
+        [Description("First raise suspension request")]
+        UnSuspensionValidation = 129,
     }
 }

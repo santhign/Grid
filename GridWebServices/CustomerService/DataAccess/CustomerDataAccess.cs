@@ -244,17 +244,19 @@ namespace CustomerService.DataAccess
                     customerPlans = (from model in dt.AsEnumerable()
                                      select new CustomerPlans()
                                      {
+                                         SubscriptionID = model.Field<int>("SubscriptionID"),
                                          CustomerID = model.Field<int>("CustomerID"),
                                          PlanId = model.Field<int>("PlanID"),
                                          PlanMarketingName = model.Field<string>("PlanMarketingName"),
                                          PortalSummaryDescription = model.Field<string>("PortalSummaryDescription"),
                                          PortalDescription = model.Field<string>("PortalDescription"),
-                                         PlanStatus = model.Field<string>("PlanStatus"),
-                                         MobileNumber = model.Field<string>("MobileNumber"),
                                          SubscriptionType = model.Field<string>("SubscriptionType"),
+                                         PlanStatus = model.Field<string>("PlanStatus"),
+                                         //MobileNumber = model.Field<string>("MobileNumber"),
+                                         
                                          IsRecurring = model.Field<int>("IsRecurring"),
                                          ExpiryDate = model.Field<DateTime?>("ExpiryDate"),
-                                         Removable = model.Field<int>("Removable"),
+                                         Removable = model.Field<int>("Removable")
                                      }).ToList();
                 }
 
@@ -317,16 +319,17 @@ namespace CustomerService.DataAccess
                     customerPlans = (from model in dt.AsEnumerable()
                                      select new CustomerPlans()
                                      {
+                                         SubscriptionID = model.Field<int>("SubscriptionID"),
                                          CustomerID = model.Field<int>("CustomerID"),
                                          PlanId = model.Field<int>("PlanID"),
                                          PlanMarketingName = model.Field<string>("PlanMarketingName"),
                                          PortalSummaryDescription = model.Field<string>("PortalSummaryDescription"),
                                          PortalDescription = model.Field<string>("PortalDescription"),
-                                         PlanStatus = model.Field<string>("PlanStatus"),
-                                         MobileNumber = model.Field<string>("MobileNumber"),
                                          SubscriptionType = model.Field<string>("SubscriptionType"),
                                          IsRecurring = model.Field<int>("IsRecurring"),
+                                         MobileNumber = model.Field<string>("MobileNumber"),
                                          ExpiryDate = model.Field<DateTime?>("ExpiryDate"),
+                                         PlanStatus = model.Field<string>("PlanStatus"),
                                          Removable = model.Field<int>("Removable"),
                                      }).ToList();
                 }

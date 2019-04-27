@@ -212,6 +212,7 @@ namespace OrderService.DataAccess
                                         RequestTypeDescription = model.Field<string>("RequestTypeDescription"),
                                         BillingUnit = model.Field<string>("BillingUnit"),
                                         BillingFloor = model.Field<string>("BillingFloor"),
+                                        BillingBuildingName = model.Field<string>("BillingBuildingName"),
                                         BillingBuildingNumber = model.Field<string>("BillingBuildingNumber"),
                                         BillingStreetName = model.Field<string>("BillingStreetName"),
                                         BillingPostCode = model.Field<string>("BillingPostCode"),
@@ -230,8 +231,8 @@ namespace OrderService.DataAccess
                                         AlternateRecipientName = model.Field<string>("AlternateRecipientName"),
                                         AlternateRecipientEmail = model.Field<string>("AlternateRecipientEmail"),
                                         AlternateRecipientContact = model.Field<string>("AlternateRecipientContact"),
-                                        AlternateRecioientIDNumber = model.Field<string>("AlternateRecipientName"),
-                                        AlternateRecioientIDType = model.Field<string>("AlternateRecioientIDType"),
+                                        AlternateRecipientIDNumber = model.Field<string>("AlternateRecipientIDNumber"),
+                                        AlternateRecipientIDType = model.Field<string>("AlternateRecipientIDType"),
                                         PortalSlotID = model.Field<string>("PortalSlotID"),
                                         ScheduledDate = model.Field<DateTime?>("ScheduledDate"),
                                         DeliveryVendor = model.Field<string>("DeliveryVendor"),
@@ -574,6 +575,68 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
 
+        }
+
+        public async Task<DatabaseResponse> ChangePlanService(int customerId, string mobileNumber, int planId)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+                    new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@PlanID",  SqlDbType.Int),
+                    new SqlParameter( "@RequestType",  SqlDbType.NVarChar )
+                };
+
+                parameters[0].Value = customerId;
+                parameters[1].Value = mobileNumber;
+                parameters[2].Value = planId;
+                parameters[3].Value = Core.Enums.RequestType.ChangePlan.GetDescription();
+
+
+                _DataHelper = new DataAccessHelper(DbObjectNames.Orders_CR_ChangePlan, parameters, _configuration);
+
+                DataTable dt = new DataTable();
+                var result = await _DataHelper.RunAsync(dt);    // 101 / 102 
+
+                if (result != (int)Core.Enums.DbReturnValue.CreateSuccess)
+                    return new DatabaseResponse { ResponseCode = result };
+
+                var removeVasResponse = new RemoveVASResponse();
+
+                if (dt.Rows.Count > 0)
+                {
+                    removeVasResponse = (from model in dt.AsEnumerable()
+                                         select new RemoveVASResponse()
+                                         {
+                                             ChangeRequestID = model.Field<int>("ChangeRequestID"),
+                                             BSSPlanCode = model.Field<string>("BSSPlanCode"),
+                                             PlanMarketingName = model.Field<string>("PlanMarketingName"),
+                                             CurrentDate = model.Field<DateTime>("CurrentDate"),
+                                             PlanID = model.Field<int>("PlanID")
+                                         }).FirstOrDefault();
+                }
+                else
+                {
+                    removeVasResponse = null;
+                }
+
+                var response = new DatabaseResponse { ResponseCode = result, Results = removeVasResponse };
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw;
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
         }
     }
 }

@@ -64,5 +64,7 @@ namespace OrderService.DataAccess
 
         Task<DatabaseResponse> BuySharedService(int customerId, int bundleId);
 
+        Task<DatabaseResponse> ChangePlanService(int customerId, string mobileNumber, int planId);
+
     }
 }
