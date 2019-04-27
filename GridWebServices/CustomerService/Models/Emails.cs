@@ -28,4 +28,10 @@ namespace CustomerService.Models
         public bool IsValid { get; set; }
         public string Status { get; set; }
     }
+    public class NBResponse
+    {
+        public string Result { get; set; }
+        public string Status { get; set; }
+        public string suggested_correction { get; set; }
+    }
 }

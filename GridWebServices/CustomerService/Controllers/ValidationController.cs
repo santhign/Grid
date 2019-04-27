@@ -16,6 +16,7 @@ using Core.Helpers;
 using InfrastructureService;
 using Serilog;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace CustomerService.Controllers
 {
@@ -84,7 +85,7 @@ namespace CustomerService.Controllers
                         objEmailConfig.EmailAPIUrl = _result.Single(x => x["key"] == "Emailurl")["value"];
 
 
-                        string configResponse = await emailhelper.EmailValidation(objEmailConfig);
+                        string configResponse = emailhelper.EmailValidation(objEmailConfig);
                         EmailValidationResponse _response = new EmailValidationResponse();
                         _response.Status = configResponse;
                         if (configResponse.ToLower().Trim() != "invalid")
