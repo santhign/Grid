@@ -1250,9 +1250,7 @@ namespace OrderService.Controllers
         /// Buys the vas service.
         /// </summary>
         /// <param name="token">The token.</param>
-        /// <param name="mobileNumber">The mobile number.</param>
         /// <param name="bundleId">The bundle identifier.</param>
-        /// <param name="quantity">The quantity.</param>
         /// <returns></returns>
         [HttpPost]
         [Route("BuySharedVasService/{bundleId}")]

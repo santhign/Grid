@@ -53,11 +53,12 @@ namespace CustomerService.Models
         public DateTime? PaymentOn { get; set; }
         public List<Subscribers> Subscribers { get; set; }
         public List<ServiceCharge> ServiceCharges { get; set; }
+        public List<OrderStatuses> OrderStatuses { get; set; }
     }
-    public class OrderStatus
+    public class OrderStatuses
     {
         public int? OrderID { get; set; }
-        public string Status { get; set; }
+        public string OrderStatus { get; set; }
         public DateTime? UpdatedOn { get; set; }
     }
 

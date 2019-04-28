@@ -531,7 +531,9 @@ namespace CustomerService.DataAccess
                                           LinkedMobileNumber = model.Field<string>("LinkedMobileNumber"),
                                           AccountType = model.Field<string>("AccountType"),
                                           LinkedDisplayName = model.Field<string>("LinkedDisplayName"),
-                                          State = model.Field<string>("State")
+                                          State = model.Field<string>("State"),
+                                          SuspensionRaised = model.Field<int>("SuspensionRaised"),
+                                          TerminationRaised = model.Field<int>("TerminationRaised")
                                       }).ToList();
                     }
 
@@ -1038,6 +1040,21 @@ namespace CustomerService.DataAccess
                                                        }).Where(c => c.OrderID == orderDetails.OrderID).ToList();
 
                                 orderDetails.ServiceCharges = orderServiceCharges;
+                            }
+                            List<OrderStatuses> OrderStatuses = new List<OrderStatuses>();
+
+                            if (ds.Tables[4] != null && ds.Tables[4].Rows.Count > 0)
+                            {
+
+                                OrderStatuses = (from model in ds.Tables[4].AsEnumerable()
+                                                       select new OrderStatuses()
+                                                       {
+                                                           OrderID = model.Field<int>("OrderID"),
+                                                           OrderStatus = model.Field<string>("OrderStatus"),
+                                                           UpdatedOn = model.Field<DateTime?>("UpdatedOn")
+                                                       }).Where(c => c.OrderID == orderDetails.OrderID).ToList();
+
+                                orderDetails.OrderStatuses = OrderStatuses;
                             }
                         }
                         orders.Add(orderDetails);

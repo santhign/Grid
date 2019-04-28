@@ -37,7 +37,7 @@ namespace CatelogService.Controllers
             {
                 AuthHelper helper = new AuthHelper(_iconfiguration);
 
-                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Customer_VASPurchaseScreen);
 
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {

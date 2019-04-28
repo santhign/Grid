@@ -175,7 +175,7 @@ namespace CustomerService.Controllers
 
                 AuthHelper helper = new AuthHelper(_iconfiguration);
 
-                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Customer_UpdateProfile);
 
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
@@ -1129,7 +1129,7 @@ namespace CustomerService.Controllers
                 });
                 AuthHelper helper = new AuthHelper(_iconfiguration);
 
-                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);               
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Customer_ReferralCodeUpdate);               
               
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
@@ -1459,7 +1459,7 @@ namespace CustomerService.Controllers
 
                 AuthHelper helper = new AuthHelper(_iconfiguration);
 
-                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_UpdateSubscription);
 
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
@@ -1569,7 +1569,7 @@ namespace CustomerService.Controllers
 
                 AuthHelper helper = new AuthHelper(_iconfiguration);
 
-                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Dashboard_CustomerOrders);
 
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
