@@ -2411,11 +2411,11 @@ namespace OrderService.Controllers
                             }
                             else
                             {
-                                LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.NoRecords));
+                                LogInfo.Error(EnumExtensions.GetDescription(checkOutAmountResponse.ResponseCode));
                                 return Ok(new OperationResponse
                                 {
                                     HasSucceeded = false,
-                                    Message = EnumExtensions.GetDescription(DbReturnValue.NoRecords),
+                                    Message = EnumExtensions.GetDescription(checkOutAmountResponse.ResponseCode),
                                     IsDomainValidationErrors = false
                                 });
                             }
@@ -3996,6 +3996,115 @@ namespace OrderService.Controllers
             }
         }
 
-       
+
+        /// <summary>
+        /// This will returns a set of available delivery slots
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns>OperationResponse</returns>
+
+        [HttpGet]
+        [Route("GetRescheduleAvailableSlots")]
+        public async Task<IActionResult> GetRescheduleAvailableSlots([FromHeader(Name = "Grid-Authorization-Token")] string token)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+                AuthHelper helper = new AuthHelper(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    {
+                        int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+                        if (!ModelState.IsValid)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = string.Join("; ", ModelState.Values
+                                                           .SelectMany(x => x.Errors)
+                                                           .Select(x => x.ErrorMessage))
+                            });
+                        }
+
+                        OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+
+                        DatabaseResponse deliveryDetailsResponse = await _orderAccess.GetRescheduleAvailableSlots();
+
+                        if (deliveryDetailsResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                        {
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = true,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.RecordExists),
+                                Result = deliveryDetailsResponse.Results
+
+                            });
+                        }
+
+                        else
+                        {
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.DeliverySlotNotExists));
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists)
+                            });
+
+                        }
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+            }
+        }
     }
 }

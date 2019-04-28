@@ -2166,5 +2166,62 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+
+        public async Task<DatabaseResponse> GetRescheduleAvailableSlots()
+        {
+            try
+            {
+                _DataHelper = new DataAccessHelper("Orders_Reschedule_GetAvailableSlots", _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt); // 105 /102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 105)
+                {
+
+                    List<DeliverySlot> deliverySlots = new List<DeliverySlot>();
+
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+
+                        deliverySlots = (from model in dt.AsEnumerable()
+                                         select new DeliverySlot()
+                                         {
+                                             PortalSlotID = model.Field<string>("PortalSlotID"),
+                                             SlotDate = model.Field<DateTime>("SlotDate"),
+                                             SlotFromTime = model.Field<TimeSpan>("SlotFromTime"),
+                                             SlotToTime = model.Field<TimeSpan>("SlotToTime"),
+                                             Slot = model.Field<string>("Slot"),
+                                             AdditionalCharge = model.Field<double>("AdditionalCharge"),
+
+                                         }).ToList();
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = deliverySlots };
+
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
     }
 }
