@@ -89,7 +89,7 @@ namespace OrderService.Controllers
 
                 //var orderAccess = _changeRequestDataAccess;//new ChangeRequestDataAccess(_iconfiguration);
                 var helper = new AuthHelper(_iconfiguration);
-                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.DashBoard_RemoveVas);
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
                     var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
@@ -269,7 +269,7 @@ namespace OrderService.Controllers
 
 
                 var helper = new AuthHelper(_iconfiguration);
-                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.DashBoard_BuyVas);
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
                     var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
@@ -443,7 +443,7 @@ namespace OrderService.Controllers
 
                 var helper = new AuthHelper(_iconfiguration);
 
-                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_terminateline_subscriber);
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
                     var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
@@ -625,7 +625,7 @@ namespace OrderService.Controllers
 
                 var helper = new AuthHelper(_iconfiguration);
 
-                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_cr_sim_replace_request);
 
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
@@ -729,7 +729,7 @@ namespace OrderService.Controllers
                 }
 
                 var helper = new AuthHelper(_iconfiguration);
-                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_suspendline_Subscriber);
 
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
@@ -912,7 +912,7 @@ namespace OrderService.Controllers
                 }
 
                 var helper = new AuthHelper(_iconfiguration);
-                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_CR_ChangePhoneNumber);
 
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
@@ -1002,7 +1002,7 @@ namespace OrderService.Controllers
                 }
 
                 var helper = new AuthHelper(_iconfiguration);
-                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_cr_sim_replace_request);
 
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
@@ -1086,7 +1086,7 @@ namespace OrderService.Controllers
                 }
 
                 var helper = new AuthHelper(_iconfiguration);
-                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_unsuspendline_Subscriber);
 
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
@@ -1281,7 +1281,7 @@ namespace OrderService.Controllers
 
 
                 var helper = new AuthHelper(_iconfiguration);
-                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_cr_sharedvas_add);
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
                     var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
@@ -1451,7 +1451,7 @@ namespace OrderService.Controllers
 
                 //var orderAccess = _changeRequestDataAccess;//new ChangeRequestDataAccess(_iconfiguration);
                 var helper = new AuthHelper(_iconfiguration);
-                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_cr_sharedvas_remove);
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
                     var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
@@ -1622,7 +1622,7 @@ namespace OrderService.Controllers
 
                 //var orderAccess = _changeRequestDataAccess;//new ChangeRequestDataAccess(_iconfiguration);
                 var helper = new AuthHelper(_iconfiguration);
-                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_CR_ChangeBasePlan);
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
                     var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;

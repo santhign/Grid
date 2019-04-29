@@ -120,5 +120,9 @@ namespace Core.Enums
         [EnumMember(Value = "Unsuspension Validation")]
         [Description("First raise suspension request")]
         UnSuspensionValidation = 129,
+
+        [EnumMember(Value = "Delivery slot unavailablity")]
+        [Description("Delivery slot unavailablity, Please select a new slot")]
+        DeliverySlotUnavailability = 130,
     }
 }
