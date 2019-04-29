@@ -1044,6 +1044,7 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }              
+
         public async Task<DatabaseResponse> UpdateOrderBillingDetails(UpdateOrderBillingDetailsRequest billingDetails)
         {
             try
@@ -1272,7 +1273,9 @@ namespace OrderService.DataAccess
                     new SqlParameter( "@ContactNumber",  SqlDbType.NVarChar ),
                     new SqlParameter( "@Terms",  SqlDbType.Int),
                     new SqlParameter( "@PaymentSubscription",  SqlDbType.Int),
-                    new SqlParameter( "@PromotionMessage",  SqlDbType.Int)
+                    new SqlParameter( "@EmailMessage",  SqlDbType.Int),
+                    new SqlParameter( "@SMSMessage",  SqlDbType.Int),
+                    new SqlParameter( "@VoiceMessage",  SqlDbType.Int)
 
                 };
 
@@ -1280,7 +1283,9 @@ namespace OrderService.DataAccess
                 parameters[1].Value = subscriptionDetails.ContactNumber;
                 parameters[2].Value = subscriptionDetails.Terms;
                 parameters[3].Value = subscriptionDetails.PaymentSubscription;
-                parameters[4].Value = subscriptionDetails.PromotionMessage;
+                parameters[4].Value = subscriptionDetails.EmailMessage;
+                parameters[5].Value = subscriptionDetails.SMSMessage;
+                parameters[6].Value = subscriptionDetails.VoiceMessage;
 
 
 
@@ -2202,6 +2207,88 @@ namespace OrderService.DataAccess
 
                     response = new DatabaseResponse { ResponseCode = result, Results = deliverySlots };
 
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> RemoveLOADetails(int OrderID)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                 {
+                     new SqlParameter( "@OrderID",  SqlDbType.Int ),
+                };
+
+                parameters[0].Value = OrderID;
+
+                _DataHelper = new DataAccessHelper("Orders_RemoveLOADetails", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt); // 105 /102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                response = new DatabaseResponse { ResponseCode = result };
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> GetPortTypeFromOrderId(int OrderID, string MobileNumber)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@OrderID",  SqlDbType.Int ),
+                    new SqlParameter( "@MobileNumber",  SqlDbType.Int )
+                };
+
+                parameters[0].Value = OrderID;
+                parameters[1].Value = MobileNumber;
+
+                _DataHelper = new DataAccessHelper("Order_GetPortTypeByOrderID", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt); // 105 /102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 105)
+                {
+                    response = new DatabaseResponse { ResponseCode = result, Results = dt.Rows[0][0].ToString().Trim() };
                 }
 
                 else

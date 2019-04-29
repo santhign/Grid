@@ -58,5 +58,6 @@ namespace Core.Enums
         public const string Orders_CR_ChangePhoneNumber = "Orders_CR_ChangePhoneNumber";
         public const string Orders_unsuspendline_Subscriber = "Orders_unsuspendline_Subscriber";
         public const string Orders_CR_ChangeBasePlan = "Orders_CR_ChangeBasePlan";
+        public const string Dashboard_Rewards = "Dashboard_Rewards";
     }
 }
