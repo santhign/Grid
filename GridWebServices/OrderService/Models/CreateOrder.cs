@@ -683,7 +683,6 @@ namespace OrderService.Models
         /// <value>
         /// The unit.
         /// </value>
-        [Required(ErrorMessage = "Unit is required")]
         public string Unit { get; set; }
 
         /// <summary>
@@ -692,7 +691,6 @@ namespace OrderService.Models
         /// <value>
         /// The floor.
         /// </value>
-        [Required(ErrorMessage = "Floor is required")]
         public string Floor { get; set; }
 
         /// <summary>
@@ -701,7 +699,6 @@ namespace OrderService.Models
         /// <value>
         /// The name of the building.
         /// </value>
-        [Required(ErrorMessage = "BuildingName is required")]
         public string BuildingName { get; set; }
 
         /// <summary>
@@ -765,7 +762,6 @@ namespace OrderService.Models
         /// <value>
         /// The unit.
         /// </value>
-        [Required(ErrorMessage = "Unit is required")]
         public string Unit { get; set; }
 
         /// <summary>
@@ -774,7 +770,6 @@ namespace OrderService.Models
         /// <value>
         /// The floor.
         /// </value>
-        [Required(ErrorMessage = "Floor is required")]
         public string Floor { get; set; }
 
         /// <summary>
@@ -783,7 +778,6 @@ namespace OrderService.Models
         /// <value>
         /// The name of the building.
         /// </value>
-        [Required(ErrorMessage = "BuildingName is required")]
         public string BuildingName { get; set; }
 
         /// <summary>
