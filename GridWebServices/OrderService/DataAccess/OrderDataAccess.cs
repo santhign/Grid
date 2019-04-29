@@ -1044,6 +1044,7 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }              
+
         public async Task<DatabaseResponse> UpdateOrderBillingDetails(UpdateOrderBillingDetailsRequest billingDetails)
         {
             try
@@ -1272,7 +1273,9 @@ namespace OrderService.DataAccess
                     new SqlParameter( "@ContactNumber",  SqlDbType.NVarChar ),
                     new SqlParameter( "@Terms",  SqlDbType.Int),
                     new SqlParameter( "@PaymentSubscription",  SqlDbType.Int),
-                    new SqlParameter( "@PromotionMessage",  SqlDbType.Int)
+                    new SqlParameter( "@EmailMessage",  SqlDbType.Int),
+                    new SqlParameter( "@SMSMessage",  SqlDbType.Int),
+                    new SqlParameter( "@VoiceMessage",  SqlDbType.Int)
 
                 };
 
@@ -1280,7 +1283,9 @@ namespace OrderService.DataAccess
                 parameters[1].Value = subscriptionDetails.ContactNumber;
                 parameters[2].Value = subscriptionDetails.Terms;
                 parameters[3].Value = subscriptionDetails.PaymentSubscription;
-                parameters[4].Value = subscriptionDetails.PromotionMessage;
+                parameters[4].Value = subscriptionDetails.EmailMessage;
+                parameters[5].Value = subscriptionDetails.SMSMessage;
+                parameters[6].Value = subscriptionDetails.VoiceMessage;
 
 
 
@@ -2228,7 +2233,14 @@ namespace OrderService.DataAccess
         {
             try
             {
-                _DataHelper = new DataAccessHelper("Orders_RemoveLOADetails", _configuration);
+                SqlParameter[] parameters =
+                 {
+                     new SqlParameter( "@OrderID",  SqlDbType.Int ),
+                };
+
+                parameters[0].Value = OrderID;
+
+                _DataHelper = new DataAccessHelper("Orders_RemoveLOADetails", parameters, _configuration);
 
                 DataTable dt = new DataTable();
 

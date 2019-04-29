@@ -977,8 +977,9 @@ namespace OrderService.Models
         /// <value>
         /// The promotion message.
         /// </value>
-        [Required(ErrorMessage = "PromotionMessage is required")]
-        public int PromotionMessage { get; set; }
+        public int EmailMessage { get; set; }
+        public int SMSMessage { get; set; }
+        public int VoiceMessage { get; set; }
     }
 
     /// <summary>
