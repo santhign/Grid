@@ -2263,5 +2263,52 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+
+        public async Task<DatabaseResponse> GetPortTypeFromOrderId(int OrderID, string MobileNumber)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@OrderID",  SqlDbType.Int ),
+                    new SqlParameter( "@MobileNumber",  SqlDbType.Int )
+                };
+
+                parameters[0].Value = orderId;
+                parameters[1].Value = MobileNumber;
+
+                _DataHelper = new DataAccessHelper("Order_GetPortTypeByOrderID", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt); // 105 /102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 105)
+                {
+                    response = new DatabaseResponse { ResponseCode = result, Results = dt.Rows[0][0].ToString().Trim() };
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
     }
 }

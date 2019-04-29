@@ -802,20 +802,83 @@ namespace OrderService.Controllers
 
                         DatabaseResponse customerResponse = await _orderAccess.GetCustomerIdFromOrderId(request.OrderID);
 
+                        DatabaseResponse portResponse = await _orderAccess.GetPortTypeFromOrderId(request.OrderID, request.OldMobileNumber);
+
                         if (customerResponse.ResponseCode == (int)DbReturnValue.RecordExists && customerID == ((OrderCustomer)customerResponse.Results).CustomerId)
                         {
-                            customer = (OrderCustomer)customerResponse.Results;
+                            if (portResponse.Results.ToString().Trim() == "0")
+                            {
+                                customer = (OrderCustomer)customerResponse.Results;
 
-                            DatabaseResponse requestIdToUpdateUnblock = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customer.CustomerId, (int)BSSCalls.ExistingSession, request.OldMobileNumber);
+                                DatabaseResponse requestIdToUpdateUnblock = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customer.CustomerId, (int)BSSCalls.ExistingSession, request.OldMobileNumber);
 
-                            DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
+                                DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
 
-                            GridBSSConfi config = bsshelper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
+                                GridBSSConfi config = bsshelper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
 
-                            // Unblock
-                            BSSUpdateResponseObject bssUnblockUpdateResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateUnblock.Results, request.OldMobileNumber, true);
+                                // Unblock
+                                BSSUpdateResponseObject bssUnblockUpdateResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateUnblock.Results, request.OldMobileNumber, true);
 
-                            if (bsshelper.GetResponseCode(bssUnblockUpdateResponse) == "0")
+                                if (bsshelper.GetResponseCode(bssUnblockUpdateResponse) == "0")
+                                {
+                                    //update subscription porting
+                                    DatabaseResponse updateSubscriberResponse = await _orderAccess.UpdateSubscriberPortingNumber(portingRequest);
+
+                                    if (updateSubscriberResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
+                                    {
+                                        // Get Order Basic Details
+
+                                        DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails(request.OrderID);
+
+                                        if (orderDetailsResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                                        {
+                                            return Ok(new OperationResponse
+                                            {
+                                                HasSucceeded = true,
+                                                Message = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess),
+                                                IsDomainValidationErrors = false,
+                                                ReturnedObject = orderDetailsResponse.Results
+                                            });
+                                        }
+
+                                        else
+                                        {
+                                            //subscription porting updated, but details not returned
+                                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToLocateUpdatedSubscription));
+                                            return Ok(new OperationResponse
+                                            {
+                                                HasSucceeded = true,
+                                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
+                                                IsDomainValidationErrors = false,
+                                            });
+                                        }
+
+                                    }
+                                    else
+                                    {
+                                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateSubscriptionFailed));
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = false,
+                                            Message = EnumExtensions.GetDescription(DbReturnValue.UpdationFailed),
+                                            IsDomainValidationErrors = false
+                                        });
+                                    }
+                                }
+
+                                else
+                                {
+                                    // unblocking failed
+                                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateAssetUnBlockingFailed));
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = false,
+                                        Message = EnumExtensions.GetDescription(DbReturnValue.UnBlockingFailed),
+                                        IsDomainValidationErrors = false
+                                    });
+                                }
+                            }
+                            else
                             {
                                 //update subscription porting
                                 DatabaseResponse updateSubscriberResponse = await _orderAccess.UpdateSubscriberPortingNumber(portingRequest);
@@ -861,19 +924,6 @@ namespace OrderService.Controllers
                                     });
                                 }
                             }
-
-                            else
-                            {
-                                // unblocking failed
-                                LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateAssetUnBlockingFailed));
-                                return Ok(new OperationResponse
-                                {
-                                    HasSucceeded = false,
-                                    Message = EnumExtensions.GetDescription(DbReturnValue.UnBlockingFailed),
-                                    IsDomainValidationErrors = false
-                                });
-                            }
-
                         }
 
                         else
