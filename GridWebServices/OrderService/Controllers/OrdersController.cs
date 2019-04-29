@@ -2616,10 +2616,17 @@ namespace OrderService.Controllers
                                             Dictionary<string, string> attribute = new Dictionary<string, string>();
 
                                             msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(details.ChangeRequestID);
-
+                                            if (msgBody == null)
+                                            {
+                                                throw new NullReferenceException("message body is null for ChangeRequest (" + details.ChangeRequestID + ") for ChangeSIM in UpdateCheckout Response Request Service API");
+                                            }
                                             if (details.RequestTypeID == (int)Core.Enums.RequestType.ReplaceSIM)
                                             {
                                                 topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration).Results.ToString().Trim();
+                                                if (string.IsNullOrWhiteSpace(topicName))
+                                                {
+                                                    throw new NullReferenceException("topicName is null for ChangeRequest (" + details.ChangeRequestID + ") for ChangeSIM in UpdateCheckout Response Request Service API");
+                                                }
                                                 attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.ReplaceSIM.GetDescription());
                                                 pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
                                             }
@@ -2659,22 +2666,27 @@ namespace OrderService.Controllers
                                         }
                                         catch (Exception ex)
                                         {
+
                                             LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-                                            MessageQueueRequest queueRequest = new MessageQueueRequest
+                                            MessageQueueRequestException queueRequest = new MessageQueueRequestException
                                             {
                                                 Source = Source.ChangeRequest,
                                                 NumberOfRetries = 1,
-                                                SNSTopic = topicName,
+                                                SNSTopic = string.IsNullOrWhiteSpace(topicName) ? null : topicName,
                                                 CreatedOn = DateTime.Now,
                                                 LastTriedOn = DateTime.Now,
                                                 PublishedOn = DateTime.Now,
-                                                MessageAttribute = Core.Enums.RequestType.ReplaceSIM.GetDescription(),
-                                                MessageBody = JsonConvert.SerializeObject(msgBody),
-                                                Status = 0
+                                                MessageAttribute = Core.Enums.RequestType.ReplaceSIM.GetDescription().ToString(),
+                                                MessageBody = msgBody != null ? JsonConvert.SerializeObject(msgBody) : null,
+                                                Status = 0,
+                                                Remark = "Error Occured in ReplaceSIM from UpdateCheckoutResponse",
+                                                Exception = new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)
+
+
                                             };
 
 
-                                            await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                                            await _messageQueueDataAccess.InsertMessageInMessageQueueRequestException(queueRequest);
                                         }
 
                                     }

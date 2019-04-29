@@ -577,7 +577,7 @@ namespace OrderService.DataAccess
 
         }
 
-        public async Task<DatabaseResponse> ChangePlanService(int customerId, string mobileNumber, int planId)
+        public async Task<DatabaseResponse> ChangePlanService(int customerId, string mobileNumber, int bundleId)
         {
             try
             {
@@ -586,44 +586,68 @@ namespace OrderService.DataAccess
                 {
                     new SqlParameter( "@CustomerID",  SqlDbType.Int ),
                     new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar ),
-                    new SqlParameter( "@PlanID",  SqlDbType.Int),
+                    new SqlParameter( "@bundleID",  SqlDbType.Int),
                     new SqlParameter( "@RequestType",  SqlDbType.NVarChar )
                 };
 
                 parameters[0].Value = customerId;
                 parameters[1].Value = mobileNumber;
-                parameters[2].Value = planId;
+                parameters[2].Value = bundleId;
                 parameters[3].Value = Core.Enums.RequestType.ChangePlan.GetDescription();
 
 
                 _DataHelper = new DataAccessHelper(DbObjectNames.Orders_CR_ChangePlan, parameters, _configuration);
 
-                DataTable dt = new DataTable();
-                var result = await _DataHelper.RunAsync(dt);    // 101 / 102 
+                DataSet ds = new DataSet();
+                var result = await _DataHelper.RunAsync(ds);    // 101 / 102 
 
                 if (result != (int)Core.Enums.DbReturnValue.CreateSuccess)
                     return new DatabaseResponse { ResponseCode = result };
 
-                var removeVasResponse = new RemoveVASResponse();
+                var changePlanResponse = new ChangePlanResponse();
 
-                if (dt.Rows.Count > 0)
+                if (ds.Tables.Count > 0)
                 {
-                    removeVasResponse = (from model in dt.AsEnumerable()
-                                         select new RemoveVASResponse()
-                                         {
-                                             ChangeRequestID = model.Field<int>("ChangeRequestID"),
-                                             BSSPlanCode = model.Field<string>("BSSPlanCode"),
-                                             PlanMarketingName = model.Field<string>("PlanMarketingName"),
-                                             CurrentDate = model.Field<DateTime>("CurrentDate"),
-                                             PlanID = model.Field<int>("PlanID")
-                                         }).FirstOrDefault();
+                    changePlanResponse = (from model in ds.Tables[0].AsEnumerable()
+                                    select new ChangePlanResponse()
+                                    {
+                                        ChangeRequestID = model.Field<int>("ChangeRequestID"),
+                                        OrderNumber = model.Field<string>("OrderNumber"),
+                                        RequestOn = model.Field<DateTime>("RequestOn"),
+                                        //RequestType = model.Field<string>("RequestTypeDescription"),
+                                        BillingUnit = model.Field<string>("BillingUnit"),
+                                        BillingFloor = model.Field<string>("BillingFloor"),
+                                        BillingBuildingName = model.Field<string>("BillingBuildingName"),
+                                        BillingBuildingNumber = model.Field<string>("BillingBuildingNumber"),
+                                        BillingStreetName = model.Field<string>("BillingStreetName"),
+                                        BillingPostCode = model.Field<string>("BillingPostCode"),
+                                        BillingContactNumber = model.Field<string>("BillingContactNumber"),
+                                        Name = model.Field<string>("Name"),
+                                        Email = model.Field<string>("Email"),
+                                        IDNumber = model.Field<string>("IdentityCardNumber"),
+                                        IDType = model.Field<string>("IdentityCardType"),
+                                        OldPlanBundleID = model.Field<int>("OldPlanBundleID"),
+                                        NewBundleID = model.Field<int>("NewBundleID")
+
+
+                                    }).FirstOrDefault();
+
+                    if (changePlanResponse != null)
+                        changePlanResponse.ChangeRequestChargesList = (from model in ds.Tables[1].AsEnumerable()
+                                                                 select new ChangeRequestCharges()
+                                                                 {
+                                                                     PortalServiceName = model.Field<string>("PortalServiceName"),
+                                                                     ServiceFee = model.Field<double>("ServiceFee"),
+                                                                     IsRecurring = model.Field<bool>("IsRecurring"),
+                                                                     IsGstIncluded = model.Field<bool>("IsGSTIncluded")
+                                                                 }).ToList();
                 }
                 else
                 {
-                    removeVasResponse = null;
+                    changePlanResponse = null;
                 }
 
-                var response = new DatabaseResponse { ResponseCode = result, Results = removeVasResponse };
+                var response = new DatabaseResponse { ResponseCode = result, Results = changePlanResponse };
                 return response;
             }
 

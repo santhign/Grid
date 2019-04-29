@@ -90,7 +90,7 @@ namespace OrderService.DataAccess
                                    Nationality = model.Field<string>("Nationality"),
                                    IdType = model.Field<string>("IDType"),
                                    IdNumber = model.Field<string>("IDNumber"),
-                                   IsSameAsBilling = model.Field<string>("IsSameAsBilling"),
+                                   IsSameAsBilling = model.Field<int?>("IsSameAsBilling"),
                                    ShippingUnit = model.Field<string>("ShippingUnit"),
                                    ShippingFloor = model.Field<string>("ShippingFloor"),
                                    ShippingBuildingNumber = model.Field<string>("ShippingBuildingNumber"),
