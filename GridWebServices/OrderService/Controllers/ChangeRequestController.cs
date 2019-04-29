@@ -632,9 +632,102 @@ namespace OrderService.Controllers
                     var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
 
                     var statusResponse = await _changeRequestDataAccess.SimReplacementRequest(aTokenResp.CustomerID, mobileNumber);
-
+                    var updateRequest = (ChangeSimResponse)statusResponse.Results;
                     if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                     {
+                        var serviceFeeList = updateRequest.ChangeRequestChargesList.Select(x => x.ServiceFee).ToList();
+                        //var serviceFeeListWithoutZeroValue = serviceFeeList.Where(x => x != 0);
+                        if (serviceFeeList.AsQueryable().Sum() == 0)
+                        {
+                            var details = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(updateRequest.ChangeRequestId);
+
+                            if (details != null)
+                            {
+                                MessageBodyForCR msgBody = new MessageBodyForCR();
+
+                                string topicName = string.Empty, pushResult = string.Empty;
+
+                                try
+                                {
+                                    Dictionary<string, string> attribute = new Dictionary<string, string>();
+
+                                    msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(details.ChangeRequestID);
+                                    if (msgBody == null)
+                                    {
+                                        throw new NullReferenceException("message body is null for ChangeRequest (" + details.ChangeRequestID + ") for ChangeSIM in UpdateCheckout Response Request Service API");
+                                    }
+                                    //if (details.RequestTypeID == (int)Core.Enums.RequestType.ReplaceSIM)
+                                    //{
+                                    topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration).Results.ToString().Trim();
+                                    if (string.IsNullOrWhiteSpace(topicName))
+                                    {
+                                        throw new NullReferenceException("topicName is null for ChangeRequest (" + details.ChangeRequestID + ") for ChangeSIM in UpdateCheckout Response Request Service API");
+                                    }
+                                    attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.ReplaceSIM.GetDescription());
+                                    pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
+                                    //}
+                                    if (pushResult.Trim().ToUpper() == "OK")
+                                    {
+                                        MessageQueueRequest queueRequest = new MessageQueueRequest
+                                        {
+                                            Source = Source.ChangeRequest,
+                                            NumberOfRetries = 1,
+                                            SNSTopic = topicName,
+                                            CreatedOn = DateTime.Now,
+                                            LastTriedOn = DateTime.Now,
+                                            PublishedOn = DateTime.Now,
+                                            MessageAttribute = Core.Enums.RequestType.ReplaceSIM.GetDescription(),
+                                            MessageBody = JsonConvert.SerializeObject(msgBody),
+                                            Status = 1
+                                        };
+                                        await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                                    }
+                                    else
+                                    {
+                                        MessageQueueRequest queueRequest = new MessageQueueRequest
+                                        {
+                                            Source = Source.ChangeRequest,
+                                            NumberOfRetries = 1,
+                                            SNSTopic = topicName,
+                                            CreatedOn = DateTime.Now,
+                                            LastTriedOn = DateTime.Now,
+                                            PublishedOn = DateTime.Now,
+                                            MessageAttribute = Core.Enums.RequestType.ReplaceSIM.GetDescription(),
+                                            MessageBody = JsonConvert.SerializeObject(msgBody),
+                                            Status = 0
+                                        };
+                                        await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                                    }
+
+                                }
+                                catch (Exception ex)
+                                {
+
+                                    LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                                    MessageQueueRequestException queueRequest = new MessageQueueRequestException
+                                    {
+                                        Source = Source.ChangeRequest,
+                                        NumberOfRetries = 1,
+                                        SNSTopic = string.IsNullOrWhiteSpace(topicName) ? null : topicName,
+                                        CreatedOn = DateTime.Now,
+                                        LastTriedOn = DateTime.Now,
+                                        PublishedOn = DateTime.Now,
+                                        MessageAttribute = Core.Enums.RequestType.ReplaceSIM.GetDescription().ToString(),
+                                        MessageBody = msgBody != null ? JsonConvert.SerializeObject(msgBody) : null,
+                                        Status = 0,
+                                        Remark = "Error Occured in ReplaceSIM from UpdateCheckoutResponse",
+                                        Exception = new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)
+
+
+                                    };
+
+
+                                    await _messageQueueDataAccess.InsertMessageInMessageQueueRequestException(queueRequest);
+                                }
+
+                            }
+                        }
+
                         return Ok(new ServerResponse
                         {
                             HasSucceeded = true,
@@ -1642,81 +1735,89 @@ namespace OrderService.Controllers
                     var changePlanResponse = (ChangePlanResponse)statusResponse.Results;
                     if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                     {
-
-                        MessageBodyForCR msgBody = new MessageBodyForCR();
-                        Dictionary<string, string> attribute = new Dictionary<string, string>();
-                        string topicName = string.Empty, subject = string.Empty;
-
-                        try
+                        if (changePlanResponse.ChangeRequestChargesList != null)
                         {
-                            msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(changePlanResponse.ChangeRequestID);
-                            if (msgBody == null)
+                            var serviceFeeList = changePlanResponse.ChangeRequestChargesList.Select(x => x.ServiceFee).ToList();
+                            //var serviceFeeListWithoutZeroValue = serviceFeeList.Where(x => x != 0);
+                            if (serviceFeeList.AsQueryable().Sum() == 0)
                             {
-                                throw new NullReferenceException("message body is null for ChangeRequest (" + changePlanResponse.ChangeRequestID + ") for Change Plan Service Request Service API");
-                            }
-                            topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration)
-                            .Results.ToString().Trim();
-                            if (string.IsNullOrWhiteSpace(topicName))
-                            {
-                                throw new NullReferenceException("topicName is null for ChangeRequest (" + changePlanResponse.ChangeRequestID + ") for Change Plan Service Request Service API");
-                            }
-                            attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.ChangePlan.GetDescription());
-                            var pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
-                            if (pushResult.Trim().ToUpper() == "OK")
-                            {
-                                MessageQueueRequest queueRequest = new MessageQueueRequest
+                                MessageBodyForCR msgBody = new MessageBodyForCR();
+                                Dictionary<string, string> attribute = new Dictionary<string, string>();
+                                string topicName = string.Empty, subject = string.Empty;
+
+                                try
                                 {
-                                    Source = Source.ChangeRequest,
-                                    NumberOfRetries = 1,
-                                    SNSTopic = topicName,
-                                    CreatedOn = DateTime.Now,
-                                    LastTriedOn = DateTime.Now,
-                                    PublishedOn = DateTime.Now,
-                                    MessageAttribute = Core.Enums.RequestType.ChangePlan.GetDescription().ToString(),
-                                    MessageBody = JsonConvert.SerializeObject(msgBody),
-                                    Status = 1
-                                };
 
-                                await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
-                            }
-                            else
-                            {
-                                MessageQueueRequest queueRequest = new MessageQueueRequest
+                                    msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(changePlanResponse.ChangeRequestID);
+                                    if (msgBody == null)
+                                    {
+                                        throw new NullReferenceException("message body is null for ChangeRequest (" + changePlanResponse.ChangeRequestID + ") for Change Plan Service Request Service API");
+                                    }
+                                    topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration)
+                                    .Results.ToString().Trim();
+                                    if (string.IsNullOrWhiteSpace(topicName))
+                                    {
+                                        throw new NullReferenceException("topicName is null for ChangeRequest (" + changePlanResponse.ChangeRequestID + ") for Change Plan Service Request Service API");
+                                    }
+                                    attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.ChangePlan.GetDescription());
+                                    var pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
+                                    if (pushResult.Trim().ToUpper() == "OK")
+                                    {
+                                        MessageQueueRequest queueRequest = new MessageQueueRequest
+                                        {
+                                            Source = Source.ChangeRequest,
+                                            NumberOfRetries = 1,
+                                            SNSTopic = topicName,
+                                            CreatedOn = DateTime.Now,
+                                            LastTriedOn = DateTime.Now,
+                                            PublishedOn = DateTime.Now,
+                                            MessageAttribute = Core.Enums.RequestType.ChangePlan.GetDescription().ToString(),
+                                            MessageBody = JsonConvert.SerializeObject(msgBody),
+                                            Status = 1
+                                        };
+
+                                        await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                                    }
+                                    else
+                                    {
+                                        MessageQueueRequest queueRequest = new MessageQueueRequest
+                                        {
+                                            Source = Source.ChangeRequest,
+                                            NumberOfRetries = 1,
+                                            SNSTopic = topicName,
+                                            CreatedOn = DateTime.Now,
+                                            LastTriedOn = DateTime.Now,
+                                            PublishedOn = DateTime.Now,
+                                            MessageAttribute = Core.Enums.RequestType.ChangePlan.GetDescription().ToString(),
+                                            MessageBody = JsonConvert.SerializeObject(msgBody),
+                                            Status = 0
+                                        };
+
+                                        await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                                    }
+                                }
+                                catch (Exception ex)
                                 {
-                                    Source = Source.ChangeRequest,
-                                    NumberOfRetries = 1,
-                                    SNSTopic = topicName,
-                                    CreatedOn = DateTime.Now,
-                                    LastTriedOn = DateTime.Now,
-                                    PublishedOn = DateTime.Now,
-                                    MessageAttribute = Core.Enums.RequestType.ChangePlan.GetDescription().ToString(),
-                                    MessageBody = JsonConvert.SerializeObject(msgBody),
-                                    Status = 0
-                                };
+                                    LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                                    MessageQueueRequestException queueRequest = new MessageQueueRequestException
+                                    {
+                                        Source = Source.ChangeRequest,
+                                        NumberOfRetries = 1,
+                                        SNSTopic = topicName,
+                                        CreatedOn = DateTime.Now,
+                                        LastTriedOn = DateTime.Now,
+                                        PublishedOn = DateTime.Now,
+                                        MessageAttribute = Core.Enums.RequestType.ChangePlan.GetDescription().ToString(),
+                                        MessageBody = JsonConvert.SerializeObject(msgBody),
+                                        Status = 0,
+                                        Remark = "Error Occured in Update Plan",
+                                        Exception = ex.StackTrace.ToString()
 
-                                await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+
+                                    };
+                                    await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                                }
                             }
-                        }
-                        catch (Exception ex)
-                        {
-                            LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-                            MessageQueueRequestException queueRequest = new MessageQueueRequestException
-                            {
-                                Source = Source.ChangeRequest,
-                                NumberOfRetries = 1,
-                                SNSTopic = topicName,
-                                CreatedOn = DateTime.Now,
-                                LastTriedOn = DateTime.Now,
-                                PublishedOn = DateTime.Now,
-                                MessageAttribute = Core.Enums.RequestType.ChangePlan.GetDescription().ToString(),
-                                MessageBody = JsonConvert.SerializeObject(msgBody),
-                                Status = 0,
-                                Remark = "Error Occured in Update Plan",
-                                Exception = ex.StackTrace.ToString()
-
-
-                            };
-                            await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
                         }
 
                         return Ok(new ServerResponse

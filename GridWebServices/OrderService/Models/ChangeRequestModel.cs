@@ -360,21 +360,21 @@ namespace OrderService.Models
         /// <value>
         /// The service fee.
         /// </value>
-        public double ServiceFee { get; set; }
+        public double ? ServiceFee { get; set; }
         /// <summary>
         /// Gets or sets a value indicating whether this instance is recurring.
         /// </summary>
         /// <value>
         ///   <c>true</c> if this instance is recurring; otherwise, <c>false</c>.
         /// </value>
-        public bool IsRecurring { get; set; }
+        public int ? IsRecurring { get; set; }
         /// <summary>
         /// Gets or sets a value indicating whether this instance is GST included.
         /// </summary>
         /// <value>
         ///   <c>true</c> if this instance is GST included; otherwise, <c>false</c>.
         /// </value>
-        public bool IsGstIncluded { get; set; }
+        public int ? IsGstIncluded { get; set; }
 
     }
 

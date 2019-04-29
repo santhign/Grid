@@ -249,9 +249,9 @@ namespace OrderService.DataAccess
                                                                  select new ChangeRequestCharges()
                                                                  {
                                                                      PortalServiceName = model.Field<string>("PortalServiceName"),
-                                                                     ServiceFee = model.Field<double>("ServiceFee"),
-                                                                     IsRecurring = model.Field<bool>("IsRecurring"),
-                                                                     IsGstIncluded = model.Field<bool>("IsGSTIncluded")
+                                                                     ServiceFee = model.Field<double?>("ServiceFee"),
+                                                                     IsRecurring = model.Field<int?>("IsRecurring"),
+                                                                     IsGstIncluded = model.Field<int?>("IsGSTIncluded")
                                                                  }).ToList();
                 }
 
@@ -637,9 +637,9 @@ namespace OrderService.DataAccess
                                                                  select new ChangeRequestCharges()
                                                                  {
                                                                      PortalServiceName = model.Field<string>("PortalServiceName"),
-                                                                     ServiceFee = model.Field<double>("ServiceFee"),
-                                                                     IsRecurring = model.Field<bool>("IsRecurring"),
-                                                                     IsGstIncluded = model.Field<bool>("IsGSTIncluded")
+                                                                     ServiceFee = model.Field<double?>("ServiceFee"),
+                                                                     IsRecurring = model.Field<int?>("IsRecurring"),
+                                                                     IsGstIncluded = model.Field<int?>("IsGSTIncluded")
                                                                  }).ToList();
                 }
                 else
