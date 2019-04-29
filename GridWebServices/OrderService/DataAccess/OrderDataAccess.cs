@@ -2275,7 +2275,7 @@ namespace OrderService.DataAccess
                     new SqlParameter( "@MobileNumber",  SqlDbType.Int )
                 };
 
-                parameters[0].Value = orderId;
+                parameters[0].Value = OrderID;
                 parameters[1].Value = MobileNumber;
 
                 _DataHelper = new DataAccessHelper("Order_GetPortTypeByOrderID", parameters, _configuration);
