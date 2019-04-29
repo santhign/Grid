@@ -4278,5 +4278,101 @@ namespace OrderService.Controllers
                 });
             }
         }
+
+
+        [HttpPost]
+        [Route("CancelOrder")]
+        public async Task<IActionResult> CancelOrder([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] int orderId)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+                if (!ModelState.IsValid)
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                            .SelectMany(x => x.Errors)
+                            .Select(x => x.ErrorMessage))
+                    });
+                }
+
+                OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+                var helper = new AuthHelper(_iconfiguration);
+                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_cancel_order);
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
+                    var statusResponse =
+                        await _orderAccess.CancelOrder(aTokenResp.CustomerID, orderId);
+
+                    if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
+                    {
+
+                        return Ok(new ServerResponse
+                        {
+                            HasSucceeded = true,
+                            Message = StatusMessages.SuccessMessage,
+                            Result = statusResponse
+                        });
+                    }
+                    else if (statusResponse.ResponseCode == (int)DbReturnValue.DuplicateCRExists)
+                    {
+                        LogInfo.Error(DbReturnValue.DuplicateCRExists.GetDescription());
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = DbReturnValue.DuplicateCRExists.GetDescription(),
+                            IsDomainValidationErrors = false
+                        });
+                    }
+                    else
+                    {
+                        LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = DbReturnValue.UpdationFailed.GetDescription(),
+                            IsDomainValidationErrors = false
+                        });
+                    }
+                }
+                else
+                {
+                    //Token expired
+                    LogInfo.Error(CommonErrors.ExpiredToken.GetDescription());
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = DbReturnValue.TokenExpired.GetDescription(),
+                        IsDomainValidationErrors = true
+                    });
+
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+
+        }
     }
 }
