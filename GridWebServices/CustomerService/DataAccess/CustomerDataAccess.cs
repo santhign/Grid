@@ -1082,5 +1082,95 @@ namespace CustomerService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+
+        public async Task<DatabaseResponse> GetRewardSummary(int CustomerID)
+        {
+            try
+            {
+                DatabaseResponse response = new DatabaseResponse();
+                SqlParameter[] parameters =
+                   {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+
+                };
+
+                parameters[0].Value = CustomerID;
+                _DataHelper = new DataAccessHelper("Customers_GetAccountID", parameters, _configuration);
+
+                var dt = new DataTable();
+
+                var result = await _DataHelper.RunAsync(dt); // 105 /119
+                if (result == 105)
+                {
+                    int AccountID = -1;
+                    int.TryParse(dt.Rows[0][0].ToString().Trim(), out AccountID);
+                    DatabaseResponse configResponse = ConfigHelper.GetValueByKey("RewardSummaryUrl", _configuration);
+                    RewardHelper _helper = new RewardHelper();
+                    Rewards _rewards = _helper.GetRewardSummary(configResponse.Results.ToString().Trim(), AccountID);
+                    response = new DatabaseResponse { ResponseCode = 105, Results = _rewards };
+                }
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> GetRewardDetails(int CustomerID, DateTime FromDate, DateTime ToDate)
+        {
+            try
+            {
+                DatabaseResponse response = new DatabaseResponse();
+                SqlParameter[] parameters =
+                   {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+
+                };
+
+                parameters[0].Value = CustomerID;
+                _DataHelper = new DataAccessHelper("Customers_GetAccountID", parameters, _configuration);
+
+                var dt = new DataTable();
+
+                var result = await _DataHelper.RunAsync(dt); // 105 /119
+                if (result == 105)
+                {
+                    int AccountID = -1;
+                    int.TryParse(dt.Rows[0][0].ToString().Trim(), out AccountID);
+                    DatabaseResponse configResponse = ConfigHelper.GetValueByKey("RewardDetailsUrl", _configuration);
+                    RewardHelper _helper = new RewardHelper();
+                    RewardDetails _rewards = _helper.GetRewardDetails(configResponse.Results.ToString().Trim(), AccountID, FromDate, ToDate);
+                    response = new DatabaseResponse { ResponseCode = 105, Results = _rewards };
+                }
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
     }
 }
