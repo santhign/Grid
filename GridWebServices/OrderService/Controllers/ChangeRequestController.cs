@@ -1595,8 +1595,8 @@ namespace OrderService.Controllers
         }
 
         [HttpPut]
-        [Route("UpdatePlanService/{mobileNumber}/{planId}")]
-        public async Task<IActionResult> UpdatePlanService([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] string mobileNumber, [FromRoute] int planId)
+        [Route("UpdatePlanService/{mobileNumber}/{bundleId}")]
+        public async Task<IActionResult> UpdatePlanService([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] string mobileNumber, [FromRoute] int bundleId)
         {
 
             try
@@ -1627,7 +1627,7 @@ namespace OrderService.Controllers
                 {
                     var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
                     var statusResponse =
-                        await _changeRequestDataAccess.ChangePlanService(aTokenResp.CustomerID, mobileNumber, planId);
+                        await _changeRequestDataAccess.ChangePlanService(aTokenResp.CustomerID, mobileNumber, bundleId);
                     var changePlanResponse = (RemoveVASResponse)statusResponse.Results;
                     if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                     {

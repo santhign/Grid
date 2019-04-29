@@ -491,4 +491,32 @@ namespace OrderService.Models
         public string PlanMarketingName { get; set; }
 
     }
+
+    public class ChangePlanResponse
+    {
+        public int ChangeRequestID { get; set; }
+        public string OrderNumber { get; set; }
+        public DateTime RequestOn { get; set; }
+        public string BillingUnit { get; set; }
+        public string BillingFloor { get; set; }
+
+        public string BillingBuildingNumber { get; set; }
+        public string BillingBuildingName { get; set; }
+        public string BillingStreetName { get; set; }
+        public string BillingPostCode { get; set; }
+        public string BillingContactNumber { get; set; }
+        public string Name { get; set; }
+        public string Email { get; set; }
+        public string IDType { get; set; }
+
+        public string IDNumber { get; set; }
+        public int OldPlanBundleID { get; set; }
+
+        public int NewBundleID { get; set; }
+
+        public IList<ChangeRequestCharges> ChangeRequestChargesList { get; set; }
+
+    }
+
+
 }
