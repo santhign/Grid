@@ -70,7 +70,7 @@ namespace OrderService.Models
         [DataMember]
         public string IdNumber { get; set; }
         [DataMember]
-        public string IsSameAsBilling { get; set; }
+        public int? IsSameAsBilling { get; set; }
         [DataMember]
         public string ShippingUnit { get; set; }
         [DataMember]
