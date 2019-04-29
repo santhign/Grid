@@ -1639,7 +1639,7 @@ namespace OrderService.Controllers
                     var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
                     var statusResponse =
                         await _changeRequestDataAccess.ChangePlanService(aTokenResp.CustomerID, mobileNumber, bundleId);
-                    var changePlanResponse = (RemoveVASResponse)statusResponse.Results;
+                    var changePlanResponse = (ChangePlanResponse)statusResponse.Results;
                     if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                     {
 
