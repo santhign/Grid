@@ -1027,7 +1027,7 @@ namespace AdminService.Controllers
         /// <param name="token" in="Header"></param>
         /// <param name="CustomerID">The identifier.</param>
         /// <returns></returns>
-        [HttpGet("ChangeRequests/{CustomerID}")]
+        [HttpGet("SharedChangeRequests/{CustomerID}")]
         public async Task<IActionResult> GetCustomerSharedChangeRequests([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int CustomerID)
         {
             try
