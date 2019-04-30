@@ -1528,8 +1528,8 @@ namespace OrderService.Controllers
         /// <param name="planId"></param>
         /// <returns></returns>
         [HttpPost]
-        [Route("RemoveSharedVasService/{accountSubscriptionId}/{planId}")]
-        public async Task<IActionResult> RemoveSharedVasService([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int accountSubscriptionId, [FromRoute] int planId)
+        [Route("RemoveSharedVasService/{accountSubscriptionId}")]
+        public async Task<IActionResult> RemoveSharedVasService([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int accountSubscriptionId)
         {
 
             try
@@ -1560,7 +1560,7 @@ namespace OrderService.Controllers
                 {
                     var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
                     var statusResponse =
-                        await _changeRequestDataAccess.RemoveSharedVasService(aTokenResp.CustomerID, accountSubscriptionId, planId);
+                        await _changeRequestDataAccess.RemoveSharedVasService(aTokenResp.CustomerID, accountSubscriptionId);
                     var removeVASResponse = (RemoveVASResponse)statusResponse.Results;
                     if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                     {

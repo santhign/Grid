@@ -21,7 +21,7 @@ namespace OrderService.DataAccess
         /// <returns></returns>
         Task<DatabaseResponse> RemoveVasService(int customerId, string mobileNumber, int subscriptionID);
 
-        Task<DatabaseResponse> RemoveSharedVasService(int customerId, int accountSubscriptionId, int planId);
+        Task<DatabaseResponse> RemoveSharedVasService(int customerId, int accountSubscriptionId);
         /// <summary>
         /// Buys the vas service.
         /// </summary>

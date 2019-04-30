@@ -514,7 +514,7 @@ namespace OrderService.DataAccess
         /// <param name="accountSubscriptionId"></param>
         /// <param name="planId"></param>
         /// <returns></returns>
-        public async Task<DatabaseResponse> RemoveSharedVasService(int customerId, int accountSubscriptionId, int planId)
+        public async Task<DatabaseResponse> RemoveSharedVasService(int customerId, int accountSubscriptionId)
         {
             try
             {
@@ -522,15 +522,13 @@ namespace OrderService.DataAccess
                 SqlParameter[] parameters =
                 {
                     new SqlParameter( "@CustomerID",  SqlDbType.Int ), 
-                    new SqlParameter( "@AccountSubscriptionID",  SqlDbType.Int ),
-                    new SqlParameter( "@PlanID",  SqlDbType.Int),
+                    new SqlParameter( "@AccountSubscriptionID",  SqlDbType.Int ),                    
                     new SqlParameter( "@RequestType",  SqlDbType.NVarChar )
                 };
 
                 parameters[0].Value = customerId;
-                parameters[1].Value = accountSubscriptionId;
-                parameters[2].Value = planId;
-                parameters[3].Value = Core.Enums.RequestType.RemoveVAS.GetDescription();
+                parameters[1].Value = accountSubscriptionId;                
+                parameters[2].Value = Core.Enums.RequestType.RemoveVAS.GetDescription();
 
 
                 _DataHelper = new DataAccessHelper(DbObjectNames.Orders_CR_InsertRemoveSharedVAS, parameters, _configuration);
