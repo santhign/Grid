@@ -37,7 +37,7 @@ namespace OrderService.DataAccess
         /// <param name="subscriptionID"></param>
         /// <param name="planId"></param>
         /// <returns></returns>
-        public async Task<DatabaseResponse> RemoveVasService(int customerId, string mobileNumber, int subscriptionID, int planId)
+        public async Task<DatabaseResponse> RemoveVasService(int customerId, string mobileNumber, int subscriptionID)
         {
             try
             {
@@ -47,15 +47,14 @@ namespace OrderService.DataAccess
                     new SqlParameter( "@CustomerID",  SqlDbType.Int ),
                     new SqlParameter( "@SubscriptionID",  SqlDbType.Int ),
                     new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar ),
-                    new SqlParameter( "@PlanID",  SqlDbType.Int),
+                    
                     new SqlParameter( "@RequestType",  SqlDbType.NVarChar )
                 };
 
                 parameters[0].Value = customerId;
                 parameters[1].Value = subscriptionID;
-                parameters[2].Value = mobileNumber;
-                parameters[3].Value = planId;
-                parameters[4].Value = Core.Enums.RequestType.RemoveVAS.GetDescription();
+                parameters[2].Value = mobileNumber;                
+                parameters[3].Value = Core.Enums.RequestType.RemoveVAS.GetDescription();
 
 
                 _DataHelper = new DataAccessHelper(DbObjectNames.Orders_CR_InsertRemoveVAS, parameters, _configuration);
@@ -515,7 +514,7 @@ namespace OrderService.DataAccess
         /// <param name="accountSubscriptionId"></param>
         /// <param name="planId"></param>
         /// <returns></returns>
-        public async Task<DatabaseResponse> RemoveSharedVasService(int customerId, int accountSubscriptionId, int planId)
+        public async Task<DatabaseResponse> RemoveSharedVasService(int customerId, int accountSubscriptionId)
         {
             try
             {
@@ -523,15 +522,13 @@ namespace OrderService.DataAccess
                 SqlParameter[] parameters =
                 {
                     new SqlParameter( "@CustomerID",  SqlDbType.Int ), 
-                    new SqlParameter( "@AccountSubscriptionID",  SqlDbType.Int ),
-                    new SqlParameter( "@PlanID",  SqlDbType.Int),
+                    new SqlParameter( "@AccountSubscriptionID",  SqlDbType.Int ),                    
                     new SqlParameter( "@RequestType",  SqlDbType.NVarChar )
                 };
 
                 parameters[0].Value = customerId;
-                parameters[1].Value = accountSubscriptionId;
-                parameters[2].Value = planId;
-                parameters[3].Value = Core.Enums.RequestType.RemoveVAS.GetDescription();
+                parameters[1].Value = accountSubscriptionId;                
+                parameters[2].Value = Core.Enums.RequestType.RemoveVAS.GetDescription();
 
 
                 _DataHelper = new DataAccessHelper(DbObjectNames.Orders_CR_InsertRemoveSharedVAS, parameters, _configuration);
