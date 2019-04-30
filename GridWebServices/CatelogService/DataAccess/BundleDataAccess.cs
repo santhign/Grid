@@ -196,5 +196,73 @@ namespace CatelogService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+
+
+        public async Task<DatabaseResponse> GetCustomerBundleListing(int CustomerID, string MobileNumber)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+                    new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar )
+                };
+
+                parameters[0].Value = CustomerID;
+                parameters[1].Value = MobileNumber;
+
+                _DataHelper = new DataAccessHelper("Customers_GetBundlesListing", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt); // 105 /102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 105)
+                {
+                    var _plan = new List<Bundle>();
+
+                    if (dt.Rows.Count > 0)
+                    {
+
+                        _plan = (from model in dt.AsEnumerable()
+                                 select new Bundle()
+                                 {
+                                     BundleID = model.Field<int>("BundleID"),
+                                     PlanMarketingName = model.Field<string>("PlanMarketingName"),
+                                     PortalSummaryDescription = model.Field<string>("PortalSummaryDescription"),
+                                     PortalDescription = model.Field<string>("PortalDescription"),
+                                     TotalData = model.Field<double>("TotalData"),
+                                     TotalSMS = model.Field<double>("TotalSMS"),
+                                     TotalVoice = model.Field<double>("TotalVoice"),
+                                     ActualSubscriptionFee = model.Field<double>("ActualSubscriptionFee"),
+                                     ApplicableSubscriptionFee = model.Field<double>("ApplicableSubscriptionFee"),
+                                 }).ToList();
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = _plan };
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
     }
 }

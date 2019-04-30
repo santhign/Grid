@@ -576,9 +576,9 @@ namespace CustomerService.Models
         /// <value>
         /// The TotalData.
         /// </value>
-        public int TotalData { get; set; }
-        public int TotalSMS { get; set; }
-        public int TotalVoice { get; set; }
+        public double TotalData { get; set; }
+        public double TotalSMS { get; set; }
+        public double TotalVoice { get; set; }
         public double ActualSubscriptionFee { get; set; }
         public double ApplicableSubscriptionFee { get; set; }
     }

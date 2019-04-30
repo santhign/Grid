@@ -1204,18 +1204,19 @@ namespace CustomerService.DataAccess
             }
         }
 
-        public async Task<DatabaseResponse> GetBasePlan(int CustomerID)
+        public async Task<DatabaseResponse> GetBasePlan(int CustomerID, string MobileNumber)
         {
             try
             {
 
                 SqlParameter[] parameters =
                {
-                    new SqlParameter( "@CustomerID",  SqlDbType.Int )
-
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+                    new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar )
                 };
 
                 parameters[0].Value = CustomerID;
+                parameters[1].Value = MobileNumber;
 
                 _DataHelper = new DataAccessHelper("Customers_GetBaseBundle", parameters, _configuration);
 
@@ -1240,9 +1241,9 @@ namespace CustomerService.DataAccess
                                          PortalSummaryDescription = model.Field<string>("PortalSummaryDescription"),
                                          PortalDescription = model.Field<string>("PortalDescription"),
                                          MobileNumber = model.Field<string>("MobileNumber"),
-                                         TotalData = model.Field<int>("TotalData"),
-                                         TotalSMS = model.Field<int>("TotalSMS"),
-                                         TotalVoice = model.Field<int>("TotalVoice"),
+                                         TotalData = model.Field<double>("TotalData"),
+                                         TotalSMS = model.Field<double>("TotalSMS"),
+                                         TotalVoice = model.Field<double>("TotalVoice"),
                                          ActualSubscriptionFee = model.Field<double>("ActualSubscriptionFee"),
                                          ApplicableSubscriptionFee = model.Field<double>("ApplicableSubscriptionFee"),
                                      }).ToList();

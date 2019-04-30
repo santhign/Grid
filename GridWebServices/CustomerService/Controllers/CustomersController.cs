@@ -2038,10 +2038,11 @@ namespace CustomerService.Controllers
         /// 
         /// </summary>
         /// <param name="token" in="Header"></param>
+        /// <param name="MobileNumber"></param>
         /// <returns></returns>
         [HttpGet]
-        [Route("GetBasePlan")]
-        public async Task<IActionResult> GetBasePlan([FromHeader(Name = "Grid-Authorization-Token")] string token)
+        [Route("GetBasePlan/{MobileNumber}")]
+        public async Task<IActionResult> GetBasePlan([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] string MobileNumber)
         {
             try
             {
@@ -2075,7 +2076,7 @@ namespace CustomerService.Controllers
                         }
                         var customerAccess = new CustomerDataAccess(_iconfiguration);
 
-                        DatabaseResponse _basePlan = await customerAccess.GetBasePlan(customerID);
+                        DatabaseResponse _basePlan = await customerAccess.GetBasePlan(customerID, MobileNumber);
 
                         if (_basePlan.Results == null)
                         {
@@ -2476,5 +2477,6 @@ namespace CustomerService.Controllers
 
             }
         }
+        
     }
 }
