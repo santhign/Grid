@@ -173,7 +173,7 @@ namespace OrderService.Controllers
 
                             };                           
 
-                            await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                            await _messageQueueDataAccess.InsertMessageInMessageQueueRequestException(queueRequest);
                         }
 
                         return Ok(new ServerResponse
@@ -1638,7 +1638,7 @@ namespace OrderService.Controllers
 
 
                             };                            
-                            await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                            await _messageQueueDataAccess.InsertMessageInMessageQueueRequestException(queueRequest);
                         }
 
                         return Ok(new ServerResponse
@@ -1815,7 +1815,7 @@ namespace OrderService.Controllers
 
 
                                     };
-                                    await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                                    await _messageQueueDataAccess.InsertMessageInMessageQueueRequestException(queueRequest);
                                 }
                             }
                         }

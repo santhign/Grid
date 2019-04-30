@@ -65,6 +65,8 @@ namespace Core.Enums
 
         public const string z_UpdateStatusInMessageQueueRequests = "z_UpdateStatusInMessageQueueRequests";
 
+        public const string z_UpdateStatusInMessageQueueRequestsException = "z_UpdateStatusInMessageQueueRequestsException";
+
         public const string Orders_CR_BuySharedVAS = "Orders_CR_BuySharedVAS";
 
         public const string Orders_CR_InsertRemoveSharedVAS = "Orders_CR_InsertRemoveSharedVAS";
