@@ -730,7 +730,7 @@ namespace AdminService.Controllers
 
                         CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
 
-                        DatabaseResponse _response = await _customerAccess.OrderOffsetVoucher(OrderID);
+                        DatabaseResponse _response = await _customerAccess.OrderOffsetVoucher(OrderID, ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID);
 
                         if (_response == null)
                         {
@@ -802,10 +802,10 @@ namespace AdminService.Controllers
         /// Offset delivery fee for selected CR.
         /// </summary>
         /// <param name="token" in="Header"></param>
-        /// <param name="ChangeRequestID">The identifier.</param>
+        /// <param name="SubscriberID">The identifier.</param>
         /// <returns></returns>
-        [HttpGet("CROffsetVoucher/{ChangeRequestID}")]
-        public async Task<IActionResult> CROffsetVoucher([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int ChangeRequestID)
+        [HttpGet("CROffsetVoucher/{SubscriberID}")]
+        public async Task<IActionResult> CROffsetVoucher([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int SubscriberID)
         {
             try
             {
@@ -838,7 +838,7 @@ namespace AdminService.Controllers
 
                         CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
 
-                        DatabaseResponse _response = await _customerAccess.ChangeRequestOffsetVoucher(ChangeRequestID);
+                        DatabaseResponse _response = await _customerAccess.ChangeRequestOffsetVoucher(SubscriberID, ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID);
 
                         if (_response == null)
                         {
@@ -856,6 +856,229 @@ namespace AdminService.Controllers
                                 HasSucceeded = true,
                                 Message = StatusMessages.SuccessMessage,
                                 Result = _response
+
+                            });
+                        }
+
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+
+                }
+
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+            }
+        }
+
+
+        /// <summary>
+        /// Return Subscribers api with MobileNumber, DisplayName, SIMID, PremiumType, ActivatedOn, IsPrimary
+        /// </summary>
+        /// <param name="token" in="Header"></param>
+        /// <param name="CustomerID">The identifier.</param>
+        /// <returns>
+        /// OperationResponse
+        /// </returns>
+        [HttpGet("Subscribers")]
+        public async Task<IActionResult> Subscribers([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int CustomerID)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+
+                AdminUsersDataAccess _adminUsersDataAccess = new AdminUsersDataAccess(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await _adminUsersDataAccess.AuthenticateAdminUserToken(token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    {
+                        if (!ModelState.IsValid)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = string.Join("; ", ModelState.Values
+                                    .SelectMany(x => x.Errors)
+                                    .Select(x => x.ErrorMessage))
+                            });
+                        }
+
+                        var customerAccess = new CustomerDataAccess(_iconfiguration);
+
+                        var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
+                        var getSubscriber = await customerAccess.GetSubscribers(CustomerID);
+                        if (getSubscriber.ResponseCode == (int)DbReturnValue.RecordExists)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = true,
+                                Message = DbReturnValue.RecordExists.GetDescription(),
+                                IsDomainValidationErrors = false,
+                                ReturnedObject = getSubscriber.Results
+                            });
+                        }
+                        else
+                        {
+                            //Unable to validate the referral code
+                            LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
+
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = DbReturnValue.NoRecords.GetDescription(),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+
+                }
+
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+
+        }
+        /// <summary>
+        /// Gets the customer shared change requests.
+        /// </summary>
+        /// <param name="token" in="Header"></param>
+        /// <param name="CustomerID">The identifier.</param>
+        /// <returns></returns>
+        [HttpGet("ChangeRequests/{CustomerID}")]
+        public async Task<IActionResult> GetCustomerSharedChangeRequests([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int CustomerID)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+                AdminUsersDataAccess _adminUsersDataAccess = new AdminUsersDataAccess(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await _adminUsersDataAccess.AuthenticateAdminUserToken(token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    {
+                        if (!ModelState.IsValid)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = string.Join("; ", ModelState.Values
+                                                           .SelectMany(x => x.Errors)
+                                                           .Select(x => x.ErrorMessage))
+                            });
+                        }
+
+                        CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
+
+                        DatabaseResponse orderDetailsResponse = await _customerAccess.GetCustomerSharedChangeRequests(CustomerID);
+
+                        if (orderDetailsResponse.Results == null)
+                        {
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = true,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists)
+
+                            });
+                        }
+                        else
+                        {
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = true,
+                                Message = StatusMessages.SuccessMessage,
+                                Result = orderDetailsResponse.Results
 
                             });
                         }

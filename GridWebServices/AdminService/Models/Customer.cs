@@ -157,4 +157,12 @@ namespace AdminService.Models
         /// </value>
         public string Status { get; set; }
     }
+
+    public class Subscriber
+    {
+        public int SubscriberID { get; set; }
+        public string MobileNumber { get; set; }
+        public string DisplayName { get; set; }
+
+    }
 }
