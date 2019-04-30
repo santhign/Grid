@@ -1838,6 +1838,17 @@ namespace OrderService.Controllers
                             IsDomainValidationErrors = false
                         });
                     }
+                    else if (statusResponse.ResponseCode == (int)DbReturnValue.SameBundleValidation)
+                    {
+                        LogInfo.Error(DbReturnValue.SameBundleValidation.GetDescription());
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = DbReturnValue.SameBundleValidation.GetDescription(),
+                            IsDomainValidationErrors = false
+                        });
+                    }
                     else
                     {
                         LogInfo.Error(DbReturnValue.NoRecords.GetDescription());

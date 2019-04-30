@@ -124,5 +124,11 @@ namespace Core.Enums
         [EnumMember(Value = "Delivery slot unavailablity")]
         [Description("Delivery slot unavailablity, Please select a new slot")]
         DeliverySlotUnavailability = 130,
+
+        [EnumMember(Value = "Same Bundle is present")]
+        [Description("Plan is not changed as you are raising request against same bundle")]
+        SameBundleValidation = 131,
+
+
     }
 }
