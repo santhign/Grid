@@ -4281,8 +4281,8 @@ namespace OrderService.Controllers
 
 
         [HttpPost]
-        [Route("CancelOrder")]
-        public async Task<IActionResult> CancelOrder([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] int orderId)
+        [Route("CancelOrder/{orderId}")]
+        public async Task<IActionResult> CancelOrder([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int orderId)
         {
             try
             {
