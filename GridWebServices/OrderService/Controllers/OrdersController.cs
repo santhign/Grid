@@ -2192,7 +2192,7 @@ namespace OrderService.Controllers
                                 return Ok(new OperationResponse
                                 {
                                     HasSucceeded = false,
-                                    Message = EnumExtensions.GetDescription(DbReturnValue.UpdationFailed),
+                                    Message = EnumExtensions.GetDescription(updatePersoanDetailsResponse.ResponseCode),
                                     IsDomainValidationErrors = false
                                 });
                             }
