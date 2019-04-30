@@ -4316,6 +4316,93 @@ namespace OrderService.Controllers
 
                     if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                     {
+                        {
+                            DatabaseResponse orderMqResponse = new DatabaseResponse();
+
+                            orderMqResponse = await _messageQueueDataAccess.GetOrderMessageQueueBody(orderId);
+
+                            OrderQM orderDetails = new OrderQM();
+
+                            string topicName = string.Empty;
+
+                            string pushResult = string.Empty;
+
+                            if (orderMqResponse != null && orderMqResponse.Results != null)
+                            {
+                                orderDetails = (OrderQM)orderMqResponse.Results;
+
+                                DatabaseResponse OrderCountResponse = await _orderAccess.GetCustomerOrderCount(orderDetails.customerID);
+
+                                try
+                                {
+                                    Dictionary<string, string> attribute = new Dictionary<string, string>();
+
+                                    topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration).Results.ToString().Trim();
+
+
+                                    attribute.Add(EventTypeString.EventType, RequestType.CancelOrder.GetDescription());
+
+                                    pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, orderDetails, attribute);
+
+                                    if (pushResult.Trim().ToUpper() == "OK")
+                                    {
+                                        MessageQueueRequest queueRequest = new MessageQueueRequest
+                                        {
+                                            Source = CheckOutType.Orders.ToString(),
+                                            NumberOfRetries = 1,
+                                            SNSTopic = topicName,
+                                            CreatedOn = DateTime.Now,
+                                            LastTriedOn = DateTime.Now,
+                                            PublishedOn = DateTime.Now,
+                                            MessageAttribute = RequestType.CancelOrder.GetDescription(),
+                                            MessageBody = JsonConvert.SerializeObject(orderDetails),
+                                            Status = 1
+                                        };
+                                        await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                                    }
+                                    else
+                                    {
+                                        MessageQueueRequest queueRequest = new MessageQueueRequest
+                                        {
+                                            Source = CheckOutType.Orders.ToString(),
+                                            NumberOfRetries = 1,
+                                            SNSTopic = topicName,
+                                            CreatedOn = DateTime.Now,
+                                            LastTriedOn = DateTime.Now,
+                                            PublishedOn = DateTime.Now,
+                                            MessageAttribute = RequestType.CancelOrder.GetDescription(),
+                                            MessageBody = JsonConvert.SerializeObject(orderDetails),
+                                            Status = 0
+                                        };
+                                        await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                                    }
+
+                                }
+                                catch (Exception ex)
+                                {
+                                    LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                                    MessageQueueRequestException queueRequest = new MessageQueueRequestException
+                                    {
+                                        Source = Source.ChangeRequest,
+                                        NumberOfRetries = 1,
+                                        SNSTopic = string.IsNullOrWhiteSpace(topicName) ? null : topicName,
+                                        CreatedOn = DateTime.Now,
+                                        LastTriedOn = DateTime.Now,
+                                        PublishedOn = DateTime.Now,
+                                        MessageAttribute = Core.Enums.RequestType.CancelOrder.GetDescription().ToString(),
+                                        MessageBody = orderDetails != null ? JsonConvert.SerializeObject(orderDetails) : null,
+                                        Status = 0,
+                                        Remark = "Error Occured in BuyVASService",
+                                        Exception = new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)
+
+
+                                    };
+
+                                    await _messageQueueDataAccess.InsertMessageInMessageQueueRequestException(queueRequest);
+                                }
+                            }
+
+                        }
 
                         return Ok(new ServerResponse
                         {
