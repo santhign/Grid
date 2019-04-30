@@ -528,10 +528,14 @@ namespace CustomerService.Models
         public string Name { get; set; }
         public string BillingUnit { get; set; }
         public string BillingFloor { get; set; }
+        [Required(ErrorMessage = "street name is required")]
         public string BillingStreetName { get; set; }
+        [Required(ErrorMessage = "building number is required")]
         public string BillingBuildingNumber { get; set; }
         public string BillingBuildingName { get; set; }
+        [Required(ErrorMessage = "contact number is required")]
         public string BillingContactNumber { get; set; }
+        [Required(ErrorMessage = "postcode is required")]
         public string BillingPostCode { get; set; }
     }
 
@@ -546,11 +550,44 @@ namespace CustomerService.Models
         public string CardFundMethod { get; set; }
         public string CardIssuer { get; set; }
     }
-
-    public class customerSubscription
+    
+    public class BasePlans
     {
-        public int? EmailSubscription { get; set; }
-        public int? SMSSubscription { get; set; }
+        public int BundleID { get; set; }
+        public string PlanMarketingName { get; set; }
+        /// <summary>
+        /// Gets or sets the type of the PortalSummaryDescription.
+        /// </summary>
+        /// <value>
+        /// The type of the PortalSummaryDescription.
+        /// </value>
+        public string PortalSummaryDescription { get; set; }
+        /// <summary>
+        /// Gets or sets the type of the PortalDescription.
+        /// </summary>
+        /// <value>
+        /// The type of the PortalDescription.
+        /// </value>
+        public string PortalDescription { get; set; }
+        public string MobileNumber { get; set; }
+        /// <summary>
+        /// Gets or sets the TotalData.
+        /// </summary>
+        /// <value>
+        /// The TotalData.
+        /// </value>
+        public int TotalData { get; set; }
+        public int TotalSMS { get; set; }
+        public int TotalVoice { get; set; }
+        public double ActualSubscriptionFee { get; set; }
+        public double ApplicableSubscriptionFee { get; set; }
     }
 
+    public class DisplayDetails
+    {
+        [Required(ErrorMessage = "Mobile Number required")]
+        public string MobileNumber { get; set; }
+        [Required(ErrorMessage = "Display name required")]
+        public string DisplayName { get; set; }
+    }
 }
