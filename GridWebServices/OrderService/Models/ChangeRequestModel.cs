@@ -287,7 +287,9 @@ namespace OrderService.Models
         /// <value>
         /// The service fee.
         /// </value>
-        public double DeliveryFee { get; set; }
+        public double ? DeliveryFee { get; set; }
+
+        public double ? PayableAmount { get; set; }
 
         /// <summary>
         /// The change request charges list

@@ -240,7 +240,8 @@ namespace OrderService.DataAccess
                                         DeliveryTime = model.Field<DateTime?>("DeliveryTime"),
                                         VendorTrackingCode = model.Field<string>("VendorTrackingCode"),
                                         VendorTrackingUrl = model.Field<string>("VendorTrackingUrl"),
-                                        DeliveryFee = model.Field<double>("DeliveryFee")
+                                        DeliveryFee = model.Field<double?>("DeliveryFee"),
+                                        PayableAmount = model.Field<double?>("PayableAmount")
 
                                     }).FirstOrDefault();
 
