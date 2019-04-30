@@ -88,6 +88,8 @@ namespace AdminService.Models
     public class ChangeRequest
     {
         public int ChangeRequestID { get; set; }
+        public int SubscriberID { get; set; }
+        public string MobileNumber { get; set; }
         public string ListingStatus { get; set; }
         public string OrderNumber { get; set; }
         public string RequestType { get; set; }
