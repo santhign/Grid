@@ -590,4 +590,18 @@ namespace CustomerService.Models
         [Required(ErrorMessage = "Display name required")]
         public string DisplayName { get; set; }
     }
+    public class customerShipping
+    {
+        public string ShippingUnit { get; set; }
+        public string ShippingFloor { get; set; }
+        [Required(ErrorMessage = "street name is required")]
+        public string ShippingStreetName { get; set; }
+        [Required(ErrorMessage = "building number is required")]
+        public string ShippingBuildingNumber { get; set; }
+        public string ShippingBuildingName { get; set; }
+        [Required(ErrorMessage = "contact number is required")]
+        public string ShippingContactNumber { get; set; }
+        [Required(ErrorMessage = "postcode is required")]
+        public string ShippingPostCode { get; set; }
+    }
 }
