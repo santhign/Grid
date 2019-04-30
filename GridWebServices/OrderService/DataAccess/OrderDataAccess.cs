@@ -2310,5 +2310,40 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+
+        public async Task<DatabaseResponse> CancelOrder(int customerId, int orderId)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                     new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+                     new SqlParameter( "@OrderId",  SqlDbType.Int )
+                };
+
+                parameters[0].Value = customerId;
+                parameters[1].Value = orderId;
+
+                _DataHelper = new DataAccessHelper(DbObjectNames.Orders_CancelOrder, parameters, _configuration);
+
+                int result = await _DataHelper.RunAsync();    // 105 / 119 
+                DatabaseResponse response = new DatabaseResponse();
+
+                response = new DatabaseResponse { ResponseCode = result };
+
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
     }
 }

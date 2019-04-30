@@ -70,6 +70,8 @@ namespace Core.Enums
         public const string Orders_CR_InsertRemoveSharedVAS = "Orders_CR_InsertRemoveSharedVAS";
 
         public const string Orders_CR_ChangePlan = "Orders_CR_ChangePlan";
+
+        public const string Orders_CancelOrder = "Orders_CancelOrder";
     }
 
 }
