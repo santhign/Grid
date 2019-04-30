@@ -2311,7 +2311,7 @@ namespace OrderService.DataAccess
             }
         }
 
-        public async Task<DatabaseResponse> CancelOrder(int customerId, int orderId)
+        public async Task<int> CancelOrder(int customerId, int orderId)
         {
             try
             {
@@ -2325,14 +2325,9 @@ namespace OrderService.DataAccess
                 parameters[1].Value = orderId;
 
                 _DataHelper = new DataAccessHelper(DbObjectNames.Orders_CancelOrder, parameters, _configuration);
-
-                int result = await _DataHelper.RunAsync();    // 105 / 119 
-                DatabaseResponse response = new DatabaseResponse();
-
-                response = new DatabaseResponse { ResponseCode = result };
-
-
-                return response;
+               
+                return await _DataHelper.RunAsync();    // 105 / 119 
+               
             }
             catch (Exception ex)
             {
