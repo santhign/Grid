@@ -2609,7 +2609,7 @@ namespace OrderService.Controllers
                                     {
                                         MessageBodyForCR msgBody = new MessageBodyForCR();
 
-                                        string topicName = string.Empty, pushResult = string.Empty;
+                                        string topicName = string.Empty, pushResult = string.Empty; string ReasonType = string.Empty;
 
                                         try
                                         {
@@ -2622,12 +2622,24 @@ namespace OrderService.Controllers
                                             }
                                             if (details.RequestTypeID == (int)Core.Enums.RequestType.ReplaceSIM)
                                             {
+                                                ReasonType = Core.Enums.RequestType.ReplaceSIM.GetDescription();
                                                 topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration).Results.ToString().Trim();
                                                 if (string.IsNullOrWhiteSpace(topicName))
                                                 {
                                                     throw new NullReferenceException("topicName is null for ChangeRequest (" + details.ChangeRequestID + ") for ChangeSIM in UpdateCheckout Response Request Service API");
                                                 }
                                                 attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.ReplaceSIM.GetDescription());
+                                                pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
+                                            }
+                                            else if (details.RequestTypeID == (int)Core.Enums.RequestType.ChangePlan)
+                                            {
+                                                ReasonType = Core.Enums.RequestType.ChangePlan.GetDescription();
+                                                topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration).Results.ToString().Trim();
+                                                if (string.IsNullOrWhiteSpace(topicName))
+                                                {
+                                                    throw new NullReferenceException("topicName is null for ChangeRequest (" + details.ChangeRequestID + ") for ChangePlan in UpdateCheckout Response Request Service API");
+                                                }
+                                                attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.ChangePlan.GetDescription());
                                                 pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
                                             }
                                             if (pushResult.Trim().ToUpper() == "OK")
@@ -2640,7 +2652,7 @@ namespace OrderService.Controllers
                                                     CreatedOn = DateTime.Now,
                                                     LastTriedOn = DateTime.Now,
                                                     PublishedOn = DateTime.Now,
-                                                    MessageAttribute = Core.Enums.RequestType.ReplaceSIM.GetDescription(),
+                                                    MessageAttribute = ReasonType,
                                                     MessageBody = JsonConvert.SerializeObject(msgBody),
                                                     Status = 1
                                                 };
@@ -2656,7 +2668,7 @@ namespace OrderService.Controllers
                                                     CreatedOn = DateTime.Now,
                                                     LastTriedOn = DateTime.Now,
                                                     PublishedOn = DateTime.Now,
-                                                    MessageAttribute = Core.Enums.RequestType.ReplaceSIM.GetDescription(),
+                                                    MessageAttribute = ReasonType,
                                                     MessageBody = JsonConvert.SerializeObject(msgBody),
                                                     Status = 0
                                                 };
@@ -2676,7 +2688,7 @@ namespace OrderService.Controllers
                                                 CreatedOn = DateTime.Now,
                                                 LastTriedOn = DateTime.Now,
                                                 PublishedOn = DateTime.Now,
-                                                MessageAttribute = Core.Enums.RequestType.ReplaceSIM.GetDescription().ToString(),
+                                                MessageAttribute = ReasonType,
                                                 MessageBody = msgBody != null ? JsonConvert.SerializeObject(msgBody) : null,
                                                 Status = 0,
                                                 Remark = "Error Occured in ReplaceSIM from UpdateCheckoutResponse",
