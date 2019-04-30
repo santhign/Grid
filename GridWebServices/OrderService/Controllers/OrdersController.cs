@@ -4311,7 +4311,8 @@ namespace OrderService.Controllers
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
                     var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
-                    var statusResponse =
+                    DatabaseResponse statusResponse = new DatabaseResponse();
+                    statusResponse.ResponseCode =
                         await _orderAccess.CancelOrder(aTokenResp.CustomerID, orderId);
 
                     if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
@@ -4329,9 +4330,7 @@ namespace OrderService.Controllers
 
                             if (orderMqResponse != null && orderMqResponse.Results != null)
                             {
-                                orderDetails = (OrderQM)orderMqResponse.Results;
-
-                                DatabaseResponse OrderCountResponse = await _orderAccess.GetCustomerOrderCount(orderDetails.customerID);
+                                orderDetails = (OrderQM)orderMqResponse.Results;                               
 
                                 try
                                 {
