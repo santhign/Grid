@@ -59,7 +59,6 @@ namespace OrderService.Controllers
         /// <param name="token"></param>
         /// <param name="mobileNumber"></param>
         /// <param name="subscriptionId"></param>
-        /// <param name="planId"></param>
         /// <returns></returns>
         [HttpPost]
         [Route("RemoveVasService/{mobileNumber}/{subscriptionId}")]
@@ -1525,7 +1524,6 @@ namespace OrderService.Controllers
         /// </summary>
         /// <param name="token"></param>
         /// <param name="accountSubscriptionId"></param>
-        /// <param name="planId"></param>
         /// <returns></returns>
         [HttpPost]
         [Route("RemoveSharedVasService/{accountSubscriptionId}")]
@@ -1872,6 +1870,112 @@ namespace OrderService.Controllers
                         IsDomainValidationErrors = true
                     });
 
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
+
+        /// <summary>
+        /// Verify the CR delivery conditions
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="ChangeRequestID"></param>
+        /// <returns>OperationResponse</returns>
+        [HttpGet("VerifyRequestDeliveryDetails")]
+        public async Task<IActionResult> VerifyRequestDeliveryDetails([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int ChangeRequestID)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+                AuthHelper helper = new AuthHelper(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_UpdateSubscription);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    {
+                        int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+                        if (!ModelState.IsValid)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = string.Join("; ", ModelState.Values
+                                                           .SelectMany(x => x.Errors)
+                                                           .Select(x => x.ErrorMessage))
+                            });
+                        }
+
+                        ChangeRequestDataAccess _crAccess = new ChangeRequestDataAccess(_iconfiguration);
+
+                        //update shipping details
+                        DatabaseResponse response = await _crAccess.VerifyRequestDeliveryDetails(ChangeRequestID);
+
+                        if (response.ResponseCode == (int)DbReturnValue.RecordExists)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = true,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.RecordExists),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                        else
+                        {
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToUpdatedSubscriptionDetails));
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(response.ResponseCode),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                    }
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
                 }
             }
             catch (Exception ex)

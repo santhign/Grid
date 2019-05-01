@@ -35,7 +35,6 @@ namespace OrderService.DataAccess
         /// <param name="customerId"></param>
         /// <param name="mobileNumber"></param>
         /// <param name="subscriptionID"></param>
-        /// <param name="planId"></param>
         /// <returns></returns>
         public async Task<DatabaseResponse> RemoveVasService(int customerId, string mobileNumber, int subscriptionID)
         {
@@ -512,7 +511,6 @@ namespace OrderService.DataAccess
         /// </summary>
         /// <param name="customerId"></param>
         /// <param name="accountSubscriptionId"></param>
-        /// <param name="planId"></param>
         /// <returns></returns>
         public async Task<DatabaseResponse> RemoveSharedVasService(int customerId, int accountSubscriptionId)
         {
@@ -654,6 +652,37 @@ namespace OrderService.DataAccess
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 throw;
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> VerifyRequestDeliveryDetails(int ChangeRequestID)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@ChangeRequestID",  SqlDbType.Int )
+
+                };
+
+                parameters[0].Value = ChangeRequestID;
+
+                _DataHelper = new DataAccessHelper("Orders_CR_VerifyDeliveryDetails", parameters, _configuration);
+
+                int result = await _DataHelper.RunAsync();    // 101 / 109 
+
+                return new DatabaseResponse { ResponseCode = result };
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
             }
             finally
             {

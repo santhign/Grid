@@ -533,7 +533,9 @@ namespace CustomerService.DataAccess
                                           LinkedDisplayName = model.Field<string>("LinkedDisplayName"),
                                           State = model.Field<string>("State"),
                                           SuspensionRaised = model.Field<int>("SuspensionRaised"),
-                                          TerminationRaised = model.Field<int>("TerminationRaised")
+                                          TerminationRaised = model.Field<int>("TerminationRaised"),
+                                          PlanChangeRaised = model.Field<int>("PlanChangeRaised"),
+                                          PlanChangeMessage = model.Field<string>("PlanChangeMessage")
                                       }).ToList();
                     }
 
