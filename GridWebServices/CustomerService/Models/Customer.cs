@@ -363,6 +363,8 @@ namespace CustomerService.Models
         public string State { get; set; }
         public int SuspensionRaised { get; set; }
         public int TerminationRaised { get; set; }
+        public int PlanChangeRaised { get; set; }
+        public string PlanChangeMessage { get; set; }
     }
 
     /// <summary>
