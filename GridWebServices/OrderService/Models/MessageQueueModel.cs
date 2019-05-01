@@ -107,12 +107,12 @@ namespace OrderService.Models
         public string NewMobileNumber { get; set; }
         [DataMember]
         public string OldSIM { get; set; }
-        
+
         [DataMember(Name = "Bundles")]
-        public List<BundleDetails> Bundles { get; set; }
+        public List<CurrBundleDetails> CurrBundles { get; set; }
 
         [DataMember(Name = "CurrBundles")]
-        public List<CurrBundleDetails> CurrBundles { get; set; }
+        public List<BundleDetails> Bundles { get; set; }        
 
 
         [DataMember(Name = "Charges")]
