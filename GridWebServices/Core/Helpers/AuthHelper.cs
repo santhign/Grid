@@ -109,7 +109,7 @@ namespace Core.Helpers
 
                 DataTable dt = new DataTable();
 
-                int result = _DataHelper.Run(dt); // 111 /109
+                int result = await _DataHelper.RunAsync(dt); // 111 /109
 
                 DatabaseResponse response = new DatabaseResponse();
 
