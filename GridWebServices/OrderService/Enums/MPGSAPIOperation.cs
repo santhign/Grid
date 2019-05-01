@@ -10,9 +10,16 @@ namespace OrderService.Enums
         CREATE_CHECKOUT_SESSION = 1,
 
         [EnumMember(Value = "RETRIEVE_ORDER")]
-        [Description("MPGS Playment Order retrieve action")]
+        [Description("MPGS payment Order retrieve action")]
         RETRIEVE_ORDER = 2,
 
+        [EnumMember(Value = "CAPTURE")]
+        [Description("MPGS Caputre authorized amount")]
+        CAPTURE = 3,
+
+        [EnumMember(Value = "AUTHORIZE")]
+        [Description("MPGS Authorize amount")]
+        AUTHORIZE = 4,
     }
 
     public enum MPGSAPIResponse

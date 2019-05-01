@@ -123,6 +123,11 @@ namespace OrderService.Models
             return RequestUrl;
         }
 
+        public string buildDeleteUrl(string tokenid)
+        {
+            RequestUrl = $@"{getApiGatewayBaseURL()}/api/rest/version/{GatewayApiConfig.Version}/merchant/{GatewayApiConfig.MerchantId}/token/{tokenid}";                
+            return RequestUrl;
+        }
 
 
         public string buildRequestNPVUrl()

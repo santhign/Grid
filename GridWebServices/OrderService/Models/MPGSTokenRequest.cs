@@ -33,6 +33,7 @@ namespace OrderService.Models
         public string number { get; set; }
         public string scheme { get; set; }
         public string securityCode { get; set; }
+        public string issuer { get; set; }
     }
 
     public class Provided

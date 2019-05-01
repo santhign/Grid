@@ -177,5 +177,40 @@ namespace Core.Enums
         [Description("Usage History Not Available")]
         UsageHistoryNotAvailable = 39,
 
+        [EnumMember(Value = "UnableToGetTokenSession")]
+        [Description("Unable To Get Token Session from db")]
+        UnableToGetTokenSession = 40,
+
+        [EnumMember(Value = "CheckOutDetailsUpdationFailed")]
+        [Description("Check Out Details Updation Failed")]
+        CheckOutDetailsUpdationFailed = 41,
+
+        [EnumMember(Value = "FailedToCreatePaymentMethod")]
+        [Description("Failed To Create Payment Method")]
+        FailedToCreatePaymentMethod = 42,
+
+        [EnumMember(Value = "FailedToRemovePaymentMethod")]
+        [Description("Failed To Remove Payment Method from gateway")]
+        FailedToRemovePaymentMethod = 43,
+
+        [EnumMember(Value = "FailedToRemovePaymentMethod")]
+        [Description("Failed To Remove Payment Method from database")]
+        FailedToRemovePaymentMethodDb = 44,
+
+        [EnumMember(Value = "PaymentMethodSuccessfullyRemoved")]
+        [Description("Payment Method Successfully Removed from gateway")]
+        PaymentMethodSuccessfullyRemoved = 45,
+
+        [EnumMember(Value = "PaymentMethodSuccessfullyRemoved")]
+        [Description("Payment Method Successfully Removed from database")]
+        PaymentMethodSuccessfullyRemoveddb = 46,
+
+        [EnumMember(Value = "CaptureSuccess")]
+        [Description("Capture Success")]
+        CaptureSuccess = 47,
+
+        [EnumMember(Value = "CaptureFailed")]
+        [Description("Capture Failed")]
+        CaptureFailed = 48,
     }
 }
