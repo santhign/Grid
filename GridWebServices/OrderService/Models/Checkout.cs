@@ -51,10 +51,10 @@ namespace OrderService.Models
     public class PaymentMethod
     {
         public int PaymentMethodID { get; set; }       
-        public string Token { get; set; }     
-        
+        public string Token { get; set; }
         public string SourceType { get; set; }
-
+        public string CardHolderName { get; set; }
+        
     }
     public class CheckOutRequestDBUpdateModel
     {

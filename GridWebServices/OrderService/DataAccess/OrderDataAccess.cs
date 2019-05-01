@@ -1376,6 +1376,7 @@ namespace OrderService.DataAccess
                      new SqlParameter( "@CheckOutSessionID",  SqlDbType.NVarChar ),
                      new SqlParameter( "@SuccessIndicator",  SqlDbType.NVarChar ),
                      new SqlParameter( "@CheckoutVersion",  SqlDbType.NVarChar ),
+                     new SqlParameter( "@TransactionID",  SqlDbType.NVarChar )                    
 
                 };
 
@@ -1385,6 +1386,7 @@ namespace OrderService.DataAccess
                 parameters[3].Value = checkOutRequest.CheckOutSessionID;
                 parameters[4].Value = checkOutRequest.SuccessIndicator;
                 parameters[5].Value = checkOutRequest.CheckoutVersion;
+                parameters[6].Value = checkOutRequest.TransactionID;
 
                 _DataHelper = new DataAccessHelper("Orders_GetCheckoutRequestDetails", parameters, _configuration);
 
@@ -2461,19 +2463,79 @@ namespace OrderService.DataAccess
             }
         }
 
-        public async Task<DatabaseResponse> GetPaymentMethodToken(int customerID, int paymentMethodID)
+        public async Task<DatabaseResponse> GetPaymentMethodToken(int customerID)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                     new SqlParameter( "@CustomerID",  SqlDbType.Int )                    
+                };
+
+                parameters[0].Value = customerID;
+
+                _DataHelper = new DataAccessHelper("Order_GetCustomerPaymentToken", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt);    // 105 / 102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                PaymentMethod paymentMethod = new PaymentMethod();
+
+                if (dt != null && dt.Rows.Count > 0)
+                {
+
+                    paymentMethod = (from model in dt.AsEnumerable()
+                                     select new PaymentMethod()
+                                     {
+                                         PaymentMethodID = model.Field<int>("PaymentMethodID"),
+                                         Token = model.Field<string>("Token"),
+                                         SourceType = model.Field<string>("SourceType"),
+                                         CardHolderName = model.Field<string>("CardHolderName"),
+                                     }).FirstOrDefault();
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = paymentMethod };
+
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+
+                }
+
+
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> GetPaymentMethodTokenById(int customerID, int paymentMethodID)
         {
             try
             {
                 SqlParameter[] parameters =
                {
                      new SqlParameter( "@CustomerID",  SqlDbType.Int ),
-                     new SqlParameter( "@PaymentMethodID",  SqlDbType.NVarChar )
+                       new SqlParameter( "@PaymentMethodID",  SqlDbType.Int ),
+                     
                 };
 
                 parameters[0].Value = customerID;
-
                 parameters[1].Value = paymentMethodID;
+                
 
                 _DataHelper = new DataAccessHelper("Order_GetPaymentTokenByID", parameters, _configuration);
 
@@ -2494,6 +2556,7 @@ namespace OrderService.DataAccess
                                          PaymentMethodID = model.Field<int>("PaymentMethodID"),
                                          Token = model.Field<string>("Token"),
                                          SourceType = model.Field<string>("SourceType"),
+                                         CardHolderName = model.Field<string>("CardHolderName"),
                                      }).FirstOrDefault();
 
                     response = new DatabaseResponse { ResponseCode = result, Results = paymentMethod };

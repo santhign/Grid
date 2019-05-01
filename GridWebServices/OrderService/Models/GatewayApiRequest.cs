@@ -38,8 +38,7 @@ namespace OrderService.Models
         public String ReturnUrl { get; set; }
 
         public String PaymentAuthResponse { get; set; }
-        public String SecureId3D { get; set; }
-
+        public String SecureId3D { get; set; }        
 
         public String BrowserPaymentOperation { get; set; }
         public String BrowserPaymentPaymentConfirmation { get; set; }
@@ -55,8 +54,7 @@ namespace OrderService.Models
 
         public String MasterpassOauthToken { get; set; }
         public String MasterpassOauthVerifier { get; set; }
-        public String MasterpassCheckoutUrl { get; set; }
-
+        public String MasterpassCheckoutUrl { get; set; }        
 
         public String Token { get; set; }
 
