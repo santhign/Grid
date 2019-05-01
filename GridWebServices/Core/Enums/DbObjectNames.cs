@@ -58,14 +58,22 @@ namespace Core.Enums
         /// The cr get message body
         /// </summary>
         public const string CR_GetMessageBody = "CR_GetMessageBody";
-
+           
         public const string z_InsertIntoMessageQueueRequests = "z_InsertIntoMessageQueueRequests";
 
         public const string z_GetSingleMessageQueueRecord = "z_GetSingleMessageQueueRecord";
 
         public const string z_UpdateStatusInMessageQueueRequests = "z_UpdateStatusInMessageQueueRequests";
 
+        public const string z_UpdateStatusInMessageQueueRequestsException = "z_UpdateStatusInMessageQueueRequestsException";
+
         public const string Orders_CR_BuySharedVAS = "Orders_CR_BuySharedVAS";
+
+        public const string Orders_CR_InsertRemoveSharedVAS = "Orders_CR_InsertRemoveSharedVAS";
+
+        public const string Orders_CR_ChangePlan = "Orders_CR_ChangePlan";
+
+        public const string Orders_CancelOrder = "Orders_CancelOrder";
     }
 
 }

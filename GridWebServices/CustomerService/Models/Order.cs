@@ -45,25 +45,38 @@ namespace CustomerService.Models
         public TimeSpan? SlotToTime { get; set; }
         public DateTime? ScheduledDate { get; set; }
         public double? ServiceFee { get; set; }
-        public List<Bundle> Bundles { get; set; }
+        public string InvoiceNumber { get; set; }
+        public string MaskedCardNumber { get; set; }
+        public string CardBrand { get; set; }
+        public int? ExpiryMonth { get; set; }
+        public int? ExpiryYear { get; set; }
+        public DateTime? PaymentOn { get; set; }
+        public List<Subscribers> Subscribers { get; set; }
         public List<ServiceCharge> ServiceCharges { get; set; }
+        public List<OrderStatuses> OrderStatuses { get; set; }
     }
-    public class OrderStatus
+    public class OrderStatuses
     {
         public int? OrderID { get; set; }
-        public string Status { get; set; }
+        public string OrderStatus { get; set; }
         public DateTime? UpdatedOn { get; set; }
     }
 
     public class Subscribers
     {
         public int? OrderID { get; set; }
+        public int? OrderSubscriberID { get; set; }
         public int? SubscriberID { get; set; }
         public string MobileNumber { get; set; }
         public string DisplayName { get; set; }
+        public int? IsPrimary { get; set; }
         public DateTime? ActivateOn { get; set; }
+        public string PremiumName { get; set; }
+        public int? PremiumType { get; set; }
         public int? IsBuddyLine { get; set; }
+        public int? IsPorted { get; set; }
         public double? DepositFee { get; set; }
+        public List<Bundle> Bundles { get; set; }
     }
 
     public class ServiceCharge
@@ -78,6 +91,7 @@ namespace CustomerService.Models
     public class Bundle
     {
         public int? OrderID { get; set; }
+        public int? OrderSubscriberID { get; set; }
         public int? BundleID { get; set; }
         public string BundleName { get; set; }
         public string PlanMarketingName { get; set; }

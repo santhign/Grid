@@ -56,13 +56,14 @@ namespace OrderService.Controllers
         /// <summary>
         /// Removes the vas service.
         /// </summary>
-        /// <param name="token">The token.</param>
-        /// <param name="mobileNumber">The mobile number.</param>
-        /// <param name="planId">The plan identifier.</param>
+        /// <param name="token"></param>
+        /// <param name="mobileNumber"></param>
+        /// <param name="subscriptionId"></param>
+        /// <param name="planId"></param>
         /// <returns></returns>
         [HttpPost]
-        [Route("RemoveVasService/{mobileNumber}/{planId}")]
-        public async Task<IActionResult> RemoveVasService([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] string mobileNumber, [FromRoute] int planId)
+        [Route("RemoveVasService/{mobileNumber}/{subscriptionId}")]
+        public async Task<IActionResult> RemoveVasService([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] string mobileNumber, [FromRoute] int subscriptionId)
         {
 
             try
@@ -88,28 +89,33 @@ namespace OrderService.Controllers
 
                 //var orderAccess = _changeRequestDataAccess;//new ChangeRequestDataAccess(_iconfiguration);
                 var helper = new AuthHelper(_iconfiguration);
-                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.DashBoard_RemoveVas);
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
                     var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
                     var statusResponse =
-                        await _changeRequestDataAccess.RemoveVasService(aTokenResp.CustomerID, mobileNumber, planId);
-                    var buyVASResponse = (RemoveVASResponse)statusResponse.Results;
+                        await _changeRequestDataAccess.RemoveVasService(aTokenResp.CustomerID, mobileNumber, subscriptionId);
+                    var removeVASResponse = (RemoveVASResponse)statusResponse.Results;
                     if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                     {
 
                         MessageBodyForCR msgBody = new MessageBodyForCR();
                         Dictionary<string, string> attribute = new Dictionary<string, string>();
                         string topicName = string.Empty, subject = string.Empty;
-                        topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration)
-                            .Results.ToString().Trim();
+                        
                         try
                         {
-                            msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(buyVASResponse.ChangeRequestID);
-
+                            msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(removeVASResponse.ChangeRequestID);
+                            if(msgBody == null)
+                            {
+                                throw new NullReferenceException("message body is null for ChangeRequest (" + removeVASResponse.ChangeRequestID + ") for RemoveVAS Service API");
+                            }
                             topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration)
                             .Results.ToString().Trim();
-
+                            if (string.IsNullOrWhiteSpace(topicName))
+                            {
+                                throw new NullReferenceException("topicName is null for ChangeRequest (" + removeVASResponse.ChangeRequestID + ") for RemoveVAS Request Service API");
+                            }
                             attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.RemoveVAS.GetDescription());
                             var pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
                             if (pushResult.Trim().ToUpper() == "OK")
@@ -154,22 +160,20 @@ namespace OrderService.Controllers
                             {
                                 Source = Source.ChangeRequest,
                                 NumberOfRetries = 1,
-                                SNSTopic = topicName,
+                                SNSTopic = string.IsNullOrWhiteSpace(topicName) ? null : topicName,
                                 CreatedOn = DateTime.Now,
                                 LastTriedOn = DateTime.Now,
                                 PublishedOn = DateTime.Now,
                                 MessageAttribute = Core.Enums.RequestType.RemoveVAS.GetDescription().ToString(),
-                                MessageBody = JsonConvert.SerializeObject(msgBody),
+                                MessageBody = msgBody != null ? JsonConvert.SerializeObject(msgBody) : null,
                                 Status = 0,
                                 Remark = "Error Occured in RemoveVASService",
-                                Exception = ex.StackTrace.ToString()
+                                Exception = new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)
 
 
-                            };
+                            };                           
 
                             await _messageQueueDataAccess.InsertMessageInMessageQueueRequestException(queueRequest);
-
-                            await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
                         }
 
                         return Ok(new ServerResponse
@@ -177,6 +181,17 @@ namespace OrderService.Controllers
                             HasSucceeded = true,
                             Message = StatusMessages.SuccessMessage,
                             Result = statusResponse
+                        });
+                    }
+                    else if (statusResponse.ResponseCode == (int)DbReturnValue.DuplicateCRExists)
+                    {
+                        LogInfo.Error(DbReturnValue.DuplicateCRExists.GetDescription());
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = DbReturnValue.DuplicateCRExists.GetDescription(),
+                            IsDomainValidationErrors = false
                         });
                     }
                     else
@@ -254,7 +269,7 @@ namespace OrderService.Controllers
 
 
                 var helper = new AuthHelper(_iconfiguration);
-                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.DashBoard_BuyVas);
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
                     var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
@@ -271,9 +286,17 @@ namespace OrderService.Controllers
                         {
                             topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration)
                             .Results.ToString().Trim();
+
+                            if (string.IsNullOrWhiteSpace(topicName))
+                            {
+                                throw new NullReferenceException("topicName is null for ChangeRequest (" +  buyVASResponse.ChangeRequestID + ") for BuyVAS Request Service API");
+                            }
                             msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(buyVASResponse.ChangeRequestID);
 
-                            
+                            if (msgBody == null)
+                            {
+                                throw new NullReferenceException("message body is null for ChangeRequest (" + buyVASResponse.ChangeRequestID + ") for BuyVAS Service API");
+                            }
 
                             attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.AddVAS.GetDescription());
                             var pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
@@ -319,15 +342,15 @@ namespace OrderService.Controllers
                             {
                                 Source = Source.ChangeRequest,
                                 NumberOfRetries = 1,
-                                SNSTopic = topicName,
+                                SNSTopic = string.IsNullOrWhiteSpace(topicName) ? null : topicName,
                                 CreatedOn = DateTime.Now,
                                 LastTriedOn = DateTime.Now,
                                 PublishedOn = DateTime.Now,
                                 MessageAttribute = Core.Enums.RequestType.AddVAS.GetDescription().ToString(),
-                                MessageBody = JsonConvert.SerializeObject(msgBody),
+                                MessageBody = msgBody != null ? JsonConvert.SerializeObject(msgBody) : null,
                                 Status = 0,
                                 Remark = "Error Occured in BuyVASService",
-                                Exception = ex.StackTrace.ToString()
+                                Exception = new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)
 
 
                             };
@@ -420,7 +443,7 @@ namespace OrderService.Controllers
 
                 var helper = new AuthHelper(_iconfiguration);
 
-                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_terminateline_subscriber);
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
                     var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
@@ -435,9 +458,16 @@ namespace OrderService.Controllers
                         try
                         {
                             msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(TorSresponse.ChangeRequestId);
-
+                            if (msgBody == null)
+                            {
+                                throw new NullReferenceException("message body is null for ChangeRequest (" + TorSresponse.ChangeRequestId + ") for Termination Request Service API");
+                            }
                             topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration)
-                            .Results.ToString().Trim();                            
+                            .Results.ToString().Trim();
+                            if (string.IsNullOrWhiteSpace(topicName))
+                            {
+                                throw new NullReferenceException("topicName is null for ChangeRequest (" + TorSresponse.ChangeRequestId + ") for Termination Request Service API");
+                            }
                             attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.Terminate.GetDescription());
                             var pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
                             if (pushResult.Trim().ToUpper() == "OK")
@@ -482,15 +512,15 @@ namespace OrderService.Controllers
                             {
                                 Source = Source.ChangeRequest,
                                 NumberOfRetries = 1,
-                                SNSTopic = topicName,
+                                SNSTopic = string.IsNullOrWhiteSpace(topicName) ? null : topicName,
                                 CreatedOn = DateTime.Now,
                                 LastTriedOn = DateTime.Now,
                                 PublishedOn = DateTime.Now,
                                 MessageAttribute = Core.Enums.RequestType.Terminate.GetDescription().ToString(),
-                                MessageBody = JsonConvert.SerializeObject(msgBody),
+                                MessageBody = msgBody != null ? JsonConvert.SerializeObject(msgBody) : null,
                                 Status = 0,
                                 Remark = "Error Occured in TerminationRequestService",
-                                Exception = ex.StackTrace.ToString()
+                                Exception = new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)
 
 
                             };
@@ -505,6 +535,18 @@ namespace OrderService.Controllers
                             Result = statusResponse
                         });
                     }
+                    else if (statusResponse.ResponseCode == (int)DbReturnValue.DuplicateCRExists)
+                    {
+                        LogInfo.Error(DbReturnValue.DuplicateCRExists.GetDescription());
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = DbReturnValue.DuplicateCRExists.GetDescription(),
+                            IsDomainValidationErrors = false
+                        });
+                    }
+
                     else
                     {
                         LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
@@ -583,21 +625,125 @@ namespace OrderService.Controllers
 
                 var helper = new AuthHelper(_iconfiguration);
 
-                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_cr_sim_replace_request);
 
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
                     var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
 
                     var statusResponse = await _changeRequestDataAccess.SimReplacementRequest(aTokenResp.CustomerID, mobileNumber);
-
+                    var updateRequest = (ChangeSimResponse)statusResponse.Results;
                     if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                     {
+                        var serviceFeeList = updateRequest.ChangeRequestChargesList.Select(x => x.ServiceFee).ToList();
+                        //var serviceFeeListWithoutZeroValue = serviceFeeList.Where(x => x != 0);
+                        if (serviceFeeList.AsQueryable().Sum() == 0)
+                        {
+                            var details = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(updateRequest.ChangeRequestId);
+
+                            if (details != null)
+                            {
+                                MessageBodyForCR msgBody = new MessageBodyForCR();
+
+                                string topicName = string.Empty, pushResult = string.Empty;
+
+                                try
+                                {
+                                    Dictionary<string, string> attribute = new Dictionary<string, string>();
+
+                                    msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(details.ChangeRequestID);
+                                    if (msgBody == null)
+                                    {
+                                        throw new NullReferenceException("message body is null for ChangeRequest (" + details.ChangeRequestID + ") for ChangeSIM in UpdateCheckout Response Request Service API");
+                                    }
+                                    //if (details.RequestTypeID == (int)Core.Enums.RequestType.ReplaceSIM)
+                                    //{
+                                    topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration).Results.ToString().Trim();
+                                    if (string.IsNullOrWhiteSpace(topicName))
+                                    {
+                                        throw new NullReferenceException("topicName is null for ChangeRequest (" + details.ChangeRequestID + ") for ChangeSIM in UpdateCheckout Response Request Service API");
+                                    }
+                                    attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.ReplaceSIM.GetDescription());
+                                    pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
+                                    //}
+                                    if (pushResult.Trim().ToUpper() == "OK")
+                                    {
+                                        MessageQueueRequest queueRequest = new MessageQueueRequest
+                                        {
+                                            Source = Source.ChangeRequest,
+                                            NumberOfRetries = 1,
+                                            SNSTopic = topicName,
+                                            CreatedOn = DateTime.Now,
+                                            LastTriedOn = DateTime.Now,
+                                            PublishedOn = DateTime.Now,
+                                            MessageAttribute = Core.Enums.RequestType.ReplaceSIM.GetDescription(),
+                                            MessageBody = JsonConvert.SerializeObject(msgBody),
+                                            Status = 1
+                                        };
+                                        await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                                    }
+                                    else
+                                    {
+                                        MessageQueueRequest queueRequest = new MessageQueueRequest
+                                        {
+                                            Source = Source.ChangeRequest,
+                                            NumberOfRetries = 1,
+                                            SNSTopic = topicName,
+                                            CreatedOn = DateTime.Now,
+                                            LastTriedOn = DateTime.Now,
+                                            PublishedOn = DateTime.Now,
+                                            MessageAttribute = Core.Enums.RequestType.ReplaceSIM.GetDescription(),
+                                            MessageBody = JsonConvert.SerializeObject(msgBody),
+                                            Status = 0
+                                        };
+                                        await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                                    }
+
+                                }
+                                catch (Exception ex)
+                                {
+
+                                    LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                                    MessageQueueRequestException queueRequest = new MessageQueueRequestException
+                                    {
+                                        Source = Source.ChangeRequest,
+                                        NumberOfRetries = 1,
+                                        SNSTopic = string.IsNullOrWhiteSpace(topicName) ? null : topicName,
+                                        CreatedOn = DateTime.Now,
+                                        LastTriedOn = DateTime.Now,
+                                        PublishedOn = DateTime.Now,
+                                        MessageAttribute = Core.Enums.RequestType.ReplaceSIM.GetDescription().ToString(),
+                                        MessageBody = msgBody != null ? JsonConvert.SerializeObject(msgBody) : null,
+                                        Status = 0,
+                                        Remark = "Error Occured in ReplaceSIM from UpdateCheckoutResponse",
+                                        Exception = new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)
+
+
+                                    };
+
+
+                                    await _messageQueueDataAccess.InsertMessageInMessageQueueRequestException(queueRequest);
+                                }
+
+                            }
+                        }
+
                         return Ok(new ServerResponse
                         {
                             HasSucceeded = true,
                             Message = StatusMessages.SuccessMessage,
                             Result = statusResponse
+                        });
+                    }
+                    else if (statusResponse.ResponseCode == (int)DbReturnValue.DuplicateCRExists)
+                    {
+                        LogInfo.Error(DbReturnValue.DuplicateCRExists.GetDescription());
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = DbReturnValue.DuplicateCRExists.GetDescription(),
+                            IsDomainValidationErrors = false
                         });
                     }
                     else
@@ -676,7 +822,7 @@ namespace OrderService.Controllers
                 }
 
                 var helper = new AuthHelper(_iconfiguration);
-                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_suspendline_Subscriber);
 
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
@@ -693,11 +839,18 @@ namespace OrderService.Controllers
                         try
                         {
                             msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(TorSresponse.ChangeRequestId);
-
+                            if (msgBody == null)
+                            {
+                                throw new NullReferenceException("message body is null for ChangeRequest (" + TorSresponse.ChangeRequestId + ") for Suspension Request Service API");
+                            }
                             topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration)
                             .Results.ToString().Trim();
-                           
-                                attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.Suspend.GetDescription());
+                            if (string.IsNullOrWhiteSpace(topicName))
+                            {
+                                throw new NullReferenceException("topicName is null for ChangeRequest (" + TorSresponse.ChangeRequestId + ") for Suspension Request Service API");
+                            }
+
+                            attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.Suspend.GetDescription());
                                 var pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
                             if (pushResult.Trim().ToUpper() == "OK")
                             {
@@ -743,15 +896,15 @@ namespace OrderService.Controllers
                             {
                                 Source = Source.ChangeRequest,
                                 NumberOfRetries = 1,
-                                SNSTopic = topicName,
+                                SNSTopic = string.IsNullOrWhiteSpace(topicName) ? null : topicName,
                                 CreatedOn = DateTime.Now,
                                 LastTriedOn = DateTime.Now,
                                 PublishedOn = DateTime.Now,
                                 MessageAttribute = Core.Enums.RequestType.Suspend.GetDescription().ToString(),
-                                MessageBody = JsonConvert.SerializeObject(msgBody),
+                                MessageBody = msgBody != null ? JsonConvert.SerializeObject(msgBody) : null,
                                 Status = 0,
-                                Remark = "Error Occured in SuspensionRequestService",
-                                Exception = ex.StackTrace.ToString()
+                                Remark = "Error Occured in SuspensionRequest Service",
+                                Exception = new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)
 
 
                             };
@@ -766,6 +919,17 @@ namespace OrderService.Controllers
                             Result = statusResponse
                         });
                     }
+                    else if (statusResponse.ResponseCode == (int)DbReturnValue.DuplicateCRExists)
+                    {
+                        LogInfo.Error(DbReturnValue.DuplicateCRExists.GetDescription());
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = DbReturnValue.DuplicateCRExists.GetDescription(),
+                            IsDomainValidationErrors = false
+                        });
+                    }
                     else
                     {
                         LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
@@ -778,7 +942,7 @@ namespace OrderService.Controllers
                         });
                     }
 
-                }
+                }                
                 else
                 {
                     // token auth failure
@@ -841,7 +1005,7 @@ namespace OrderService.Controllers
                 }
 
                 var helper = new AuthHelper(_iconfiguration);
-                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_CR_ChangePhoneNumber);
 
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
@@ -931,7 +1095,7 @@ namespace OrderService.Controllers
                 }
 
                 var helper = new AuthHelper(_iconfiguration);
-                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_cr_sim_replace_request);
 
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
@@ -1015,7 +1179,7 @@ namespace OrderService.Controllers
                 }
 
                 var helper = new AuthHelper(_iconfiguration);
-                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_unsuspendline_Subscriber);
 
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
@@ -1032,9 +1196,17 @@ namespace OrderService.Controllers
                         try
                         {
                             msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(TorSresponse.ChangeRequestId);
-
+                            if (msgBody == null)
+                            {
+                                throw new NullReferenceException("message body is null for ChangeRequest (" + TorSresponse.ChangeRequestId + ") for UnSuspension Request Service API");
+                            }
                             topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration)
                             .Results.ToString().Trim();
+
+                            if (string.IsNullOrWhiteSpace(topicName))
+                            {
+                                throw new NullReferenceException("topicName is null for ChangeRequest (" + TorSresponse.ChangeRequestId + ") for UnSuspension Request Service API");
+                            }
 
                             attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.UnSuspend.GetDescription());
                             var pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
@@ -1080,15 +1252,15 @@ namespace OrderService.Controllers
                             {
                                 Source = Source.ChangeRequest,
                                 NumberOfRetries = 1,
-                                SNSTopic = topicName,
+                                SNSTopic = string.IsNullOrWhiteSpace(topicName) ? null : topicName,
                                 CreatedOn = DateTime.Now,
                                 LastTriedOn = DateTime.Now,
                                 PublishedOn = DateTime.Now,
                                 MessageAttribute = Core.Enums.RequestType.UnSuspend.GetDescription().ToString(),
-                                MessageBody = JsonConvert.SerializeObject(msgBody),
+                                MessageBody = msgBody != null ? JsonConvert.SerializeObject(msgBody) : null,
                                 Status = 0,
-                                Remark = "Error Occured in UnsuspensionService",
-                                Exception = ex.StackTrace.ToString()
+                                Remark = "Error Occured in Unsuspension Service",
+                                Exception = new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)
 
 
                             };
@@ -1103,6 +1275,28 @@ namespace OrderService.Controllers
                             Result = statusResponse
                         });
                     }
+                    else if (statusResponse.ResponseCode == (int)DbReturnValue.DuplicateCRExists)
+                    {
+                        LogInfo.Error(DbReturnValue.DuplicateCRExists.GetDescription());
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = DbReturnValue.DuplicateCRExists.GetDescription(),
+                            IsDomainValidationErrors = false
+                        });
+                    }
+                    else if (statusResponse.ResponseCode == (int)DbReturnValue.UnSuspensionValidation)
+                    {
+                        LogInfo.Error(DbReturnValue.UnSuspensionValidation.GetDescription());
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = DbReturnValue.UnSuspensionValidation.GetDescription(),
+                            IsDomainValidationErrors = false
+                        });
+                    }
                     else
                     {
                         LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
@@ -1115,7 +1309,7 @@ namespace OrderService.Controllers
                         });
                     }
 
-                }
+                }                
                 else
                 {
                     // token auth failure
@@ -1149,9 +1343,7 @@ namespace OrderService.Controllers
         /// Buys the vas service.
         /// </summary>
         /// <param name="token">The token.</param>
-        /// <param name="mobileNumber">The mobile number.</param>
         /// <param name="bundleId">The bundle identifier.</param>
-        /// <param name="quantity">The quantity.</param>
         /// <returns></returns>
         [HttpPost]
         [Route("BuySharedVasService/{bundleId}")]
@@ -1182,13 +1374,13 @@ namespace OrderService.Controllers
 
 
                 var helper = new AuthHelper(_iconfiguration);
-                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_cr_sharedvas_add);
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
                     var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
                     var statusResponse =
                         await _changeRequestDataAccess.BuySharedService(aTokenResp.CustomerID, bundleId);
-                    var buyVASResponse = (BuyVASResponse)statusResponse.Results;
+                    var buySharedVASResponse = (BuyVASResponse)statusResponse.Results;
                     if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                     {
                         //Ninad K : Message Publish code
@@ -1199,8 +1391,16 @@ namespace OrderService.Controllers
                         {
                             topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration)
                             .Results.ToString().Trim();
-                            msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(buyVASResponse.ChangeRequestID);
+                            if (string.IsNullOrWhiteSpace(topicName))
+                            {
+                                throw new NullReferenceException("topicName is null for ChangeRequest (" + buySharedVASResponse.ChangeRequestID + ") for BuyShared VAS Request Service API");
+                            }
+                            msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(buySharedVASResponse.ChangeRequestID);
 
+                            if (msgBody == null)
+                            {
+                                throw new NullReferenceException("message body is null for ChangeRequest (" + buySharedVASResponse.ChangeRequestID + ") for BuyShared VAS Request Service API");
+                            }
 
 
                             attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.AddVAS.GetDescription());
@@ -1247,15 +1447,15 @@ namespace OrderService.Controllers
                             {
                                 Source = Source.ChangeRequest,
                                 NumberOfRetries = 1,
-                                SNSTopic = topicName,
+                                SNSTopic = string.IsNullOrWhiteSpace(topicName) ? null : topicName,
                                 CreatedOn = DateTime.Now,
                                 LastTriedOn = DateTime.Now,
                                 PublishedOn = DateTime.Now,
                                 MessageAttribute = Core.Enums.RequestType.AddVAS.GetDescription().ToString(),
-                                MessageBody = JsonConvert.SerializeObject(msgBody),
+                                MessageBody = msgBody != null ? JsonConvert.SerializeObject(msgBody) : null,
                                 Status = 0,
                                 Remark = "Error Occured in BuySharedVASService",
-                                Exception = ex.StackTrace.ToString()
+                                Exception = new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)
 
 
                             };
@@ -1268,6 +1468,17 @@ namespace OrderService.Controllers
                             HasSucceeded = true,
                             Message = StatusMessages.SuccessMessage,
                             Result = statusResponse
+                        });
+                    }
+                    else if (statusResponse.ResponseCode == (int)DbReturnValue.DuplicateCRExists)
+                    {
+                        LogInfo.Error(DbReturnValue.DuplicateCRExists.GetDescription());
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = DbReturnValue.DuplicateCRExists.GetDescription(),
+                            IsDomainValidationErrors = false
                         });
                     }
                     else
@@ -1309,6 +1520,373 @@ namespace OrderService.Controllers
             }
         }
 
+        /// <summary>
+        /// Remove Shared VAS Service
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="accountSubscriptionId"></param>
+        /// <param name="planId"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("RemoveSharedVasService/{accountSubscriptionId}")]
+        public async Task<IActionResult> RemoveSharedVasService([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int accountSubscriptionId)
+        {
+
+            try
+            {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+                if (!ModelState.IsValid)
+                {
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                            .SelectMany(x => x.Errors)
+                            .Select(x => x.ErrorMessage))
+                    });
+                }
+
+                //var orderAccess = _changeRequestDataAccess;//new ChangeRequestDataAccess(_iconfiguration);
+                var helper = new AuthHelper(_iconfiguration);
+                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_cr_sharedvas_remove);
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
+                    var statusResponse =
+                        await _changeRequestDataAccess.RemoveSharedVasService(aTokenResp.CustomerID, accountSubscriptionId);
+                    var removeVASResponse = (RemoveVASResponse)statusResponse.Results;
+                    if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
+                    {
+
+                        MessageBodyForCR msgBody = new MessageBodyForCR();
+                        Dictionary<string, string> attribute = new Dictionary<string, string>();
+                        string topicName = string.Empty, subject = string.Empty;
+                        
+                        try
+                        {
+                            msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(removeVASResponse.ChangeRequestID);
+                            if (msgBody == null)
+                            {
+                                throw new NullReferenceException("message body is null for ChangeRequest (" + removeVASResponse.ChangeRequestID + ") for Remove Shared VAS Request Service API");
+                            }
+                            topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration)
+                            .Results.ToString().Trim();
+                            if (string.IsNullOrWhiteSpace(topicName))
+                            {
+                                throw new NullReferenceException("topicName is null for ChangeRequest (" + removeVASResponse.ChangeRequestID + ") for Remove Shared VAS Request Service API");
+                            }
+                            attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.RemoveVAS.GetDescription());
+                            var pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
+                            if (pushResult.Trim().ToUpper() == "OK")
+                            {
+                                MessageQueueRequest queueRequest = new MessageQueueRequest
+                                {
+                                    Source = Source.ChangeRequest,
+                                    NumberOfRetries = 1,
+                                    SNSTopic = topicName,
+                                    CreatedOn = DateTime.Now,
+                                    LastTriedOn = DateTime.Now,
+                                    PublishedOn = DateTime.Now,
+                                    MessageAttribute = Core.Enums.RequestType.RemoveVAS.GetDescription().ToString(),
+                                    MessageBody = JsonConvert.SerializeObject(msgBody),
+                                    Status = 1
+                                };
+
+                                await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                            }
+                            else
+                            {
+                                MessageQueueRequest queueRequest = new MessageQueueRequest
+                                {
+                                    Source = Source.ChangeRequest,
+                                    NumberOfRetries = 1,
+                                    SNSTopic = topicName,
+                                    CreatedOn = DateTime.Now,
+                                    LastTriedOn = DateTime.Now,
+                                    PublishedOn = DateTime.Now,
+                                    MessageAttribute = Core.Enums.RequestType.RemoveVAS.GetDescription().ToString(),
+                                    MessageBody = JsonConvert.SerializeObject(msgBody),
+                                    Status = 0
+                                };
+
+                                await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                            MessageQueueRequestException queueRequest = new MessageQueueRequestException
+                            {
+                                Source = Source.ChangeRequest,
+                                NumberOfRetries = 1,
+                                SNSTopic = topicName,
+                                CreatedOn = DateTime.Now,
+                                LastTriedOn = DateTime.Now,
+                                PublishedOn = DateTime.Now,
+                                MessageAttribute = Core.Enums.RequestType.RemoveVAS.GetDescription().ToString(),
+                                MessageBody = JsonConvert.SerializeObject(msgBody),
+                                Status = 0,
+                                Remark = "Error Occured in RemoveVASService",
+                                Exception = ex.StackTrace.ToString()
+
+
+                            };                            
+                            await _messageQueueDataAccess.InsertMessageInMessageQueueRequestException(queueRequest);
+                        }
+
+                        return Ok(new ServerResponse
+                        {
+                            HasSucceeded = true,
+                            Message = StatusMessages.SuccessMessage,
+                            Result = statusResponse
+                        });
+                    }
+                    else if (statusResponse.ResponseCode == (int)DbReturnValue.DuplicateCRExists)
+                    {
+                        LogInfo.Error(DbReturnValue.DuplicateCRExists.GetDescription());
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = DbReturnValue.DuplicateCRExists.GetDescription(),
+                            IsDomainValidationErrors = false
+                        });
+                    }
+                    else
+                    {
+                        LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = DbReturnValue.UpdationFailed.GetDescription(),
+                            IsDomainValidationErrors = false
+                        });
+                    }
+                }
+                else
+                {
+                    //Token expired
+                    LogInfo.Error(CommonErrors.ExpiredToken.GetDescription());
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = DbReturnValue.TokenExpired.GetDescription(),
+                        IsDomainValidationErrors = true
+                    });
+
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
+
+        [HttpPut]
+        [Route("UpdatePlanService/{mobileNumber}/{bundleId}")]
+        public async Task<IActionResult> UpdatePlanService([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] string mobileNumber, [FromRoute] int bundleId)
+        {
+
+            try
+            {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+                if (!ModelState.IsValid)
+                {
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                            .SelectMany(x => x.Errors)
+                            .Select(x => x.ErrorMessage))
+                    });
+                }
+
+                //var orderAccess = _changeRequestDataAccess;//new ChangeRequestDataAccess(_iconfiguration);
+                var helper = new AuthHelper(_iconfiguration);
+                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_CR_ChangeBasePlan);
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
+                    var statusResponse =
+                        await _changeRequestDataAccess.ChangePlanService(aTokenResp.CustomerID, mobileNumber, bundleId);
+                    var changePlanResponse = (ChangePlanResponse)statusResponse.Results;
+                    if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
+                    {
+                        if (changePlanResponse.ChangeRequestChargesList != null)
+                        {
+                            var serviceFeeList = changePlanResponse.ChangeRequestChargesList.Select(x => x.ServiceFee).ToList();
+                            //var serviceFeeListWithoutZeroValue = serviceFeeList.Where(x => x != 0);
+                            if (serviceFeeList.AsQueryable().Sum() == 0)
+                            {
+                                MessageBodyForCR msgBody = new MessageBodyForCR();
+                                Dictionary<string, string> attribute = new Dictionary<string, string>();
+                                string topicName = string.Empty, subject = string.Empty;
+
+                                try
+                                {
+
+                                    msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(changePlanResponse.ChangeRequestID);
+                                    if (msgBody == null)
+                                    {
+                                        throw new NullReferenceException("message body is null for ChangeRequest (" + changePlanResponse.ChangeRequestID + ") for Change Plan Service Request Service API");
+                                    }
+                                    topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration)
+                                    .Results.ToString().Trim();
+                                    if (string.IsNullOrWhiteSpace(topicName))
+                                    {
+                                        throw new NullReferenceException("topicName is null for ChangeRequest (" + changePlanResponse.ChangeRequestID + ") for Change Plan Service Request Service API");
+                                    }
+                                    attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.ChangePlan.GetDescription());
+                                    var pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
+                                    if (pushResult.Trim().ToUpper() == "OK")
+                                    {
+                                        MessageQueueRequest queueRequest = new MessageQueueRequest
+                                        {
+                                            Source = Source.ChangeRequest,
+                                            NumberOfRetries = 1,
+                                            SNSTopic = topicName,
+                                            CreatedOn = DateTime.Now,
+                                            LastTriedOn = DateTime.Now,
+                                            PublishedOn = DateTime.Now,
+                                            MessageAttribute = Core.Enums.RequestType.ChangePlan.GetDescription().ToString(),
+                                            MessageBody = JsonConvert.SerializeObject(msgBody),
+                                            Status = 1
+                                        };
+
+                                        await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                                    }
+                                    else
+                                    {
+                                        MessageQueueRequest queueRequest = new MessageQueueRequest
+                                        {
+                                            Source = Source.ChangeRequest,
+                                            NumberOfRetries = 1,
+                                            SNSTopic = topicName,
+                                            CreatedOn = DateTime.Now,
+                                            LastTriedOn = DateTime.Now,
+                                            PublishedOn = DateTime.Now,
+                                            MessageAttribute = Core.Enums.RequestType.ChangePlan.GetDescription().ToString(),
+                                            MessageBody = JsonConvert.SerializeObject(msgBody),
+                                            Status = 0
+                                        };
+
+                                        await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                                    MessageQueueRequestException queueRequest = new MessageQueueRequestException
+                                    {
+                                        Source = Source.ChangeRequest,
+                                        NumberOfRetries = 1,
+                                        SNSTopic = topicName,
+                                        CreatedOn = DateTime.Now,
+                                        LastTriedOn = DateTime.Now,
+                                        PublishedOn = DateTime.Now,
+                                        MessageAttribute = Core.Enums.RequestType.ChangePlan.GetDescription().ToString(),
+                                        MessageBody = JsonConvert.SerializeObject(msgBody),
+                                        Status = 0,
+                                        Remark = "Error Occured in Update Plan",
+                                        Exception = ex.StackTrace.ToString()
+
+
+                                    };
+                                    await _messageQueueDataAccess.InsertMessageInMessageQueueRequestException(queueRequest);
+                                }
+                            }
+                        }
+
+                        return Ok(new ServerResponse
+                        {
+                            HasSucceeded = true,
+                            Message = StatusMessages.SuccessMessage,
+                            Result = statusResponse
+                        });
+                    }
+                    else if (statusResponse.ResponseCode == (int)DbReturnValue.DuplicateCRExists)
+                    {
+                        LogInfo.Error(DbReturnValue.DuplicateCRExists.GetDescription());
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = DbReturnValue.DuplicateCRExists.GetDescription(),
+                            IsDomainValidationErrors = false
+                        });
+                    }
+                    else if (statusResponse.ResponseCode == (int)DbReturnValue.SameBundleValidation)
+                    {
+                        LogInfo.Error(DbReturnValue.SameBundleValidation.GetDescription());
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = DbReturnValue.SameBundleValidation.GetDescription(),
+                            IsDomainValidationErrors = false
+                        });
+                    }
+                    else
+                    {
+                        LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = DbReturnValue.UpdationFailed.GetDescription(),
+                            IsDomainValidationErrors = false
+                        });
+                    }
+                }
+                else
+                {
+                    //Token expired
+                    LogInfo.Error(CommonErrors.ExpiredToken.GetDescription());
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = DbReturnValue.TokenExpired.GetDescription(),
+                        IsDomainValidationErrors = true
+                    });
+
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
 
     }
 }

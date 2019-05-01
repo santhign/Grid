@@ -90,5 +90,74 @@ namespace Core.Helpers
                 _DataHelper.Dispose();
             }
         }
+        public async Task<DatabaseResponse> AuthenticateCustomerToken(string token, string source)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@Token",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@Source",  SqlDbType.NVarChar )
+
+                };
+
+                parameters[0].Value = token;
+                parameters[1].Value = source;
+
+                _DataHelper = new DataAccessHelper("Customer_AuthenticateTokenwithSource", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt); // 111 /109
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                AuthTokenResponse tokenResponse = new AuthTokenResponse();
+
+                if (result == 111)
+                {
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+
+                        tokenResponse = (from model in dt.AsEnumerable()
+                                         select new AuthTokenResponse()
+                                         {
+                                             CustomerID = model.Field<int>("CustomerID"),
+
+                                             CreatedOn = model.Field<DateTime>("CreatedOn")
+
+
+                                         }).FirstOrDefault();
+                    }
+
+
+                    if (tokenResponse.CreatedOn < DateTime.UtcNow.AddDays(-7))
+                    {
+                        tokenResponse.IsExpired = true;
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = tokenResponse };
+
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
     }
 }

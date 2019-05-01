@@ -91,6 +91,7 @@ namespace OrderService.Models
         /// The billing building number.
         /// </value>
         public string BillingBuildingNumber { get; set; }
+        public string BillingBuildingName { get; set; }
         /// <summary>
         /// Gets or sets the name of the billing street.
         /// </summary>
@@ -219,7 +220,7 @@ namespace OrderService.Models
         /// <value>
         /// The alternate recioient identifier number.
         /// </value>
-        public string AlternateRecioientIDNumber { get; set; }
+        public string AlternateRecipientIDNumber { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the alternate recioient identifier.
@@ -227,7 +228,7 @@ namespace OrderService.Models
         /// <value>
         /// The type of the alternate recioient identifier.
         /// </value>
-        public string AlternateRecioientIDType { get; set; }
+        public string AlternateRecipientIDType { get; set; }
         /// <summary>
         /// Gets or sets the portal slot identifier.
         /// </summary>
@@ -286,7 +287,9 @@ namespace OrderService.Models
         /// <value>
         /// The service fee.
         /// </value>
-        public double DeliveryFee { get; set; }
+        public double ? DeliveryFee { get; set; }
+
+        public double ? PayableAmount { get; set; }
 
         /// <summary>
         /// The change request charges list
@@ -359,21 +362,21 @@ namespace OrderService.Models
         /// <value>
         /// The service fee.
         /// </value>
-        public double ServiceFee { get; set; }
+        public double ? ServiceFee { get; set; }
         /// <summary>
         /// Gets or sets a value indicating whether this instance is recurring.
         /// </summary>
         /// <value>
         ///   <c>true</c> if this instance is recurring; otherwise, <c>false</c>.
         /// </value>
-        public bool IsRecurring { get; set; }
+        public int ? IsRecurring { get; set; }
         /// <summary>
         /// Gets or sets a value indicating whether this instance is GST included.
         /// </summary>
         /// <value>
         ///   <c>true</c> if this instance is GST included; otherwise, <c>false</c>.
         /// </value>
-        public bool IsGstIncluded { get; set; }
+        public int ? IsGstIncluded { get; set; }
 
     }
 
@@ -490,4 +493,32 @@ namespace OrderService.Models
         public string PlanMarketingName { get; set; }
 
     }
+
+    public class ChangePlanResponse
+    {
+        public int ChangeRequestID { get; set; }
+        public string OrderNumber { get; set; }
+        public DateTime RequestOn { get; set; }
+        public string BillingUnit { get; set; }
+        public string BillingFloor { get; set; }
+
+        public string BillingBuildingNumber { get; set; }
+        public string BillingBuildingName { get; set; }
+        public string BillingStreetName { get; set; }
+        public string BillingPostCode { get; set; }
+        public string BillingContactNumber { get; set; }
+        public string Name { get; set; }
+        public string Email { get; set; }
+        public string IDType { get; set; }
+
+        public string IDNumber { get; set; }
+        public int OldPlanBundleID { get; set; }
+
+        public int NewBundleID { get; set; }
+
+        public IList<ChangeRequestCharges> ChangeRequestChargesList { get; set; }
+
+    }
+
+
 }

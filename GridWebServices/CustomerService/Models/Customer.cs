@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
 
 namespace CustomerService.Models
@@ -364,6 +361,8 @@ namespace CustomerService.Models
         /// The state.
         /// </value>
         public string State { get; set; }
+        public int SuspensionRaised { get; set; }
+        public int TerminationRaised { get; set; }
     }
 
     /// <summary>
@@ -434,6 +433,8 @@ namespace CustomerService.Models
         /// The customer identifier.
         /// </value>
         public int CustomerID { get; set; }
+
+        public int SubscriptionID { get; set; }
         /// <summary>
         /// Gets or sets the plan identifier.
         /// </summary>
@@ -527,10 +528,14 @@ namespace CustomerService.Models
         public string Name { get; set; }
         public string BillingUnit { get; set; }
         public string BillingFloor { get; set; }
+        [Required(ErrorMessage = "street name is required")]
         public string BillingStreetName { get; set; }
+        [Required(ErrorMessage = "building number is required")]
         public string BillingBuildingNumber { get; set; }
         public string BillingBuildingName { get; set; }
+        [Required(ErrorMessage = "contact number is required")]
         public string BillingContactNumber { get; set; }
+        [Required(ErrorMessage = "postcode is required")]
         public string BillingPostCode { get; set; }
     }
 
@@ -545,11 +550,58 @@ namespace CustomerService.Models
         public string CardFundMethod { get; set; }
         public string CardIssuer { get; set; }
     }
-
-    public class customerSubscription
+    
+    public class BasePlans
     {
-        public int? EmailSubscription { get; set; }
-        public int? SMSSubscription { get; set; }
+        public int BundleID { get; set; }
+        public string PlanMarketingName { get; set; }
+        /// <summary>
+        /// Gets or sets the type of the PortalSummaryDescription.
+        /// </summary>
+        /// <value>
+        /// The type of the PortalSummaryDescription.
+        /// </value>
+        public string PortalSummaryDescription { get; set; }
+        /// <summary>
+        /// Gets or sets the type of the PortalDescription.
+        /// </summary>
+        /// <value>
+        /// The type of the PortalDescription.
+        /// </value>
+        public string PortalDescription { get; set; }
+        public string MobileNumber { get; set; }
+        /// <summary>
+        /// Gets or sets the TotalData.
+        /// </summary>
+        /// <value>
+        /// The TotalData.
+        /// </value>
+        public double TotalData { get; set; }
+        public double TotalSMS { get; set; }
+        public double TotalVoice { get; set; }
+        public double ActualSubscriptionFee { get; set; }
+        public double ApplicableSubscriptionFee { get; set; }
     }
 
+    public class DisplayDetails
+    {
+        [Required(ErrorMessage = "Mobile Number required")]
+        public string MobileNumber { get; set; }
+        [Required(ErrorMessage = "Display name required")]
+        public string DisplayName { get; set; }
+    }
+    public class customerShipping
+    {
+        public string ShippingUnit { get; set; }
+        public string ShippingFloor { get; set; }
+        [Required(ErrorMessage = "street name is required")]
+        public string ShippingStreetName { get; set; }
+        [Required(ErrorMessage = "building number is required")]
+        public string ShippingBuildingNumber { get; set; }
+        public string ShippingBuildingName { get; set; }
+        [Required(ErrorMessage = "contact number is required")]
+        public string ShippingContactNumber { get; set; }
+        [Required(ErrorMessage = "postcode is required")]
+        public string ShippingPostCode { get; set; }
+    }
 }

@@ -108,5 +108,37 @@ namespace Core.Enums
         [EnumMember(Value = "Already processed payment")]
         [Description("Already processed payment")]
         PaymentAlreadyProcessed = 126,
+
+        [EnumMember(Value = "Update on active record is not allowed")]
+        [Description("Update on active record is not allowed")]
+        UpdateNotAllowed = 127,
+
+        [EnumMember(Value = "Duplicate record Exist")]
+        [Description("Same request is already raised")]
+        DuplicateCRExists = 128,
+
+        [EnumMember(Value = "Unsuspension Validation")]
+        [Description("First raise suspension request")]
+        UnSuspensionValidation = 129,
+
+        [EnumMember(Value = "Delivery slot unavailablity")]
+        [Description("Delivery slot unavailablity, Please select a new slot")]
+        DeliverySlotUnavailability = 130,
+
+        [EnumMember(Value = "Same Bundle is present")]
+        [Description("Plan is not changed as you are raising request against same bundle")]
+        SameBundleValidation = 131,
+
+        [EnumMember(Value = "Order delivery information is missing")]
+        [Description("Order delivery information is missing")]
+        OrderDeliveryInformationMissing = 132,
+
+        [EnumMember(Value = "Order Identity documents are missing")]
+        [Description("Order Identity documents are missing")]
+        OrderIDDocumentsMissing = 133,
+
+        [EnumMember(Value = "Nationality is not defined for the profile")]
+        [Description("Nationality is not defined for the profile")]
+        OrderNationalityMissing = 134,
     }
 }

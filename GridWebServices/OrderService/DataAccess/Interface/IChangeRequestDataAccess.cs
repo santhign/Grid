@@ -13,13 +13,15 @@ namespace OrderService.DataAccess
     public interface IChangeRequestDataAccess
     {
         /// <summary>
-        /// Removes the vas service.
+        /// Removes the vas service
         /// </summary>
-        /// <param name="customerId">The customer identifier.</param>
-        /// <param name="mobileNumber">The mobile number.</param>
-        /// <param name="planId">The plan identifier.</param>
+        /// <param name="customerId"></param>
+        /// <param name="mobileNumber"></param>
+        /// <param name="subscriptionID"></param>        
         /// <returns></returns>
-        Task<DatabaseResponse> RemoveVasService(int customerId, string mobileNumber, int planId);
+        Task<DatabaseResponse> RemoveVasService(int customerId, string mobileNumber, int subscriptionID);
+
+        Task<DatabaseResponse> RemoveSharedVasService(int customerId, int accountSubscriptionId);
         /// <summary>
         /// Buys the vas service.
         /// </summary>
@@ -60,6 +62,8 @@ namespace OrderService.DataAccess
         Task<DatabaseResponse> UpdateCRShippingDetails(UpdateCRShippingDetailsRequest shippingDetails);
 
         Task<DatabaseResponse> BuySharedService(int customerId, int bundleId);
+
+        Task<DatabaseResponse> ChangePlanService(int customerId, string mobileNumber, int bundleId);
 
     }
 }

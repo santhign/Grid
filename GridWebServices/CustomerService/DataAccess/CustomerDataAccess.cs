@@ -244,17 +244,19 @@ namespace CustomerService.DataAccess
                     customerPlans = (from model in dt.AsEnumerable()
                                      select new CustomerPlans()
                                      {
+                                         SubscriptionID = model.Field<int>("SubscriptionID"),
                                          CustomerID = model.Field<int>("CustomerID"),
                                          PlanId = model.Field<int>("PlanID"),
                                          PlanMarketingName = model.Field<string>("PlanMarketingName"),
                                          PortalSummaryDescription = model.Field<string>("PortalSummaryDescription"),
                                          PortalDescription = model.Field<string>("PortalDescription"),
-                                         PlanStatus = model.Field<string>("PlanStatus"),
-                                         MobileNumber = model.Field<string>("MobileNumber"),
                                          SubscriptionType = model.Field<string>("SubscriptionType"),
+                                         PlanStatus = model.Field<string>("PlanStatus"),
+                                         //MobileNumber = model.Field<string>("MobileNumber"),
+                                         
                                          IsRecurring = model.Field<int>("IsRecurring"),
                                          ExpiryDate = model.Field<DateTime?>("ExpiryDate"),
-                                         Removable = model.Field<int>("Removable"),
+                                         Removable = model.Field<int>("Removable")
                                      }).ToList();
                 }
 
@@ -317,16 +319,17 @@ namespace CustomerService.DataAccess
                     customerPlans = (from model in dt.AsEnumerable()
                                      select new CustomerPlans()
                                      {
+                                         SubscriptionID = model.Field<int>("SubscriptionID"),
                                          CustomerID = model.Field<int>("CustomerID"),
                                          PlanId = model.Field<int>("PlanID"),
                                          PlanMarketingName = model.Field<string>("PlanMarketingName"),
                                          PortalSummaryDescription = model.Field<string>("PortalSummaryDescription"),
                                          PortalDescription = model.Field<string>("PortalDescription"),
-                                         PlanStatus = model.Field<string>("PlanStatus"),
-                                         MobileNumber = model.Field<string>("MobileNumber"),
                                          SubscriptionType = model.Field<string>("SubscriptionType"),
                                          IsRecurring = model.Field<int>("IsRecurring"),
+                                         MobileNumber = model.Field<string>("MobileNumber"),
                                          ExpiryDate = model.Field<DateTime?>("ExpiryDate"),
+                                         PlanStatus = model.Field<string>("PlanStatus"),
                                          Removable = model.Field<int>("Removable"),
                                      }).ToList();
                 }
@@ -528,7 +531,9 @@ namespace CustomerService.DataAccess
                                           LinkedMobileNumber = model.Field<string>("LinkedMobileNumber"),
                                           AccountType = model.Field<string>("AccountType"),
                                           LinkedDisplayName = model.Field<string>("LinkedDisplayName"),
-                                          State = model.Field<string>("State")
+                                          State = model.Field<string>("State"),
+                                          SuspensionRaised = model.Field<int>("SuspensionRaised"),
+                                          TerminationRaised = model.Field<int>("TerminationRaised")
                                       }).ToList();
                     }
 
@@ -814,7 +819,7 @@ namespace CustomerService.DataAccess
             }
         }
 
-        public async Task<DatabaseResponse> UpdateSubscriptionDetails(int CustomerID, customerSubscription _subscription)
+        public async Task<DatabaseResponse> UpdateEmailSubscriptionDetails(int CustomerID, int EmailSubscription)
 
         {
             try
@@ -822,12 +827,12 @@ namespace CustomerService.DataAccess
                 SqlParameter[] parameters =
                 {
                     new SqlParameter( "@CustomerID",  SqlDbType.Int ),
-                    new SqlParameter( "@EmailSubscription",  SqlDbType.Int ),
-                    new SqlParameter( "@SMSSubscription",  SqlDbType.Int ),
+                    new SqlParameter( "@EmailSubscription",  SqlDbType.Int )
                 };
 
                 parameters[0].Value = CustomerID;
-                _DataHelper = new DataAccessHelper("Customers_UpdateSubscriptionDetails", parameters, _configuration);
+                parameters[1].Value = EmailSubscription;
+                _DataHelper = new DataAccessHelper("Customers_UpdateEmailSubscriptionDetails", parameters, _configuration);
 
                 var dt = new DataTable();
 
@@ -837,34 +842,7 @@ namespace CustomerService.DataAccess
 
                 if (result == 105)
                 {
-
-                    var _customer = new List<Customer>();
-
-                    if (dt.Rows.Count > 0)
-                    {
-
-                        _customer = (from model in dt.AsEnumerable()
-                                                   select new Customer()
-                                                   {
-                                                       CustomerID = model.Field<int>("CustomerID"),
-                                                       Email = model.Field<string>("Email"),
-                                                       Password = model.Field<string>("Password"),
-                                                       MobileNumber = model.Field<string>("MobileNumber"),
-                                                       IdentityCardType = model.Field<string>("IdentityCardType"),
-                                                       IdentityCardNumber = model.Field<string>("IdentityCardNumber"),
-                                                       ReferralCode = model.Field<string>("ReferralCode"),
-                                                       Nationality = model.Field<string>("Nationality"),
-                                                       Gender = model.Field<string>("Gender"),
-                                                       DOB = model.Field<DateTime?>("DOB"),
-                                                       SMSSubscription = model.Field<string>("SMSSubscription"),
-                                                       EmailSubscription = model.Field<string>("EmailSubscription"),
-                                                       Status = model.Field<string>("Status"),
-                                                       JoinedOn = model.Field<DateTime>("JoinedOn")
-                                                   }).ToList();
-                    }
-
-                    response = new DatabaseResponse { ResponseCode = result, Results = _customer };
-
+                    response = new DatabaseResponse { ResponseCode = result, Results = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess) };
                 }
 
                 else
@@ -900,7 +878,7 @@ namespace CustomerService.DataAccess
 
                 parameters[0].Value = CustomerID;
 
-                _DataHelper = new DataAccessHelper("Admin_GetCustomerOrders", parameters, _configuration);
+                _DataHelper = new DataAccessHelper("Customers_GetOrders", parameters, _configuration);
 
                 DataSet ds = new DataSet();
 
@@ -961,50 +939,70 @@ namespace CustomerService.DataAccess
                             catch { }
                             try { orderDetails.ServiceFee = Convert.ToDouble(dr["ServiceFee"]); }
                             catch { }
-
-                            List<Bundle> orderBundles = new List<Bundle>();
-
-                            if (ds.Tables[1] != null && ds.Tables[1].Rows.Count > 0)
+                            orderDetails.InvoiceNumber = dr["InvoiceNumber"].ToString();
+                            orderDetails.MaskedCardNumber = dr["MaskedCardNumber"].ToString();
+                            orderDetails.CardBrand = dr["CardBrand"].ToString();
+                            orderDetails.ExpiryMonth = Convert.ToInt32(dr["ExpiryMonth"].ToString());
+                            orderDetails.ExpiryYear = Convert.ToInt32(dr["ExpiryYear"].ToString());
+                            try { orderDetails.PaymentOn = Convert.ToDateTime(dr["PaymentOn"]); }
+                            catch { }
+                            List<Subscribers> orderSubscribers = new List<Subscribers>();
+                            foreach (DataRow osdr in ds.Tables[1].Rows)
                             {
+                                Subscribers _subscriber = new Subscribers();
+                                _subscriber.OrderID = Convert.ToInt32(osdr["OrderID"]);
+                                _subscriber.SubscriberID = Convert.ToInt32(osdr["SubscriberID"]);
+                                _subscriber.OrderSubscriberID = Convert.ToInt32(osdr["OrderSubscriberID"]);
+                                _subscriber.DisplayName = osdr["DisplayName"].ToString();
+                                _subscriber.MobileNumber = osdr["MobileNumber"].ToString();
+                                _subscriber.IsPrimary = Convert.ToInt32(osdr["IsPrimary"]);
+                                try
+                                { _subscriber.ActivateOn = Convert.ToDateTime(osdr["ActivateOn"]); }
+                                catch { }
+                                try
+                                { _subscriber.DepositFee = Convert.ToDouble(osdr["DepositFee"]); }
+                                catch { }
+                                _subscriber.IsBuddyLine = Convert.ToInt32(osdr["IsBuddyLine"]);
+                                _subscriber.PremiumType = Convert.ToInt32(osdr["PremiumType"]);
+                                _subscriber.PremiumName = osdr["PremiumName"].ToString();
+                                _subscriber.IsPorted = Convert.ToInt32(osdr["IsPorted"]);
 
-                                orderBundles = (from model in ds.Tables[1].AsEnumerable()
-                                                select new Bundle()
-                                                {
-                                                    OrderID = model.Field<int>("OrderID"),
-                                                    BundleID = model.Field<int>("BundleID"),
-                                                    //DisplayName = model.Field<string>("DisplayName"),
-                                                    //MobileNumber = model.Field<string>("MobileNumber"),
-                                                    //IsPrimaryNumber = model.Field<int>("IsPrimaryNumber"),
-                                                    PlanMarketingName = model.Field<string>("PlanMarketingName"),
-                                                    PortalDescription = model.Field<string>("PortalDescription"),
-                                                    PortalSummaryDescription = model.Field<string>("PortalSummaryDescription"),
-                                                    TotalData = model.Field<double?>("TotalData"),
-                                                    TotalSMS = model.Field<double?>("TotalSMS"),
-                                                    TotalVoice = model.Field<double?>("TotalVoice"),
-                                                    ActualSubscriptionFee = model.Field<double?>("ActualSubscriptionFee"),
-                                                    ApplicableSubscriptionFee = model.Field<double?>("ApplicableSubscriptionFee"),
-                                                    ServiceName = model.Field<string>("ServiceName"),
-                                                    ActualServiceFee = model.Field<double?>("ActualServiceFee"),
-                                                    ApplicableServiceFee = model.Field<double?>("ApplicableServiceFee"),
-                                                    //PremiumType = model.Field<int>("PremiumType"),
-                                                    //IsPorted = model.Field<int>("IsPorted"),
-                                                    //IsOwnNumber = model.Field<int>("IsOwnNumber"),
-                                                    //DonorProvider = model.Field<string>("DonorProvider"),
-                                                    //PortedNumberTransferForm = model.Field<string>("PortedNumberTransferForm"),
-                                                    //PortedNumberOwnedBy = model.Field<string>("PortedNumberOwnedBy"),
-                                                    //PortedNumberOwnerRegistrationID = model.Field<string>("PortedNumberOwnerRegistrationID"),
-                                                }).Where(c => c.OrderID == orderDetails.OrderID).ToList();
+                                List<Bundle> orderBundles = new List<Bundle>();
 
-                                orderDetails.Bundles = orderBundles;
+                                if (ds.Tables[2] != null && ds.Tables[2].Rows.Count > 0)
+                                {
+                                    orderBundles = (from model in ds.Tables[2].AsEnumerable()
+                                                    select new Bundle()
+                                                    {
+                                                        OrderID = model.Field<int>("OrderID"),
+                                                        OrderSubscriberID = model.Field<int>("OrderSubscriberID"),
+                                                        BundleID = model.Field<int>("BundleID"),
+                                                        PlanMarketingName = model.Field<string>("PlanMarketingName"),
+                                                        PortalDescription = model.Field<string>("PortalDescription"),
+                                                        PortalSummaryDescription = model.Field<string>("PortalSummaryDescription"),
+                                                        TotalData = model.Field<double?>("TotalData"),
+                                                        TotalSMS = model.Field<double?>("TotalSMS"),
+                                                        TotalVoice = model.Field<double?>("TotalVoice"),
+                                                        ActualSubscriptionFee = model.Field<double?>("ActualSubscriptionFee"),
+                                                        ApplicableSubscriptionFee = model.Field<double?>("ApplicableSubscriptionFee"),
+                                                        ServiceName = model.Field<string>("ServiceName"),
+                                                        ActualServiceFee = model.Field<double?>("ActualServiceFee"),
+                                                        ApplicableServiceFee = model.Field<double?>("ApplicableServiceFee"),
+                                                    }).Where(c => c.OrderSubscriberID == _subscriber.OrderSubscriberID).ToList();
 
+                                    _subscriber.Bundles = orderBundles;
+                                }
+                                orderSubscribers.Add(_subscriber);
                             }
+
+                            orderDetails.Subscribers = orderSubscribers;
 
                             List<ServiceCharge> orderServiceCharges = new List<ServiceCharge>();
 
-                            if (ds.Tables[2] != null && ds.Tables[2].Rows.Count > 0)
+                            if (ds.Tables[3] != null && ds.Tables[3].Rows.Count > 0)
                             {
 
-                                orderServiceCharges = (from model in ds.Tables[2].AsEnumerable()
+                                orderServiceCharges = (from model in ds.Tables[3].AsEnumerable()
                                                        select new ServiceCharge()
                                                        {
                                                            OrderID = model.Field<int>("OrderID"),
@@ -1015,7 +1013,21 @@ namespace CustomerService.DataAccess
                                                        }).Where(c => c.OrderID == orderDetails.OrderID).ToList();
 
                                 orderDetails.ServiceCharges = orderServiceCharges;
+                            }
+                            List<OrderStatuses> OrderStatuses = new List<OrderStatuses>();
 
+                            if (ds.Tables[4] != null && ds.Tables[4].Rows.Count > 0)
+                            {
+
+                                OrderStatuses = (from model in ds.Tables[4].AsEnumerable()
+                                                       select new OrderStatuses()
+                                                       {
+                                                           OrderID = model.Field<int>("OrderID"),
+                                                           OrderStatus = model.Field<string>("OrderStatus"),
+                                                           UpdatedOn = model.Field<DateTime?>("UpdatedOn")
+                                                       }).Where(c => c.OrderID == orderDetails.OrderID).ToList();
+
+                                orderDetails.OrderStatuses = OrderStatuses;
                             }
                         }
                         orders.Add(orderDetails);
@@ -1037,6 +1049,429 @@ namespace CustomerService.DataAccess
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> GetRewardSummary(int CustomerID)
+        {
+            try
+            {
+                DatabaseResponse response = new DatabaseResponse();
+                SqlParameter[] parameters =
+                   {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+
+                };
+
+                parameters[0].Value = CustomerID;
+                _DataHelper = new DataAccessHelper("Customers_GetAccountID", parameters, _configuration);
+
+                var dt = new DataTable();
+
+                var result = await _DataHelper.RunAsync(dt); // 105 /119
+                if (result == 105)
+                {
+                    int AccountID = -1;
+                    int.TryParse(dt.Rows[0][0].ToString().Trim(), out AccountID);
+                    DatabaseResponse configResponse = ConfigHelper.GetValueByKey("RewardSummaryUrl", _configuration);
+                    RewardHelper _helper = new RewardHelper();
+                    Rewards _rewards = _helper.GetRewardSummary(configResponse.Results.ToString().Trim(), AccountID);
+                    response = new DatabaseResponse { ResponseCode = 105, Results = _rewards };
+                }
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> GetRewardDetails(int CustomerID, DateTime FromDate, DateTime ToDate)
+        {
+            try
+            {
+                DatabaseResponse response = new DatabaseResponse();
+                SqlParameter[] parameters =
+                   {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+
+                };
+
+                parameters[0].Value = CustomerID;
+                _DataHelper = new DataAccessHelper("Customers_GetAccountID", parameters, _configuration);
+
+                var dt = new DataTable();
+
+                var result = await _DataHelper.RunAsync(dt); // 105 /119
+                if (result == 105)
+                {
+                    int AccountID = -1;
+                    int.TryParse(dt.Rows[0][0].ToString().Trim(), out AccountID);
+                    DatabaseResponse configResponse = ConfigHelper.GetValueByKey("RewardDetailsUrl", _configuration);
+                    RewardHelper _helper = new RewardHelper();
+                    RewardDetails _rewards = _helper.GetRewardDetails(configResponse.Results.ToString().Trim(), AccountID, FromDate, ToDate);
+                    response = new DatabaseResponse { ResponseCode = 105, Results = _rewards };
+                }
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> UpdateBillingDetails(int CustomerID, customerBilling _billing)
+
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+                    new SqlParameter( "@BillingBuildingNumber",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@BillingBuildingName",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@BillingUnit",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@BillingFloor",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@BillingStreetName",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@BillingPostCode",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@BillingContactNumber",  SqlDbType.NVarChar ),
+                };
+
+                parameters[0].Value = CustomerID;
+                parameters[1].Value = _billing.BillingBuildingNumber;
+                parameters[2].Value = _billing.BillingBuildingName;
+                parameters[3].Value = _billing.BillingUnit;
+                parameters[4].Value = _billing.BillingFloor;
+                parameters[5].Value = _billing.BillingStreetName;
+                parameters[6].Value = _billing.BillingPostCode;
+                parameters[7].Value = _billing.BillingContactNumber;
+                _DataHelper = new DataAccessHelper("Customers_UpdateBillingDetails", parameters, _configuration);
+
+                var dt = new DataTable();
+
+                var result = await _DataHelper.RunAsync(dt); // 105 /119
+
+                DatabaseResponse response;
+
+                if (result == 105)
+                {             
+                    response = new DatabaseResponse { ResponseCode = result, Results = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess) };
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw;
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> GetBasePlan(int CustomerID, string MobileNumber)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+                    new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar )
+                };
+
+                parameters[0].Value = CustomerID;
+                parameters[1].Value = MobileNumber;
+
+                _DataHelper = new DataAccessHelper("Customers_GetBaseBundle", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt); // 105 /102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 105)
+                {
+                    var _plan = new List<BasePlans>();
+
+                    if (dt.Rows.Count > 0)
+                    {
+
+                        _plan = (from model in dt.AsEnumerable()
+                                     select new BasePlans()
+                                     {
+                                         BundleID = model.Field<int>("BundleID"),
+                                         PlanMarketingName = model.Field<string>("PlanMarketingName"),
+                                         PortalSummaryDescription = model.Field<string>("PortalSummaryDescription"),
+                                         PortalDescription = model.Field<string>("PortalDescription"),
+                                         MobileNumber = model.Field<string>("MobileNumber"),
+                                         TotalData = model.Field<double>("TotalData"),
+                                         TotalSMS = model.Field<double>("TotalSMS"),
+                                         TotalVoice = model.Field<double>("TotalVoice"),
+                                         ActualSubscriptionFee = model.Field<double>("ActualSubscriptionFee"),
+                                         ApplicableSubscriptionFee = model.Field<double>("ApplicableSubscriptionFee"),
+                                     }).ToList();
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = _plan };
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> UpdateDisplayName(int CustomerID, DisplayDetails details)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+                    new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@DisplayName",  SqlDbType.NVarChar )
+                };
+
+                parameters[0].Value = CustomerID;
+                parameters[1].Value = details.MobileNumber;
+                parameters[2].Value = details.DisplayName;
+                _DataHelper = new DataAccessHelper("Customers_UpdateDisplayDetails", parameters, _configuration);
+
+                var dt = new DataTable();
+
+                var result = await _DataHelper.RunAsync(dt); // 105 /119
+
+                DatabaseResponse response;
+
+                if (result == 105)
+                {
+                    response = new DatabaseResponse { ResponseCode = result, Results = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess) };
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw;
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> UpdateSMSSubscriptionDetails(int CustomerID, string MobileNumber, int SMSSubscription)
+
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+                    new SqlParameter( "@MobileNumber",  SqlDbType.Int ),
+                    new SqlParameter( "@SMSSubscription",  SqlDbType.Int )
+                };
+
+                parameters[0].Value = CustomerID;
+                parameters[1].Value = MobileNumber;
+                parameters[2].Value = SMSSubscription;
+                _DataHelper = new DataAccessHelper("Customers_UpdateSMSSubscriptionDetails", parameters, _configuration);
+
+                var dt = new DataTable();
+
+                var result = await _DataHelper.RunAsync(dt); // 105 /119
+
+                DatabaseResponse response;
+
+                if (result == 105)
+                {
+                    response = new DatabaseResponse { ResponseCode = result, Results = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess) };
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw;
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> UpdateVoiceSubscriptionDetails(int CustomerID, string MobileNumber, int VoiceSubscription)
+
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+                    new SqlParameter( "@MobileNumber",  SqlDbType.Int ),
+                    new SqlParameter( "@VoiceSubscription",  SqlDbType.Int )
+                };
+
+                parameters[0].Value = CustomerID;
+                parameters[1].Value = MobileNumber;
+                parameters[2].Value = VoiceSubscription;
+                _DataHelper = new DataAccessHelper("Customers_UpdateVoiceSubscriptionDetails", parameters, _configuration);
+
+                var dt = new DataTable();
+
+                var result = await _DataHelper.RunAsync(dt); // 105 /119
+
+                DatabaseResponse response;
+
+                if (result == 105)
+                {
+                    response = new DatabaseResponse { ResponseCode = result, Results = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess) };
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw;
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+        
+        public async Task<DatabaseResponse> GetCustomerShippingDetails(int CustomerID)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+
+                };
+
+                parameters[0].Value = CustomerID;
+                _DataHelper = new DataAccessHelper("Customers_GetShippingDetails", parameters, _configuration);
+
+                var dt = new DataTable();
+
+                var result = await _DataHelper.RunAsync(dt); // 105 /119
+
+                DatabaseResponse response;
+
+                if (result == 105)
+                {
+
+                    var _customerShipping = new customerShipping();
+
+                    if (dt.Rows.Count > 0)
+                    {
+
+                        _customerShipping = (from model in dt.AsEnumerable()
+                                            select new customerShipping()
+                                            {
+                                                ShippingUnit = model.Field<string>("ShippingUnit"),
+                                                ShippingFloor = model.Field<string>("ShippingFloor"),
+                                                ShippingStreetName = model.Field<string>("ShippingStreetName"),
+                                                ShippingBuildingNumber = model.Field<string>("ShippingBuildingNumber"),
+                                                ShippingBuildingName = model.Field<string>("ShippingBuildingName"),
+                                                ShippingContactNumber = model.Field<string>("ShippingContactNumber"),
+                                                ShippingPostCode = model.Field<string>("ShippingPostCode")
+                                            }).FirstOrDefault();
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = _customerShipping };
+
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw;
             }
             finally
             {

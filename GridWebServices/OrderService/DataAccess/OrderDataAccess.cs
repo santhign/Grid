@@ -1044,6 +1044,7 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }              
+
         public async Task<DatabaseResponse> UpdateOrderBillingDetails(UpdateOrderBillingDetailsRequest billingDetails)
         {
             try
@@ -1272,7 +1273,9 @@ namespace OrderService.DataAccess
                     new SqlParameter( "@ContactNumber",  SqlDbType.NVarChar ),
                     new SqlParameter( "@Terms",  SqlDbType.Int),
                     new SqlParameter( "@PaymentSubscription",  SqlDbType.Int),
-                    new SqlParameter( "@PromotionMessage",  SqlDbType.Int)
+                    new SqlParameter( "@EmailMessage",  SqlDbType.Int),
+                    new SqlParameter( "@SMSMessage",  SqlDbType.Int),
+                    new SqlParameter( "@VoiceMessage",  SqlDbType.Int)
 
                 };
 
@@ -1280,7 +1283,9 @@ namespace OrderService.DataAccess
                 parameters[1].Value = subscriptionDetails.ContactNumber;
                 parameters[2].Value = subscriptionDetails.Terms;
                 parameters[3].Value = subscriptionDetails.PaymentSubscription;
-                parameters[4].Value = subscriptionDetails.PromotionMessage;
+                parameters[4].Value = subscriptionDetails.EmailMessage;
+                parameters[5].Value = subscriptionDetails.SMSMessage;
+                parameters[6].Value = subscriptionDetails.VoiceMessage;
 
 
 
@@ -2191,151 +2196,51 @@ namespace OrderService.DataAccess
             }
         }
 
-        public async Task<DatabaseResponse> CreatePaymentMethod(TokenResponse tokenResponse, int customerID)
+        public async Task<DatabaseResponse> GetRescheduleAvailableSlots()
         {
             try
             {
-                SqlParameter[] parameters =
-               {
-                     new SqlParameter("@CustomerID",  SqlDbType.Int ),
-                     new SqlParameter("@MaskedCardNumer",  SqlDbType.NVarChar ),
-                     new SqlParameter("@SourceType",  SqlDbType.NVarChar ),
-                     new SqlParameter("@Token",  SqlDbType.NVarChar ),
-                     new SqlParameter("@CardType",  SqlDbType.NVarChar ),                   
-                     new SqlParameter("@ExpiryMonth",  SqlDbType.Int ),
-                     new SqlParameter("@ExpiryYear",  SqlDbType.Int ),
-                     new SqlParameter("@CardFundMethod",  SqlDbType.NVarChar ),
-                     new SqlParameter("@CardBrand",  SqlDbType.NVarChar ) 
-                };
-
-
-                parameters[0].Value = customerID;
-                parameters[1].Value = tokenResponse.Card.number;
-                parameters[2].Value = tokenResponse.Type;
-                parameters[3].Value = tokenResponse.Token;
-                parameters[4].Value = tokenResponse.Card.scheme;
-                parameters[5].Value = tokenResponse.Card.expiry.month;
-                parameters[6].Value = tokenResponse.Card.expiry.year;
-                parameters[7].Value = tokenResponse.Card.fundingMethod;
-                parameters[8].Value = tokenResponse.Card.brand;
-           
-
-                _DataHelper = new DataAccessHelper("Order_CreateCustomerPaymentMethods", parameters, _configuration);
+                _DataHelper = new DataAccessHelper("Orders_Reschedule_GetAvailableSlots", _configuration);
 
                 DataTable dt = new DataTable();
 
-                int result = await _DataHelper.RunAsync();    // 100 / 105
+                int result = await _DataHelper.RunAsync(dt); // 105 /102
 
                 DatabaseResponse response = new DatabaseResponse();
 
-                response = new DatabaseResponse { ResponseCode = result };
-
-                return response;
-            }
-            catch (Exception ex)
-            {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-
-                throw (ex);
-            }
-            finally
-            {
-                _DataHelper.Dispose();
-            }
-        }
-
-        public async Task<DatabaseResponse> UpdatePaymentMethodDetails(TransactionResponseModel transactionModel, int customerID, string token)
-        {
-            try
-            {
-                SqlParameter[] parameters =
-               {
-                     new SqlParameter("@CustomerID",  SqlDbType.Int ),
-                     new SqlParameter("@MaskedCardNumer",  SqlDbType.NVarChar ),                    
-                     new SqlParameter("@Token",  SqlDbType.NVarChar ),                    
-                     new SqlParameter("@CardHolderName",  SqlDbType.NVarChar ),
-                     new SqlParameter("@CardIssuer",  SqlDbType.NVarChar )
-                };
-
-                parameters[0].Value = customerID;
-                parameters[1].Value = transactionModel.CardNumber;
-                parameters[2].Value = token;
-                parameters[3].Value = transactionModel.CardHolderName;
-                parameters[4].Value = transactionModel.CardIssuer;  
-
-                _DataHelper = new DataAccessHelper("Order_UpdateCustomerPaymentMethodDetails", parameters, _configuration);
-
-                DataTable dt = new DataTable();
-
-                int result = await _DataHelper.RunAsync();    // 100 / 105
-
-                DatabaseResponse response = new DatabaseResponse();
-
-                response = new DatabaseResponse { ResponseCode = result };
-
-                return response;
-            }
-            catch (Exception ex)
-            {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-
-                throw (ex);
-            }
-            finally
-            {
-                _DataHelper.Dispose();
-            }
-        }
-
-        public async Task<DatabaseResponse> GetPaymentMethodToken(int customerID, int paymentMethodID)
-        {
-            try
-            {
-                SqlParameter[] parameters =
-               {
-                     new SqlParameter( "@CustomerID",  SqlDbType.Int ),
-                     new SqlParameter( "@PaymentMethodID",  SqlDbType.NVarChar )
-                };
-
-                parameters[0].Value = customerID;
-
-                parameters[1].Value = paymentMethodID;
-
-                _DataHelper = new DataAccessHelper("Order_GetPaymentTokenByID", parameters, _configuration);
-
-                DataTable dt = new DataTable();
-
-                int result = await _DataHelper.RunAsync(dt);    // 105 / 102
-
-                DatabaseResponse response = new DatabaseResponse();
-
-                PaymentMethod paymentMethod = new PaymentMethod();
-
-                if (dt != null && dt.Rows.Count > 0)
+                if (result == 105)
                 {
 
-                    paymentMethod = (from model in dt.AsEnumerable()
-                                    select new PaymentMethod()
-                                    {
-                                         PaymentMethodID = model.Field<int>("PaymentMethodID"),
-                                         Token = model.Field<string>("Token"),
-                                        SourceType = model.Field<string>("SourceType"),
-                                    }).FirstOrDefault();
+                    List<DeliverySlot> deliverySlots = new List<DeliverySlot>();
 
-                    response = new DatabaseResponse { ResponseCode = result, Results = paymentMethod };
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+
+                        deliverySlots = (from model in dt.AsEnumerable()
+                                         select new DeliverySlot()
+                                         {
+                                             PortalSlotID = model.Field<string>("PortalSlotID"),
+                                             SlotDate = model.Field<DateTime>("SlotDate"),
+                                             SlotFromTime = model.Field<TimeSpan>("SlotFromTime"),
+                                             SlotToTime = model.Field<TimeSpan>("SlotToTime"),
+                                             Slot = model.Field<string>("Slot"),
+                                             AdditionalCharge = model.Field<double>("AdditionalCharge"),
+
+                                         }).ToList();
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = deliverySlots };
 
                 }
 
                 else
                 {
                     response = new DatabaseResponse { ResponseCode = result };
-
                 }
-
-
 
                 return response;
             }
+
             catch (Exception ex)
             {
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
@@ -2348,31 +2253,105 @@ namespace OrderService.DataAccess
             }
         }
 
-        public async Task<DatabaseResponse> RemovePaymentMethod(int customerID, int paymentMethodID)
+        public async Task<DatabaseResponse> RemoveLOADetails(int OrderID)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                 {
+                     new SqlParameter( "@OrderID",  SqlDbType.Int ),
+                };
+
+                parameters[0].Value = OrderID;
+
+                _DataHelper = new DataAccessHelper("Orders_RemoveLOADetails", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt); // 105 /102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                response = new DatabaseResponse { ResponseCode = result };
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> GetPortTypeFromOrderId(int OrderID, string MobileNumber)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@OrderID",  SqlDbType.Int ),
+                    new SqlParameter( "@MobileNumber",  SqlDbType.Int )
+                };
+
+                parameters[0].Value = OrderID;
+                parameters[1].Value = MobileNumber;
+
+                _DataHelper = new DataAccessHelper("Order_GetPortTypeByOrderID", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt); // 105 /102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 105)
+                {
+                    response = new DatabaseResponse { ResponseCode = result, Results = dt.Rows[0][0].ToString().Trim() };
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<int> CancelOrder(int customerId, int orderId)
         {
             try
             {
                 SqlParameter[] parameters =
                {
                      new SqlParameter( "@CustomerID",  SqlDbType.Int ),
-                     new SqlParameter( "@PaymentMethodID",  SqlDbType.NVarChar )
+                     new SqlParameter( "@OrderId",  SqlDbType.Int )
                 };
 
-                parameters[0].Value = customerID;
+                parameters[0].Value = customerId;
+                parameters[1].Value = orderId;
 
-                parameters[1].Value = paymentMethodID;
-
-                _DataHelper = new DataAccessHelper("Order_RemovePaymentTokenByID", parameters, _configuration);
-
-                DataTable dt = new DataTable();
-
-                int result = await _DataHelper.RunAsync(dt);    // 103 / 102
-
-                DatabaseResponse response = new DatabaseResponse(); 
-
-                response = new DatabaseResponse { ResponseCode = result };
-
-                return response;
+                _DataHelper = new DataAccessHelper(DbObjectNames.Orders_CancelOrder, parameters, _configuration);
+               
+                return await _DataHelper.RunAsync();    // 105 / 119 
+               
             }
             catch (Exception ex)
             {
@@ -2385,7 +2364,5 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
-
-       
     }
 }

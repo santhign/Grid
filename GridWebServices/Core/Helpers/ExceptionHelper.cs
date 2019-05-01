@@ -32,12 +32,16 @@ namespace Core.Helpers
                     ExceptionFileName = frame.GetFileName(), //Get the file name
                     ExceptionLineNumber = frame.GetFileLineNumber(),  //Get the line number
                     ExceptionColumnNumber = frame.GetFileColumnNumber(), //Get the column number                      
-                    ExceptionMethodName = ex.TargetSite.ReflectedType.FullName // Get the method name
+                    ExceptionMethodName = ex.TargetSite.ReflectedType.FullName, // Get the method name
+                    ExceptionStackTrace = ex.StackTrace
 
                 };             
                
 
-                string excep = $"ExceptionLogId:{exLog.ExceptionLogId}, ExceptionType:{exLog.ExceptionType}, ExceptionInnerException:{exLog.ExceptionInnerException}, ExceptionMessage:{exLog.ExceptionMessage}, ExceptionSeverity:{exLog.ExceptionSeverity}, ExceptionFileName:{exLog.ExceptionFileName}, ExceptionMethodName:{exLog.ExceptionMethodName}, ExceptionLineNumber:{exLog.ExceptionLineNumber}, ExceptionColumnNumber:{exLog.ExceptionColumnNumber}" ;
+                string excep = $"ExceptionLogId:{exLog.ExceptionLogId}, ExceptionType:{exLog.ExceptionType}, " +
+                    $"ExceptionInnerException:{exLog.ExceptionInnerException}, ExceptionMessage:{exLog.ExceptionMessage}, " +
+                    $"ExceptionSeverity:{exLog.ExceptionSeverity}, ExceptionFileName:{exLog.ExceptionFileName}, ExceptionMethodName:{exLog.ExceptionMethodName}, " +
+                    $"ExceptionLineNumber:{exLog.ExceptionLineNumber}, ExceptionColumnNumber:{exLog.ExceptionColumnNumber} , ExceptionStackTrace:{exLog.ExceptionStackTrace}" ;
 
                 return excep.Remove(0,1);
 

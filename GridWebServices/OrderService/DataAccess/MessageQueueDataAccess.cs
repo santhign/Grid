@@ -90,7 +90,7 @@ namespace OrderService.DataAccess
                                    Nationality = model.Field<string>("Nationality"),
                                    IdType = model.Field<string>("IDType"),
                                    IdNumber = model.Field<string>("IDNumber"),
-                                   IsSameAsBilling = model.Field<string>("IsSameAsBilling"),
+                                   IsSameAsBilling = model.Field<int?>("IsSameAsBilling"),
                                    ShippingUnit = model.Field<string>("ShippingUnit"),
                                    ShippingFloor = model.Field<string>("ShippingFloor"),
                                    ShippingBuildingNumber = model.Field<string>("ShippingBuildingNumber"),
@@ -127,15 +127,29 @@ namespace OrderService.DataAccess
                                                          TotalData = model.Field<double?>("TotalData"),
                                                          TotalSMS = model.Field<double?>("TotalSMS"),
                                                          TotalVoice = model.Field<double?>("TotalVoice"),
-                                                         ApplicableSubscriptionFee = model.Field<double?>("ApplicableSubscriptionFee"),                                                                                                                 
+                                                         ApplicableSubscriptionFee = model.Field<double?>("ApplicableSubscriptionFee"),
+                                                         ServiceName = model.Field<string>("ServiceName"),
+                                                         ApplicableServiceFee = model.Field<double?>("ApplicableServiceFee"),
                                                          OldPlanID = model.Field<int?>("OldPlanID"),
-                                                         OldBSSPlanId = model.Field<int?>("OldBSSPlanId"),
+                                                         OldBSSPlanId = model.Field<string>("OldBSSPlanId"),
                                                          OldBSSPlanName = model.Field<string>("OldBSSPlanName"),
                                                          
                                                      }).ToList();
 
-                        if (ds.Tables.Count > 2 && ds.Tables[2].Rows.Count != 0)
-                            msgBody.Charges = (from model in ds.Tables[2].AsEnumerable()
+                        msgBody.CurrBundles = (from model in ds.Tables[2].AsEnumerable()
+                                           select new CurrBundleDetails()
+                                           {
+                                               BundleID = model.Field<int?>("BundleID"),
+                                               BSSPlanCode = model.Field<string>("BSSPlanCode"),
+                                               BSSPlanName = model.Field<string>("BSSPlanName"),
+                                               PlanType = model.Field<int?>("PlanType"),
+                                               StartDate = model.Field<DateTime?>("StartDate"),
+                                               ExpiryDate = model.Field<DateTime?>("ExpiryDate"),
+
+                                           }).ToList();
+
+                        if (ds.Tables.Count > 2 && ds.Tables[3].Rows.Count != 0)
+                            msgBody.Charges = (from model in ds.Tables[3].AsEnumerable()
                                                                        select new ChargesDetails()
                                                                        {
                                                                            ChangeRequestID = model.Field<int>("ChangeRequestID"),
@@ -489,7 +503,7 @@ namespace OrderService.DataAccess
             parameters[10].Value = messageQueueRequestException.Exception;
 
 
-            _DataHelper = new DataAccessHelper(DbObjectNames.z_InsertIntoMessageQueueRequests, parameters, _configuration);
+            _DataHelper = new DataAccessHelper(DbObjectNames.z_UpdateStatusInMessageQueueRequestsException, parameters, _configuration);
 
 
             await _DataHelper.RunAsync();

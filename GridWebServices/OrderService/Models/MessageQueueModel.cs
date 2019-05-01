@@ -70,7 +70,7 @@ namespace OrderService.Models
         [DataMember]
         public string IdNumber { get; set; }
         [DataMember]
-        public string IsSameAsBilling { get; set; }
+        public int? IsSameAsBilling { get; set; }
         [DataMember]
         public string ShippingUnit { get; set; }
         [DataMember]
@@ -107,19 +107,38 @@ namespace OrderService.Models
         public string NewMobileNumber { get; set; }
         [DataMember]
         public string OldSIM { get; set; }
-        
-        [DataMember(Name = "Bundles")]
-        public List<BundleDetails> Bundles { get; set; }
 
-       
+        [DataMember(Name = "Bundles")]
+        public List<CurrBundleDetails> CurrBundles { get; set; }
+
+        [DataMember(Name = "CurrBundles")]
+        public List<BundleDetails> Bundles { get; set; }        
+
+
         [DataMember(Name = "Charges")]
         public IList<ChargesDetails> Charges { get; set; }
     }
+    public class CurrBundleDetails
+    {
+        [DataMember]
+        public int? BundleID { get; set; }
+        [DataMember]
+        public string BSSPlanCode { get; set; }
+        [DataMember]
+        public string BSSPlanName { get; set; }
+        [DataMember]
+        public int? PlanType { get; set; }
+        [DataMember]
+        public DateTime? StartDate { get; set; }
+        [DataMember]
+        public DateTime? ExpiryDate { get; set; }
 
-    /// <summary>
-    /// Subscriber details
-    /// </summary>
-    public class BundleDetails
+
+    }
+        /// <summary>
+        /// Subscriber details
+        /// </summary>
+        public class BundleDetails
     {
         [DataMember]
         public int? BundleID { get; set; }
@@ -151,7 +170,7 @@ namespace OrderService.Models
         [DataMember]
         public int? OldPlanID { get; set; }
         [DataMember]
-        public int? OldBSSPlanId { get; set; }
+        public string OldBSSPlanId { get; set; }
         [DataMember]
         public string OldBSSPlanName { get; set; }
         
