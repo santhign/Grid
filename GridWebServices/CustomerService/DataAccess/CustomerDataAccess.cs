@@ -1414,5 +1414,69 @@ namespace CustomerService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+        
+        public async Task<DatabaseResponse> GetCustomerShippingDetails(int CustomerID)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+
+                };
+
+                parameters[0].Value = CustomerID;
+                _DataHelper = new DataAccessHelper("Customers_GetShippingDetails", parameters, _configuration);
+
+                var dt = new DataTable();
+
+                var result = await _DataHelper.RunAsync(dt); // 105 /119
+
+                DatabaseResponse response;
+
+                if (result == 105)
+                {
+
+                    var _customerShipping = new customerShipping();
+
+                    if (dt.Rows.Count > 0)
+                    {
+
+                        _customerShipping = (from model in dt.AsEnumerable()
+                                            select new customerShipping()
+                                            {
+                                                ShippingUnit = model.Field<string>("ShippingUnit"),
+                                                ShippingFloor = model.Field<string>("ShippingFloor"),
+                                                ShippingStreetName = model.Field<string>("ShippingStreetName"),
+                                                ShippingBuildingNumber = model.Field<string>("ShippingBuildingNumber"),
+                                                ShippingBuildingName = model.Field<string>("ShippingBuildingName"),
+                                                ShippingContactNumber = model.Field<string>("ShippingContactNumber"),
+                                                ShippingPostCode = model.Field<string>("ShippingPostCode")
+                                            }).FirstOrDefault();
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = _customerShipping };
+
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw;
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
     }
 }
