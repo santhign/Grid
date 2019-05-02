@@ -2186,13 +2186,53 @@ namespace OrderService.Controllers
                                     IsDomainValidationErrors = false
                                 });
                             }
+                            else if(updatePersoanDetailsResponse.ResponseCode == (int)DbReturnValue.DeliverySlotUnavailability)
+                            {
+                                LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.DeliverySlotUnavailability));
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = false,
+                                    Message = EnumExtensions.GetDescription(DbReturnValue.DeliverySlotUnavailability),
+                                    IsDomainValidationErrors = false
+                                });
+                            }
+                            else if (updatePersoanDetailsResponse.ResponseCode == (int)DbReturnValue.OrderDeliveryInformationMissing)
+                            {
+                                LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.OrderDeliveryInformationMissing));
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = false,
+                                    Message = EnumExtensions.GetDescription(DbReturnValue.OrderDeliveryInformationMissing),
+                                    IsDomainValidationErrors = false
+                                });
+                            }
+                            else if (updatePersoanDetailsResponse.ResponseCode == (int)DbReturnValue.OrderIDDocumentsMissing)
+                            {
+                                LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.OrderIDDocumentsMissing));
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = false,
+                                    Message = EnumExtensions.GetDescription(DbReturnValue.OrderIDDocumentsMissing),
+                                    IsDomainValidationErrors = false
+                                });
+                            }
+                            else if (updatePersoanDetailsResponse.ResponseCode == (int)DbReturnValue.OrderNationalityMissing)
+                            {
+                                LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.OrderNationalityMissing));
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = false,
+                                    Message = EnumExtensions.GetDescription(DbReturnValue.OrderNationalityMissing),
+                                    IsDomainValidationErrors = false
+                                });
+                            }
                             else
                             {
                                 LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToUpdatedSubscriptionDetails));
                                 return Ok(new OperationResponse
                                 {
                                     HasSucceeded = false,
-                                    Message = EnumExtensions.GetDescription(updatePersoanDetailsResponse.ResponseCode),
+                                    Message = EnumExtensions.GetDescription(DbReturnValue.UpdationFailed),
                                     IsDomainValidationErrors = false
                                 });
                             }
