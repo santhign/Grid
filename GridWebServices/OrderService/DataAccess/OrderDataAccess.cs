@@ -2559,5 +2559,77 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+
+        public async Task<DatabaseResponse> RescheduleDelivery(int customerID, Order_RescheduleDeliveryRequest detailsrequest)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                     new SqlParameter("@CustomerID",  SqlDbType.Int ),                     
+                     new SqlParameter("@OrderID",  SqlDbType.Int ),
+                     new SqlParameter("@ShippingContactNumber",  SqlDbType.NVarChar ),
+                     new SqlParameter("@ShippingFloor",  SqlDbType.NVarChar ),
+                     new SqlParameter("@ShippingUnit",  SqlDbType.NVarChar ),
+                     new SqlParameter("@ShippingBuildingName",  SqlDbType.NVarChar ),
+                     new SqlParameter("@ShippingBuildingNumber",  SqlDbType.NVarChar ),
+                     new SqlParameter("@ShippingStreetName",  SqlDbType.NVarChar ),
+                     new SqlParameter("@ShippingPostCode",  SqlDbType.NVarChar ),
+                     new SqlParameter("@AlternateRecipientName",  SqlDbType.NVarChar ),
+                     new SqlParameter("@AlternateRecipientEmail",  SqlDbType.NVarChar ),
+                     new SqlParameter("@AlternateRecipientContact",  SqlDbType.NVarChar ),
+                     new SqlParameter("@AlternateRecipientIDNumber",  SqlDbType.NVarChar ),
+                     new SqlParameter("@AlternateRecipientIDType",  SqlDbType.NVarChar ),
+                     new SqlParameter("@PortalSlotID",  SqlDbType.NVarChar ),
+                     new SqlParameter("@ScheduledDate",  SqlDbType.Date ),
+
+
+
+                };
+
+
+                parameters[0].Value = customerID;                
+                parameters[1].Value = detailsrequest.OrderID;
+                parameters[2].Value = detailsrequest.ShippingContactNumber;
+                parameters[3].Value = detailsrequest.ShippingFloor;
+                parameters[4].Value = detailsrequest.ShippingUnit;
+                parameters[5].Value = detailsrequest.ShippingBuildingName;
+                parameters[6].Value = detailsrequest.ShippingBuildingNumber;
+                parameters[7].Value = detailsrequest.ShippingStreetName;
+                parameters[8].Value = detailsrequest.ShippingPostCode;
+                parameters[9].Value = detailsrequest.AlternateRecipientName;
+                parameters[10].Value = detailsrequest.AlternateRecipientEmail;
+                parameters[11].Value = detailsrequest.AlternateRecipientContact;
+                parameters[12].Value = detailsrequest.AlternateRecioientIDNumber;
+                parameters[13].Value = detailsrequest.AlternateRecioientIDType;
+                parameters[14].Value = detailsrequest.PortalSlotID;
+                parameters[15].Value = detailsrequest.ScheduledDate;
+               
+
+
+
+                _DataHelper = new DataAccessHelper(DbObjectNames.Orders_RescheduleDelivery, parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt);    // 100 / 105
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                response = new DatabaseResponse { ResponseCode = result };
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
     }
 }
