@@ -88,4 +88,28 @@ namespace OrderService.Models
 
     }
 
+    public class Order_RescheduleDeliveryRequest
+    {
+        public int OrderID { get; set; }
+        public string ShippingContactNumber { get; set; }
+        public string ShippingFloor { get; set; }
+        public string ShippingUnit { get; set; }
+        public string ShippingBuildingName { get; set; }
+        public string ShippingBuildingNumber { get; set; }
+        public string ShippingStreetName { get; set; }
+
+        public string ShippingPostCode { get; set; }
+        public string AlternateRecipientName { get; set; }
+        public string AlternateRecipientEmail { get; set; }
+        public string AlternateRecipientContact { get; set; }
+        public string AlternateRecioientIDNumber { get; set; }
+        public string AlternateRecioientIDType { get; set; }
+        public string PortalSlotID { get; set; }
+        public DateTime ? ScheduledDate { get; set; }
+
+
+       
+    }
+
+
 }
