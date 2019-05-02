@@ -2694,5 +2694,52 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+
+        public async Task<DatabaseResponse> ConfirmedRescheduleDelivery(int customerID, int orderID)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                     new SqlParameter("@CustomerID",  SqlDbType.Int ),
+                     //new SqlParameter("@RescheduleDeliveryInformationID",  SqlDbType.Int ),
+                     new SqlParameter("@OrderID",  SqlDbType.Int )
+                   
+
+
+
+                };
+
+
+                parameters[0].Value = customerID;
+                //parameters[1].Value = rescheduleDeliveryInformationID;
+                parameters[1].Value = orderID;            
+
+
+
+
+                _DataHelper = new DataAccessHelper(DbObjectNames.Orders_ConfirmedRescheduleDelivery, parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt);    // 100 / 105
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                response = new DatabaseResponse { ResponseCode = result };
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
     }
 }

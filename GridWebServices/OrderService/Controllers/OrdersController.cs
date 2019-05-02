@@ -5450,7 +5450,7 @@ namespace OrderService.Controllers
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
                 var helper = new AuthHelper(_iconfiguration);
-                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_cancel_order);
+                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_RescheduleDelivery_I);
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
                     var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
@@ -5475,6 +5475,17 @@ namespace OrderService.Controllers
                         {
                             HasSucceeded = false,
                             Message = DbReturnValue.DuplicateCRExists.GetDescription(),
+                            IsDomainValidationErrors = false
+                        });
+                    }
+                    else if (statusResponse.ResponseCode == (int)DbReturnValue.RescheduleOrderStatusNotCorrect)
+                    {
+                        LogInfo.Error(DbReturnValue.RescheduleOrderStatusNotCorrect.GetDescription());
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = DbReturnValue.RescheduleOrderStatusNotCorrect.GetDescription(),
                             IsDomainValidationErrors = false
                         });
                     }
@@ -5520,8 +5531,8 @@ namespace OrderService.Controllers
 
 
         [HttpPost]
-        [Route("UpdateAddressForRescheduleDelivery/{orderId}")]
-        public async Task<IActionResult> UpdateAddressForRescheduleDelivery([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int orderId, UpdateCRShippingDetailsRequest detailsrequest)
+        [Route("ConfirmedRescheduleDelivery/{orderId}")]
+        public async Task<IActionResult> ConfirmedRescheduleDelivery([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int orderId)
         {
             try
             {
@@ -5546,13 +5557,12 @@ namespace OrderService.Controllers
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
                 var helper = new AuthHelper(_iconfiguration);
-                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_cancel_order);
+                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_ConfirmedRescheduleDelivery_II);
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
                     var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
-                    DatabaseResponse statusResponse = new DatabaseResponse();
-                    statusResponse.ResponseCode =
-                        await _orderAccess.CancelOrder(aTokenResp.CustomerID, orderId);
+                    var statusResponse =
+                        await _orderAccess.ConfirmedRescheduleDelivery(aTokenResp.CustomerID, orderId);
 
                     if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                     {
