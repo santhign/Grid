@@ -2056,7 +2056,7 @@ namespace CustomerService.Controllers
 
                 AuthHelper helper = new AuthHelper(_iconfiguration);
 
-                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_UpdateSubscription);
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
 
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
