@@ -3628,168 +3628,7 @@ namespace OrderService.Controllers
         /// <param name="token" in="Header"></param>  
         /// <param name="request"></param>      
         /// <returns>OperationsResponse</returns>
-        [HttpPost("GetTokenizationCheckOutDetails")]
-        public async Task<IActionResult> GetTokenizationCheckOutDetails([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] TokenizeRequest request)
-        {
-            try
-            {
-              
-                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
-                {
-                    HasSucceeded = false,
-                    IsDomainValidationErrors = true,
-                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
-
-                });
-                AuthHelper helper = new AuthHelper(_iconfiguration);
-
-                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
-
-                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
-                {
-                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
-                    {
-                        int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
-
-                        if (!ModelState.IsValid)
-                        {
-                            return Ok(new OperationResponse
-                            {
-                                HasSucceeded = false,
-                                IsDomainValidationErrors = true,
-                                Message = string.Join("; ", ModelState.Values
-                                                      .SelectMany(x => x.Errors)
-                                                      .Select(x => x.ErrorMessage))
-                            });
-                        }
-
-                        OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
-                        DatabaseResponse customerResponse;
-                        if (request.OrderType == 1)
-                        {
-                            customerResponse = await _orderAccess.GetCustomerIdFromOrderId(request.OrderId);
-                        }
-                        else if (request.OrderType == 2)
-                        {
-                            customerResponse = await _orderAccess.GetCustomerIdFromChangeRequestId(request.OrderId);
-                        }
-                        else
-                        {
-                            customerResponse = await _orderAccess.GetCustomerIdFromAccountInvoiceId(request.OrderId);
-                        }
-
-                        if (customerResponse.ResponseCode == (int)DbReturnValue.RecordExists && customerID == ((OrderCustomer)customerResponse.Results).CustomerId)
-                        {
-                            // Call MPGS to create a checkout session and retuen details
-
-                            PaymentHelper gatewayHelper = new PaymentHelper();
-
-                            Checkout checkoutDetails = new Checkout();
-
-                            DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.MPGS.ToString());
-
-                            GridMPGSConfig gatewayConfig = gatewayHelper.GetGridMPGSConfig((List<Dictionary<string, string>>)configResponse.Results);
-
-                            checkoutDetails = gatewayHelper.CreateTokenizationCheckoutSession(gatewayConfig);
-
-                            CheckOutRequestDBUpdateModel checkoutUpdateModel = new CheckOutRequestDBUpdateModel
-                            {
-                                Source = ((CheckOutType)request.OrderType).ToString(),
-
-                                SourceID = request.OrderId,
-
-                                //CheckOutSessionID = checkoutDetails.CheckoutSession.Id,
-
-                               // CheckoutVersion = checkoutDetails.CheckoutSession.Version,
-
-                              //  SuccessIndicator = checkoutDetails.CheckoutSession.SuccessIndicator,
-
-                                MPGSOrderID = checkoutDetails.OrderId,
-
-                                TransactionID=checkoutDetails.TransactionID
-                            };
-
-                            //Update checkout details and return amount
-
-                            DatabaseResponse checkOutAmountResponse = await _orderAccess.GetTokenizationCheckoutRequestDetails(checkoutUpdateModel);
-
-                            if (checkOutAmountResponse.ResponseCode == (int)DbReturnValue.RecordExists)
-                            {
-                                checkoutDetails.Amount = ((Checkout)checkOutAmountResponse.Results).Amount;
-
-                                return Ok(new OperationResponse
-                                {
-                                    HasSucceeded = true,
-                                    Message = EnumExtensions.GetDescription(CommonErrors.CheckoutSessionCreated),
-                                    IsDomainValidationErrors = false,
-                                    ReturnedObject = checkoutDetails
-                                });
-                            }
-                            else
-                            {
-                                LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.NoRecords));
-                                return Ok(new OperationResponse
-                                {
-                                    HasSucceeded = false,
-                                    Message = EnumExtensions.GetDescription(DbReturnValue.NoRecords),
-                                    IsDomainValidationErrors = false
-                                });
-                            }
-                        }
-                        else
-                        {
-                            // failed to locate customer
-                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToGetCustomer));
-                            return Ok(new OperationResponse
-                            {
-                                HasSucceeded = false,
-                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
-                                IsDomainValidationErrors = false
-                            });
-                        }
-                    }
-
-                    else
-                    {
-                        //Token expired
-
-                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
-
-                        return Ok(new OperationResponse
-                        {
-                            HasSucceeded = false,
-                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
-                            IsDomainValidationErrors = true
-                        });
-
-                    }
-                }
-                else
-                {
-                    // token auth failure
-                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
-
-                    return Ok(new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
-                        IsDomainValidationErrors = false
-                    });
-                }
-            }
-            catch (Exception ex)
-            {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-
-                return Ok(new OperationResponse
-                {
-                    HasSucceeded = false,
-                    Message = StatusMessages.ServerError,
-                    IsDomainValidationErrors = false
-                });
-            }
-        }
-
+      
         [HttpPost("Tokenize")]
         public async Task<IActionResult> Tokenize([FromHeader(Name = "Grid-Authorization-Token")] string token)
         {
@@ -3845,11 +3684,14 @@ namespace OrderService.Controllers
 
                             TokenResponse tokenizeResponse = new TokenResponse();
                             TransactionResponseModel transactionResponse = new TransactionResponseModel();
-                           // tokenizeResponse = gatewayHelper.Tokenize(gatewayConfig, request, (CreateTokenUpdatedDetails)updateTokenSesisonDetails.Results);
+                            //
+
+                           // tokenizeResponse = gatewayHelper.TokenizeTest(gatewayConfig);
                             // transactionResponse = gatewayHelper.PayWithToken(gatewayConfig, request, (CreateTokenUpdatedDetails)updateTokenSesisonDetails.Results, tokenizeResponse);
 
+                            string response = gatewayHelper.VoidTransaction(gatewayConfig);
                            // string response = gatewayHelper.Capture(gatewayConfig);
-                          //  string response = gatewayHelper.Authorize(gatewayConfig);//transactionResponse = gatewayHelper.PayWithToken(gatewayConfig, request, (CreateTokenUpdatedDetails)updateTokenSesisonDetails.Results, tokenizeResponse); 
+                           // string response = gatewayHelper.CaptureTest(gatewayConfig);//transactionResponse = gatewayHelper.PayWithToken(gatewayConfig, request, (CreateTokenUpdatedDetails)updateTokenSesisonDetails.Results, tokenizeResponse); 
                             if (tokenizeResponse != null)
                             {
                                 // update token reponse in database and then call gatewayHelper.PayWithToken to pay the amount
@@ -4297,7 +4139,6 @@ namespace OrderService.Controllers
                 });
             }
         }
-
 
         [HttpPost]
         [Route("CancelOrder/{orderId}")]
@@ -5420,6 +5261,390 @@ namespace OrderService.Controllers
                     Message = StatusMessages.ServerError,
                     IsDomainValidationErrors = false
                 });
+            }
+        }
+
+        [HttpGet("GetChangePaymentMethodSession/{customerID}")]
+        public async Task<IActionResult> GetChangePaymentMethodSession([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int customerID)
+        {
+            try
+            {
+
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+                AuthHelper helper = new AuthHelper(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    {
+                        int tokencustomerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+
+                        if (!ModelState.IsValid)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = string.Join("; ", ModelState.Values
+                                                      .SelectMany(x => x.Errors)
+                                                      .Select(x => x.ErrorMessage))
+                            });
+                        }
+
+                        OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);                       
+
+                        if (tokencustomerID == customerID)
+                        {
+                            // Call MPGS to create a checkout session and retuen details
+
+                            PaymentHelper gatewayHelper = new PaymentHelper();
+
+                            Checkout checkoutDetails = new Checkout();
+
+                            DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.MPGS.ToString());
+
+                            GridMPGSConfig gatewayConfig = gatewayHelper.GetGridMPGSConfig((List<Dictionary<string, string>>)configResponse.Results);
+
+                            checkoutDetails = gatewayHelper.CreateCheckoutSession(gatewayConfig);
+
+                            CheckOutRequestDBUpdateModel checkoutUpdateModel = new CheckOutRequestDBUpdateModel
+                            {
+                                 Source = CheckOutType.ChangeCard.ToString(),
+
+                                 SourceID = 0,
+
+                                 CheckOutSessionID = checkoutDetails.CheckoutSession.Id,
+
+                                 CheckoutVersion = checkoutDetails.CheckoutSession.Version,
+
+                                 SuccessIndicator = checkoutDetails.CheckoutSession.SuccessIndicator,
+
+                                MPGSOrderID = checkoutDetails.OrderId,
+
+                                TransactionID = checkoutDetails.TransactionID
+                            };
+
+                            //Update checkout details and return amount
+
+                            DatabaseResponse checkOutAmountResponse = await _orderAccess.GetChangeCardCheckoutRequestDetails(checkoutUpdateModel);
+
+                            if (checkOutAmountResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                            {
+                                checkoutDetails.Amount = ((Checkout)checkOutAmountResponse.Results).Amount;
+
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = true,
+                                    Message = EnumExtensions.GetDescription(CommonErrors.CheckoutSessionCreated),
+                                    IsDomainValidationErrors = false,
+                                    ReturnedObject = checkoutDetails
+                                });
+                            }
+                            else
+                            {
+                                LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.NoRecords));
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = false,
+                                    Message = EnumExtensions.GetDescription(DbReturnValue.NoRecords),
+                                    IsDomainValidationErrors = false
+                                });
+                            }
+                        }
+                        else
+                        {
+                            // failed to locate customer
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToGetCustomer));
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+            }
+        }
+
+        [HttpPost("UpdateChangePaymentMethodStatus")]
+        public async Task<IActionResult> UpdateChangePaymentMethodStatus([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] CheckOutResponseUpdate updateRequest)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+                AuthHelper helper = new AuthHelper(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    {
+                        int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+                        if (!ModelState.IsValid)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = string.Join("; ", ModelState.Values
+                                                          .SelectMany(x => x.Errors)
+                                                          .Select(x => x.ErrorMessage))
+                            });
+                        }
+
+                        OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+                        //update checkout details
+                        DatabaseResponse updateCheckoutDetailsResponse = await _orderAccess.UpdateCheckOutResponse(updateRequest);
+
+                        //Get token from existing payment method
+                        DatabaseResponse existingPaymentMethodResponse = await _orderAccess.GetPaymentMethodToken(customerID);                       
+
+                        if (updateCheckoutDetailsResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
+                        {
+                            if ((TokenSession)updateCheckoutDetailsResponse.Results != null)
+                            {
+                                PaymentHelper gatewayHelper = new PaymentHelper();
+
+                                DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.MPGS.ToString());
+
+                                GridMPGSConfig gatewayConfig = gatewayHelper.GetGridMPGSConfig((List<Dictionary<string, string>>)configResponse.Results);
+
+                                TokenResponse tokenizeResponse = new TokenResponse();
+
+                                TokenSession tokenSession = new TokenSession();
+
+                                tokenSession = (TokenSession)updateCheckoutDetailsResponse.Results;
+
+                                tokenizeResponse = gatewayHelper.Tokenize(gatewayConfig, tokenSession);
+
+                                if (tokenizeResponse != null && !string.IsNullOrEmpty(tokenizeResponse.Token))
+                                {
+                                    // insert token response to payment methods table
+
+                                    DatabaseResponse tokenDetailsCreateResponse = new DatabaseResponse();
+
+                                    tokenDetailsCreateResponse = await _orderAccess.CreatePaymentMethod(tokenizeResponse, customerID);
+
+                                    if (tokenDetailsCreateResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
+                                    {
+                                        if (existingPaymentMethodResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                                        {
+                                            PaymentMethod paymentMethod = new PaymentMethod();
+
+                                            paymentMethod = (PaymentMethod)existingPaymentMethodResponse.Results;
+
+                                            string response = gatewayHelper.RemoveToken(gatewayConfig, paymentMethod.Token);
+
+                                            if (response == MPGSAPIResponse.SUCCESS.ToString())
+                                            {
+                                                DatabaseResponse databaseResponse = await _orderAccess.RemovePaymentMethod(customerID, paymentMethod.PaymentMethodID);
+
+                                                if (databaseResponse.ResponseCode == (int)DbReturnValue.DeleteSuccess)
+                                                {
+                                                    return Ok(new OperationResponse
+                                                    {
+                                                        HasSucceeded = true,
+                                                        Message = EnumExtensions.GetDescription(CommonErrors.PaymentMethodSuccessfullyChanged),
+                                                        IsDomainValidationErrors = false
+                                                    });
+                                                }
+
+                                                else
+                                                {
+                                                    return Ok(new OperationResponse
+                                                    {
+                                                        HasSucceeded = true,
+                                                        Message = EnumExtensions.GetDescription(CommonErrors.PaymentMethodSuccessfullyRemoved) + ". " + EnumExtensions.GetDescription(CommonErrors.FailedToRemovePaymentMethodDb),
+                                                        IsDomainValidationErrors = false
+                                                    });
+                                                }
+                                            }
+
+                                            else
+                                            {
+                                                // failed to remove payment details from gateway
+                                                LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToRemovePaymentMethod));
+                                                return Ok(new OperationResponse
+                                                {
+                                                    HasSucceeded = false,
+                                                    Message = EnumExtensions.GetDescription(CommonErrors.FailedToRemovePaymentMethod),
+                                                    IsDomainValidationErrors = false
+                                                });
+                                            }
+
+                                        }
+
+                                        else
+                                        {
+                                            //failed to get existing payment method
+
+                                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.PaymentMethodNotExists));
+                                            return Ok(new OperationResponse
+                                            {
+                                                HasSucceeded = false,
+                                                Message = EnumExtensions.GetDescription(CommonErrors.PaymentMethodNotExists),
+                                                IsDomainValidationErrors = false
+                                            });
+                                        }
+                                    }
+
+                                    else
+                                    {
+                                        // token details update failed
+
+                                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToCreatePaymentMethod));
+
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = false,
+                                            Message = EnumExtensions.GetDescription(CommonErrors.FailedToCreatePaymentMethod),
+                                            IsDomainValidationErrors = false
+                                        });
+                                    }
+
+                                }
+
+                                else
+                                {
+                                    //failed to create payment token
+
+                                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.TokenGenerationFailed));
+
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = false,
+                                        Message = EnumExtensions.GetDescription(CommonErrors.TokenGenerationFailed),
+                                        IsDomainValidationErrors = false
+                                    });
+                                }
+
+
+                            }
+
+                            else
+                            {
+                                //unable to get token session
+
+                                LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UnableToGetTokenSession));
+
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = false,
+                                    Message = EnumExtensions.GetDescription(CommonErrors.UnableToGetTokenSession),
+                                    IsDomainValidationErrors = false
+                                });
+                            }
+
+                        }
+                        else
+                        {
+                            // checkout response update failed
+
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.CheckOutDetailsUpdationFailed));
+
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(CommonErrors.CheckOutDetailsUpdationFailed),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
             }
         }
 

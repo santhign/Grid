@@ -15,6 +15,10 @@ namespace OrderService.Enums
 
         [EnumMember(Value = "AccountInvoices")]
         [Description("Account Invoices")]
-        AccountInvoices = 3,       
+        AccountInvoices = 3,
+
+        [EnumMember(Value = "ChangeCard")]
+        [Description("Change Card")]
+        ChangeCard = 4,
     }
 }

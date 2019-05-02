@@ -220,5 +220,13 @@ namespace Core.Enums
         [EnumMember(Value = "AuthorizeSuccess")]
         [Description("Payment Authorize Success")]
         AuthorizeSuccess = 50,
+
+        [EnumMember(Value = "PaymentMethodNotExists")]
+        [Description("Payment Method Not Exists")]
+        PaymentMethodNotExists = 51,
+
+        [EnumMember(Value = "PaymentMethodSuccessfullyChanged")]
+        [Description("Payment Method Successfully changed")]
+        PaymentMethodSuccessfullyChanged = 52,
     }
 }

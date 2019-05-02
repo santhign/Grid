@@ -1925,7 +1925,7 @@ namespace OrderService.DataAccess
             }
         }
 
-        public async Task<DatabaseResponse> GetTokenizationCheckoutRequestDetails(CheckOutRequestDBUpdateModel checkOutRequest)
+        public async Task<DatabaseResponse> GetChangeCardCheckoutRequestDetails(CheckOutRequestDBUpdateModel checkOutRequest)
         {
             try
             {
@@ -1948,7 +1948,7 @@ namespace OrderService.DataAccess
                 parameters[5].Value = checkOutRequest.CheckoutVersion;
                 parameters[6].Value = checkOutRequest.TransactionID;
 
-                _DataHelper = new DataAccessHelper("Orders_GetCheckoutRequestDetails", parameters, _configuration);
+                _DataHelper = new DataAccessHelper("[Orders_GetChangeCardCheckoutRequestDetails]", parameters, _configuration);
 
                 DataTable dt = new DataTable();
 
