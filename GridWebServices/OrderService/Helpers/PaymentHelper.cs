@@ -427,15 +427,18 @@ namespace OrderService.Helpers
 
             GatewayApiRequest gatewayApiRequest = new GatewayApiRequest(config)
             {
-                SessionId=checkOutDetails.CheckoutSession.Id,
+                SessionId = checkOutDetails.CheckoutSession.Id,
                 OrderId = checkOutDetails.OrderId,
                 TransactionId = checkOutDetails.TransactionID,
                 ApiOperation = MPGSAPIOperation.AUTHORIZE.ToString(),
-                OrderAmount =checkOutDetails.Amount.ToString(),
+                OrderAmount = checkOutDetails.Amount.ToString(),
                 OrderCurrency = config.Currency,
-                ApiMethod="PUT", 
-                Token= paymentMethod.Token,               
-                SourceType= paymentMethod.SourceType,
+                ApiMethod = "PUT",
+                Token = paymentMethod.Token,
+                SourceType = paymentMethod.SourceType,
+                OrderDescription = "",
+               
+                 
             };           
 
             gatewayApiRequest.buildRequestUrl();
@@ -452,7 +455,7 @@ namespace OrderService.Helpers
 
             LogInfo.Information(response);
 
-            return response;
+            return TokenResponse.GetResponseResult(response);
         }
 
         public string  Capture(GridMPGSConfig mpgsConfig, TokenSession tokenSession)

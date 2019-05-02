@@ -61,18 +61,18 @@ namespace OrderService.Models
             model.OrderAmount = transactionList[0]["order"]["amount"].ToObject<String>();
             model.OrderCurrency = transactionList[0]["order"]["currency"].ToObject<String>();
             model.OrderId = transactionList[0]["order"]["id"].ToObject<String>();
-            model.OrderDescription = transactionList[0]["order"]["description"].ToObject<String>();
+            model.OrderDescription = transactionList[0]["order"]["description"]!=null? transactionList[0]["order"]["description"].ToObject<String>():null;
             model.TransactionID = transactionList[0]["authorizationResponse"]["transactionIdentifier"].ToObject<String>();
             model.CardNumber = transactionList[0]["sourceOfFunds"]["provided"]["card"]["number"].ToObject<String>();
             model.CardFundMethod = transactionList[0]["sourceOfFunds"]["provided"]["card"]["fundingMethod"].ToObject<String>();
             model.CardBrand = transactionList[0]["sourceOfFunds"]["provided"]["card"]["brand"].ToObject<String>();
             model.CardIssuer = transactionList[0]["sourceOfFunds"]["provided"]["card"]["scheme"].ToObject<String>();
-            model.CardHolderName = transactionList[0]["sourceOfFunds"]["provided"]["card"]["nameOnCard"].ToObject<String>();
+            model.CardHolderName = transactionList[0]["sourceOfFunds"]["provided"]["card"]["nameOnCard"]!=null? transactionList[0]["sourceOfFunds"]["provided"]["card"]["nameOnCard"].ToObject<String>():null;
             model.ExpiryYear = transactionList[0]["sourceOfFunds"]["provided"]["card"]["expiry"]["year"].ToObject<int>();
             model.ExpiryMonth = transactionList[0]["sourceOfFunds"]["provided"]["card"]["expiry"]["month"].ToObject<int>();
-            model.Token = transactionList[0]["3DSecure"]["authenticationToken"].ToObject<String>();
-            model.PaymentStatus = transactionList[0]["order"]["status"].ToObject<String>();
-            model.CustomerIP = transactionList[0]["device"]["ipAddress"].ToObject<String>();
+            model.Token = transactionList[0]["3DSecure"]!=null? (transactionList[0]["3DSecure"]["authenticationToken"]!=null? transactionList[0]["3DSecure"]["authenticationToken"].ToObject<String>():null):null;
+            model.PaymentStatus = transactionList[0]["order"]["status"]!=null? transactionList[0]["order"]["status"].ToObject<String>():null;
+            model.CustomerIP = transactionList[0]["device"] != null ? (transactionList[0]["device"]["ipAddress"] != null ? transactionList[0]["device"]["ipAddress"].ToObject<String>() : null):null ;
             return model;
         }       
 
