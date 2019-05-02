@@ -357,6 +357,50 @@ namespace OrderService.Helpers
             }
         }
 
+        public TokenResponse TokenizeTest(GridMPGSConfig mpgsConfig)
+        {
+            try
+            {
+                GatewayApiConfig config = new GatewayApiConfig(mpgsConfig);
+
+                GatewayApiRequest gatewayUpdateSessionRequest = new GatewayApiRequest(config);
+
+                GatewayApiClient gatewayApiClient = new GatewayApiClient(config);
+
+                //generate token
+                GatewayApiRequest gatewayGenerateTokenRequest = new GatewayApiRequest(config);
+
+                gatewayGenerateTokenRequest.SessionId = "SESSION0002676972204L29024409K5";
+
+                gatewayGenerateTokenRequest.ApiMethod = GatewayApiClient.POST;
+
+                gatewayGenerateTokenRequest.buildPayload();
+
+                gatewayGenerateTokenRequest.buildTokenUrl();
+
+                string request = JsonConvert.SerializeObject(gatewayGenerateTokenRequest);
+
+                LogInfo.Information(JsonConvert.SerializeObject(gatewayGenerateTokenRequest));
+
+                String response = gatewayApiClient.SendTransaction(gatewayGenerateTokenRequest);
+
+                LogInfo.Information(response);
+
+                TokenResponse tokenResponse = TokenResponse.ToTokenResponse(response);
+
+                LogInfo.Information($"Tokenize response :  {response}");
+
+                return tokenResponse;
+
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw ex;
+            }
+        }
+
         public TransactionResponseModel PayWithToken(GridMPGSConfig mpgsConfig, CreateTokenResponse responseUpdate, CreateTokenUpdatedDetails updateTokenSesisonDetails, TokenResponse tokenResponse)
         {
             try
@@ -458,6 +502,44 @@ namespace OrderService.Helpers
             return TokenResponse.GetResponseResult(response);
         }
 
+        public string AuthorizeTest(GridMPGSConfig mpgsConfig)
+        {
+
+            GatewayApiConfig config = new GatewayApiConfig(mpgsConfig);
+
+            GatewayApiRequest gatewayApiRequest = new GatewayApiRequest(config)
+            {
+               // SessionId = "" ,//checkOutDetails.CheckoutSession.Id,
+            OrderId = GenerateOrderId(), //checkOutDetails.OrderId,
+            TransactionId = GenerateOrderId(), //checkOutDetails.TransactionID,
+                ApiOperation = MPGSAPIOperation.AUTHORIZE.ToString(),
+                OrderAmount = "20",
+                OrderCurrency = config.Currency,
+                ApiMethod = "PUT",
+                Token = "4440008087700014",
+                SourceType = "CARD",
+                OrderDescription = "test pay",
+
+
+            };
+
+            gatewayApiRequest.buildRequestUrl();
+
+            gatewayApiRequest.buildPayload();
+
+            string request = JsonConvert.SerializeObject(gatewayApiRequest);
+
+            LogInfo.Information(JsonConvert.SerializeObject(gatewayApiRequest));
+
+            GatewayApiClient gatewayApiClient = new GatewayApiClient(config);
+
+            string response = gatewayApiClient.SendTransaction(gatewayApiRequest);
+
+            LogInfo.Information(response);
+
+            return TokenResponse.GetResponseResult(response);
+        }
+
         public string  Capture(GridMPGSConfig mpgsConfig, TokenSession tokenSession)
         {
             GatewayApiConfig config = new GatewayApiConfig(mpgsConfig);           
@@ -490,6 +572,38 @@ namespace OrderService.Helpers
             return TokenResponse.GetResponseResult(response); 
         }
 
+        public string CaptureTest(GridMPGSConfig mpgsConfig)
+        {
+            GatewayApiConfig config = new GatewayApiConfig(mpgsConfig);
+
+            GatewayApiRequest gatewayApiRequest = new GatewayApiRequest(config)
+            {
+                OrderId = "77749b36d8", // authorized order id
+                ApiOperation = MPGSAPIOperation.CAPTURE.ToString(),
+                TransactionAmount = "20",
+                TransactionId = PaymentHelper.GenerateOrderId(),
+                TransactionCurrency = config.Currency,
+                Token = "4440008087700014",
+                SourceType = "CARD"
+
+            };
+            gatewayApiRequest.buildRequestUrl();
+
+            gatewayApiRequest.buildPayload();
+
+            string request = JsonConvert.SerializeObject(gatewayApiRequest);
+
+            LogInfo.Information(JsonConvert.SerializeObject(gatewayApiRequest));
+
+            GatewayApiClient gatewayApiClient = new GatewayApiClient(config);
+
+            string response = gatewayApiClient.SendTransaction(gatewayApiRequest);
+
+            LogInfo.Information(response);
+
+            return TokenResponse.GetResponseResult(response);
+        }
+
         public string RemoveToken(GridMPGSConfig mpgsConfig, string token)
         {
             GatewayApiConfig config = new GatewayApiConfig(mpgsConfig);
@@ -513,6 +627,35 @@ namespace OrderService.Helpers
             LogInfo.Information(response);
 
             return TokenResponse.GetResponseResult(response); 
+        }
+
+        public string VoidTransaction(GridMPGSConfig mpgsConfig)
+        {
+            GatewayApiConfig config = new GatewayApiConfig(mpgsConfig);
+
+            GatewayApiRequest gatewayApiRequest = new GatewayApiRequest(config)
+            {
+                ApiMethod = "VOID",
+                TargetTransactionId= "ea2d89bb24",
+                TransactionId=GenerateOrderId(),
+                Token= "440003320900022"
+
+            };
+            gatewayApiRequest.buildRequestUrl();
+
+            gatewayApiRequest.buildPayload();
+
+            string request = JsonConvert.SerializeObject(gatewayApiRequest);
+
+            LogInfo.Information(JsonConvert.SerializeObject(gatewayApiRequest));
+
+            GatewayApiClient gatewayApiClient = new GatewayApiClient(config);
+
+            string response = gatewayApiClient.executeHTTPMethod(gatewayApiRequest);
+
+            LogInfo.Information(response);
+
+            return TokenResponse.GetResponseResult(response);
         }
 
     }
