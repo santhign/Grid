@@ -212,5 +212,13 @@ namespace Core.Enums
         [EnumMember(Value = "CaptureFailed")]
         [Description("Capture Failed")]
         CaptureFailed = 48,
+
+        [EnumMember(Value = "AuthorizeFailed")]
+        [Description("Payment Authorize Failed")]
+        AuthorizeFailed = 49,
+
+        [EnumMember(Value = "AuthorizeSuccess")]
+        [Description("Payment Authorize Success")]
+        AuthorizeSuccess = 50,
     }
 }
