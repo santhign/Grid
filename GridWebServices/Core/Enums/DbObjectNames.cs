@@ -76,6 +76,9 @@ namespace Core.Enums
         public const string Orders_CancelOrder = "Orders_CancelOrder";
 
         public const string Orders_RescheduleDelivery = "Orders_RescheduleDelivery";
+        public const string Orders_ConfirmedRescheduleDelivery = "Orders_ConfirmedRescheduleDelivery";
+
+        public const string CR_GetBuddyDetails = "CR_GetBuddyDetails";
     }
 
 }
