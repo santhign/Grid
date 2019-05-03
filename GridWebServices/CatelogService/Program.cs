@@ -16,6 +16,8 @@ namespace CatelogService
         public static IConfiguration Configuration { get; } = new ConfigurationBuilder()
                .SetBasePath(Directory.GetCurrentDirectory())
                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+               .AddJsonFile($"appsettings.{new WebHostBuilder().GetSetting("environment")}.json",
+                            optional: true)
                .AddEnvironmentVariables()
                .Build();
 
@@ -23,11 +25,14 @@ namespace CatelogService
         {
             LogInfo.Initialize(Configuration);
             LogInfo.Information("Catelog Service is running");
+
             CreateWebHostBuilder(args).Build().Run();
         }
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+                .UseUrls(Configuration["hostUrl"])
+                .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<Startup>();
     }
 }
