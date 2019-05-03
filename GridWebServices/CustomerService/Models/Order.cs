@@ -9,6 +9,7 @@ namespace CustomerService.Models
     {
         public int OrderID { get; set; }
         public string ListingStatus { get; set; }
+        public int AllowRescheduling { get; set; }
         public string OrderNumber { get; set; }
         public string OrderStatus { get; set; }
         public DateTime OrderDate { get; set; }

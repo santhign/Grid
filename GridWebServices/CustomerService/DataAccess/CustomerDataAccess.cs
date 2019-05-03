@@ -907,6 +907,7 @@ namespace CustomerService.DataAccess
                             orderDetails.OrderNumber = dr["OrderNumber"].ToString();
                             orderDetails.OrderDate = Convert.ToDateTime(dr["OrderDate"]);
                             orderDetails.OrderStatus = dr["OrderStatus"].ToString();
+                            orderDetails.AllowRescheduling = Convert.ToInt32(dr["AllowRescheduling"].ToString());
                             orderDetails.IdentityCardType = dr["IdentityCardType"].ToString();
                             orderDetails.IdentityCardNumber = dr["IdentityCardNumber"].ToString();
                             orderDetails.BillingUnit = dr["BillingUnit"].ToString();
