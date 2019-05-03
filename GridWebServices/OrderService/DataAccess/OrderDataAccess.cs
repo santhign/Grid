@@ -2677,11 +2677,29 @@ namespace OrderService.DataAccess
 
                 int result = await _DataHelper.RunAsync(dt);    // 100 / 105
 
-                DatabaseResponse response = new DatabaseResponse();
+                if (result != (int)Core.Enums.DbReturnValue.CreateSuccess)
+                    return new DatabaseResponse { ResponseCode = result };
 
-                response = new DatabaseResponse { ResponseCode = result };
+                var rescheduleDeliveryResponse = new Order_RescheduleDeliveryResponse();
 
-                return response;
+                if (dt.Rows.Count > 0)
+                {
+                    rescheduleDeliveryResponse = (from model in dt.AsEnumerable()
+                                         select new Order_RescheduleDeliveryResponse()
+                                         {
+                                             OrderID = model.Field<int>("OrderID"),
+                                             PayableAmount = model.Field<double?>("PayableAmount"),
+                                             
+                                         }).FirstOrDefault();
+                }
+                else
+                {
+                    rescheduleDeliveryResponse = null;
+                }
+
+                var response = new DatabaseResponse { ResponseCode = result, Results = rescheduleDeliveryResponse };
+                return response;              
+
             }
             catch (Exception ex)
             {
