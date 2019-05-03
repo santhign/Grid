@@ -1230,14 +1230,15 @@ namespace OrderService.DataAccess
                 DatabaseResponse response = new DatabaseResponse();
                 if (result == 105)
                 {
-                    List<FreeNumber> numbers = new List<FreeNumber>();
+                    List<OrderedNumbers> numbers = new List<OrderedNumbers>();
 
                     if (dt != null && dt.Rows.Count > 0)
                     {
                         numbers = (from model in dt.AsEnumerable()
-                                   select new FreeNumber()
+                                   select new OrderedNumbers()
                                    {
-                                       MobileNumber = model.Field<string>("MobileNumber")
+                                       MobileNumber = model.Field<string>("MobileNumber"),
+                                       IsDefault = model.Field<int>("IsDefault")
 
                                    }).ToList();
                     }

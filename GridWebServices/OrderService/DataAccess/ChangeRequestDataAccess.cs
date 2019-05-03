@@ -690,6 +690,38 @@ namespace OrderService.DataAccess
             }
         }
 
+        public async Task<DatabaseResponse> GetTerminationDate(int CustomerID)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int )
+
+                };
+
+                parameters[0].Value = CustomerID;
+
+                _DataHelper = new DataAccessHelper("Orders_CR_GetTerminationDate", parameters, _configuration);
+                DataTable dt = new DataTable("dt"); 
+
+                int result = await _DataHelper.RunAsync(dt);    // 101 / 109 
+
+                return new DatabaseResponse { ResponseCode = result, Results = dt.Rows[0][0].ToString().Trim() };
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
         public async Task<BuddyResponse> GetBuddyDetails(int customerID, string mobileNumber)
         {
             try

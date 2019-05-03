@@ -508,6 +508,10 @@ namespace CustomerService.Models
         /// 1=Yes, 0=N0.
         /// </value>
         public int Removable { get; set; }
+
+        public DateTime? SubscriptionDate { get; set; }
+
+        public double? SubscriptionFee { get; set; }
     }
 
 
