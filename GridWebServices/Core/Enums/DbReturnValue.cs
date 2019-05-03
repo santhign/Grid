@@ -144,5 +144,9 @@ namespace Core.Enums
         [EnumMember(Value = "Reschedule delivery failed")]
         [Description("Reschedule delivery failed")]
         RescheduleOrderStatusNotCorrect = 135,
+
+        [EnumMember(Value = "Buddy is already assigned for selected number")]
+        [Description("Buddy is already assigned for selected number")]
+        BuddyAlreadyExists = 136,
     }
 }
