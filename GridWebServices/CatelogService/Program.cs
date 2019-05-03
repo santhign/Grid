@@ -17,6 +17,7 @@ namespace CatelogService
               .SetBasePath(Directory.GetCurrentDirectory())
               .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
               .AddEnvironmentVariables()
+              //.AddJsonFile($"appsettings.{new WebHostBuilder().GetSetting("environment").ToString().Trim()}.json", optional: true, reloadOnChange: true)
               .Build();
 
         public static void Main(string[] args)
@@ -28,6 +29,7 @@ namespace CatelogService
         }
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+                .UseUrls(Configuration["hostUrl"])
                 .UseStartup<Startup>();
     }
 }
