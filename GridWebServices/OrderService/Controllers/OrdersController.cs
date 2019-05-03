@@ -3547,7 +3547,7 @@ namespace OrderService.Controllers
 
                                     AmazonS3 s3Helper = new AmazonS3(awsConfig);
 
-                                    string fileNameFront = "Grid_IDNUMBER_Front_" + DateTime.UtcNow.ToString("yyyymmddhhmmss") + Path.GetExtension(frontImage.FileName); //Grid_IDNUMBER_yyyymmddhhmmss.extension
+                                    string fileNameFront = "IDNUMBER_Front_" + DateTime.UtcNow.ToString("yyMMddhhmmss") + request.IDNumber.Substring(1, request.IDNumber.Length - 2) + Path.GetExtension(frontImage.FileName); //Grid_IDNUMBER_yyyymmddhhmmss.extension
 
                                     UploadResponse s3UploadResponse = await s3Helper.UploadFile(frontImage, fileNameFront);
 
@@ -3560,7 +3560,7 @@ namespace OrderService.Controllers
                                         LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.S3UploadFailed));
                                     }
 
-                                    string fileNameBack = "Grid_IDNUMBER_Back_" + DateTime.UtcNow.ToString("yyyymmddhhmmss") + Path.GetExtension(frontImage.FileName); //Grid_IDNUMBER_yyyymmddhhmmss.extension
+                                    string fileNameBack = "IDNUMBER_Back_" + DateTime.UtcNow.ToString("yyMMddhhmmss") + request.IDNumber.Substring(1, request.IDNumber.Length - 2) + Path.GetExtension(frontImage.FileName); //Grid_IDNUMBER_yyyymmddhhmmss.extension
 
                                     s3UploadResponse = await s3Helper.UploadFile(backImage, fileNameBack);
 

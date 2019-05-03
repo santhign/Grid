@@ -13,26 +13,25 @@ namespace CatelogService
 {
     public class Program
     {
-        public static IConfiguration Configuration { get; } = new ConfigurationBuilder()
-               .SetBasePath(Directory.GetCurrentDirectory())
-               .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-               .AddJsonFile($"appsettings.{new WebHostBuilder().GetSetting("environment")}.json",
-                            optional: true)
-               .AddEnvironmentVariables()
-               .Build();
-
         public static void Main(string[] args)
         {
-            LogInfo.Initialize(Configuration);
+            var host = new WebHostBuilder();
+            var env = host.GetSetting("environment");
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{env}.json", optional: true)
+                .AddEnvironmentVariables();
+            var configuration = builder.Build();
+            LogInfo.Initialize(configuration);
             LogInfo.Information("Catelog Service is running");
 
-            CreateWebHostBuilder(args).Build().Run();
-        }
-
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
-                .UseUrls(Configuration["hostUrl"])
+            host.UseKestrel()
+                .UseUrls(configuration["hostUrl"])
                 .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseStartup<Startup>();
+                .UseStartup<Startup>()
+                .Build()
+                .Run();
+        }
     }
 }
