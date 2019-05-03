@@ -19,9 +19,9 @@ namespace CatelogService
             var env = host.GetSetting("environment");
             var builder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
+                .AddEnvironmentVariables()
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env}.json", optional: true)
-                .AddEnvironmentVariables();
+                .AddJsonFile($"appsettings.{env}.json", optional: true);
             var configuration = builder.Build();
             LogInfo.Initialize(configuration);
             LogInfo.Information("Catelog Service is running");

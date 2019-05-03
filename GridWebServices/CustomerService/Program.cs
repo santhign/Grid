@@ -8,27 +8,31 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using InfrastructureService;
 
 namespace CustomerService
 {
     public class Program
     {
-        public static IConfiguration Configuration { get; } = new ConfigurationBuilder()
-              .SetBasePath(Directory.GetCurrentDirectory())
-              .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-              .AddEnvironmentVariables()
-              .Build();
         public static void Main(string[] args)
         {
-            Log.Logger = new LoggerConfiguration()
-                  .ReadFrom.Configuration(Configuration)
-                  .CreateLogger();
-            Log.Information("Customer Service is running");
-            CreateWebHostBuilder(args).Build().Run();
-        }
+            var host = new WebHostBuilder();
+            var env = host.GetSetting("environment");
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddEnvironmentVariables()
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{env}.json", optional: true);
+            var configuration = builder.Build();
+            LogInfo.Initialize(configuration);
+            LogInfo.Information("Admin Service is running");
 
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
-                .UseStartup<Startup>();
+            host.UseKestrel()
+                .UseUrls(configuration["hostUrl"])
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseStartup<Startup>()
+                .Build()
+                .Run();
+        }
     }
 }
