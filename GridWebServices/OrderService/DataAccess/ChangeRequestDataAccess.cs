@@ -689,5 +689,60 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+
+        public async Task<BuddyResponse> GetBuddyDetails(int customerID, string mobileNumber)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+                    new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar )
+
+                };
+
+                parameters[0].Value = customerID;
+                parameters[1].Value = mobileNumber;
+
+                _DataHelper = new DataAccessHelper(DbObjectNames.CR_GetBuddyDetails, parameters, _configuration);
+
+                DataTable dt = new DataTable();
+                
+                int result = await _DataHelper.RunAsync(dt);    // 101 / 109 
+
+                if (result != (int)Core.Enums.DbReturnValue.CreateSuccess)
+                    return null;
+
+                var buddy = new BuddyResponse();
+
+                if (dt.Rows.Count > 0)
+                {
+                    buddy = (from model in dt.AsEnumerable()
+                                                  select new BuddyResponse()
+                                                  {
+                                                      LinkedDisplayName = model.Field<string>("LinkedDisplayName"),
+                                                      LinkedMobileNumber = model.Field<string>("LinkedMobileNumber"),
+
+                                                  }).FirstOrDefault();
+                }
+                else
+                {
+                    buddy = null;
+                }
+                return buddy;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
     }
 }

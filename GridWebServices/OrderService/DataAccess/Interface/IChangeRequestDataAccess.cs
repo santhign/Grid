@@ -65,5 +65,7 @@ namespace OrderService.DataAccess
 
         Task<DatabaseResponse> ChangePlanService(int customerId, string mobileNumber, int bundleId);
 
+        Task<BuddyResponse> GetBuddyDetails(int customerID, string mobileNumber);
+
     }
 }
