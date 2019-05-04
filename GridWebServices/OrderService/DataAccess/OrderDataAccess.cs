@@ -2629,7 +2629,7 @@ namespace OrderService.DataAccess
                 SqlParameter[] parameters =
                {
                      new SqlParameter("@CustomerID",  SqlDbType.Int ),                     
-                     new SqlParameter("@OrderID",  SqlDbType.Int ),
+                     new SqlParameter("@OrderID",  SqlDbType.Int ),                     
                      new SqlParameter("@ShippingContactNumber",  SqlDbType.NVarChar ),
                      new SqlParameter("@ShippingFloor",  SqlDbType.NVarChar ),
                      new SqlParameter("@ShippingUnit",  SqlDbType.NVarChar ),
@@ -2644,9 +2644,7 @@ namespace OrderService.DataAccess
                      new SqlParameter("@AlternateRecipientIDType",  SqlDbType.NVarChar ),
                      new SqlParameter("@PortalSlotID",  SqlDbType.NVarChar ),
                      new SqlParameter("@ScheduledDate",  SqlDbType.Date ),
-
-
-
+                     new SqlParameter("@OrderType",  SqlDbType.Int )
                 };
 
 
@@ -2666,7 +2664,8 @@ namespace OrderService.DataAccess
                 parameters[13].Value = detailsrequest.AlternateRecioientIDType;
                 parameters[14].Value = detailsrequest.PortalSlotID;
                 parameters[15].Value = detailsrequest.ScheduledDate;
-               
+                parameters[16].Value = detailsrequest.OrderType;
+
 
 
 
@@ -2686,7 +2685,7 @@ namespace OrderService.DataAccess
                     rescheduleDeliveryResponse = (from model in dt.AsEnumerable()
                                          select new Order_RescheduleDeliveryResponse()
                                          {
-                                             OrderID = model.Field<int>("OrderID"),
+                                             AccountInvoiceID = model.Field<int>("AccountInvoiceID"),
                                              PayableAmount = model.Field<double?>("PayableAmount"),
                                              
                                          }).FirstOrDefault();
@@ -2712,27 +2711,19 @@ namespace OrderService.DataAccess
             }
         }
 
-        public async Task<DatabaseResponse> ConfirmedRescheduleDelivery(int customerID, int orderID)
+        public async Task<DatabaseResponse> ProcessRescheduleDelivery(int accountInvoiceID)
         {
             try
             {
                 SqlParameter[] parameters =
-               {
-                     new SqlParameter("@CustomerID",  SqlDbType.Int ),
-                     //new SqlParameter("@RescheduleDeliveryInformationID",  SqlDbType.Int ),
-                     new SqlParameter("@OrderID",  SqlDbType.Int )
-                   
-
-
+                {
+                     
+                     new SqlParameter("@AccountInvoiceID",  SqlDbType.Int )
 
                 };
 
 
-                parameters[0].Value = customerID;
-                //parameters[1].Value = rescheduleDeliveryInformationID;
-                parameters[1].Value = orderID;            
-
-
+                parameters[0].Value = accountInvoiceID;
 
 
                 _DataHelper = new DataAccessHelper(DbObjectNames.Orders_ProcessRescheduleDelivery, parameters, _configuration);
