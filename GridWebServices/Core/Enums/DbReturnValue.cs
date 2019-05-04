@@ -148,5 +148,10 @@ namespace Core.Enums
         [EnumMember(Value = "Buddy is already assigned for selected number")]
         [Description("Buddy is already assigned for selected number")]
         BuddyAlreadyExists = 136,
+
+        [EnumMember(Value = "PaymentNotProcessed")]
+        [Description("PaymentNotProcessed")]
+        PaymentNotProcessed = 137,
+
     }
 }
