@@ -4912,6 +4912,17 @@ namespace OrderService.Controllers
                             IsDomainValidationErrors = false
                         });
                     }
+                    else if (statusResponse.ResponseCode == (int)DbReturnValue.DeliverySlotUnavailability)
+                    {
+                        LogInfo.Error(DbReturnValue.DeliverySlotUnavailability.GetDescription());
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = DbReturnValue.DeliverySlotUnavailability.GetDescription(),
+                            IsDomainValidationErrors = false
+                        });
+                    }
                     else
                     {
                         LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
