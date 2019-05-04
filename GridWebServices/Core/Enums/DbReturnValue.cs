@@ -153,5 +153,8 @@ namespace Core.Enums
         [Description("PaymentNotProcessed")]
         PaymentNotProcessed = 137,
 
+        [EnumMember(Value = "Your account is locked")]
+        [Description("Your account is locked")]
+        AccountIsLocked = 138,
     }
 }
