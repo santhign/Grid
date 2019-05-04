@@ -91,6 +91,10 @@ namespace OrderService.Models
     public class Order_RescheduleDeliveryRequest
     {
         public int OrderID { get; set; }
+        /// <summary>
+        /// 1=Orders; 2=ChangeRequests  
+        /// </summary>
+        public int OrderType { get; set; }
         public string ShippingContactNumber { get; set; }
         public string ShippingFloor { get; set; }
         public string ShippingUnit { get; set; }
@@ -111,7 +115,7 @@ namespace OrderService.Models
 
     public class Order_RescheduleDeliveryResponse
     {
-        public int OrderID { get; set; }
+        public int AccountInvoiceID { get; set; }
         public double? PayableAmount { get; set; }
     }
 }
