@@ -44,4 +44,10 @@
     </Content>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="CustomerService.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

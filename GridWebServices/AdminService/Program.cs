@@ -28,6 +28,7 @@ namespace AdminService
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+                .UseUrls(Configuration["hostUrl"])
                 .UseStartup<Startup>();
     }
 }

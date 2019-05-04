@@ -1,0 +1,952 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>CustomerService</name>
+    </assembly>
+    <members>
+        <member name="M:CustomerService.Controllers.AccountController.Authenticate(CustomerService.Models.LoginDto)">
+            <summary>
+            Authenticate customer against Email and Password given.
+            Returns logged in Principle with success status, auth token and logged customer details
+            </summary>
+            <param name="loginRequest"></param>
+            <returns>LoggedInPrinciple</returns>
+        </member>
+        <member name="M:CustomerService.Controllers.AccountController.GetTokenDetails(System.String)">
+            <summary>
+            Authenticate customer against token given.
+            Returns logged in Principle with success status, auth token and logged customer details
+            </summary>
+            <param name="token"></param>
+            <returns>LoggedInPrinciple</returns>
+        </member>
+        <member name="M:CustomerService.Controllers.AccountController.ValidateResetPasswordToken(System.String)">
+            <summary>
+            Validate reset password token
+            </summary>
+            <param name="passwordtoken"></param>
+            <returns>
+            OperationsResponse
+            </returns>
+        </member>
+        <member name="M:CustomerService.Controllers.AccountController.ResetPassword(CustomerService.Models.ResetPassword)">
+            <summary>
+            Reset customer password
+            </summary>
+            <param name="passwordResetRequest">
+            body{
+            "NewPassword" :"",
+            "ResetToken" :"A4EDFE2A4EDFE23A4EDFE23A4EDFE23A4EDFE233",       
+            }
+            </param>
+            <returns>OperationsResponse</returns>
+        </member>
+        <member name="T:CustomerService.Controllers.CustomersController">
+            <summary>
+            Customers Controller class
+            </summary>
+            <seealso cref="T:Microsoft.AspNetCore.Mvc.ControllerBase" />
+        </member>
+        <member name="F:CustomerService.Controllers.CustomersController._iconfiguration">
+            <summary>
+            The iconfiguration
+            </summary>
+        </member>
+        <member name="M:CustomerService.Controllers.CustomersController.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Initializes a new instance of the <see cref="T:CustomerService.Controllers.CustomersController"/> class.
+            </summary>
+            <param name="configuration">The configuration.</param>
+        </member>
+        <member name="M:CustomerService.Controllers.CustomersController.GetCustomer(System.String)">
+            <summary>
+            Gets the customer.
+            </summary>
+            <param name="token" in="Header"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CustomerService.Controllers.CustomersController.UpdateCustomerProfile(System.String,CustomerService.Models.CustomerProfile)">
+            <summary>
+            Updates the customer profile.
+            </summary>
+            <param name="token">The token.</param>
+            <param name="_profile">The profile details.</param>
+            <returns></returns>
+        </member>
+        <member name="M:CustomerService.Controllers.CustomersController.GetCustomerPlans(System.String,System.String,System.Nullable{System.Int32})">
+            <summary>
+            This method will return all associated plans for that customer.
+            </summary>   
+            <param name="token" in="Header"></param>
+            <param name="mobileNumber">Mobile Number</param>
+            <param name="planType">Plan Type</param>  
+            <returns></returns>
+            <exception cref="T:System.Exception">Customer record not found for " + token + " token</exception>
+        </member>
+        <member name="M:CustomerService.Controllers.CustomersController.GetCustomerSharedPlans(System.String)">
+            <summary>
+            This method will return all associated shared plans for that customer.
+            </summary>   
+            <param name="token" in="Header"></param>
+            <returns></returns>
+            <exception cref="T:System.Exception">Customer record not found for " + token + " token</exception>
+        </member>
+        <member name="M:CustomerService.Controllers.CustomersController.Create(CustomerService.Models.RegisterCustomer)">
+            <summary>
+            Creates the specified customer.
+            </summary>     
+            <param name="customer">The customer.</param>
+            <returns></returns>
+        </member>
+        <member name="M:CustomerService.Controllers.CustomersController.ValidateReferralCode(System.String,CustomerService.Models.ValidateReferralCodeRequest)">
+            <summary>
+            Validate customer's referral code.
+            Return success or failure flag with message
+            </summary>
+            <param name="token" in="Header"></param>
+            <param name="request">The request.</param>
+            <returns>
+            LoggedInPrinciple
+            </returns>
+        </member>
+        <member name="M:CustomerService.Controllers.CustomersController.Subscribers(System.String)">
+            <summary>
+            Return Subscribers api with MobileNumber, DisplayName, SIMID, PremiumType, ActivatedOn, IsPrimary
+            </summary>
+            <param name="token" in="Header"></param>
+            <returns>
+            OperationResponse
+            </returns>
+        </member>
+        <member name="M:CustomerService.Controllers.CustomersController.SearchCustomer(System.String,System.String)">
+            <summary>
+            Searches the customer.
+            </summary>
+            <param name="token" in="Header"></param>
+            <param name="SearchValue">The search value.</param>
+            <returns></returns>
+        </member>
+        <member name="M:CustomerService.Controllers.CustomersController.ForgetPassword(System.String)">
+            <summary>
+            This will send forget password mail
+            </summary>      
+            <param name="email">abcd@gmail.com</param>
+            <returns>
+            Customer Id and Token key
+            </returns>
+        </member>
+        <member name="M:CustomerService.Controllers.CustomersController.UpdateReferralCode(System.String,CustomerService.Models.CustomerNewReferralCode)">
+            <summary>
+            Updates the referral code.
+            </summary>
+            <param name="token" in="Header"></param>
+            <param name="customerReferralCode">The customer referral code.</param>
+            <returns></returns>
+        </member>
+        <member name="M:CustomerService.Controllers.CustomersController.GetBillingAddress(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="token" in="Header"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CustomerService.Controllers.CustomersController.GetPaymentMethod(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="token" in="Header"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CustomerService.Controllers.CustomersController.UpdateEmailSubscription(System.String,System.Int32)">
+            <summary>
+            Update Email subscription on customer profile level
+            </summary>
+            <param name="token" in="Header"></param>
+            <param name="EmailSubscription">0=No,1=Yes</param>
+            <returns></returns>
+        </member>
+        <member name="M:CustomerService.Controllers.CustomersController.GetCustomerOrders(System.String)">
+            <summary>
+            Gets the customer orders.
+            </summary>
+            <param name="token" in="Header"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CustomerService.Controllers.CustomersController.GetRewardSummary(System.String)">
+            <summary>
+            Gets the customer rewardsummary.
+            </summary>
+            <param name="token" in="Header"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CustomerService.Controllers.CustomersController.GetRewardDetails(System.String,System.DateTime,System.DateTime)">
+            <summary>
+            Gets the customer rewarddetails.
+            </summary>
+            <param name="token" in="Header"></param>
+            <param name="FromDate"></param>
+            <param name="ToDate"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CustomerService.Controllers.CustomersController.UpdateBillingDetails(System.String,CustomerService.Models.customerBilling)">
+            <summary>
+            
+            </summary>
+            <param name="token" in="Header"></param>
+            <param name="_billing"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CustomerService.Controllers.CustomersController.GetBasePlan(System.String,System.String)">
+            <summary>
+            
+            </summary>
+            <param name="token" in="Header"></param>
+            <param name="MobileNumber"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CustomerService.Controllers.CustomersController.UpdateDisplayName(System.String,CustomerService.Models.DisplayDetails)">
+            <summary>
+            
+            </summary>
+            <param name="token" in="Header"></param>
+            <param name="details"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CustomerService.Controllers.CustomersController.UpdateSMSSubscription(System.String,System.String,System.Int32)">
+            <summary>
+            Update SMS subscriotion on number level
+            </summary>
+            <param name="token" in="Header"></param>
+            <param name="MobileNumber"></param>
+            <param name="SMSSubscription">0=No,1=Yes</param>
+            <returns></returns>
+        </member>
+        <member name="M:CustomerService.Controllers.CustomersController.UpdateVoiceSubscription(System.String,System.String,System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="token" in="Header"></param>
+            <param name="MobileNumber"></param>
+            <param name="VoiceSubscription">0=No,1=Yes</param>
+            <returns></returns>
+        </member>
+        <member name="M:CustomerService.Controllers.CustomersController.GetShippingAddress(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="token" in="Header"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CustomerService.Controllers.ValidationController.EmailValidation(System.String,System.String)">
+             <summary>
+             This will validate the email id
+             </summary> 
+             <param name="token"></param>
+            <param name="emailid">abcd@gmail.com</param>
+             <returns>validation result</returns> 
+        </member>
+        <member name="M:CustomerService.Controllers.ValidationController.ValidatePostcode(System.String,System.String)">
+             <summary>
+             This will validate postcode
+             </summary>
+             <param name="token"></param>
+             <param name="postcode"></param>
+             <returns>validation status</returns>
+             POST: api/ValidateAuthenticatedPostcode
+            Body: 
+            {
+              "APIKey":"xyz","APISecret":"abc","PostcodeNumber":"408600"
+             }
+        </member>
+        <member name="M:CustomerService.Controllers.ValidationController.NRICValidation(System.String)">
+            <summary>
+            This will check NRIC Validation.
+            </summary>
+            <param name="NRIC"></param>
+            <returns>validtion result</returns>
+            POST: api/NRICValidation/S1234567D 
+        </member>
+        <member name="M:CustomerService.Controllers.ValidationController.NRICTypeValidation(System.String,System.String)">
+            <summary>
+            This will check NRIC Validation: IDType - S=Singaporean;F=Forigner
+            </summary>
+            <param name="IDType"></param>
+            <param name="NRIC"></param>
+            <returns>validtion result</returns>
+            POST: api/NRICValidation/S1234567D 
+        </member>
+        <member name="M:CustomerService.DataAccess.AccountDataAccess.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Constructor setting configuration
+            </summary>
+            <param name="configuration"></param>
+        </member>
+        <member name="T:CustomerService.DataAccess.CustomerDataAccess">
+            <summary>
+            Customer Data Access class
+            </summary>
+        </member>
+        <member name="F:CustomerService.DataAccess.CustomerDataAccess._DataHelper">
+            <summary>
+            The data helper
+            </summary>
+        </member>
+        <member name="F:CustomerService.DataAccess.CustomerDataAccess._configuration">
+            <summary>
+            The configuration
+            </summary>
+        </member>
+        <member name="M:CustomerService.DataAccess.CustomerDataAccess.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Constructor setting configuration
+            </summary>
+            <param name="configuration">The configuration.</param>
+        </member>
+        <member name="M:CustomerService.DataAccess.CustomerDataAccess.CreateCustomer(CustomerService.Models.RegisterCustomer)">
+            <summary>
+            Creates the customer.
+            </summary>
+            <param name="customer">The customer.</param>
+            <returns></returns>
+        </member>
+        <member name="M:CustomerService.DataAccess.CustomerDataAccess.GetCustomer(System.Int32)">
+            <summary>
+            Gets the customer.
+            </summary>
+            <param name="customerId">The customer identifier.</param>
+            <returns></returns>
+        </member>
+        <member name="M:CustomerService.DataAccess.CustomerDataAccess.UpdateCustomerProfile(System.Int32,CustomerService.Models.CustomerProfile)">
+            <summary>
+            Updates the customer profile.
+            </summary>
+            <param name="CustomerID"></param>
+            <param name="customer">The customer.</param>
+            <returns></returns>
+        </member>
+        <member name="M:CustomerService.DataAccess.CustomerDataAccess.GetCustomerSharedPlans(System.Int32)">
+            <summary>
+            Gets the customer shared plans.
+            </summary>
+            <param name="customerId">The customer identifier.</param>
+            <returns>
+            List of plan associated with Customers along with all subscribers
+            </returns>
+        </member>
+        <member name="M:CustomerService.DataAccess.CustomerDataAccess.GetCustomerPlans(System.Int32,System.String,System.Nullable{System.Int32})">
+            <summary>
+            Gets the customer plans.
+            </summary>
+            <param name="customerId">The customer identifier.</param>
+            <param name="mobileNumber">Mobile Number</param>
+            <param name="planType">Plan Type</param>
+            <returns>
+            List of plan associated with Customers along with all subscribers
+            </returns>
+        </member>
+        <member name="M:CustomerService.DataAccess.CustomerDataAccess.AuthenticateCustomerToken(System.String)">
+            <summary>
+            Authenticates the customer token.
+            </summary>
+            <param name="token">The token.</param>
+            <returns></returns>
+        </member>
+        <member name="M:CustomerService.DataAccess.CustomerDataAccess.ValidateReferralCode(System.Int32,System.String)">
+            <summary>
+            Validates the referral code.
+            </summary>
+            <param name="customerId">The customer identifier.</param>
+            <param name="referralCode">The referral code.</param>
+            <returns></returns>
+        </member>
+        <member name="M:CustomerService.DataAccess.CustomerDataAccess.GetSubscribers(System.Int32)">
+            <summary>
+            Gets the subscribers.
+            </summary>
+            <param name="customerId">The customer identifier.</param>
+            <returns></returns>
+        </member>
+        <member name="M:CustomerService.DataAccess.CustomerDataAccess.GetSearchCustomers(System.String)">
+            <summary>
+            Gets the search customers.
+            </summary>
+            <param name="SearchValue">The search value.</param>
+            <returns></returns>
+        </member>
+        <member name="M:CustomerService.DataAccess.CustomerDataAccess.UpdateReferralCode(System.Int32,System.String)">
+            <summary>
+            Updates the referral code.
+            </summary>
+            <param name="customerid">The customerid.</param>
+            <param name="ReferralCode">The referral code.</param>
+            <returns></returns>
+        </member>
+        <member name="M:CustomerService.DataAccess.EmailDataAccess.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Constructor setting configuration
+            </summary>
+            <param name="configuration"></param>
+        </member>
+        <member name="M:CustomerService.DataAccess.MQDataAccess.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Constructor setting configuration
+            </summary>
+            <param name="configuration"></param>
+        </member>
+        <member name="M:CustomerService.DataAccess.MQDataAccess.GetProfileUpdateMessageBody(System.Int32)">
+            <summary>
+            Gets the message body by change request.
+            </summary>
+            <param name="CustomerID">The change request identifier.</param>
+            <returns></returns>
+        </member>
+        <member name="M:CustomerService.DataAccess.ValidationDataAccess.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Constructor setting configuration
+            </summary>
+            <param name="configuration"></param>
+        </member>
+        <member name="T:CustomerService.Models.Customer">
+            <summary>
+            Customer class
+            </summary>
+        </member>
+        <member name="P:CustomerService.Models.Customer.CustomerID">
+            <summary>
+            Gets or sets the customer identifier.
+            </summary>
+            <value>
+            The customer identifier.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.Customer.Email">
+            <summary>
+            Gets or sets the email.
+            </summary>
+            <value>
+            The email.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.Customer.Password">
+            <summary>
+            Gets or sets the password.
+            </summary>
+            <value>
+            The password.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.Customer.Name">
+            <summary>
+            Gets or sets the Name.
+            </summary>
+            <value>
+            The Name.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.Customer.MobileNumber">
+            <summary>
+            Gets or sets the mobile number.
+            </summary>
+            <value>
+            The mobile number.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.Customer.IdentityCardType">
+            <summary>
+            Gets or sets the referral code.
+            </summary>
+            <value>
+            The referral code.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.Customer.Nationality">
+            <summary>
+            Gets or sets the nationality.
+            </summary>
+            <value>
+            The nationality.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.Customer.Gender">
+            <summary>
+            Gets or sets the gender.
+            </summary>
+            <value>
+            The gender.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.Customer.SMSSubscription">
+            <summary>
+            Gets or sets the SMS subscription.
+            </summary>
+            <value>
+            The SMS subscription.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.Customer.EmailSubscription">
+            <summary>
+            Gets or sets the email subscription.
+            </summary>
+            <value>
+            The email subscription.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.Customer.Status">
+            <summary>
+            Gets or sets the status.
+            </summary>
+            <value>
+            The status.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.Customer.JoinedOn">
+            <summary>
+            Gets or sets the joined on.
+            </summary>
+            <value>
+            The joined on.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.Customer.OrderCount">
+            <summary>
+            Gets paid order count.
+            </summary>
+            <value>
+            The number of paid orders if greater then 0 then redirect to dashboard.
+            </value>
+        </member>
+        <member name="T:CustomerService.Models.CustomerProfile">
+            <summary>
+            Customer Profile class
+            </summary>
+        </member>
+        <member name="T:CustomerService.Models.ChangePhoneRequest">
+            <summary>Change Phone Request</summary>
+        </member>
+        <member name="P:CustomerService.Models.ChangePhoneRequest.CustomerId">
+            <summary>Gets or sets the customer identifier.</summary>
+            <value>The customer identifier.</value>
+        </member>
+        <member name="P:CustomerService.Models.ChangePhoneRequest.MobileNumber">
+            <summary>Gets or sets the mobile number.</summary>
+            <value>The mobile number.</value>
+        </member>
+        <member name="P:CustomerService.Models.ChangePhoneRequest.NewMobileNumber">
+            <summary>Creates new mobile number.</summary>
+            <value>The new mobile number.</value>
+        </member>
+        <member name="P:CustomerService.Models.ChangePhoneRequest.PremiumType">
+            <summary>Gets or sets the type of the premium.</summary>
+            <value>The type of the premium.</value>
+        </member>
+        <member name="P:CustomerService.Models.ChangePhoneRequest.PortedNumberTransferForm">
+            <summary>Gets or sets the ported number transfer form.</summary>
+            <value>The ported number transfer form.</value>
+        </member>
+        <member name="P:CustomerService.Models.ChangePhoneRequest.PortedNumberOwnedBy">
+            <summary>Gets or sets the ported number owned by.</summary>
+            <value>The ported number owned by.</value>
+        </member>
+        <member name="P:CustomerService.Models.ChangePhoneRequest.PortedNumberOwnerRegistrationId">
+            <summary>Gets or sets the ported number owner registration identifier.</summary>
+            <value>The ported number owner registration identifier.</value>
+        </member>
+        <member name="T:CustomerService.Models.RegisterCustomer">
+            <summary>
+            RegisterCustomer class
+            </summary>
+        </member>
+        <member name="P:CustomerService.Models.RegisterCustomer.Email">
+            <summary>
+            Gets or sets the email.
+            </summary>
+            <value>
+            The email.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.RegisterCustomer.Password">
+            <summary>
+            Gets or sets the password.
+            </summary>
+            <value>
+            The password.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.ResetPassword.NewPassword">
+            <summary>
+            New Password
+            </summary>
+            <value>
+            password
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.ResetPassword.ResetToken">
+            <summary>
+            Gets or sets the password.
+            </summary>
+            <value>
+            The password.
+            </value>
+        </member>
+        <member name="T:CustomerService.Models.LoginDto">
+            <summary>
+            LoginDto class
+            </summary>
+        </member>
+        <member name="P:CustomerService.Models.LoginDto.Email">
+            <summary>
+            Gets or sets the email.
+            </summary>
+            <value>
+            The email.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.LoginDto.Password">
+            <summary>
+            Gets or sets the password.
+            </summary>
+            <value>
+            The password.
+            </value>
+        </member>
+        <member name="T:CustomerService.Models.LoggedInPrinciple">
+            <summary>
+            LoggedInPrinciple class
+            </summary>
+        </member>
+        <member name="P:CustomerService.Models.LoggedInPrinciple.Customer">
+            <summary>
+            Gets or sets the customer.
+            </summary>
+            <value>
+            The customer.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.LoggedInPrinciple.IsAuthenticated">
+            <summary>
+            Gets or sets a value indicating whether this instance is authenticated.
+            </summary>
+            <value>
+              <c>true</c> if this instance is authenticated; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.LoggedInPrinciple.Token">
+            <summary>
+            Gets or sets the token.
+            </summary>
+            <value>
+            The token.
+            </value>
+        </member>
+        <member name="T:CustomerService.Models.ValidateReferralCodeRequest">
+            <summary>
+            ValidateReferralCodeRequest class
+            </summary>
+        </member>
+        <member name="P:CustomerService.Models.ValidateReferralCodeRequest.ReferralCode">
+            <summary>
+            Gets or sets the referral code.
+            </summary>
+            <value>
+            The referral code.
+            </value>
+        </member>
+        <member name="T:CustomerService.Models.ValidateReferralCodeResponse">
+            <summary>
+            ValidateReferralCodeResponse class
+            </summary>
+        </member>
+        <member name="P:CustomerService.Models.ValidateReferralCodeResponse.CustomerID">
+            <summary>
+            Gets or sets the customer identifier.
+            </summary>
+            <value>
+            The customer identifier.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.ValidateReferralCodeResponse.IsReferralCodeValid">
+            <summary>
+            Gets or sets a value indicating whether this instance is referral code valid.
+            </summary>
+            <value>
+              <c>true</c> if this instance is referral code valid; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="T:CustomerService.Models.Subscriber">
+            <summary>
+            Subscriber class
+            </summary>
+        </member>
+        <member name="P:CustomerService.Models.Subscriber.LinkedMobileNumber">
+            <summary>
+            Gets or sets the linked  mobile number.
+            </summary>
+            <value>
+            The linked mobile number.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.Subscriber.LinkedDisplayName">
+            <summary>
+            Gets or sets the Linked Display Name.
+            </summary>
+            <value>
+            The Linked Display Name.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.Subscriber.AccountType">
+            <summary>
+            Gets or sets the Account Type.
+            </summary>
+            <value>
+            The Account Type.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.Subscriber.MobileNumber">
+            <summary>
+            Gets or sets the mobile number.
+            </summary>
+            <value>
+            The mobile number.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.Subscriber.DisplayName">
+            <summary>
+            Gets or sets the display name.
+            </summary>
+            <value>
+            The display name.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.Subscriber.SIMID">
+            <summary>
+            Gets or sets the simid.
+            </summary>
+            <value>
+            The simid.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.Subscriber.PremiumType">
+            <summary>
+            Gets or sets the type of the premium.
+            </summary>
+            <value>
+            The type of the premium.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.Subscriber.ActivatedOn">
+            <summary>
+            Gets or sets the activated on.
+            </summary>
+            <value>
+            The activated on.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.Subscriber.IsPrimary">
+            <summary>
+            Gets or sets a value indicating whether this instance is primary.
+            </summary>
+            <value>
+              <c>true</c> if this instance is primary; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.Subscriber.State">
+            <summary>
+            Gets or sets the state.
+            </summary>
+            <value>
+            The state.
+            </value>
+        </member>
+        <member name="T:CustomerService.Models.CustomerSearch">
+            <summary>
+            CustomerSearch class
+            </summary>
+        </member>
+        <member name="P:CustomerService.Models.CustomerSearch.CustomerId">
+            <summary>
+            Gets or sets the customer identifier.
+            </summary>
+            <value>
+            The customer identifier.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.CustomerSearch.CustomerName">
+            <summary>
+            Gets or sets the name of the customer.
+            </summary>
+            <value>
+            The name of the customer.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.CustomerSearch.PhoneNumber">
+            <summary>
+            Gets or sets the phone number.
+            </summary>
+            <value>
+            The phone number.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.CustomerSearch.Plan">
+            <summary>
+            Gets or sets the plan.
+            </summary>
+            <value>
+            The plan.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.CustomerSearch.AdditionalLines">
+            <summary>
+            Gets or sets the additional lines.
+            </summary>
+            <value>
+            The additional lines.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.CustomerSearch.JoinedOn">
+            <summary>
+            Gets or sets the joined on.
+            </summary>
+            <value>
+            The joined on.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.CustomerSearch.Status">
+            <summary>
+            Gets or sets the status.
+            </summary>
+            <value>
+            The status.
+            </value>
+        </member>
+        <member name="T:CustomerService.Models.CustomerPlans">
+            <summary>
+            CustomerPlans class
+            </summary>
+        </member>
+        <member name="P:CustomerService.Models.CustomerPlans.CustomerID">
+            <summary>
+            Gets or sets the customer identifier.
+            </summary>
+            <value>
+            The customer identifier.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.CustomerPlans.PlanId">
+            <summary>
+            Gets or sets the plan identifier.
+            </summary>
+            <value>
+            The plan identifier.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.CustomerPlans.SubscriptionType">
+            <summary>
+            Gets or sets the type of the subscription.
+            </summary>
+            <value>
+            The type of the subscription.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.CustomerPlans.PlanStatus">
+            <summary>
+            Gets or sets the status of the plan.
+            </summary>
+            <value>
+            The status of the subscription.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.CustomerPlans.PlanMarketingName">
+            <summary>
+            Gets or sets the type of the PlanMarketingName.
+            </summary>
+            <value>
+            The type of the PlanMarketingName.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.CustomerPlans.PortalSummaryDescription">
+            <summary>
+            Gets or sets the type of the PortalSummaryDescription.
+            </summary>
+            <value>
+            The type of the PortalSummaryDescription.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.CustomerPlans.PortalDescription">
+            <summary>
+            Gets or sets the type of the PortalDescription.
+            </summary>
+            <value>
+            The type of the PortalDescription.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.CustomerPlans.IsRecurring">
+            <summary>
+            Gets or sets the is recurring.
+            </summary>
+            <value>
+            The is recurring.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.CustomerPlans.MobileNumber">
+            <summary>
+            Gets or sets the mobile number.
+            </summary>
+            <value>
+            The mobile number.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.CustomerPlans.ExpiryDate">
+            <summary>
+            Gets or sets the expiry date.
+            </summary>
+            <value>
+            The expiry date.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.CustomerPlans.Removable">
+            <summary>
+            Gets removable flag.
+            </summary>
+            <value>
+            1=Yes, 0=N0.
+            </value>
+        </member>
+        <member name="T:CustomerService.Models.CustomerNewReferralCode">
+            <summary>
+            CustomerNewReferralCode class
+            </summary>
+        </member>
+        <member name="P:CustomerService.Models.CustomerNewReferralCode.ReferralCode">
+            <summary>
+            Gets or sets the ReferralCode.
+            </summary>
+            <value>
+            The status.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.BasePlans.PortalSummaryDescription">
+            <summary>
+            Gets or sets the type of the PortalSummaryDescription.
+            </summary>
+            <value>
+            The type of the PortalSummaryDescription.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.BasePlans.PortalDescription">
+            <summary>
+            Gets or sets the type of the PortalDescription.
+            </summary>
+            <value>
+            The type of the PortalDescription.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.BasePlans.TotalData">
+            <summary>
+            Gets or sets the TotalData.
+            </summary>
+            <value>
+            The TotalData.
+            </value>
+        </member>
+    </members>
+</doc>
