@@ -2639,7 +2639,7 @@ namespace OrderService.Controllers
                         {
                             LogInfo.Information(EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess));
 
-                            QMHelper qMHelper = new QMHelper(_iconfiguration,_messageQueueDataAccess);
+                            QMHelper qMHelper = new QMHelper(_iconfiguration, _messageQueueDataAccess);
 
                             if (await qMHelper.ProcessSuccessTransaction(updateRequest) == 1)
                             {
@@ -4270,7 +4270,7 @@ namespace OrderService.Controllers
                                         paymentProcessingRespose = await _orderAccess.UpdateCheckOutReceipt(transactionResponse.TrasactionResponse);
 
                                         tokenDetailsUpdateResponse = await _orderAccess.UpdatePaymentMethodDetails(transactionResponse.TrasactionResponse, customerID, tokenSession.Token);
-                                        
+
                                         if (paymentProcessingRespose.ResponseCode == (int)DbReturnValue.TransactionSuccess)
                                         {
                                             LogInfo.Information(EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess));
@@ -4622,7 +4622,7 @@ namespace OrderService.Controllers
 
                             paymentMethod = (PaymentMethod)paymentMethodResponse.Results;
 
-                            if(paymentMethod!=null &&  (!string.IsNullOrEmpty( paymentMethod.Token)))
+                            if (paymentMethod != null && (!string.IsNullOrEmpty(paymentMethod.Token)))
                             {
                                 PaymentHelper gatewayHelper = new PaymentHelper();
 
@@ -4653,7 +4653,7 @@ namespace OrderService.Controllers
 
                                 //Update checkout details and return amount
 
-                                DatabaseResponse checkOutAmountResponse = await _orderAccess.GetCheckoutRequestDetails(checkoutUpdateModel);                               
+                                DatabaseResponse checkOutAmountResponse = await _orderAccess.GetCheckoutRequestDetails(checkoutUpdateModel);
 
                                 if (checkOutAmountResponse.ResponseCode == (int)DbReturnValue.RecordExists)
                                 {
@@ -4683,7 +4683,7 @@ namespace OrderService.Controllers
 
                                                 QMHelper qMHelper = new QMHelper(_iconfiguration, _messageQueueDataAccess);
 
-                                                if (await qMHelper.ProcessSuccessTransaction(updateRequest) ==1)
+                                                if (await qMHelper.ProcessSuccessTransaction(updateRequest) == 1)
                                                 {
                                                     return Ok(new OperationResponse
                                                     {
@@ -4705,7 +4705,7 @@ namespace OrderService.Controllers
                                                         Message = EnumExtensions.GetDescription(CommonErrors.SourceTypeNotFound),
                                                         IsDomainValidationErrors = false
                                                     });
-                                                }                                              
+                                                }
 
                                             }
                                             else
@@ -4764,7 +4764,7 @@ namespace OrderService.Controllers
                                     IsDomainValidationErrors = false
                                 });
                             }
-                           
+
                         }
                         else
                         {
