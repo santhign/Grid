@@ -65,6 +65,15 @@ namespace CustomerService.Controllers
                         IsDomainValidationErrors = true
                     });
                 }
+                else if (response.ResponseCode == ((int)DbReturnValue.AccountIsLocked))
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.AccountIsLocked),
+                        IsDomainValidationErrors = true
+                    });
+                }
                 else if (response.ResponseCode == ((int)DbReturnValue.PasswordIncorrect))
                 {
                     return Ok(new OperationResponse
