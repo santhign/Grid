@@ -140,5 +140,9 @@ namespace Core.Enums
         [EnumMember(Value = "Nationality is not defined for the profile")]
         [Description("Nationality is not defined for the profile")]
         OrderNationalityMissing = 134,
+
+        [EnumMember(Value = "PaymentNotProcessed")]
+        [Description("PaymentNotProcessed")]
+        PaymentNotProcessed = 135,
     }
 }

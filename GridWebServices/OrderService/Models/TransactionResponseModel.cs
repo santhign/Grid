@@ -62,11 +62,11 @@ namespace OrderService.Models
             model.OrderCurrency = transactionList[0]["order"]["currency"].ToObject<String>();
             model.OrderId = transactionList[0]["order"]["id"].ToObject<String>();
             model.OrderDescription = transactionList[0]["order"]["description"]!=null? transactionList[0]["order"]["description"].ToObject<String>():null;
-            model.TransactionID = transactionList[0]["authorizationResponse"]["transactionIdentifier"].ToObject<String>();
-            model.CardNumber = transactionList[0]["sourceOfFunds"]["provided"]["card"]["number"].ToObject<String>();
-            model.CardFundMethod = transactionList[0]["sourceOfFunds"]["provided"]["card"]["fundingMethod"].ToObject<String>();
-            model.CardBrand = transactionList[0]["sourceOfFunds"]["provided"]["card"]["brand"].ToObject<String>();
-            model.CardIssuer = transactionList[0]["sourceOfFunds"]["provided"]["card"]["scheme"].ToObject<String>();
+            model.TransactionID = transactionList[0]["authorizationResponse"]["transactionIdentifier"]!=null? transactionList[0]["authorizationResponse"]["transactionIdentifier"].ToObject<String>():null;
+            model.CardNumber = transactionList[0]["sourceOfFunds"]["provided"]["card"]["number"]!=null? transactionList[0]["sourceOfFunds"]["provided"]["card"]["number"].ToObject<String>():null;
+            model.CardFundMethod = transactionList[0]["sourceOfFunds"]["provided"]["card"]["fundingMethod"]!=null? transactionList[0]["sourceOfFunds"]["provided"]["card"]["fundingMethod"].ToObject<String>():null;
+            model.CardBrand = transactionList[0]["sourceOfFunds"]["provided"]["card"]["brand"]!=null? transactionList[0]["sourceOfFunds"]["provided"]["card"]["brand"].ToObject<String>():null;
+            model.CardIssuer = transactionList[0]["sourceOfFunds"]["provided"]["card"]["scheme"]!=null?transactionList[0]["sourceOfFunds"]["provided"]["card"]["scheme"].ToObject<String>():null;
             model.CardHolderName = transactionList[0]["sourceOfFunds"]["provided"]["card"]["nameOnCard"]!=null? transactionList[0]["sourceOfFunds"]["provided"]["card"]["nameOnCard"].ToObject<String>():null;
             model.ExpiryYear = transactionList[0]["sourceOfFunds"]["provided"]["card"]["expiry"]["year"].ToObject<int>();
             model.ExpiryMonth = transactionList[0]["sourceOfFunds"]["provided"]["card"]["expiry"]["month"].ToObject<int>();

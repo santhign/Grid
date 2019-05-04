@@ -38,125 +38,50 @@ namespace OrderService.Controllers
 
             _messageQueueDataAccess = messageQueueDataAccess;
         }
-
-        //[HttpPost("process-webhook")]
-        //public IActionResult ProcessWebhook([FromBody] WebhookNotificationModel notification, [FromHeader(Name = "X-Notification-Secret")] string notificationSecret)
-        //{
-        //    try
-        //    {
-
-        //        _notificationModel = notification;
-
-        //        var watch = new System.Diagnostics.Stopwatch();
-
-        //        watch.Start();
-
-        //        PaymentHelper.InitWebhooksNotificationsFolder();
-
-        //        DatabaseResponse configResponse = ConfigHelper.GetValue(ConfiType.MPGS.ToString(), _iconfiguration);
-
-        //        PaymentHelper gatewayHelper = new PaymentHelper();
-
-        //        GridMPGSConfig gatewayConfig = gatewayHelper.GetGridMPGSConfig((List<Dictionary<string, string>>)configResponse.Results);
-
-        //        GatewayApiConfig _gatewayApiConfig = new GatewayApiConfig(gatewayConfig);
-
-        //        LogInfo.Information("Webhooks controller ProcessWebhook action");
-
-        //        Debug.WriteLine($"-------------GatewayApiConfig.WebhooksNotificationSecret {_gatewayApiConfig.WebhooksNotificationSecret} --- {notificationSecret}");
-
-        //        if (_gatewayApiConfig.WebhooksNotificationSecret == null || notificationSecret == null || notificationSecret != _gatewayApiConfig.WebhooksNotificationSecret)
-        //        {
-        //            LogInfo.Error("Webhooks notification secret doesn't match, so not processing the incoming request!");
-
-        //            return Ok();
-        //        }
-
-        //        LogInfo.Information("Webhooks notification secret matches");
-
-        //        string json = JsonConvert.SerializeObject(notification);
-
-        //        LogInfo.Information($"Webhooks notification model {json}");
-
-        //        WebhookDataAccess _webhookAccess = new WebhookDataAccess(_iconfiguration);
-
-        //        DatabaseResponse databaseResponse = _webhookAccess.UpdateMPGSWebhookNotification(notification);
-
-        //        // epoch
-        //        notification.Timestamp = Convert.ToInt64((DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds);
-
-        //        System.IO.File.WriteAllText($@"{GatewayApiConfig.WEBHOOKS_NOTIFICATION_FOLDER}/WebHookNotifications_{notification.Timestamp}.json", json);
-
-        //        watch.Stop();
-
-
-        //        Action MPGSOrderFinalProcessing = FinalPaymentProcessing;
-
-        //       // ProcessPayment(MPGSOrderFinalProcessing);
-
-        //        Task.Factory.StartNew(MPGSOrderFinalProcessing);
-
-        //        // we can trace this and decide wether to implement a queue here or not
-        //        LogInfo.Information($"MPGS Webhook Execution Time: {watch.ElapsedMilliseconds} ms");
-
-        //        /*               
-        //        The gateway will consider the delivery of the Webhook notification as successful
-
-        //        if  system responds with a successful acknowledgement message containing 
-
-        //        HTTP 200 Status Code within 30 seconds.  */
-
-        //        return Ok();
-        //    }
-        //    catch(Exception ex)
-        //    {
-        //        LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-
-        //        return Ok();
-        //    }
-
-
-        //}
+      
         [HttpPost("process-webhook")]
         public  IActionResult ProcessWebhook([FromBody] WebhookNotificationModel notification, [FromHeader(Name = "X-Notification-Secret")] string notificationSecret)
         {
             try
             {
-                _notificationModel = notification;                
-
-                notification.Timestamp = Convert.ToInt64((DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds);
-
-                PaymentHelper.InitWebhooksNotificationsFolder();
-
-                DatabaseResponse configResponse = ConfigHelper.GetValue(ConfiType.MPGS.ToString(), _iconfiguration);
-
-                PaymentHelper gatewayHelper = new PaymentHelper();
-
-                GridMPGSConfig gatewayConfig = gatewayHelper.GetGridMPGSConfig((List<Dictionary<string, string>>)configResponse.Results);
-
-                GatewayApiConfig _gatewayApiConfig = new GatewayApiConfig(gatewayConfig);
-
-                LogInfo.Information("Webhooks controller ProcessWebhook action");
-
-                Debug.WriteLine($"-------------GatewayApiConfig.WebhooksNotificationSecret {_gatewayApiConfig.WebhooksNotificationSecret} --- {notificationSecret}");
-
-                if (_gatewayApiConfig.WebhooksNotificationSecret == null || notificationSecret == null || notificationSecret != _gatewayApiConfig.WebhooksNotificationSecret)
+                if (notification.OrderStatus == MPGSAPIResponse.CAPTURED.ToString())
                 {
-                    LogInfo.Error("Webhooks notification secret doesn't match, so not processing the incoming request!");
+                    _notificationModel = notification;
 
-                    return Ok();
+                    notification.Timestamp = Convert.ToInt64((DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds);
+
+                    PaymentHelper.InitWebhooksNotificationsFolder();
+
+                    DatabaseResponse configResponse = ConfigHelper.GetValue(ConfiType.MPGS.ToString(), _iconfiguration);
+
+                    PaymentHelper gatewayHelper = new PaymentHelper();
+
+                    GridMPGSConfig gatewayConfig = gatewayHelper.GetGridMPGSConfig((List<Dictionary<string, string>>)configResponse.Results);
+
+                    GatewayApiConfig _gatewayApiConfig = new GatewayApiConfig(gatewayConfig);
+
+                    LogInfo.Information("Webhooks controller ProcessWebhook action");
+
+                    Debug.WriteLine($"-------------GatewayApiConfig.WebhooksNotificationSecret {_gatewayApiConfig.WebhooksNotificationSecret} --- {notificationSecret}");
+
+                    if (_gatewayApiConfig.WebhooksNotificationSecret == null || notificationSecret == null || notificationSecret != _gatewayApiConfig.WebhooksNotificationSecret)
+                    {
+                        LogInfo.Error("Webhooks notification secret doesn't match, so not processing the incoming request!");
+
+                        return Ok();
+                    }
+
+                    LogInfo.Information("Webhooks notification secret matches");
+
+                    var parent = Task.Factory.StartNew(() =>
+                    {
+                        Action MPGSOrderFinalProcessing = FinalPaymentProcessing;
+
+                        Task.Factory.StartNew(MPGSOrderFinalProcessing, TaskCreationOptions.DenyChildAttach);
+
+                    });
                 }
-
-                LogInfo.Information("Webhooks notification secret matches");
-
-                var parent = Task.Factory.StartNew(() =>
-                {                  
-                      
-                    Action MPGSOrderFinalProcessing = FinalPaymentProcessing;                  
-
-                    Task.Factory.StartNew(MPGSOrderFinalProcessing, TaskCreationOptions.DenyChildAttach);
-                   
-                });
+               
 
                 return Ok();
 
@@ -330,8 +255,7 @@ namespace OrderService.Controllers
         public async void ProcessPayment(WebhookNotificationModel notification)
         {
             try
-            {               
-
+            {   
                 string json = JsonConvert.SerializeObject(notification);
 
                 LogInfo.Information($"Webhooks notification model {json}");
@@ -372,96 +296,21 @@ namespace OrderService.Controllers
                                
                 if (paymentProcessingRespose.ResponseCode == (int)DbReturnValue.TransactionSuccess)
                 {
-                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess));
+                    LogInfo.Information(EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess));
 
-                    DatabaseResponse sourceTyeResponse = new DatabaseResponse();
-                   
-                    sourceTyeResponse = await _orderAccess.GetSourceTypeByMPGSSOrderId(updateRequest.MPGSOrderID);
+                    QMHelper qMHelper = new QMHelper(_iconfiguration, _messageQueueDataAccess);
 
-                    OrderSource source = new OrderSource();
-
-                    source = (OrderSource)sourceTyeResponse.Results;
-
-                     DatabaseResponse orderMqResponse = new DatabaseResponse();
-
-                    orderMqResponse = await _messageQueueDataAccess.GetOrderMessageQueueBody(source.SourceID);
-
-                    OrderQM orderDetails = new OrderQM();
-
-                    string topicName = string.Empty;
-
-                    string pushResult = string.Empty;
-
-                    if (orderMqResponse != null && orderMqResponse.Results != null)
+                    if (await qMHelper.ProcessSuccessTransaction(updateRequest) == 1)
                     {
-                        orderDetails = (OrderQM)orderMqResponse.Results;
-
-                        DatabaseResponse OrderCountResponse = await _orderAccess.GetCustomerOrderCount(orderDetails.customerID);
-
-                        try
-                        {
-                            Dictionary<string, string> attribute = new Dictionary<string, string>();
-
-                            topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration).Results.ToString().Trim();
-
-
-                            attribute.Add(EventTypeString.EventType, ((OrderCount)OrderCountResponse.Results).SuccessfulOrders == 1 ? Core.Enums.RequestType.NewCustomer.GetDescription() : Core.Enums.RequestType.NewService.GetDescription());
-
-                            pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, orderDetails, attribute);
-
-                            if (pushResult.Trim().ToUpper() == "OK")
-                            {
-                                MessageQueueRequest queueRequest = new MessageQueueRequest
-                                {
-                                    Source = CheckOutType.Orders.ToString(),
-                                    NumberOfRetries = 1,
-                                    SNSTopic = topicName,
-                                    CreatedOn = DateTime.Now,
-                                    LastTriedOn = DateTime.Now,
-                                    PublishedOn = DateTime.Now,
-                                    MessageAttribute = ((OrderCount)OrderCountResponse.Results).SuccessfulOrders == 1 ? Core.Enums.RequestType.NewCustomer.GetDescription() : Core.Enums.RequestType.NewService.GetDescription(),
-                                    MessageBody = JsonConvert.SerializeObject(orderDetails),
-                                    Status = 1
-                                };
-                                await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
-                            }
-                            else
-                            {
-                                MessageQueueRequest queueRequest = new MessageQueueRequest
-                                {
-                                    Source = CheckOutType.Orders.ToString(),
-                                    NumberOfRetries = 1,
-                                    SNSTopic = topicName,
-                                    CreatedOn = DateTime.Now,
-                                    LastTriedOn = DateTime.Now,
-                                    PublishedOn = DateTime.Now,
-                                    MessageAttribute = ((OrderCount)OrderCountResponse.Results).SuccessfulOrders == 1 ? Core.Enums.RequestType.NewCustomer.GetDescription() : Core.Enums.RequestType.NewService.GetDescription(),
-                                    MessageBody = JsonConvert.SerializeObject(orderDetails),
-                                    Status = 0
-                                };
-                                await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
-                            }
-
-                        }
-                        catch (Exception ex)
-                        {
-                            LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-                            MessageQueueRequest queueRequest = new MessageQueueRequest
-                            {
-                                Source = CheckOutType.Orders.ToString(),
-                                NumberOfRetries = 1,
-                                SNSTopic = topicName,
-                                CreatedOn = DateTime.Now,
-                                LastTriedOn = DateTime.Now,
-                                PublishedOn = DateTime.Now,
-                                MessageAttribute = ((OrderCount)OrderCountResponse.Results).SuccessfulOrders == 1 ? Core.Enums.RequestType.NewCustomer.GetDescription() : Core.Enums.RequestType.NewService.GetDescription(),
-                                MessageBody = JsonConvert.SerializeObject(orderDetails),
-                                Status = 0
-                            };
-                            await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
-                        }
+                        LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.ProcessingQue));
                     }
 
+                    else
+                    {
+                        // 0
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.SourceTypeNotFound) + " " + EnumExtensions.GetDescription(CommonErrors.ProcessingQueFailed));
+                      
+                    }
                 }
            
                 else

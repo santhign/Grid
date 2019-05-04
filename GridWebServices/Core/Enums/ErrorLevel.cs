@@ -228,5 +228,17 @@ namespace Core.Enums
         [EnumMember(Value = "PaymentMethodSuccessfullyChanged")]
         [Description("Payment Method Successfully changed")]
         PaymentMethodSuccessfullyChanged = 52,
+
+        [EnumMember(Value = "SourceTypeNotFound")]
+        [Description("Source Type Not Found")]
+        SourceTypeNotFound = 53,
+
+        [EnumMember(Value = "ProcessingQue")]
+        [Description("Processing Queue Message")]
+        ProcessingQue = 54,
+
+        [EnumMember(Value = "ProcessingQueFailed")]
+        [Description("Processing Queue Message Failed")]
+        ProcessingQueFailed = 55,
     }
 }

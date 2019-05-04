@@ -1948,7 +1948,7 @@ namespace OrderService.DataAccess
                 parameters[5].Value = checkOutRequest.CheckoutVersion;
                 parameters[6].Value = checkOutRequest.TransactionID;
 
-                _DataHelper = new DataAccessHelper("[Orders_GetChangeCardCheckoutRequestDetails]", parameters, _configuration);
+                _DataHelper = new DataAccessHelper("Orders_GetChangeCardCheckoutRequestDetails", parameters, _configuration);
 
                 DataTable dt = new DataTable();
 
@@ -2584,7 +2584,6 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
-
         public async Task<DatabaseResponse> RemovePaymentMethod(int customerID, int paymentMethodID)
         {
             try
@@ -2622,7 +2621,6 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
-
         public async Task<DatabaseResponse> RescheduleDelivery(int customerID, Order_RescheduleDeliveryRequest detailsrequest)
         {
             try
@@ -2683,6 +2681,166 @@ namespace OrderService.DataAccess
 
                 return response;
             }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+        public async Task<DatabaseResponse> OrderBuddyCheck(int orderID)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                     new SqlParameter( "@OrderID",  SqlDbType.Int )
+                     
+                };
+
+                parameters[0].Value = orderID;               
+
+                _DataHelper = new DataAccessHelper("Orders_RequireBuddy", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt);    // 105 / 102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+               List< BuddyCheckList> buddyCheckList = new List<BuddyCheckList>();
+
+                if (dt != null && dt.Rows.Count > 0)
+                {
+                    buddyCheckList = (from model in dt.AsEnumerable()
+                                     select new BuddyCheckList()
+                                     {
+                                         CustomerID = model.Field<int>("CustomerID"),
+                                         OrderID = orderID,
+                                         OrderSubscriberID = model.Field<int>("OrderSubscriberID"),
+                                          MobileNumber = model.Field<string>("MobileNumber"),
+                                          HasBuddyPromotion = model.Field<int>("HasBuddyPromotion")                                         
+                                     }).Where(cl=>cl.HasBuddyPromotion==1).ToList();
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = buddyCheckList };
+
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+
+                }              
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+        public async Task<DatabaseResponse> CheckPaymentIsProcessed(string MPGSOrderID)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                {
+                     new SqlParameter( "@MPGSOrderID",  SqlDbType.NVarChar )
+
+                };
+
+                 parameters[0].Value = MPGSOrderID;
+
+                _DataHelper = new DataAccessHelper("Orders_IsPaymentProcessed", parameters, _configuration);
+                
+                int result = await _DataHelper.RunAsync();    // 126 / 135
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                List<BuddyCheckList> buddyCheckList = new List<BuddyCheckList>();
+               
+                response = new DatabaseResponse { ResponseCode = result };
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+        public async Task<DatabaseResponse> ProcessBuddyPlan(BuddyNumberUpdate updateRequest)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                     new SqlParameter( "@OrderSubscriberID",  SqlDbType.Int ),
+                     new SqlParameter( "@UserId",  SqlDbType.NVarChar ),
+                      new SqlParameter( "@NewMobileNumber",  SqlDbType.NVarChar ),
+                };
+
+                parameters[0].Value = updateRequest.OrderSubscriberID;
+                parameters[1].Value = updateRequest.UserId;
+                parameters[2].Value = updateRequest.NewMobileNumber;
+
+                _DataHelper = new DataAccessHelper("Orders_ProcessBuddyPlan", parameters, _configuration);               
+
+                int result = await _DataHelper.RunAsync();    // 107 / 100/119                
+
+                return new DatabaseResponse { ResponseCode = result };
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+        public async Task<DatabaseResponse> CreatePendingBuddyList(BuddyCheckList updateRequest)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                     new SqlParameter( "@OrderID",  SqlDbType.Int ),
+                     new SqlParameter( "@OrderSubscriberID",  SqlDbType.Int ),                    
+                     new SqlParameter( "@NewMobileNumber",  SqlDbType.NVarChar ),
+                     new SqlParameter( "@IsProcessed",  SqlDbType.Bit )    
+                };
+
+                parameters[0].Value = updateRequest.OrderID;
+                parameters[1].Value = updateRequest.OrderSubscriberID;
+                parameters[2].Value = updateRequest.MobileNumber;
+                parameters[3].Value = updateRequest.IsProcessed;
+
+                _DataHelper = new DataAccessHelper("Orders_CreatePendingBuddyList", parameters, _configuration);               
+
+                int result = await _DataHelper.RunAsync();    // 107 / 100               
+
+                return new DatabaseResponse { ResponseCode = result }; ;
+            }
+
             catch (Exception ex)
             {
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
