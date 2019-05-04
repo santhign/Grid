@@ -4847,7 +4847,7 @@ namespace OrderService.Controllers
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
                 var helper = new AuthHelper(_iconfiguration);
-                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_RescheduleDelivery_I);
+                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_RescheduleDelivery);
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
                     var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;

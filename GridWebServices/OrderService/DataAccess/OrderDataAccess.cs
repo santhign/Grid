@@ -2735,7 +2735,7 @@ namespace OrderService.DataAccess
 
 
 
-                _DataHelper = new DataAccessHelper(DbObjectNames.Orders_ConfirmedRescheduleDelivery, parameters, _configuration);
+                _DataHelper = new DataAccessHelper(DbObjectNames.Orders_ProcessRescheduleDelivery, parameters, _configuration);
 
                 DataTable dt = new DataTable();
 
