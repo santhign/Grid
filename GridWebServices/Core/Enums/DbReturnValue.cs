@@ -141,8 +141,17 @@ namespace Core.Enums
         [Description("Nationality is not defined for the profile")]
         OrderNationalityMissing = 134,
 
+        [EnumMember(Value = "Reschedule delivery failed")]
+        [Description("Reschedule delivery failed")]
+        RescheduleOrderStatusNotCorrect = 135,
+
+        [EnumMember(Value = "Buddy is already assigned for selected number")]
+        [Description("Buddy is already assigned for selected number")]
+        BuddyAlreadyExists = 136,
+
         [EnumMember(Value = "PaymentNotProcessed")]
         [Description("PaymentNotProcessed")]
-        PaymentNotProcessed = 135,
+        PaymentNotProcessed = 137,
+
     }
 }

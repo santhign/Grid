@@ -8,6 +8,7 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using InfrastructureService;
 
 namespace AdminService
 {
@@ -20,10 +21,8 @@ namespace AdminService
               .Build();
         public static void Main(string[] args)
         {
-            Log.Logger = new LoggerConfiguration()
-                   .ReadFrom.Configuration(Configuration)
-                   .CreateLogger();
-            Log.Information("Admin Service is running");
+            LogInfo.Initialize(Configuration);
+            LogInfo.Information("Admin Service is running");
             CreateWebHostBuilder(args).Build().Run();
         }
 

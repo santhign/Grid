@@ -520,5 +520,11 @@ namespace OrderService.Models
 
     }
 
+    public class BuddyResponse
+    {
+        public string LinkedMobileNumber { get; set; }
+        public string LinkedDisplayName { get; set; }
+    }
+
 
 }

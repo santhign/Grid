@@ -447,6 +447,102 @@ namespace OrderService.Controllers
                 {
                     var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
 
+                    var findBuddy = await _changeRequestDataAccess.GetBuddyDetails(aTokenResp.CustomerID, mobileNumber);
+                    if (findBuddy != null && !string.IsNullOrWhiteSpace(findBuddy.LinkedMobileNumber))
+                    {
+                        var buddyList = await _changeRequestDataAccess.TerminationOrSuspensionRequest(aTokenResp.CustomerID, findBuddy.LinkedMobileNumber, Core.Enums.RequestType.Terminate.GetDescription(), remark);
+                        var buddyResponse = (TerminationOrSuspensionResponse)buddyList.Results;
+                        if (buddyList.ResponseCode == (int)DbReturnValue.CreateSuccess)
+                        {
+                            MessageBodyForCR msgBody = new MessageBodyForCR();
+                            Dictionary<string, string> attribute = new Dictionary<string, string>();
+                            string topicName = string.Empty, subject = string.Empty;
+                            try
+                            {
+                                msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(buddyResponse.ChangeRequestId);
+                                if (msgBody == null)
+                                {
+                                    throw new NullReferenceException("message body is null for ChangeRequest (" + buddyResponse.ChangeRequestId + ") for Termination Request Service API");
+                                }
+                                topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration)
+                                .Results.ToString().Trim();
+                                if (string.IsNullOrWhiteSpace(topicName))
+                                {
+                                    throw new NullReferenceException("topicName is null for ChangeRequest (" + buddyResponse.ChangeRequestId + ") for Termination Request Service API");
+                                }
+                                attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.Terminate.GetDescription());
+                                var pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
+                                if (pushResult.Trim().ToUpper() == "OK")
+                                {
+
+
+                                    MessageQueueRequest queueRequest = new MessageQueueRequest
+                                    {
+                                        Source = Source.ChangeRequest,
+                                        NumberOfRetries = 1,
+                                        SNSTopic = topicName,
+                                        CreatedOn = DateTime.Now,
+                                        LastTriedOn = DateTime.Now,
+                                        PublishedOn = DateTime.Now,
+                                        MessageAttribute = Core.Enums.RequestType.Terminate.GetDescription().ToString(),
+                                        MessageBody = JsonConvert.SerializeObject(msgBody),
+                                        Status = 1
+                                    };
+                                    await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                                }
+                                else
+                                {
+                                    MessageQueueRequest queueRequest = new MessageQueueRequest
+                                    {
+                                        Source = Source.ChangeRequest,
+                                        NumberOfRetries = 1,
+                                        SNSTopic = topicName,
+                                        CreatedOn = DateTime.Now,
+                                        LastTriedOn = DateTime.Now,
+                                        PublishedOn = DateTime.Now,
+                                        MessageAttribute = Core.Enums.RequestType.Terminate.GetDescription().ToString(),
+                                        MessageBody = JsonConvert.SerializeObject(msgBody),
+                                        Status = 0
+                                    };
+                                    await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                                MessageQueueRequestException queueRequest = new MessageQueueRequestException
+                                {
+                                    Source = Source.ChangeRequest,
+                                    NumberOfRetries = 1,
+                                    SNSTopic = string.IsNullOrWhiteSpace(topicName) ? null : topicName,
+                                    CreatedOn = DateTime.Now,
+                                    LastTriedOn = DateTime.Now,
+                                    PublishedOn = DateTime.Now,
+                                    MessageAttribute = Core.Enums.RequestType.Terminate.GetDescription().ToString(),
+                                    MessageBody = msgBody != null ? JsonConvert.SerializeObject(msgBody) : null,
+                                    Status = 0,
+                                    Remark = "Error Occured in TerminationRequestService",
+                                    Exception = new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)
+
+
+                                };
+
+                                await _messageQueueDataAccess.InsertMessageInMessageQueueRequestException(queueRequest);
+                            }
+                        }
+                        else
+                        {
+                            LogInfo.Error(DbReturnValue.UpdationFailed.GetDescription());
+
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = DbReturnValue.UpdationFailed.GetDescription(),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                    }
+
                     var statusResponse = await _changeRequestDataAccess.TerminationOrSuspensionRequest(aTokenResp.CustomerID, mobileNumber, Core.Enums.RequestType.Terminate.GetDescription(), remark);
                     var TorSresponse = (TerminationOrSuspensionResponse)statusResponse.Results;
                     if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
@@ -558,6 +654,7 @@ namespace OrderService.Controllers
                         });
                     }
 
+
                 }
                 else
                 {
@@ -571,7 +668,6 @@ namespace OrderService.Controllers
                         IsDomainValidationErrors = false
                     });
                 }
-
 
             }
             catch (Exception ex)
@@ -1992,5 +2088,109 @@ namespace OrderService.Controllers
             }
         }
 
+        /// <summary>
+        /// Get Termination Date
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns>OperationResponse</returns>
+        [HttpGet("GetTerminationDate")]
+        public async Task<IActionResult> GetTerminationDate([FromHeader(Name = "Grid-Authorization-Token")] string token)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+                AuthHelper helper = new AuthHelper(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    {
+                        int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+                        if (!ModelState.IsValid)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = string.Join("; ", ModelState.Values
+                                                           .SelectMany(x => x.Errors)
+                                                           .Select(x => x.ErrorMessage))
+                            });
+                        }
+
+                        ChangeRequestDataAccess _crAccess = new ChangeRequestDataAccess(_iconfiguration);
+
+                        //update shipping details
+                        DatabaseResponse response = await _crAccess.GetTerminationDate(customerID);
+
+                        if (response.ResponseCode == (int)DbReturnValue.RecordExists)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = true,
+                                ReturnedObject = response.Results,
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                        else
+                        {
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToUpdatedSubscriptionDetails));
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(response.ResponseCode),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                    }
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
     }
 }

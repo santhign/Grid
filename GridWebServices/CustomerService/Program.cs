@@ -8,6 +8,7 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using InfrastructureService;
 
 namespace CustomerService
 {
@@ -20,10 +21,8 @@ namespace CustomerService
               .Build();
         public static void Main(string[] args)
         {
-            Log.Logger = new LoggerConfiguration()
-                  .ReadFrom.Configuration(Configuration)
-                  .CreateLogger();
-            Log.Information("Customer Service is running");
+            LogInfo.Initialize(Configuration);
+            LogInfo.Information("Customer Service is running");
             CreateWebHostBuilder(args).Build().Run();
         }
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using InfrastructureService;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -18,6 +19,8 @@ namespace NotificationService
              .Build();
         public static void Main(string[] args)
         {
+            LogInfo.Initialize(Configuration);
+            LogInfo.Information("Notification Service is running");
             CreateWebHostBuilder(args).Build().Run();
         }
 

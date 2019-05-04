@@ -3367,7 +3367,7 @@ namespace OrderService.Controllers
 
                                     AmazonS3 s3Helper = new AmazonS3(awsConfig);
 
-                                    string fileNameFront = "Grid_IDNUMBER_Front_" + DateTime.UtcNow.ToString("yyyymmddhhmmss") + Path.GetExtension(frontImage.FileName); //Grid_IDNUMBER_yyyymmddhhmmss.extension
+                                    string fileNameFront = "IDNUMBER_Front_" + DateTime.UtcNow.ToString("yyMMddhhmmss") + request.IDNumber.Substring(1, request.IDNumber.Length - 2) + Path.GetExtension(frontImage.FileName); //Grid_IDNUMBER_yyyymmddhhmmss.extension
 
                                     UploadResponse s3UploadResponse = await s3Helper.UploadFile(frontImage, fileNameFront);
 
@@ -3380,7 +3380,7 @@ namespace OrderService.Controllers
                                         LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.S3UploadFailed));
                                     }
 
-                                    string fileNameBack = "Grid_IDNUMBER_Back_" + DateTime.UtcNow.ToString("yyyymmddhhmmss") + Path.GetExtension(frontImage.FileName); //Grid_IDNUMBER_yyyymmddhhmmss.extension
+                                    string fileNameBack = "IDNUMBER_Back_" + DateTime.UtcNow.ToString("yyMMddhhmmss") + request.IDNumber.Substring(1, request.IDNumber.Length - 2) + Path.GetExtension(frontImage.FileName); //Grid_IDNUMBER_yyyymmddhhmmss.extension
 
                                     s3UploadResponse = await s3Helper.UploadFile(backImage, fileNameBack);
 
@@ -4847,7 +4847,7 @@ namespace OrderService.Controllers
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
                 var helper = new AuthHelper(_iconfiguration);
-                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_cancel_order);
+                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_RescheduleDelivery_I);
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
                     var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
@@ -4855,7 +4855,33 @@ namespace OrderService.Controllers
                     var statusResponse =
                         await _orderAccess.RescheduleDelivery(aTokenResp.CustomerID, detailsrequest);
 
-                    if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
+                    var order_Reschedule = (Order_RescheduleDeliveryResponse)statusResponse.Results;
+
+                    if(order_Reschedule != null && order_Reschedule.PayableAmount == 0)
+                    {
+                       var confirmOrder =  await _orderAccess.ConfirmedRescheduleDelivery(aTokenResp.CustomerID, order_Reschedule.OrderID);
+                        if (confirmOrder.ResponseCode == (int)DbReturnValue.CreateSuccess)
+                        {
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = true,
+                                Message = StatusMessages.SuccessMessage,
+                                Result = confirmOrder
+                            });
+                        }
+                        else
+                        {
+                            LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
+
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = DbReturnValue.UpdationFailed.GetDescription(),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                    }
+                    else if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                     {
                         return Ok(new ServerResponse
                         {
@@ -4872,6 +4898,17 @@ namespace OrderService.Controllers
                         {
                             HasSucceeded = false,
                             Message = DbReturnValue.DuplicateCRExists.GetDescription(),
+                            IsDomainValidationErrors = false
+                        });
+                    }
+                    else if (statusResponse.ResponseCode == (int)DbReturnValue.RescheduleOrderStatusNotCorrect)
+                    {
+                        LogInfo.Error(DbReturnValue.RescheduleOrderStatusNotCorrect.GetDescription());
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = DbReturnValue.RescheduleOrderStatusNotCorrect.GetDescription(),
                             IsDomainValidationErrors = false
                         });
                     }
@@ -4915,99 +4952,99 @@ namespace OrderService.Controllers
 
         }
 
-        [HttpPost]
-        [Route("UpdateAddressForRescheduleDelivery/{orderId}")]
-        public async Task<IActionResult> UpdateAddressForRescheduleDelivery([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int orderId, UpdateCRShippingDetailsRequest detailsrequest)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
-                {
-                    HasSucceeded = false,
-                    IsDomainValidationErrors = true,
-                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
 
-                });
-                if (!ModelState.IsValid)
-                {
-                    return Ok(new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        IsDomainValidationErrors = true,
-                        Message = string.Join("; ", ModelState.Values
-                            .SelectMany(x => x.Errors)
-                            .Select(x => x.ErrorMessage))
-                    });
-                }
+        //[HttpPost]
+        //[Route("ConfirmedRescheduleDelivery/{orderId}")]
+        //public async Task<IActionResult> ConfirmedRescheduleDelivery([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int orderId)
+        //{
+        //    try
+        //    {
+        //        if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+        //        {
+        //            HasSucceeded = false,
+        //            IsDomainValidationErrors = true,
+        //            Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
 
-                OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
-                var helper = new AuthHelper(_iconfiguration);
-                var tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_cancel_order);
-                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
-                {
-                    var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
-                    DatabaseResponse statusResponse = new DatabaseResponse();
-                    statusResponse.ResponseCode =
-                        await _orderAccess.CancelOrder(aTokenResp.CustomerID, orderId);
+        //        });
+        //        if (!ModelState.IsValid)
+        //        {
+        //            return Ok(new OperationResponse
+        //            {
+        //                HasSucceeded = false,
+        //                IsDomainValidationErrors = true,
+        //                Message = string.Join("; ", ModelState.Values
+        //                    .SelectMany(x => x.Errors)
+        //                    .Select(x => x.ErrorMessage))
+        //            });
+        //        }
 
-                    if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
-                    {
-                        return Ok(new ServerResponse
-                        {
-                            HasSucceeded = true,
-                            Message = StatusMessages.SuccessMessage,
-                            Result = statusResponse
-                        });
-                    }
-                    else if (statusResponse.ResponseCode == (int)DbReturnValue.DuplicateCRExists)
-                    {
-                        LogInfo.Error(DbReturnValue.DuplicateCRExists.GetDescription());
+        //        OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+        //        var helper = new AuthHelper(_iconfiguration);
+        //        var tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_ConfirmedRescheduleDelivery_II);
+        //        if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+        //        {
+        //            var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
+        //            var statusResponse =
+        //                await _orderAccess.ConfirmedRescheduleDelivery(aTokenResp.CustomerID, orderId);
 
-                        return Ok(new OperationResponse
-                        {
-                            HasSucceeded = false,
-                            Message = DbReturnValue.DuplicateCRExists.GetDescription(),
-                            IsDomainValidationErrors = false
-                        });
-                    }
-                    else
-                    {
-                        LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
+        //            if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
+        //            {
+        //                return Ok(new ServerResponse
+        //                {
+        //                    HasSucceeded = true,
+        //                    Message = StatusMessages.SuccessMessage,
+        //                    Result = statusResponse
+        //                });
+        //            }
+        //            else if (statusResponse.ResponseCode == (int)DbReturnValue.DuplicateCRExists)
+        //            {
+        //                LogInfo.Error(DbReturnValue.DuplicateCRExists.GetDescription());
 
-                        return Ok(new OperationResponse
-                        {
-                            HasSucceeded = false,
-                            Message = DbReturnValue.UpdationFailed.GetDescription(),
-                            IsDomainValidationErrors = false
-                        });
-                    }
-                }
-                else
-                {
-                    //Token expired
-                    LogInfo.Error(CommonErrors.ExpiredToken.GetDescription());
-                    return Ok(new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        Message = DbReturnValue.TokenExpired.GetDescription(),
-                        IsDomainValidationErrors = true
-                    });
+        //                return Ok(new OperationResponse
+        //                {
+        //                    HasSucceeded = false,
+        //                    Message = DbReturnValue.DuplicateCRExists.GetDescription(),
+        //                    IsDomainValidationErrors = false
+        //                });
+        //            }
+        //            else
+        //            {
+        //                LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
 
-                }
-            }
-            catch (Exception ex)
-            {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+        //                return Ok(new OperationResponse
+        //                {
+        //                    HasSucceeded = false,
+        //                    Message = DbReturnValue.UpdationFailed.GetDescription(),
+        //                    IsDomainValidationErrors = false
+        //                });
+        //            }
+        //        }
+        //        else
+        //        {
+        //            //Token expired
+        //            LogInfo.Error(CommonErrors.ExpiredToken.GetDescription());
+        //            return Ok(new OperationResponse
+        //            {
+        //                HasSucceeded = false,
+        //                Message = DbReturnValue.TokenExpired.GetDescription(),
+        //                IsDomainValidationErrors = true
+        //            });
 
-                return Ok(new OperationResponse
-                {
-                    HasSucceeded = false,
-                    Message = StatusMessages.ServerError,
-                    IsDomainValidationErrors = false
-                });
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
-            }
-        }
+        //        return Ok(new OperationResponse
+        //        {
+        //            HasSucceeded = false,
+        //            Message = StatusMessages.ServerError,
+        //            IsDomainValidationErrors = false
+        //        });
+
+        //    }
+        //}
 
         [HttpGet("GetChangePaymentMethodSession/{customerID}")]
         public async Task<IActionResult> GetChangePaymentMethodSession([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int customerID)

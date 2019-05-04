@@ -253,7 +253,7 @@ namespace CustomerService.Controllers
         }
 
         /// <summary>
-        /// This will check NRIC Validation
+        /// This will check NRIC Validation.
         /// </summary>
         /// <param name="NRIC"></param>
         /// <returns>validtion result</returns>
@@ -310,13 +310,119 @@ namespace CustomerService.Controllers
                     LogInfo.Warning(_warningmsg);
                     throw new Exception(_warningmsg);
                 }
-
                 return Ok(new ServerResponse
                 {
                     HasSucceeded = true,
                     Message = StatusMessages.ValidMessage
                 });
+            }
 
+            catch (Exception ex)
+            {
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = (_warningmsg == "" ? StatusMessages.ServerError : StatusMessages.InvalidMessage),
+                    IsDomainValidationErrors = false
+                });
+            }
+
+        }
+
+        /// <summary>
+        /// This will check NRIC Validation: IDType - S=Singaporean;F=Forigner
+        /// </summary>
+        /// <param name="IDType"></param>
+        /// <param name="NRIC"></param>
+        /// <returns>validtion result</returns>
+        /// POST: api/NRICValidation/S1234567D 
+        [HttpPost]
+        [Route("NRICValidation/{IDType}/{NRIC}")]
+        public IActionResult NRICValidation([FromRoute] string IDType, [FromRoute] string NRIC)
+        {
+
+            string _warningmsg = "";
+            try
+            {
+
+                // Check any number is passed
+                if (NRIC.Equals(string.Empty))
+                {
+                    _warningmsg = "Please give an NRIC number";
+                    LogInfo.Warning(_warningmsg);
+                    throw new Exception(_warningmsg);
+                }
+
+                // Check length
+                if (NRIC.Length != 9)
+                {
+                    _warningmsg = "The length of NRIC should be 9";
+                    LogInfo.Warning(_warningmsg);
+                    throw new Exception(_warningmsg);
+                }
+
+                // Check the file letter
+                if (!((NRIC[0].ToString().Equals("S"))
+                    || (NRIC[0].ToString().Equals("T"))
+                    || (NRIC[0].ToString().Equals("F"))
+                    || (NRIC[0].ToString().Equals("G"))))
+                {
+                    _warningmsg = "First letter of NRIC should be S,T,F or G";
+                    LogInfo.Warning(_warningmsg);
+                    throw new Exception(_warningmsg);
+                }
+
+                // Check whether the NRIC is a number if first and last char are removed
+                int NRIC_Internal_Number = 0;
+                if (!int.TryParse(NRIC.Substring(1, 7), out NRIC_Internal_Number))
+                {
+                    _warningmsg = "NRIC should be a number excluding the first and last characters";
+                    LogInfo.Warning(_warningmsg);
+                    throw new Exception(_warningmsg);
+                }
+
+                // Check the CheckSumNumber
+                if (!IsValidCheckSum(NRIC))
+                {
+                    _warningmsg = "Invalid NRIC checksum";
+                    LogInfo.Warning(_warningmsg);
+                    throw new Exception(_warningmsg);
+                }
+                if (IDType == "S" && (NRIC[0].ToString().Equals("S") || NRIC[0].ToString().Equals("T")))
+                {
+                    return Ok(new ServerResponse
+                    {
+                        HasSucceeded = true,
+                        Message = StatusMessages.ValidMessage
+                    });
+                }
+                else if (IDType == "F" && (NRIC[0].ToString().Equals("F") || NRIC[0].ToString().Equals("G")))
+                {
+                    return Ok(new ServerResponse
+                    {
+                        HasSucceeded = true,
+                        Message = StatusMessages.ValidMessage
+                    });
+                }
+                else if (IDType == null)
+                {
+                    return Ok(new ServerResponse
+                    {
+                        HasSucceeded = true,
+                        Message = StatusMessages.ValidMessage
+                    });
+                }
+                else
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = StatusMessages.InvalidMessage,
+                        IsDomainValidationErrors = false
+                    });
+                }
             }
 
             catch (Exception ex)

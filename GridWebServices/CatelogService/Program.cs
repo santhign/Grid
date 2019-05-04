@@ -14,20 +14,22 @@ namespace CatelogService
     public class Program
     {
         public static IConfiguration Configuration { get; } = new ConfigurationBuilder()
-               .SetBasePath(Directory.GetCurrentDirectory())
-               .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-               .AddEnvironmentVariables()
-               .Build();
+              .SetBasePath(Directory.GetCurrentDirectory())
+              .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+              .AddEnvironmentVariables()
+              //.AddJsonFile($"appsettings.{new WebHostBuilder().GetSetting("environment").ToString().Trim()}.json", optional: true, reloadOnChange: true)
+              .Build();
 
         public static void Main(string[] args)
         {
             LogInfo.Initialize(Configuration);
             LogInfo.Information("Catelog Service is running");
+
             CreateWebHostBuilder(args).Build().Run();
         }
-
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+                .UseUrls(Configuration["hostUrl"])
                 .UseStartup<Startup>();
     }
 }

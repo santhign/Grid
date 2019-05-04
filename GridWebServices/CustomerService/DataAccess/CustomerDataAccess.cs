@@ -256,7 +256,9 @@ namespace CustomerService.DataAccess
                                          
                                          IsRecurring = model.Field<int>("IsRecurring"),
                                          ExpiryDate = model.Field<DateTime?>("ExpiryDate"),
-                                         Removable = model.Field<int>("Removable")
+                                         Removable = model.Field<int>("Removable"),
+                                         SubscriptionDate = model.Field<DateTime?>("SubscriptionDate"),
+                                         SubscriptionFee = model.Field<double?>("SubscriptionFee"),
                                      }).ToList();
                 }
 
@@ -331,6 +333,8 @@ namespace CustomerService.DataAccess
                                          ExpiryDate = model.Field<DateTime?>("ExpiryDate"),
                                          PlanStatus = model.Field<string>("PlanStatus"),
                                          Removable = model.Field<int>("Removable"),
+                                         SubscriptionDate = model.Field<DateTime?>("SubscriptionDate"),
+                                         SubscriptionFee = model.Field<double?>("SubscriptionFee"),
                                      }).ToList();
                 }
 
@@ -903,6 +907,7 @@ namespace CustomerService.DataAccess
                             orderDetails.OrderNumber = dr["OrderNumber"].ToString();
                             orderDetails.OrderDate = Convert.ToDateTime(dr["OrderDate"]);
                             orderDetails.OrderStatus = dr["OrderStatus"].ToString();
+                            orderDetails.AllowRescheduling = Convert.ToInt32(dr["AllowRescheduling"].ToString());
                             orderDetails.IdentityCardType = dr["IdentityCardType"].ToString();
                             orderDetails.IdentityCardNumber = dr["IdentityCardNumber"].ToString();
                             orderDetails.BillingUnit = dr["BillingUnit"].ToString();
