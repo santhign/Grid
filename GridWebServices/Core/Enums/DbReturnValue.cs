@@ -148,5 +148,9 @@ namespace Core.Enums
         [EnumMember(Value = "Buddy is already assigned for selected number")]
         [Description("Buddy is already assigned for selected number")]
         BuddyAlreadyExists = 136,
+
+        [EnumMember(Value = "Your account is locked")]
+        [Description("Your account is locked")]
+        AccountIsLocked = 137,
     }
 }
