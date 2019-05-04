@@ -339,8 +339,8 @@ namespace CustomerService.Controllers
         /// <returns>validtion result</returns>
         /// POST: api/NRICValidation/S1234567D 
         [HttpPost]
-        [Route("NRICValidation/{IDType}/{NRIC}")]
-        public IActionResult NRICValidation([FromRoute] string IDType, [FromRoute] string NRIC)
+        [Route("NRICTypeValidation/{IDType}/{NRIC}")]
+        public IActionResult NRICTypeValidation([FromRoute] string IDType, [FromRoute] string NRIC)
         {
 
             string _warningmsg = "";
