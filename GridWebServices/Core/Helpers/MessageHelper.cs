@@ -8,7 +8,7 @@ namespace Core.Helpers
     public class MessageHelper
     {
         // Push message
-        public static NotificationMessage GetMessage(string Email, string Name, string msgTemplate,IConfiguration _configuration, string param1 = null, 
+        public static NotificationMessage GetMessage(string Email, string Name, string messageName, string msgTemplate,IConfiguration _configuration, string param1 = null, 
             string param2 = null, string param3 = null,  string param4 = null,  string param5 = null,  string param6 = null,  string param7 = null, 
             string param8 = null, string param9 = null, string param10 = null)
         {
@@ -71,7 +71,7 @@ namespace Core.Helpers
 
                 MessageType = NotificationMsgType.Email.ToString(),
 
-                MessageName = NotificationEvent.ForgetPassword.ToString(),
+                MessageName = messageName,
 
                 Message = new MessageObject { parameters = msgParamsList, messagetemplate = msgTemplate }
 

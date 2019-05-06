@@ -1023,7 +1023,7 @@ namespace CustomerService.Controllers
                         NotificationMessage notificationMessage = new NotificationMessage();                      
 
                         
-                        notificationMessage = MessageHelper.GetMessage(passwordTokenDetails.Email, passwordTokenDetails.Name,
+                        notificationMessage = MessageHelper.GetMessage(passwordTokenDetails.Email, passwordTokenDetails.Name, NotificationEvent.ForgetPassword.ToString(),
                             ((EmailTemplate)forgotPasswordMsgTemplate.Results).TemplateName,
                         _iconfiguration, passwordTokenDetails.Token, forgotPasswordConfig.PasswordResetUrl);                          
                       
