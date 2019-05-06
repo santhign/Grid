@@ -4242,6 +4242,8 @@ namespace OrderService.Controllers
 
                                     DatabaseResponse tokenDetailsCreateResponse = new DatabaseResponse();
 
+                                    LogInfo.Information(JsonConvert.SerializeObject(tokenizeResponse));
+
                                     tokenDetailsCreateResponse = await _orderAccess.CreatePaymentMethod(tokenizeResponse, customerID);
 
                                     if (tokenDetailsCreateResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
@@ -4318,7 +4320,7 @@ namespace OrderService.Controllers
                                         // token details update failed
 
                                         LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToCreatePaymentMethod));
-
+                                        LogInfo.Error("Create payment method failed - " + JsonConvert.SerializeObject(tokenDetailsCreateResponse));
                                         return Ok(new OperationResponse
                                         {
                                             HasSucceeded = false,
@@ -4333,8 +4335,7 @@ namespace OrderService.Controllers
                                 {
                                     //failed to create payment token
 
-                                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.TokenGenerationFailed));
-
+                                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.TokenGenerationFailed));                                   
                                     return Ok(new OperationResponse
                                     {
                                         HasSucceeded = false,
