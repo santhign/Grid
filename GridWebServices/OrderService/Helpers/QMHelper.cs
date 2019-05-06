@@ -263,7 +263,6 @@ namespace OrderService.Helpers
             }
         }
 
-       
         public void ProcessBuddy(Action buddyProcessor)
         {
             try
@@ -332,8 +331,7 @@ namespace OrderService.Helpers
             }
             
         }
-
-       
+               
         public async Task<int> ProcessBuddy(BuddyCheckList buddy, GridBSSConfi config, int serviceCode)
         {
             try
@@ -420,7 +418,6 @@ namespace OrderService.Helpers
 
                 return 0;
             }
-
            
         }
     }

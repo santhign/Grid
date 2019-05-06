@@ -767,7 +767,6 @@ namespace OrderService.Controllers
 
                         OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
 
-
                         DatabaseResponse systemConfigResponse = await _orderAccess.GetConfiguration(ConfiType.System.ToString());
 
                         DatabaseResponse bssConfigResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
@@ -776,51 +775,63 @@ namespace OrderService.Controllers
 
                         GridSystemConfig systemConfig = bsshelper.GetGridSystemConfig((List<Dictionary<string, string>>)systemConfigResponse.Results);
 
-                        DatabaseResponse accountResponse = await _orderAccess.GetCustomerBSSAccountNumber(customerID);
+                        DatabaseResponse accountResponse = await _orderAccess.GetCustomerBSSAccountNumber(customerID);                       
 
-                        if (accountResponse.ResponseCode == (int)DbReturnValue.RecordExists)
-                        {
-                            if (!string.IsNullOrEmpty(((BSSAccount)accountResponse.Results).AccountNumber))
+                       if (accountResponse.ResponseCode == (int)DbReturnValue.RecordExists)
                             {
+                                if (!string.IsNullOrEmpty(((BSSAccount)accountResponse.Results).AccountNumber))
+                                {
+                                // Get default daterange in month from config by key - BSSInvoiceDefaultDateRangeInMonths
+                                DatabaseResponse dateRangeResponse = ConfigHelper.GetValueByKey(ConfigKeys.BSSInvoiceDefaultDateRangeInMonths.ToString(), _iconfiguration);
+
+                                int rangeInMonths = int.Parse(((string)dateRangeResponse.Results));                                                                                             
+
                                 DatabaseResponse requestIdRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.GetInvoiceDetails.ToString(), customerID, 0, "");
 
-                                BSSInvoiceResponseObject invoiceResponse = await bsshelper.GetBSSCustomerInvoice(bssConfig, ((BSSAssetRequest)requestIdRes.Results).request_id, ((BSSAccount)accountResponse.Results).AccountNumber);
+                                BSSInvoiceResponseObject invoiceResponse = await bsshelper.GetBSSCustomerInvoice(bssConfig, ((BSSAssetRequest)requestIdRes.Results).request_id, ((BSSAccount)accountResponse.Results).AccountNumber, rangeInMonths);
 
-                                if (invoiceResponse.Response.result_code == "0")
-                                {
-                                    return Ok(new OperationResponse
+                                    if (invoiceResponse.Response.result_code == "0")
                                     {
-                                        HasSucceeded = true,
-                                        IsDomainValidationErrors = false,
-                                        Message = invoiceResponse.Response.invoice_details.totalrecordcnt > 0 ? EnumExtensions.GetDescription(DbReturnValue.RecordExists) : EnumExtensions.GetDescription(DbReturnValue.NoRecords),
-                                        ReturnedObject = invoiceResponse.Response.invoice_details
-                                    });
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = true,
+                                            IsDomainValidationErrors = false,
+                                            Message = invoiceResponse.Response.invoice_details.totalrecordcnt > 0 ? EnumExtensions.GetDescription(DbReturnValue.RecordExists) : EnumExtensions.GetDescription(DbReturnValue.NoRecords),
+                                            ReturnedObject = invoiceResponse.Response.invoice_details
+                                        });
+                                    }
+
+                                    else
+                                    {
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = true,
+                                            IsDomainValidationErrors = false,
+                                            Message = EnumExtensions.GetDescription(DbReturnValue.NoRecords),
+
+                                        });
+                                    }
+
+
+                               
+
+                               
+                                    
                                 }
 
                                 else
                                 {
+                                    // Account Number is empty
                                     return Ok(new OperationResponse
                                     {
                                         HasSucceeded = true,
                                         IsDomainValidationErrors = false,
-                                        Message = EnumExtensions.GetDescription(DbReturnValue.NoRecords),
+                                        Message = EnumExtensions.GetDescription(CommonErrors.MandatoryRecordEmpty),
 
                                     });
                                 }
                             }
-
-                            else
-                            {
-                                // Account Number is empty
-                                return Ok(new OperationResponse
-                                {
-                                    HasSucceeded = true,
-                                    IsDomainValidationErrors = false,
-                                    Message = EnumExtensions.GetDescription(CommonErrors.MandatoryRecordEmpty),
-
-                                });
-                            }
-                        }
+                         
 
                         else
                         {
