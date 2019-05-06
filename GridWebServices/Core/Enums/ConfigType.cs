@@ -36,7 +36,16 @@ namespace Core.Enums
     {
         [EnumMember(Value = "SNS_Topic_ChangeRequest")]
         [Description("SNS_Topic_ChangeRequest")]
-        SNS_Topic_ChangeRequest = 1
+        SNS_Topic_ChangeRequest = 1,
+
+        [EnumMember(Value = "BuddyTrialIntervel")]
+        [Description("BuddyTrialIntervel")]
+        BuddyTrialIntervel = 2,
+
+        [EnumMember(Value = "BSSInvoiceDefaultDateRangeInMonths")]
+        [Description("BSSInvoiceDefaultDateRangeInMonths")]
+        BSSInvoiceDefaultDateRangeInMonths = 3,
+
         
     }
 

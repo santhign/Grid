@@ -503,7 +503,7 @@ namespace Core.Helpers
             }
         }
 
-        public async Task<BSSInvoiceResponseObject> GetBSSCustomerInvoice(GridBSSConfi confi, string requestId, string accountNumber)
+        public async Task<BSSInvoiceResponseObject> GetBSSCustomerInvoice(GridBSSConfi confi, string requestId, string accountNumber, int dateRange)
         {
             try
 
@@ -518,7 +518,7 @@ namespace Core.Helpers
 
                 var requestUrl = GetRequestUrl(confi.BSSAPIUrl, ref client);
 
-                SetParamsForInvoiceRequest(confi, accountNumber);
+                SetParamsForInvoiceRequest(confi, accountNumber, dateRange);
 
                 dataset.param = paramList;
 
@@ -547,21 +547,33 @@ namespace Core.Helpers
             }
         }
 
-        private void SetParamsForInvoiceRequest(GridBSSConfi confi, string accountNumber)
+        private void SetParamsForInvoiceRequest(GridBSSConfi confi, string accountNumber, int rangeInMonths)
         {
             try
             {
                 paramList = new List<RequestParam>();
 
-                BSSParams bssParams = new BSSParams();
+                BSSParams bssParams = new BSSParams();               
 
                 AddParam(bssParams.Limit, confi.GridInvoiceRecordLimit.ToString());
 
                 AddParam(bssParams.Status, ((int)Status.Confirm).ToString());  // verify whether status need to input at any time pending/confirm
 
+                if (rangeInMonths > 0)
+                {
+                    DateTime endDate = DateTime.UtcNow;
+
+                    DateTime startDate = endDate.AddMonths(-(rangeInMonths));
+
+                   // AddParam(bssParams.FromDate, startDate.ToString("yyyy-MM-dd")); //"2016-11-15
+
+                   // AddParam(bssParams.ToDate, endDate.ToString("yyyy-MM-dd")); //"2016-11-15
+                }               
+
                 AddParam(bssParams.AccountId, accountNumber);
 
                 AddParam(bssParams.EntityId, confi.GridEntityId.ToString());
+
             }
             catch (Exception ex)
             {
