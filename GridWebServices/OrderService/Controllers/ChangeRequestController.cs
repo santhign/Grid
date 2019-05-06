@@ -530,6 +530,28 @@ namespace OrderService.Controllers
                                 await _messageQueueDataAccess.InsertMessageInMessageQueueRequestException(queueRequest);
                             }
                         }
+                        else if (buddyList.ResponseCode == (int)DbReturnValue.ActionIsInvalid)
+                        {
+                            LogInfo.Error(DbReturnValue.ActionIsInvalid.GetDescription());
+
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = DbReturnValue.ActionIsInvalid.GetDescription(),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                        else if (buddyList.ResponseCode == (int)DbReturnValue.DuplicateCRExists)
+                        {
+                            LogInfo.Error(DbReturnValue.DuplicateCRExists.GetDescription());
+
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = DbReturnValue.DuplicateCRExists.GetDescription(),
+                                IsDomainValidationErrors = false
+                            });
+                        }
                         else
                         {
                             LogInfo.Error(DbReturnValue.UpdationFailed.GetDescription());
@@ -630,6 +652,17 @@ namespace OrderService.Controllers
                             Result = statusResponse
                         });
                     }
+                    else if (statusResponse.ResponseCode == (int)DbReturnValue.ActionIsInvalid)
+                    {
+                        LogInfo.Error(DbReturnValue.ActionIsInvalid.GetDescription());
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = DbReturnValue.ActionIsInvalid.GetDescription(),
+                            IsDomainValidationErrors = false
+                        });
+                    }
                     else if (statusResponse.ResponseCode == (int)DbReturnValue.DuplicateCRExists)
                     {
                         LogInfo.Error(DbReturnValue.DuplicateCRExists.GetDescription());
@@ -644,7 +677,7 @@ namespace OrderService.Controllers
 
                     else
                     {
-                        LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
+                        LogInfo.Error(DbReturnValue.UpdationFailed.GetDescription());
 
                         return Ok(new OperationResponse
                         {
@@ -830,6 +863,17 @@ namespace OrderService.Controllers
                             Result = statusResponse
                         });
                     }
+                    else if (statusResponse.ResponseCode == (int)DbReturnValue.ActionIsInvalid)
+                    {
+                        LogInfo.Error(DbReturnValue.ActionIsInvalid.GetDescription());
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = DbReturnValue.ActionIsInvalid.GetDescription(),
+                            IsDomainValidationErrors = false
+                        });
+                    }
                     else if (statusResponse.ResponseCode == (int)DbReturnValue.DuplicateCRExists)
                     {
                         LogInfo.Error(DbReturnValue.DuplicateCRExists.GetDescription());
@@ -1012,6 +1056,17 @@ namespace OrderService.Controllers
                             HasSucceeded = true,
                             Message = StatusMessages.SuccessMessage,
                             Result = statusResponse
+                        });
+                    }
+                    else if (statusResponse.ResponseCode == (int)DbReturnValue.ActionIsInvalid)
+                    {
+                        LogInfo.Error(DbReturnValue.ActionIsInvalid.GetDescription());
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = DbReturnValue.ActionIsInvalid.GetDescription(),
+                            IsDomainValidationErrors = false
                         });
                     }
                     else if (statusResponse.ResponseCode == (int)DbReturnValue.DuplicateCRExists)
@@ -1919,6 +1974,17 @@ namespace OrderService.Controllers
                             HasSucceeded = true,
                             Message = StatusMessages.SuccessMessage,
                             Result = statusResponse
+                        });
+                    }
+                    else if (statusResponse.ResponseCode == (int)DbReturnValue.ActionIsInvalid)
+                    {
+                        LogInfo.Error(DbReturnValue.ActionIsInvalid.GetDescription());
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = DbReturnValue.ActionIsInvalid.GetDescription(),
+                            IsDomainValidationErrors = false
                         });
                     }
                     else if (statusResponse.ResponseCode == (int)DbReturnValue.DuplicateCRExists)
