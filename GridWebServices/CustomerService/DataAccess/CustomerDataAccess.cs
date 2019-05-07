@@ -146,7 +146,8 @@ namespace CustomerService.DataAccess
                                     SMSSubscription = model.Field<string>("SMSSubscription"),
                                     EmailSubscription = model.Field<string>("EmailSubscription"),
                                     Status = model.Field<string>("Status"),
-                                    JoinedOn = model.Field<DateTime>("JoinedOn")
+                                    JoinedOn = model.Field<DateTime>("JoinedOn"),
+                                    PendingAllowedSubscribers = model.Field<int>("PendingAllowedSubscribers")
                                 }).FirstOrDefault();
                 }
 

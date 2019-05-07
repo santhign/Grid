@@ -678,40 +678,51 @@ namespace OrderService.DataAccess
                                         }).FirstOrDefault();
 
                         List<Bundle> orderBundles = new List<Bundle>();
-
-                        if (ds.Tables[1] != null && ds.Tables[1].Rows.Count > 0)
+                        foreach (DataRow dr in ds.Tables[1].Rows)
                         {
+                            Bundle OrderBundle = new Bundle();
+                            OrderBundle.BundleID = Convert.ToInt32(dr["BundleID"].ToString());
+                            OrderBundle.DisplayName = dr["DisplayName"].ToString();
+                            OrderBundle.MobileNumber = dr["MobileNumber"].ToString();
+                            OrderBundle.IsPrimaryNumber = Convert.ToInt32(dr["IsPrimaryNumber"].ToString());
+                            OrderBundle.PlanMarketingName = dr["PlanMarketingName"].ToString();
+                            OrderBundle.PortalDescription = dr["PortalDescription"].ToString();
+                            OrderBundle.PortalSummaryDescription = dr["PortalSummaryDescription"].ToString();
+                            OrderBundle.TotalData = Convert.ToDouble(dr["TotalData"].ToString());
+                            OrderBundle.TotalSMS = Convert.ToDouble(dr["TotalSMS"].ToString());
+                            OrderBundle.TotalVoice = Convert.ToDouble(dr["TotalVoice"].ToString());
+                            OrderBundle.ActualSubscriptionFee = Convert.ToDouble(dr["ActualSubscriptionFee"].ToString());
+                            OrderBundle.ApplicableSubscriptionFee = Convert.ToDouble(dr["ApplicableSubscriptionFee"].ToString());
+                            OrderBundle.ServiceName = dr["ServiceName"].ToString();
+                            OrderBundle.ActualServiceFee = Convert.ToDouble(dr["ActualServiceFee"].ToString());
+                            OrderBundle.ApplicableServiceFee = Convert.ToDouble(dr["ApplicableServiceFee"].ToString());
+                            OrderBundle.PremiumType = Convert.ToInt32(dr["PremiumType"].ToString());
+                            OrderBundle.IsPorted = Convert.ToInt32(dr["IsPorted"].ToString());
+                            OrderBundle.IsOwnNumber = Convert.ToInt32(dr["IsOwnNumber"].ToString());
+                            OrderBundle.DonorProvider = dr["DonorProvider"].ToString();
+                            OrderBundle.PortedNumberTransferForm = dr["PortedNumberTransferForm"].ToString();
+                            OrderBundle.PortedNumberOwnedBy = dr["PortedNumberOwnedBy"].ToString();
+                            OrderBundle.PortedNumberOwnerRegistrationID = dr["PortedNumberOwnerRegistrationID"].ToString();
+                            List<ServiceCharge> subscriberServiceCharges = new List<ServiceCharge>();
 
-                            orderBundles = (from model in ds.Tables[1].AsEnumerable()
-                                            select new Bundle()
-                                            {
-                                                BundleID = model.Field<int>("BundleID"),
-                                                DisplayName = model.Field<string>("DisplayName"),
-                                                MobileNumber = model.Field<string>("MobileNumber"),
-                                                IsPrimaryNumber = model.Field<int>("IsPrimaryNumber"),
-                                                PlanMarketingName = model.Field<string>("PlanMarketingName"),
-                                                PortalDescription = model.Field<string>("PortalDescription"),
-                                                PortalSummaryDescription = model.Field<string>("PortalSummaryDescription"),
-                                                TotalData = model.Field<double?>("TotalData"),
-                                                TotalSMS = model.Field<double?>("TotalSMS"),
-                                                TotalVoice = model.Field<double?>("TotalVoice"),
-                                                ActualSubscriptionFee = model.Field<double?>("ActualSubscriptionFee"),
-                                                ApplicableSubscriptionFee = model.Field<double?>("ApplicableSubscriptionFee"),
-                                                ServiceName = model.Field<string>("ServiceName"),
-                                                ActualServiceFee = model.Field<double?>("ActualServiceFee"),
-                                                ApplicableServiceFee = model.Field<double?>("ApplicableServiceFee"),
-                                                PremiumType = model.Field<int>("PremiumType"),
-                                                IsPorted = model.Field<int>("IsPorted"),
-                                                IsOwnNumber = model.Field<int>("IsOwnNumber"),
-                                                DonorProvider = model.Field<string>("DonorProvider"),
-                                                PortedNumberTransferForm = model.Field<string>("PortedNumberTransferForm"),
-                                                PortedNumberOwnedBy = model.Field<string>("PortedNumberOwnedBy"),
-                                                PortedNumberOwnerRegistrationID = model.Field<string>("PortedNumberOwnerRegistrationID"),
-                                            }).ToList();
+                            if (ds.Tables[3] != null && ds.Tables[3].Rows.Count > 0)
+                            {
 
-                            orderDetails.Bundles = orderBundles;
+                                subscriberServiceCharges = (from model in ds.Tables[3].AsEnumerable()
+                                                       select new ServiceCharge()
+                                                       {
+                                                           PortalServiceName = model.Field<string>("PortalServiceName"),
+                                                           ServiceFee = model.Field<double?>("ServiceFee"),
+                                                           IsRecurring = model.Field<int>("IsRecurring"),
+                                                           IsGSTIncluded = model.Field<int>("IsGSTIncluded"),
+                                                       }).Where(c => c.OrderSubscriberID == OrderBundle.OrderSubscriberID).ToList();
 
+                                OrderBundle.ServiceCharges = subscriberServiceCharges;
+
+                            }
+                            orderBundles.Add(OrderBundle);
                         }
+                        orderDetails.Bundles = orderBundles;                        
 
                         List<ServiceCharge> orderServiceCharges = new List<ServiceCharge>();
 

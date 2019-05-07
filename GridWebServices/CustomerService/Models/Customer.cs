@@ -102,6 +102,8 @@ namespace CustomerService.Models
         /// The number of paid orders if greater then 0 then redirect to dashboard.
         /// </value>
         public int OrderCount { get; set; }
+
+        public int PendingAllowedSubscribers { get; set; }
     }
 
     /// <summary>

@@ -65,7 +65,7 @@ namespace Core.Helpers
                     };
 
                 parameters[0].Value = CustomerID;
-                _DataHelper = new DataAccessHelper("Customer_SearchCustomers", parameters, _configuration);
+                _DataHelper = new DataAccessHelper("Customers_IsAdditionalSubscriberAllowed", parameters, _configuration);
 
                 int response = await _DataHelper.RunAsync();
 
