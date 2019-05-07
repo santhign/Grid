@@ -51,6 +51,7 @@ namespace OrderService.Models
 
     public class ServiceCharge
     {
+        public int? OrderSubscriberID { get; set; }
         public string PortalServiceName { get; set; }
         public double? ServiceFee { get; set; }
         public int? IsRecurring { get; set; }
@@ -59,6 +60,7 @@ namespace OrderService.Models
 
     public class Bundle
     {
+        public int? OrderSubscriberID { get; set; }
         public int? BundleID { get; set; }
         public string MobileNumber { get; set; }
         public string DisplayName { get; set; }
@@ -81,6 +83,7 @@ namespace OrderService.Models
         public string PortedNumberTransferForm { get; set; }
         public string PortedNumberOwnedBy { get; set; }
         public string PortedNumberOwnerRegistrationID { get; set; }
+        public List<ServiceCharge> ServiceCharges { get; set; }
     }
 
     public class OrderCustomer

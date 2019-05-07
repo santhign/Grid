@@ -81,4 +81,14 @@ namespace Core.Enums
         [Description("SNS_Topic_ProfileUpdate")]
         SNS_Topic_ProfileUpdate
     }
+
+    public enum SubscriberCheckType
+    {
+        [EnumMember(Value = "CustomerLevel")]
+        [Description("CustomerLevel")]
+        CustomerLevel = 0,
+        [EnumMember(Value = "OrderLevel")]
+        [Description("OrderLevel")]
+        OrderLevel = 1
+    }
 }

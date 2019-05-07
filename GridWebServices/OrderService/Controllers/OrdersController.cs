@@ -203,7 +203,19 @@ namespace OrderService.Controllers
                                                          .Select(x => x.ErrorMessage))
                             });
                         }
+                        Core.Helpers.EmailValidationHelper _helper = new EmailValidationHelper();
+                        bool AllowSrubscriber = await _helper.AllowSubscribers(customerID, (int)SubscriberCheckType.CustomerLevel, _iconfiguration);
+                        if (!AllowSrubscriber)
+                        {
+                            LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.NotAllowSubscribers));
 
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.NotAllowSubscribers),
+                                IsDomainValidationErrors = false
+                            });
+                        }
                         OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
 
                         CreateOrder order = new CreateOrder();
@@ -1040,7 +1052,19 @@ namespace OrderService.Controllers
                         if (customerResponse.ResponseCode == (int)DbReturnValue.RecordExists && customerID == ((OrderCustomer)customerResponse.Results).CustomerId)
                         {
                             // call GetAssets BSSAPI
+                            Core.Helpers.EmailValidationHelper _helper = new EmailValidationHelper();
+                            bool AllowSrubscriber = await _helper.AllowSubscribers(customerID, (int)SubscriberCheckType.OrderLevel, _iconfiguration);
+                            if (!AllowSrubscriber)
+                            {
+                                LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.NotAllowSubscribers));
 
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = false,
+                                    Message = EnumExtensions.GetDescription(DbReturnValue.NotAllowSubscribers),
+                                    IsDomainValidationErrors = false
+                                });
+                            }
                             BSSAPIHelper bsshelper = new BSSAPIHelper();
 
                             DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
@@ -4244,6 +4268,8 @@ namespace OrderService.Controllers
 
                                     DatabaseResponse tokenDetailsCreateResponse = new DatabaseResponse();
 
+                                    LogInfo.Information(JsonConvert.SerializeObject(tokenizeResponse));
+
                                     tokenDetailsCreateResponse = await _orderAccess.CreatePaymentMethod(tokenizeResponse, customerID);
 
                                     if (tokenDetailsCreateResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
@@ -4346,7 +4372,7 @@ namespace OrderService.Controllers
                                         // token details update failed
 
                                         LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToCreatePaymentMethod));
-
+                                        LogInfo.Error("Create payment method failed - " + JsonConvert.SerializeObject(tokenDetailsCreateResponse));
                                         return Ok(new OperationResponse
                                         {
                                             HasSucceeded = false,
@@ -4361,8 +4387,7 @@ namespace OrderService.Controllers
                                 {
                                     //failed to create payment token
 
-                                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.TokenGenerationFailed));
-
+                                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.TokenGenerationFailed));                                   
                                     return Ok(new OperationResponse
                                     {
                                         HasSucceeded = false,

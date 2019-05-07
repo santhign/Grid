@@ -181,6 +181,11 @@ namespace AdminService.DataAccess
                                         Plan = model.Field<string>("PlanName"),
                                         AdditionalLines = model.Field<int>("AdditionalLines"),
                                         JoinedOn = model.Field<DateTime>("JoinedOn"),
+                                        Nationality = model.Field<string>("Nationality"),
+                                        Gender = model.Field<string>("Gender"),
+                                        DOB = model.Field<DateTime?>("DOB"),
+                                        EmailSubscription = model.Field<string>("EmailSubscription"),
+                                        ReferralCode = model.Field<string>("ReferralCode"),
                                         Status = model.Field<string>("Status")
                                     }).ToList();
                 }

@@ -156,6 +156,41 @@ namespace AdminService.Models
         /// The status.
         /// </value>
         public string Status { get; set; }
+        /// <summary>
+        /// Gets or sets the email subscription.
+        /// </summary>
+        /// <value>
+        /// The email subscription.
+        /// </value>
+        public string EmailSubscription { get; set; }
+        /// <summary>
+        /// Gets or sets the referral code.
+        /// </summary>
+        /// <value>
+        /// The referral code.
+        /// </value>
+        public string ReferralCode { get; set; }
+        /// <summary>
+        /// Gets or sets the nationality.
+        /// </summary>
+        /// <value>
+        /// The nationality.
+        /// </value>
+        public string Nationality { get; set; }
+        /// <summary>
+        /// Gets or sets the gender.
+        /// </summary>
+        /// <value>
+        /// The gender.
+        /// </value>
+        public string Gender { get; set; }
+        /// <summary>
+        /// Gets or sets the DOB.
+        /// </summary>
+        /// <value>
+        /// The DOB.
+        /// </value>
+        public DateTime? DOB { get; set; }
     }
 
     public class Subscriber

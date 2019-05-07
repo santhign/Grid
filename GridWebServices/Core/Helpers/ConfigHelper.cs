@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Core.Helpers
 {
@@ -103,5 +104,49 @@ namespace Core.Helpers
                 throw (ex);
             }
         }
+
+        public static async  Task<DatabaseResponse> GetValueByKey(string serviceKey, string connectionString)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@ConfigKey",  SqlDbType.NVarChar )
+
+                };
+
+                parameters[0].Value = serviceKey;
+
+                DataAccessHelper _DataHelper = new DataAccessHelper("Admin_GetConfigurationByKey", parameters, connectionString);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt); // 102 /105
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 105)
+                {
+                    string ConfigValue = "";
+
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+                        ConfigValue = dt.Rows[0]["value"].ToString().Trim();
+                    }
+                    response = new DatabaseResponse { ResponseCode = result, Results = ConfigValue };
+                }
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                throw (ex);
+            }
+        }        
     }
 }

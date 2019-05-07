@@ -8,6 +8,9 @@ using System.Linq;
 using System.Net;
 using System.IO;
 using Newtonsoft.Json;
+using System.Data.SqlClient;
+using System.Data;
+using Microsoft.Extensions.Configuration;
 
 namespace Core.Helpers
 {
@@ -48,6 +51,41 @@ namespace Core.Helpers
             return client.CreateRequestUri(
                 string.Format(System.Globalization.CultureInfo.InvariantCulture, url)
                 );
+        }
+
+        public async Task<bool> AllowSubscribers(int CustomerID, int Type, IConfiguration _configuration)
+        {
+            bool allowed = false;
+            DataAccessHelper _DataHelper = null;
+            try
+            {
+                SqlParameter[] parameters =
+                    {
+                    new SqlParameter("@CustomerID", SqlDbType.Int),
+                    new SqlParameter("@Type", SqlDbType.Int)
+                    };
+
+                parameters[0].Value = CustomerID;
+                parameters[1].Value = Type;
+                _DataHelper = new DataAccessHelper("Customers_IsAdditionalSubscriberAllowed", parameters, _configuration);
+
+                int response = await _DataHelper.RunAsync();
+
+                if (response == 140)
+                    allowed = true;
+                else
+                    allowed = false;
+            }
+
+            catch (Exception ex)
+            {
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+            return allowed;
         }
 
     }
