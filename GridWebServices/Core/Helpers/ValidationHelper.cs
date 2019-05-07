@@ -53,7 +53,7 @@ namespace Core.Helpers
                 );
         }
 
-        public async Task<bool> AllowSubscribers(int CustomerID, IConfiguration _configuration)
+        public async Task<bool> AllowSubscribers(int CustomerID, int Type, IConfiguration _configuration)
         {
             bool allowed = false;
             DataAccessHelper _DataHelper = null;
@@ -61,10 +61,12 @@ namespace Core.Helpers
             {
                 SqlParameter[] parameters =
                     {
-                    new SqlParameter("@CustomerID", SqlDbType.Int)
+                    new SqlParameter("@CustomerID", SqlDbType.Int),
+                    new SqlParameter("@Type", SqlDbType.Int)
                     };
 
                 parameters[0].Value = CustomerID;
+                parameters[1].Value = Type;
                 _DataHelper = new DataAccessHelper("Customers_IsAdditionalSubscriberAllowed", parameters, _configuration);
 
                 int response = await _DataHelper.RunAsync();
