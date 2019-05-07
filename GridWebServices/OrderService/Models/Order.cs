@@ -91,6 +91,11 @@ namespace OrderService.Models
         public int CustomerId { get; set; }
     }
 
+    public class InvoiceOrder
+    {
+        public int OrderID { get; set; }
+    }
+
     public class DeliverySlot
     {
         public string PortalSlotID { get; set; }
@@ -115,5 +120,29 @@ namespace OrderService.Models
     {
         public string MobileNumber { get; set; }
         public int IsDefault { get; set; }
+    }
+
+    public class AccountInvoice
+    {
+        public int InvoiceID { get; set; }
+        public int AccountID { get; set; }
+        public string InvoiceName { get; set; }
+        public string InvoiceUrl { get; set; }
+        public float FinalAmount { get; set; }
+        public string Remarks { get; set; }
+        public int OrderStatus { get; set; }
+        public int PaymentSourceID { get; set; }
+        public DateTime CreatedOn { get; set; }
+        public int CreatedBy { get; set; }
+        public int PaymentID { get; set; }
+        public DateTime PaidOn { get; set; }
+
+    }
+
+    public class CreateAccountInvoiceRequest
+    {
+        public string InvoiceID { get; set; }       
+        public string InvoiceName { get; set; }       
+        public float FinalAmount { get; set; }
     }
 }

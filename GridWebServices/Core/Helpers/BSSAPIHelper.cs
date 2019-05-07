@@ -593,5 +593,72 @@ namespace Core.Helpers
                 throw ex;
             }
         }
+
+        public async Task<BSSAccountQuerySubscriberResponse> GetBSSOutstandingPayment(GridBSSConfi confi, string requestId, string accountNumber)
+        {
+            try
+
+            {
+                ApiClient client = new ApiClient(new Uri(confi.BSSAPIUrl));
+
+                BSSQueryPlanRequest request = new BSSQueryPlanRequest();
+
+                QueryPlanRequestObject req = new QueryPlanRequestObject();
+
+                QueryPlanDataset dataset = new QueryPlanDataset();
+
+                var requestUrl = GetRequestUrl(confi.BSSAPIUrl, ref client);
+
+                SetParamsOutstandingPaymentRequest(confi, accountNumber);
+
+                dataset.param = paramList;
+
+                List<string> filters = new List<string>();
+
+                filters.Add("account");
+
+                dataset.filters = filters;
+
+                request.request_id = requestId;
+
+                request.request_timestamp = DateTime.Now.ToString("ddmmyyyyhhmmss");
+
+                request.action = BSSApis.QuerySubscriber.ToString();
+
+                request.userid = confi.GridId.ToString();
+
+                request.username = confi.GridUserName;
+
+                request.source_node = confi.GridSourceNode;
+
+                request.dataset = dataset;
+
+                req.Request = request;
+
+                return await client.PostAsync<BSSAccountQuerySubscriberResponse, QueryPlanRequestObject>(requestUrl, req);
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        private void SetParamsOutstandingPaymentRequest(GridBSSConfi confi, string accountNumber)
+        {
+            try
+            {
+                paramList = new List<RequestParam>();
+
+                BSSParams bssParams = new BSSParams();             
+              
+                AddParam(bssParams.AccountId, accountNumber);              
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
     }
 }

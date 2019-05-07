@@ -760,8 +760,7 @@ namespace OrderService.Controllers
                                                            .SelectMany(x => x.Errors)
                                                            .Select(x => x.ErrorMessage))
                             });
-                        }
-                        // clarify date range -- preferably need to send from UI
+                        }                       
 
                         BSSAPIHelper bsshelper = new BSSAPIHelper();
 
@@ -792,7 +791,7 @@ namespace OrderService.Controllers
                                                              
                                 if (invoiceResponse.Response.result_code == "0")
                                 {
-                                    // Get default daterange in month from config by key - BSSInvoiceDefaultDateRangeInMonths
+                                    // Get download link prefix from config
                                     DatabaseResponse downloadLinkResponse = ConfigHelper.GetValueByKey(ConfigKeys.BSSInvoiceDownloadLink.ToString(), _iconfiguration);
 
                                     string downloadLinkPrefix = (string)downloadLinkResponse.Results;
@@ -882,6 +881,158 @@ namespace OrderService.Controllers
 
 
 
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+            }
+        }
+      
+        /// <summary>
+        /// This will return customers latest outstanding payment
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        [HttpPost("GetBSSOutStatndingPayment")]
+        public async Task<IActionResult> GetBSSOutStatndingPayment([FromHeader(Name = "Grid-Authorization-Token")] string token)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+                AuthHelper helper = new AuthHelper(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    {
+                        int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+                        if (!ModelState.IsValid)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = string.Join("; ", ModelState.Values
+                                                           .SelectMany(x => x.Errors)
+                                                           .Select(x => x.ErrorMessage))
+                            });
+                        }                       
+
+                        BSSAPIHelper bsshelper = new BSSAPIHelper();
+
+                        OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+
+                        DatabaseResponse systemConfigResponse = await _orderAccess.GetConfiguration(ConfiType.System.ToString());
+
+                        DatabaseResponse bssConfigResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
+
+                        GridBSSConfi bssConfig = bsshelper.GetGridConfig((List<Dictionary<string, string>>)bssConfigResponse.Results);
+
+                        GridSystemConfig systemConfig = bsshelper.GetGridSystemConfig((List<Dictionary<string, string>>)systemConfigResponse.Results);
+
+                        DatabaseResponse accountResponse = await _orderAccess.GetCustomerBSSAccountNumber(customerID);
+
+                        if (accountResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                        {
+                            if (!string.IsNullOrEmpty(((BSSAccount)accountResponse.Results).AccountNumber))
+                            {                             
+
+                                DatabaseResponse requestIdRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.GetInvoiceDetails.ToString(), customerID, 0, "");
+
+                                BSSAccountQuerySubscriberResponse accountOutstandingResponse = await bsshelper.GetBSSOutstandingPayment(bssConfig, ((BSSAssetRequest)requestIdRes.Results).request_id, ((BSSAccount)accountResponse.Results).AccountNumber);
+
+                                if (accountOutstandingResponse.Response.result_code == "0")
+                                {
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = true,
+                                        IsDomainValidationErrors = false,
+                                        Message =accountOutstandingResponse.Response.dataSet.accountDetails!=null? accountOutstandingResponse.Response.dataSet.accountDetails.param!=null? accountOutstandingResponse.Response.dataSet.accountDetails.param.Count > 0 ? EnumExtensions.GetDescription(DbReturnValue.RecordExists) : EnumExtensions.GetDescription(DbReturnValue.NoRecords) :null: null,
+                                        ReturnedObject = accountOutstandingResponse.Response.dataSet.accountDetails
+                                    });
+                                }
+
+                                else
+                                {
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = true,
+                                        IsDomainValidationErrors = false,
+                                        Message = EnumExtensions.GetDescription(DbReturnValue.NoRecords),
+
+                                    });
+                                }
+                            }
+
+                            else
+                            {
+                                // Account Number is empty
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = true,
+                                    IsDomainValidationErrors = false,
+                                    Message = EnumExtensions.GetDescription(CommonErrors.MandatoryRecordEmpty),
+
+                                });
+                            }
+                        }
+
+                        else
+                        {
+                            // No customer records in accounts table
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = true,
+                                IsDomainValidationErrors = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.NoRecords),
+
+                            });
+                        }
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+
+                }
+
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
             }
             catch (Exception ex)
             {

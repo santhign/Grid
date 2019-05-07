@@ -5372,7 +5372,161 @@ namespace OrderService.Controllers
             }
         }
 
-       
-       
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="accountInvoiceRequest">
+        /// body{
+        /// "InvoiceID" :"3000001", //account_id
+        /// "InvoiceName" :"3123201", //seq_id
+        /// "FinalAmount":20       
+        /// }
+        /// </param>
+        /// <returns></returns>
+        [HttpPost("CreateAccountInvoice")]
+        public async Task<IActionResult> CreateAccountInvoice([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] CreateAccountInvoiceRequest accountInvoiceRequest)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+                AuthHelper helper = new AuthHelper(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    {
+                        int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+                        if (!ModelState.IsValid)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = string.Join("; ", ModelState.Values
+                                                          .SelectMany(x => x.Errors)
+                                                          .Select(x => x.ErrorMessage))
+                            });
+                        }
+
+                        //
+                        OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+                        //update checkout details
+
+                        DatabaseResponse accountIdResponse = await  _orderAccess.GetAccountIdFromCustomerId(customerID);
+
+                        if(accountIdResponse!=null && accountIdResponse.ResponseCode==(int) DbReturnValue.RecordExists)
+                        {
+                            int AccountID = (int)accountIdResponse.Results;
+
+                            DatabaseResponse downloadLinkResponse = ConfigHelper.GetValueByKey(ConfigKeys.BSSInvoiceDownloadLink.ToString(), _iconfiguration);
+
+                            string downloadLinkPrefix = (string)downloadLinkResponse.Results;
+
+                            DatabaseResponse accountResponse = await _orderAccess.GetCustomerBSSAccountNumber(customerID);
+
+                            AccountInvoice accountInvoice = new AccountInvoice
+                            {
+                                AccountID = AccountID,
+                                CreatedBy = customerID,
+                                InvoiceID = int.Parse(accountInvoiceRequest.InvoiceID),
+                                InvoiceName = accountInvoiceRequest.InvoiceName,
+                                FinalAmount = accountInvoiceRequest.FinalAmount,
+                                InvoiceUrl = downloadLinkPrefix + accountInvoiceRequest.InvoiceID,
+                                Remarks = Misc.Account.ToString(),
+                                PaymentSourceID = int.Parse(((BSSAccount)accountResponse.Results).AccountNumber),
+                                OrderStatus=0
+
+                            };
+
+                            DatabaseResponse createAccountInvoiceResponse = await _orderAccess.CreateAccountInvoice(accountInvoice);
+
+                            if(createAccountInvoiceResponse.ResponseCode==(int)DbReturnValue.CreateSuccess)
+                            {
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = true,
+                                    Message = EnumExtensions.GetDescription(DbReturnValue.CreateSuccess),
+                                    IsDomainValidationErrors = false,
+                                    ReturnedObject =  new InvoiceOrder { OrderID= (int)createAccountInvoiceResponse.Results } 
+                                });
+                            }
+
+                            else
+                            {
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = false,
+                                    Message = EnumExtensions.GetDescription(DbReturnValue.CreationFailed),
+                                    IsDomainValidationErrors = false
+                                });
+                            }
+
+                        }
+                        else
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(CommonErrors.AccountNotExists),
+                                IsDomainValidationErrors = true
+                            });
+                            //account does not exists
+                        }    
+
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
+
+
     }
 }
