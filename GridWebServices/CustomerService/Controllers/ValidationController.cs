@@ -37,110 +37,65 @@ namespace CustomerService.Controllers
         /// <summary>
         /// This will validate the email id
         /// </summary> 
-        /// <param name="token"></param>
         ///<param name="emailid">abcd@gmail.com</param>
         /// <returns>validation result</returns> 
         [HttpGet]
         [Route("EmailValidation/{emailid}")]
-        public async Task<IActionResult> EmailValidation([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] string emailid)
+        public IActionResult EmailValidation([FromRoute] string emailid)
         {
             try
             {
-                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                if (!ModelState.IsValid)
                 {
-                    HasSucceeded = false,
-                    IsDomainValidationErrors = true,
-                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+                    Log.Error(StatusMessages.DomainValidationError);
+                    new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                                            .SelectMany(x => x.Errors)
+                                            .Select(x => x.ErrorMessage))
+                    };
+                }
 
-                });
-                AuthHelper helper = new AuthHelper(_iconfiguration);
+                DatabaseResponse configResponseEmail = ConfigHelper.GetValue("EmailValidate", _iconfiguration);
 
-                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+                List<Dictionary<string, string>> _result = ((List<Dictionary<string, string>>)configResponseEmail.Results);
 
-                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                EmailValidationHelper emailhelper = new EmailValidationHelper();
+                EmailConfig objEmailConfig = new EmailConfig();
+                objEmailConfig.key = _result.Single(x => x["key"] == "NeverbouceKey")["value"];
+                objEmailConfig.Email = emailid;
+                objEmailConfig.EmailAPIUrl = _result.Single(x => x["key"] == "Emailurl")["value"];
+
+
+                string configResponse = emailhelper.EmailValidation(objEmailConfig);
+                EmailValidationResponse _response = new EmailValidationResponse();
+                _response.Status = configResponse;
+                if (configResponse.ToLower().Trim() != "invalid")
                 {
-                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    _response.IsValid = true;
+                    return Ok(new ServerResponse
                     {
-                        if (!ModelState.IsValid)
-                        {
-                            Log.Error(StatusMessages.DomainValidationError);
-                            new OperationResponse
-                            {
-                                HasSucceeded = false,
-                                IsDomainValidationErrors = true,
-                                Message = string.Join("; ", ModelState.Values
-                                                    .SelectMany(x => x.Errors)
-                                                    .Select(x => x.ErrorMessage))
-                            };
-                        }
-
-                        DatabaseResponse configResponseEmail = ConfigHelper.GetValue("EmailValidate", _iconfiguration);
-
-                        List<Dictionary<string, string>> _result = ((List<Dictionary<string, string>>)configResponseEmail.Results);
-
-                        EmailValidationHelper emailhelper = new EmailValidationHelper();
-                        EmailConfig objEmailConfig = new EmailConfig();
-                        objEmailConfig.key = _result.Single(x => x["key"] == "NeverbouceKey")["value"];
-                        objEmailConfig.Email = emailid;
-                        objEmailConfig.EmailAPIUrl = _result.Single(x => x["key"] == "Emailurl")["value"];
-
-
-                        string configResponse = emailhelper.EmailValidation(objEmailConfig);
-                        EmailValidationResponse _response = new EmailValidationResponse();
-                        _response.Status = configResponse;
-                        if (configResponse.ToLower().Trim() != "invalid")
-                        {
-                            _response.IsValid = true;
-                            return Ok(new ServerResponse
-                            {
-                                HasSucceeded = true,
-                                Message = StatusMessages.ValidMessage,
-                                Result = _response
-                            });
-                        }
-                        else
-                        {
-                            //Invalid email
-                            _response.IsValid = false;
-
-                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.InvalidEmail));
-
-                            return Ok(new ServerResponse
-                            {
-                                HasSucceeded = true,
-                                Message = StatusMessages.InvalidMessage,
-                                Result = _response
-                            });
-
-                        }
-                    }
-
-                    else
-                    {
-                        //Token expired
-
-                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
-
-                        return Ok(new OperationResponse
-                        {
-                            HasSucceeded = false,
-                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
-                            IsDomainValidationErrors = true
-                        });
-
-                    }
+                        HasSucceeded = true,
+                        Message = StatusMessages.ValidMessage,
+                        Result = _response
+                    });
                 }
                 else
                 {
-                    // token auth failure
-                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+                    //Invalid email
+                    _response.IsValid = false;
 
-                    return Ok(new OperationResponse
+                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.InvalidEmail));
+
+                    return Ok(new ServerResponse
                     {
-                        HasSucceeded = false,
-                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
-                        IsDomainValidationErrors = false
+                        HasSucceeded = true,
+                        Message = StatusMessages.InvalidMessage,
+                        Result = _response
                     });
+
                 }
             }
             catch (Exception ex)
@@ -154,7 +109,6 @@ namespace CustomerService.Controllers
                 });
             }
         }
-
 
         /// <summary>
         /// This will validate postcode
