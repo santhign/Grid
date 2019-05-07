@@ -156,5 +156,9 @@ namespace Core.Enums
         [EnumMember(Value = "Your account is locked")]
         [Description("Your account is locked")]
         AccountIsLocked = 138,
+
+        [EnumMember(Value = "Action is Invalid")]
+        [Description("Action is Invalid")]
+        ActionIsInvalid = 139,
     }
 }

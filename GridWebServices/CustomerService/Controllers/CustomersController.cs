@@ -1020,37 +1020,15 @@ namespace CustomerService.Controllers
                     {
                         passwordTokenDetails = (ForgetPassword)_forgetPassword.Results;
 
-                        NotificationMessage notificationMessage = new NotificationMessage();
+                        NotificationMessage notificationMessage = new NotificationMessage();                      
 
-                        List<NotificationParams> msgParamsList = new List<NotificationParams>();
-
-                        NotificationParams msgParams = new NotificationParams();
-
-                        msgParams.emailaddress = passwordTokenDetails.Email;
-
-                        msgParams.name = passwordTokenDetails.Name;
-
-                        msgParams.param1 = passwordTokenDetails.Token;
-
-                        msgParams.param2 = forgotPasswordConfig.PasswordResetUrl;
-
-                        msgParamsList.Add(msgParams);
-
-                        notificationMessage = new NotificationMessage
-                        {
-
-                            MessageType = NotificationMsgType.Email.ToString(),
-
-                            MessageName = NotificationEvent.ForgetPassword.ToString(),
-
-                            Message = new MessageObject { parameters = msgParamsList, messagetemplate = ((EmailTemplate)forgotPasswordMsgTemplate.Results).TemplateName }
-
-                        };
-
-                        // Publish notification to topic
+                        
+                        notificationMessage = MessageHelper.GetMessage(passwordTokenDetails.Email, passwordTokenDetails.Name, NotificationEvent.ForgetPassword.ToString(),
+                            ((EmailTemplate)forgotPasswordMsgTemplate.Results).TemplateName,
+                        _iconfiguration, passwordTokenDetails.Token, forgotPasswordConfig.PasswordResetUrl);                          
+                      
 
                         Publisher forgotPassNotificationPublisher = new Publisher(_iconfiguration, forgotPasswordConfig.ForgotPasswordSNSTopic);
-
                         await forgotPassNotificationPublisher.PublishAsync(notificationMessage);
 
 
