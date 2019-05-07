@@ -46,7 +46,11 @@ namespace Core.Enums
         [Description("BSSInvoiceDefaultDateRangeInMonths")]
         BSSInvoiceDefaultDateRangeInMonths = 3,
 
-        
+        [EnumMember(Value = "BSSInvoiceDownloadLink")]
+        [Description("BSSInvoiceDownloadLink")]
+        BSSInvoiceDownloadLink = 4,      
+
+
     }
 
     public enum OrderStatus

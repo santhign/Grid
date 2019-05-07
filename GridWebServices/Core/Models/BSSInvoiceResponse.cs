@@ -21,6 +21,7 @@ namespace Core.Models
         public string clear_status { get; set; }
         public string is_paid { get; set; }
         public string pending_invoice_amount { get; set; }
+        public string download_url { get; set; }
     }
 
     public class InvoiceDetails
