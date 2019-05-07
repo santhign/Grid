@@ -201,7 +201,19 @@ namespace OrderService.Controllers
                                                          .Select(x => x.ErrorMessage))
                             });
                         }
+                        Core.Helpers.EmailValidationHelper _helper = new EmailValidationHelper();
+                        bool AllowSrubscriber = await _helper.AllowSubscribers(customerID, _iconfiguration);
+                        if (!AllowSrubscriber)
+                        {
+                            LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.NotAllowSubscribers));
 
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.NotAllowSubscribers),
+                                IsDomainValidationErrors = false
+                            });
+                        }
                         OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
 
                         CreateOrder order = new CreateOrder();
@@ -1038,7 +1050,19 @@ namespace OrderService.Controllers
                         if (customerResponse.ResponseCode == (int)DbReturnValue.RecordExists && customerID == ((OrderCustomer)customerResponse.Results).CustomerId)
                         {
                             // call GetAssets BSSAPI
+                            Core.Helpers.EmailValidationHelper _helper = new EmailValidationHelper();
+                            bool AllowSrubscriber = await _helper.AllowSubscribers(customerID, _iconfiguration);
+                            if (!AllowSrubscriber)
+                            {
+                                LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.NotAllowSubscribers));
 
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = false,
+                                    Message = EnumExtensions.GetDescription(DbReturnValue.NotAllowSubscribers),
+                                    IsDomainValidationErrors = false
+                                });
+                            }
                             BSSAPIHelper bsshelper = new BSSAPIHelper();
 
                             DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
