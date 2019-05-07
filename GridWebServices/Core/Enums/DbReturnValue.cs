@@ -160,5 +160,13 @@ namespace Core.Enums
         [EnumMember(Value = "Action is Invalid")]
         [Description("Action is Invalid")]
         ActionIsInvalid = 139,
+
+        [EnumMember(Value = "Allowed to add more subscribers")]
+        [Description("Allowed to add more subscribers")]
+        AllowSubscribers = 140,
+
+        [EnumMember(Value = "Not allowed to add more subscribers")]
+        [Description("Not allowed to add more subscribers")]
+        NotAllowSubscribers = 141,
     }
 }
