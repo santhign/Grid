@@ -18,7 +18,7 @@ namespace OrderService.Models
 
         public static CheckoutSessionModel toCheckoutSessionModel(string response)
         {
-           JObject jObject = JObject.Parse(response);
+            JObject jObject = JObject.Parse(response);
             CheckoutSessionModel model = jObject["session"].ToObject<CheckoutSessionModel>();
             model.SuccessIndicator = jObject["successIndicator"] != null ? jObject["successIndicator"].ToString() : "";
             return model;
@@ -27,14 +27,14 @@ namespace OrderService.Models
     }
     public class Checkout
     {
-      public string CheckoutJsUrl { get; set; }
-      public string OrderId { get; set; }
-      public double Amount { get; set; }
-      public string Currency { get; set; }
-      public string MerchantId { get; set; }
-      public CheckoutSessionModel CheckoutSession { get; set; }
-      public string TransactionID { get; set; }
-        
+        public string CheckoutJsUrl { get; set; }
+        public string OrderId { get; set; }
+        public double Amount { get; set; }
+        public string Currency { get; set; }
+        public string MerchantId { get; set; }
+        public CheckoutSessionModel CheckoutSession { get; set; }
+        public string TransactionID { get; set; }
+
 
     }
 
@@ -50,11 +50,11 @@ namespace OrderService.Models
 
     public class PaymentMethod
     {
-        public int PaymentMethodID { get; set; }       
+        public int PaymentMethodID { get; set; }
         public string Token { get; set; }
         public string SourceType { get; set; }
         public string CardHolderName { get; set; }
-        
+
     }
     public class CheckOutRequestDBUpdateModel
     {
@@ -67,7 +67,7 @@ namespace OrderService.Models
 
         public string CheckoutVersion { get; set; }
 
-        public string TransactionID { get; set; }        
+        public string TransactionID { get; set; }
 
     }
     public class CheckOutResponseUpdate
@@ -94,5 +94,11 @@ namespace OrderService.Models
         public string UserId { get; set; }
         public string NewMobileNumber { get; set; }
 
+    }
+
+    public class CustomerDetails
+    {
+        public string Name{ get; set; }
+        public string ToEmailList { get; set; }
     }
 }
