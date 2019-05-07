@@ -202,7 +202,7 @@ namespace OrderService.Controllers
                             });
                         }
                         Core.Helpers.EmailValidationHelper _helper = new EmailValidationHelper();
-                        bool AllowSrubscriber = await _helper.AllowSubscribers(customerID, _iconfiguration);
+                        bool AllowSrubscriber = await _helper.AllowSubscribers(customerID, (int)SubscriberCheckType.CustomerLevel, _iconfiguration);
                         if (!AllowSrubscriber)
                         {
                             LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.NotAllowSubscribers));
@@ -1051,7 +1051,7 @@ namespace OrderService.Controllers
                         {
                             // call GetAssets BSSAPI
                             Core.Helpers.EmailValidationHelper _helper = new EmailValidationHelper();
-                            bool AllowSrubscriber = await _helper.AllowSubscribers(customerID, _iconfiguration);
+                            bool AllowSrubscriber = await _helper.AllowSubscribers(customerID, (int)SubscriberCheckType.OrderLevel, _iconfiguration);
                             if (!AllowSrubscriber)
                             {
                                 LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.NotAllowSubscribers));
