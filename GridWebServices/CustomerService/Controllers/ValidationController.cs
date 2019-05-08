@@ -17,6 +17,7 @@ using InfrastructureService;
 using Serilog;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using System.Text.RegularExpressions;
 
 namespace CustomerService.Controllers
 {
@@ -61,13 +62,19 @@ namespace CustomerService.Controllers
                 DatabaseResponse configResponseEmail = ConfigHelper.GetValue("EmailValidate", _iconfiguration);
 
                 List<Dictionary<string, string>> _result = ((List<Dictionary<string, string>>)configResponseEmail.Results);
+                string email1 = emailid;
+                if (_result.Single(x => x["key"] == "AllowPlusSignEmailAddress")["value"] == "1")
+                {
+                    //Remove the Plus sign part from email before sending to neverbounce
+                    Regex emailregx = new Regex("(\\+)(.*?)(\\@)"); //Replace the part after the plus "+) sign 
+                    email1 = emailregx.Replace(emailid, "$3"); //$3 to putback the @symbol 
+                }
 
                 EmailValidationHelper emailhelper = new EmailValidationHelper();
                 EmailConfig objEmailConfig = new EmailConfig();
                 objEmailConfig.key = _result.Single(x => x["key"] == "NeverbouceKey")["value"];
-                objEmailConfig.Email = emailid;
+                objEmailConfig.Email = email1;
                 objEmailConfig.EmailAPIUrl = _result.Single(x => x["key"] == "Emailurl")["value"];
-
 
                 string configResponse = emailhelper.EmailValidation(objEmailConfig);
                 EmailValidationResponse _response = new EmailValidationResponse();
