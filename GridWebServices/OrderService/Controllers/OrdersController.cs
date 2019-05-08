@@ -835,49 +835,49 @@ namespace OrderService.Controllers
 
                                 //if (bsshelper.GetResponseCode(bssUnblockUpdateResponse) == "0")
                                 //{
-                                    //update subscription porting
-                                    DatabaseResponse updateSubscriberResponse = await _orderAccess.UpdateSubscriberPortingNumber(portingRequest);
+                                //update subscription porting
+                                DatabaseResponse updateSubscriberResponse = await _orderAccess.UpdateSubscriberPortingNumber(portingRequest);
 
-                                    if (updateSubscriberResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
+                                if (updateSubscriberResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
+                                {
+                                    // Get Order Basic Details
+
+                                    DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails(request.OrderID);
+
+                                    if (orderDetailsResponse.ResponseCode == (int)DbReturnValue.RecordExists)
                                     {
-                                        // Get Order Basic Details
-
-                                        DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails(request.OrderID);
-
-                                        if (orderDetailsResponse.ResponseCode == (int)DbReturnValue.RecordExists)
-                                        {
-                                            return Ok(new OperationResponse
-                                            {
-                                                HasSucceeded = true,
-                                                Message = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess),
-                                                IsDomainValidationErrors = false,
-                                                ReturnedObject = orderDetailsResponse.Results
-                                            });
-                                        }
-
-                                        else
-                                        {
-                                            //subscription porting updated, but details not returned
-                                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToLocateUpdatedSubscription));
-                                            return Ok(new OperationResponse
-                                            {
-                                                HasSucceeded = true,
-                                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
-                                                IsDomainValidationErrors = false,
-                                            });
-                                        }
-
-                                    }
-                                    else
-                                    {
-                                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateSubscriptionFailed));
                                         return Ok(new OperationResponse
                                         {
-                                            HasSucceeded = false,
-                                            Message = EnumExtensions.GetDescription(DbReturnValue.UpdationFailed),
-                                            IsDomainValidationErrors = false
+                                            HasSucceeded = true,
+                                            Message = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess),
+                                            IsDomainValidationErrors = false,
+                                            ReturnedObject = orderDetailsResponse.Results
                                         });
                                     }
+
+                                    else
+                                    {
+                                        //subscription porting updated, but details not returned
+                                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToLocateUpdatedSubscription));
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = true,
+                                            Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
+                                            IsDomainValidationErrors = false,
+                                        });
+                                    }
+
+                                }
+                                else
+                                {
+                                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateSubscriptionFailed));
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = false,
+                                        Message = EnumExtensions.GetDescription(DbReturnValue.UpdationFailed),
+                                        IsDomainValidationErrors = false
+                                    });
+                                }
                                 //}
 
                                 //else
@@ -1095,7 +1095,7 @@ namespace OrderService.Controllers
                             if (res != null && (int.Parse(res.Response.asset_details.total_record_count) > 0))
                             {
                                 //Block number                                   
-                                
+
                                 DatabaseResponse requestIdToUpdateRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.ExistingSession, AssetToSubscribe);
 
                                 BSSUpdateResponseObject bssUpdateResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateRes.Results, AssetToSubscribe, false);
@@ -1392,7 +1392,7 @@ namespace OrderService.Controllers
                         DatabaseResponse customerResponse = await _orderAccess.GetCustomerIdFromOrderId(request.OrderID);
 
                         if (customerResponse.ResponseCode == (int)DbReturnValue.RecordExists && customerID == ((OrderCustomer)customerResponse.Results).CustomerId)
-                        {                            
+                        {
                             BSSAPIHelper bsshelper = new BSSAPIHelper();
 
                             MiscHelper configHelper = new MiscHelper();
@@ -1402,11 +1402,11 @@ namespace OrderService.Controllers
                                 OrderID = request.OrderID,
                                 ContactNumber = request.ContactNumber,
                                 DOB = request.DOB,
-                                Gender = request.Gender,                             
+                                Gender = request.Gender,
                                 NameInNRIC = request.NameInNRIC,
                                 DisplayName = request.DisplayName
-                               
-                            };  
+
+                            };
 
                             //update personal details
                             DatabaseResponse updatePersoanDetailsResponse = await _orderAccess.UpdateOrderPersonalDetails(personalDetails);
@@ -2212,7 +2212,7 @@ namespace OrderService.Controllers
                                     IsDomainValidationErrors = false
                                 });
                             }
-                            else if(updatePersoanDetailsResponse.ResponseCode == (int)DbReturnValue.DeliverySlotUnavailability)
+                            else if (updatePersoanDetailsResponse.ResponseCode == (int)DbReturnValue.DeliverySlotUnavailability)
                             {
                                 LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.DeliverySlotUnavailability));
                                 return Ok(new OperationResponse
@@ -2508,7 +2508,7 @@ namespace OrderService.Controllers
 
                                 MPGSOrderID = checkoutDetails.OrderId,
 
-                                TransactionID=checkoutDetails.TransactionID
+                                TransactionID = checkoutDetails.TransactionID
                             };
 
                             //Update checkout details and return amount
@@ -3216,7 +3216,7 @@ namespace OrderService.Controllers
 
                                     DownloadResponse BackImageDownloadResponse = await s3Helper.DownloadFile(((OrderNRICDetails)nRICresponse.Results).DocumentBackURL.Remove(0, awsConfig.AWSEndPoint.Length));
 
-                                    DownloadNRIC nRICDownloadObject = new DownloadNRIC { OrderID= OrderID, FrontImage = FrontImageDownloadResponse.FileObject != null ? configHelper.GetBase64StringFromByteArray(FrontImageDownloadResponse.FileObject, ((OrderNRICDetails)nRICresponse.Results).DocumentURL.Remove(0, awsConfig.AWSEndPoint.Length)) : null, BackImage = BackImageDownloadResponse.FileObject != null ? configHelper.GetBase64StringFromByteArray(BackImageDownloadResponse.FileObject, ((OrderNRICDetails)nRICresponse.Results).DocumentBackURL.Remove(0, awsConfig.AWSEndPoint.Length)) : null, IdentityCardNumber= ((OrderNRICDetails)nRICresponse.Results).IdentityCardNumber, IdentityCardType= ((OrderNRICDetails)nRICresponse.Results).IdentityCardType, Nationality= ((OrderNRICDetails)nRICresponse.Results).Nationality };
+                                    DownloadNRIC nRICDownloadObject = new DownloadNRIC { OrderID = OrderID, FrontImage = FrontImageDownloadResponse.FileObject != null ? configHelper.GetBase64StringFromByteArray(FrontImageDownloadResponse.FileObject, ((OrderNRICDetails)nRICresponse.Results).DocumentURL.Remove(0, awsConfig.AWSEndPoint.Length)) : null, BackImage = BackImageDownloadResponse.FileObject != null ? configHelper.GetBase64StringFromByteArray(BackImageDownloadResponse.FileObject, ((OrderNRICDetails)nRICresponse.Results).DocumentBackURL.Remove(0, awsConfig.AWSEndPoint.Length)) : null, IdentityCardNumber = ((OrderNRICDetails)nRICresponse.Results).IdentityCardNumber, IdentityCardType = ((OrderNRICDetails)nRICresponse.Results).IdentityCardType, Nationality = ((OrderNRICDetails)nRICresponse.Results).Nationality };
 
                                     return Ok(new OperationResponse
                                     {
@@ -3308,7 +3308,7 @@ namespace OrderService.Controllers
 
             }
         }
-        
+
         /// <summary>
         /// This will update personal ID details of the customer for the order
         /// </summary>
@@ -3375,10 +3375,10 @@ namespace OrderService.Controllers
 
                             UpdateOrderPersonalDetails personalDetails = new UpdateOrderPersonalDetails
                             {
-                                OrderID = request.OrderID,  
-                                Nationality=request.Nationality,
+                                OrderID = request.OrderID,
+                                Nationality = request.Nationality,
                                 IDNumber = request.IDNumber,
-                                IDType = request.IDType                             
+                                IDType = request.IDType
                             };
 
                             //process file if uploaded - non null
@@ -3513,7 +3513,7 @@ namespace OrderService.Controllers
         /// </summary>
         /// <param name="token" in="Header"></param>            
         /// <returns>OperationsResponse</returns>
-      
+
         [HttpPost("Tokenize")]
         public async Task<IActionResult> Tokenize([FromHeader(Name = "Grid-Authorization-Token")] string token)
         {
@@ -3555,9 +3555,9 @@ namespace OrderService.Controllers
 
                         DatabaseResponse updateTokenSesisonDetails = new DatabaseResponse();
 
-                       // updateTokenSesisonDetails = await _orderAccess.UpdateMPGSCreateTokenSessionDetails(request);
+                        // updateTokenSesisonDetails = await _orderAccess.UpdateMPGSCreateTokenSessionDetails(request);
                         //updateTokenSesisonDetails.ResponseCode == (int)DbReturnValue.RecordExists && customerID == ((CreateTokenUpdatedDetails)updateTokenSesisonDetails.Results).CustomerID
-                        if (1==1)
+                        if (1 == 1)
                         {
                             // Call MPGS to create a checkout session and retuen details
 
@@ -3571,19 +3571,19 @@ namespace OrderService.Controllers
                             TransactionResponseModel transactionResponse = new TransactionResponseModel();
                             //
 
-                           // tokenizeResponse = gatewayHelper.TokenizeTest(gatewayConfig);
+                            // tokenizeResponse = gatewayHelper.TokenizeTest(gatewayConfig);
                             // transactionResponse = gatewayHelper.PayWithToken(gatewayConfig, request, (CreateTokenUpdatedDetails)updateTokenSesisonDetails.Results, tokenizeResponse);
 
                             string response = gatewayHelper.VoidTransaction(gatewayConfig);
-                           // string response = gatewayHelper.Capture(gatewayConfig);
-                           // string response = gatewayHelper.CaptureTest(gatewayConfig);//transactionResponse = gatewayHelper.PayWithToken(gatewayConfig, request, (CreateTokenUpdatedDetails)updateTokenSesisonDetails.Results, tokenizeResponse); 
+                            // string response = gatewayHelper.Capture(gatewayConfig);
+                            // string response = gatewayHelper.CaptureTest(gatewayConfig);//transactionResponse = gatewayHelper.PayWithToken(gatewayConfig, request, (CreateTokenUpdatedDetails)updateTokenSesisonDetails.Results, tokenizeResponse); 
                             if (tokenizeResponse != null)
                             {
                                 // update token reponse in database and then call gatewayHelper.PayWithToken to pay the amount
 
-                              //  TransactionResponseModel transactionResponse = new TransactionResponseModel();
+                                //  TransactionResponseModel transactionResponse = new TransactionResponseModel();
 
-//transactionResponse = gatewayHelper.PayWithToken(gatewayConfig, request, (CreateTokenUpdatedDetails)updateTokenSesisonDetails.Results, tokenizeResponse); 
+                                //transactionResponse = gatewayHelper.PayWithToken(gatewayConfig, request, (CreateTokenUpdatedDetails)updateTokenSesisonDetails.Results, tokenizeResponse); 
 
                                 // update transaction
                                 // push order message to queue
@@ -3591,7 +3591,7 @@ namespace OrderService.Controllers
                                 {
                                     // add message and result here
                                     HasSucceeded = true,
-                                   // Message = 
+                                    // Message = 
                                     IsDomainValidationErrors = false
                                 });
                             }
@@ -4075,7 +4075,7 @@ namespace OrderService.Controllers
 
                             if (orderMqResponse != null && orderMqResponse.Results != null)
                             {
-                                orderDetails = (OrderQM)orderMqResponse.Results;                               
+                                orderDetails = (OrderQM)orderMqResponse.Results;
 
                                 try
                                 {
@@ -4369,7 +4369,7 @@ namespace OrderService.Controllers
                                 {
                                     //failed to create payment token
 
-                                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.TokenGenerationFailed));                                   
+                                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.TokenGenerationFailed));
                                     return Ok(new OperationResponse
                                     {
                                         HasSucceeded = false,
@@ -4714,7 +4714,7 @@ namespace OrderService.Controllers
 
                                             if (paymentProcessingRespose.ResponseCode == (int)DbReturnValue.TransactionSuccess)
                                             {
-                                                LogInfo.Information(EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess));                                               
+                                                LogInfo.Information(EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess));
 
                                                 //Get Order Type
                                                 var sourceTyeResponse = await _orderAccess.GetSourceTypeByMPGSSOrderId(updateRequest.MPGSOrderID);
@@ -4898,9 +4898,9 @@ namespace OrderService.Controllers
 
                     var order_Reschedule = (Order_RescheduleDeliveryResponse)statusResponse.Results;
 
-                    if(order_Reschedule != null && order_Reschedule.PayableAmount == 0)
+                    if (order_Reschedule != null && order_Reschedule.PayableAmount == 0)
                     {
-                       var confirmOrder =  await _orderAccess.ProcessRescheduleDelivery(order_Reschedule.AccountInvoiceID);
+                        var confirmOrder = await _orderAccess.ProcessRescheduleDelivery(order_Reschedule.AccountInvoiceID);
                         if (confirmOrder.ResponseCode == (int)DbReturnValue.CreateSuccess)
                         {
                             return Ok(new ServerResponse
@@ -5002,7 +5002,7 @@ namespace OrderService.Controllers
 
             }
 
-        }       
+        }
 
         [HttpGet("GetChangePaymentMethodSession/{customerID}")]
         public async Task<IActionResult> GetChangePaymentMethodSession([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int customerID)
@@ -5438,9 +5438,9 @@ namespace OrderService.Controllers
                         OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
                         //update checkout details
 
-                        DatabaseResponse accountIdResponse = await  _orderAccess.GetAccountIdFromCustomerId(customerID);
+                        DatabaseResponse accountIdResponse = await _orderAccess.GetAccountIdFromCustomerId(customerID);
 
-                        if(accountIdResponse!=null && accountIdResponse.ResponseCode==(int) DbReturnValue.RecordExists)
+                        if (accountIdResponse != null && accountIdResponse.ResponseCode == (int)DbReturnValue.RecordExists)
                         {
                             int AccountID = (int)accountIdResponse.Results;
 
@@ -5460,20 +5460,20 @@ namespace OrderService.Controllers
                                 InvoiceUrl = downloadLinkPrefix + accountInvoiceRequest.InvoiceID,
                                 Remarks = Misc.Account.ToString(),
                                 PaymentSourceID = int.Parse(((BSSAccount)accountResponse.Results).AccountNumber),
-                                OrderStatus=0
+                                OrderStatus = 0
 
                             };
 
                             DatabaseResponse createAccountInvoiceResponse = await _orderAccess.CreateAccountInvoice(accountInvoice);
 
-                            if(createAccountInvoiceResponse.ResponseCode==(int)DbReturnValue.CreateSuccess)
+                            if (createAccountInvoiceResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                             {
                                 return Ok(new OperationResponse
                                 {
                                     HasSucceeded = true,
                                     Message = EnumExtensions.GetDescription(DbReturnValue.CreateSuccess),
                                     IsDomainValidationErrors = false,
-                                    ReturnedObject =  new InvoiceOrder { OrderID= (int)createAccountInvoiceResponse.Results } 
+                                    ReturnedObject = new InvoiceOrder { OrderID = (int)createAccountInvoiceResponse.Results }
                                 });
                             }
 
@@ -5497,7 +5497,7 @@ namespace OrderService.Controllers
                                 IsDomainValidationErrors = true
                             });
                             //account does not exists
-                        }    
+                        }
 
                     }
 
