@@ -4274,6 +4274,83 @@ namespace OrderService.Controllers
 
                                     if (tokenDetailsCreateResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                                     {
+                                        //Ninad K:  Add Message
+                                        string topicName = string.Empty;
+                                        string pushResult = string.Empty;
+                                        Dictionary<string, string> attribute = new Dictionary<string, string>();
+                                        DatabaseResponse msgBody = new DatabaseResponse();
+                                        try
+                                        {
+
+
+                                            topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration).Results.ToString().Trim();
+                                            attribute.Add(EventTypeString.EventType, RequestType.ChangePlan.GetDescription());
+
+                                            var sourceTyeResponse = await _orderAccess.GetSourceTypeByMPGSSOrderId(updateRequest.MPGSOrderID);
+                                            if (((OrderSource)sourceTyeResponse.Results).SourceType == CheckOutType.Orders.ToString())
+                                            {                                               
+
+                                                msgBody = await _messageQueueDataAccess.GetOrderMessageQueueBody(((OrderSource)sourceTyeResponse.Results).SourceID);
+                                                pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
+
+                                                if (pushResult.Trim().ToUpper() == "OK")
+                                                {
+                                                    MessageQueueRequest queueRequest = new MessageQueueRequest
+                                                    {
+                                                        Source = CheckOutType.Orders.ToString(),
+                                                        NumberOfRetries = 1,
+                                                        SNSTopic = topicName,
+                                                        CreatedOn = DateTime.Now,
+                                                        LastTriedOn = DateTime.Now,
+                                                        PublishedOn = DateTime.Now,
+                                                        MessageAttribute = RequestType.CancelOrder.GetDescription(),
+                                                        MessageBody = JsonConvert.SerializeObject(msgBody),
+                                                        Status = 1
+                                                    };
+                                                    await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                                                }
+                                                else
+                                                {
+                                                    MessageQueueRequest queueRequest = new MessageQueueRequest
+                                                    {
+                                                        Source = CheckOutType.Orders.ToString(),
+                                                        NumberOfRetries = 1,
+                                                        SNSTopic = topicName,
+                                                        CreatedOn = DateTime.Now,
+                                                        LastTriedOn = DateTime.Now,
+                                                        PublishedOn = DateTime.Now,
+                                                        MessageAttribute = RequestType.CancelOrder.GetDescription(),
+                                                        MessageBody = JsonConvert.SerializeObject(msgBody),
+                                                        Status = 0
+                                                    };
+                                                    await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                                                }
+                                            }
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                                            MessageQueueRequestException queueRequest = new MessageQueueRequestException
+                                            {
+                                                Source = Source.ChangeRequest,
+                                                NumberOfRetries = 1,
+                                                SNSTopic = string.IsNullOrWhiteSpace(topicName) ? null : topicName,
+                                                CreatedOn = DateTime.Now,
+                                                LastTriedOn = DateTime.Now,
+                                                PublishedOn = DateTime.Now,
+                                                MessageAttribute = Core.Enums.RequestType.CancelOrder.GetDescription().ToString(),
+                                                MessageBody = msgBody != null ? JsonConvert.SerializeObject(msgBody) : null,
+                                                Status = 0,
+                                                Remark = "Error Occured in BuyVASService",
+                                                Exception = new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)
+
+
+                                            };
+
+                                            await _messageQueueDataAccess.InsertMessageInMessageQueueRequestException(queueRequest);
+                                        }
+
+                                        //End Message
                                         tokenSession.SourceOfFundType = tokenizeResponse.Type;
 
                                         tokenSession.Token = tokenizeResponse.Token;
