@@ -4301,31 +4301,13 @@ namespace OrderService.Controllers
 
                                         if (paymentProcessingRespose.ResponseCode == (int)DbReturnValue.TransactionSuccess)
                                         {
-
-                                            NotificationMessage notificationMessage = new NotificationMessage();
-
                                             //Get Order Type
                                             var sourceTyeResponse = await _orderAccess.GetSourceTypeByMPGSSOrderId(updateRequest.MPGSOrderID);
                                             if (((OrderSource)sourceTyeResponse.Results).SourceType == CheckOutType.Orders.ToString())
                                             {
-                                                ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
-                                                DatabaseResponse registrationResponse = await _configAccess.GetEmailNotificationTemplate(NotificationEvent.Registration.ToString());
-                                                var details = await _messageQueueDataAccess.GetMessageDetails(updateRequest.MPGSOrderID);
-
-                                                // Get Customer Data from CustomerID for email and Name
-                                                var customer = await _orderAccess.GetCustomerDetailByOrder(customerID, ((OrderSource)sourceTyeResponse.Results).SourceID);
-                                                notificationMessage = MessageHelper.GetMessage(customer.ToEmailList, customer.Name, NotificationEvent.Registration.ToString(),
-                                               ((EmailTemplate)registrationResponse.Results).TemplateName,
-                                           _iconfiguration);
-                                                DatabaseResponse notificationResponse = await _configAccess.GetConfiguration(ConfiType.Notification.ToString());
-
-                                                MiscHelper parser = new MiscHelper();
-                                                var notificationConfig = parser.GetNotificationConfig((List<Dictionary<string, string>>)notificationResponse.Results);
-
-                                                Publisher forgotPassNotificationPublisher = new Publisher(_iconfiguration, notificationConfig.SNSTopic);
-                                                await forgotPassNotificationPublisher.PublishAsync(notificationMessage);
+                                                await SendEmailNotification(updateRequest.MPGSOrderID, customerID, ((OrderSource)sourceTyeResponse.Results).SourceID);
                                             }
-                                               
+
 
                                             LogInfo.Information(EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess));
 
@@ -4732,29 +4714,13 @@ namespace OrderService.Controllers
 
                                             if (paymentProcessingRespose.ResponseCode == (int)DbReturnValue.TransactionSuccess)
                                             {
-                                                LogInfo.Information(EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess));
-                                                NotificationMessage notificationMessage = new NotificationMessage();
+                                                LogInfo.Information(EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess));                                               
 
                                                 //Get Order Type
                                                 var sourceTyeResponse = await _orderAccess.GetSourceTypeByMPGSSOrderId(updateRequest.MPGSOrderID);
                                                 if (((OrderSource)sourceTyeResponse.Results).SourceType == CheckOutType.Orders.ToString())
                                                 {
-                                                    ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
-                                                    DatabaseResponse registrationResponse = await _configAccess.GetEmailNotificationTemplate(NotificationEvent.Registration.ToString());
-                                                    var details = await _messageQueueDataAccess.GetMessageDetails(updateRequest.MPGSOrderID);
-
-                                                    // Get Customer Data from CustomerID for email and Name
-                                                    var customer = await _orderAccess.GetCustomerDetailByOrder(customerID, ((OrderSource)sourceTyeResponse.Results).SourceID);
-                                                    notificationMessage = MessageHelper.GetMessage(customer.ToEmailList, customer.Name, NotificationEvent.Registration.ToString(),
-                                                   ((EmailTemplate)registrationResponse.Results).TemplateName,
-                                               _iconfiguration);
-                                                    DatabaseResponse notificationResponse = await _configAccess.GetConfiguration(ConfiType.Notification.ToString());
-
-                                                    MiscHelper parser = new MiscHelper();
-                                                    var notificationConfig = parser.GetNotificationConfig((List<Dictionary<string, string>>)notificationResponse.Results);
-
-                                                    Publisher forgotPassNotificationPublisher = new Publisher(_iconfiguration, notificationConfig.SNSTopic);
-                                                    await forgotPassNotificationPublisher.PublishAsync(notificationMessage);
+                                                    await SendEmailNotification(updateRequest.MPGSOrderID, customerID, ((OrderSource)sourceTyeResponse.Results).SourceID);
                                                 }
                                                 QMHelper qMHelper = new QMHelper(_iconfiguration, _messageQueueDataAccess);
 
@@ -5423,6 +5389,26 @@ namespace OrderService.Controllers
         }
 
        
+        private async Task SendEmailNotification(string MPGSOrderID, int customerID, int orderID)
+        {
+            OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+            ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
+            DatabaseResponse registrationResponse = await _configAccess.GetEmailNotificationTemplate(NotificationEvent.OrderSuccess.ToString());
+            var details = await _messageQueueDataAccess.GetMessageDetails(MPGSOrderID);
+
+            // Get Customer Data from CustomerID for email and Name
+            var customer = await _orderAccess.GetCustomerDetailByOrder(customerID, orderID);
+            var notificationMessage = MessageHelper.GetMessage(customer.ToEmailList, customer.Name, NotificationEvent.OrderSuccess.ToString(),
+           ((EmailTemplate)registrationResponse.Results).TemplateName,
+       _iconfiguration);
+            DatabaseResponse notificationResponse = await _configAccess.GetConfiguration(ConfiType.Notification.ToString());
+
+            MiscHelper parser = new MiscHelper();
+            var notificationConfig = parser.GetNotificationConfig((List<Dictionary<string, string>>)notificationResponse.Results);
+
+            Publisher forgotPassNotificationPublisher = new Publisher(_iconfiguration, notificationConfig.SNSTopic);
+            await forgotPassNotificationPublisher.PublishAsync(notificationMessage);
+        }
        
     }
 }
