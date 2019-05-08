@@ -96,9 +96,9 @@ namespace OrderService.Models
         [DataMember]
         public DateTime? SlotDate { get; set; }
         [DataMember]
-        public DateTime ? SlotFromTime { get; set; }
+        public TimeSpan?  SlotFromTime { get; set; }
         [DataMember]
-        public DateTime? SlotToTime { get; set; }
+        public TimeSpan? SlotToTime { get; set; }
         [DataMember]
         public DateTime? ScheduledDate { get; set; }
         [DataMember]

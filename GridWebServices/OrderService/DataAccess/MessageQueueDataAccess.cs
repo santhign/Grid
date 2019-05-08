@@ -103,8 +103,8 @@ namespace OrderService.DataAccess
                                    AlternateRecipientEmail = model.Field<string>("AlternateRecipientEmail"),
                                    PortalSlotID = model.Field<string>("PortalSlotID"),
                                    SlotDate = model.Field<DateTime?>("SlotDate"),
-                                   SlotFromTime = model.Field<DateTime?>("SlotFromTime"),
-                                   SlotToTime = model.Field<DateTime?>("SlotToTime"),
+                                   SlotFromTime = model.Field<TimeSpan?>("SlotFromTime"),
+                                   SlotToTime = model.Field<TimeSpan?>("SlotToTime"),
                                    ScheduledDate = model.Field<DateTime?>("ScheduledDate"),
                                    OldMobileNumber = model.Field<string>("OldMobileNumber"),
                                    NewMobileNumber = model.Field<string>("NewMobileNumber"),
@@ -184,6 +184,7 @@ namespace OrderService.DataAccess
         public async Task<MessageDetailsForCROrOrder> GetMessageDetails(string MPGSOrderID)
         {
             DataTable dt = new DataTable();
+
             SqlParameter[] parameters =
             {
                     new SqlParameter( "@MPGSOrderID",  SqlDbType.NVarChar )
@@ -191,7 +192,7 @@ namespace OrderService.DataAccess
 
             parameters[0].Value = MPGSOrderID;
 
-            _DataHelper = new DataAccessHelper(DbObjectNames.CR_GetMessageBody, parameters, _configuration);
+            _DataHelper = new DataAccessHelper(DbObjectNames.Orders_GetCROrOrderDetailsForMessageQueue, parameters, _configuration);
 
 
             var result = await _DataHelper.RunAsync(dt);

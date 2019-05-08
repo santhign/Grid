@@ -20,7 +20,7 @@ namespace OrderService.Helpers
     {
         public static string GenerateOrderId()
         {
-            return Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 10);
+            return Guid.NewGuid().ToString().Replace("-", string.Empty);
         }
 
         public Checkout GetCheckoutDetails()
