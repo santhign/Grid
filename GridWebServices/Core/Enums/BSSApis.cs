@@ -19,7 +19,11 @@ namespace Core.Enums
 
         [EnumMember(Value = "GetInvoiceDetails")]
         [Description("BSS get Invoice")]
-        GetInvoiceDetails = 4
+        GetInvoiceDetails = 4,
+
+        [EnumMember(Value = "QuerySubscriber")]
+        [Description("QuerySubscriber")]
+        QuerySubscriber = 5
     }
 
     public enum GridMicroservices
@@ -105,9 +109,7 @@ namespace Core.Enums
 
         [EnumMember(Value = "Out in Market")]
         [Description("Number Out in Market")]
-        OutInMarket = 2,
-
-       
+        OutInMarket = 2,      
 
         [EnumMember(Value = "Sold")]
         [Description("Sold Number")]
@@ -153,4 +155,13 @@ namespace Core.Enums
         [Description("Blocked Number")]
         Blocked = 14,
     }
+
+    public enum Misc
+    {
+        [EnumMember(Value = "Account")]
+        [Description("Pending")]
+        Account = 0,
+
+    }
+   
 }

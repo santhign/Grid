@@ -240,5 +240,9 @@ namespace Core.Enums
         [EnumMember(Value = "ProcessingQueFailed")]
         [Description("Processing Queue Message Failed")]
         ProcessingQueFailed = 55,
+
+        [EnumMember(Value = "AccountNotExists")]
+        [Description("Account Not Exists")]
+        AccountNotExists = 55,
     }
 }

@@ -2920,6 +2920,130 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+        public async Task<DatabaseResponse> GetAccountIdFromCustomerId(int customerId)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int )
+
+                };
+
+                parameters[0].Value = customerId;
+
+                _DataHelper = new DataAccessHelper("Order_GetAccountIDFromCustomerID", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt); // 105 /102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 105)
+                {
+
+                    BSSAccount account = new BSSAccount();
+
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+                        account = (from model in dt.AsEnumerable()
+                                    select new BSSAccount()
+                                    {
+                                         AccountID = model.Field<int>("AccountID"),
+
+                                    }).FirstOrDefault();
+
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = account.AccountID };
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+        public async Task<DatabaseResponse> CreateAccountInvoice(AccountInvoice request)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                     new SqlParameter( "@AccountID",  SqlDbType.Int ),
+                     new SqlParameter( "@InvoiceName",  SqlDbType.NVarChar ),
+                     new SqlParameter( "@InvoiceUrl",  SqlDbType.NVarChar ),
+                     new SqlParameter( "@FinalAmount",  SqlDbType.Float ),
+                     new SqlParameter( "@Remarks",  SqlDbType.NVarChar ),
+                     new SqlParameter( "@OrderStatus",  SqlDbType.Int ),
+                     new SqlParameter( "@PaymentSourceID",  SqlDbType.Int ),
+                     new SqlParameter( "@CreatedBy",  SqlDbType.Int )  
+                };
+
+                parameters[0].Value = request.AccountID;
+                parameters[1].Value = request.InvoiceName;
+                parameters[2].Value = request.InvoiceUrl;
+                parameters[3].Value = request.FinalAmount;
+                parameters[4].Value = request.Remarks;
+                parameters[5].Value = request.OrderStatus;
+                parameters[6].Value = request.PaymentSourceID;
+                parameters[7].Value = request.CreatedBy;                
+
+                _DataHelper = new DataAccessHelper("Orders_CreateAccountInvoice", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt);    // 100 / 107
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 100)
+                {
+
+                    int orderID=0;
+
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+                        orderID = int.Parse( dt.Rows[0].ItemArray[0].ToString());
+
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = orderID };
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }  
+               
+                return response;
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
 
 
         public async Task<CustomerDetails> GetCustomerDetailByOrder(int customerID, int orderID)
