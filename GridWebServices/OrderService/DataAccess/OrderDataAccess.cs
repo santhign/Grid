@@ -2633,7 +2633,7 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
-        public async Task<DatabaseResponse> RescheduleDelivery(int customerID, Order_RescheduleDeliveryRequest detailsrequest)
+        public async Task<DatabaseResponse> RescheduleDelivery(int customerID, OrderRescheduleDeliveryRequest detailsrequest)
         {
             try
             {

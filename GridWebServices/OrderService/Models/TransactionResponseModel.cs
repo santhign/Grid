@@ -88,7 +88,7 @@ namespace OrderService.Models
 
     }
 
-    public class Order_RescheduleDeliveryRequest
+    public class OrderRescheduleDeliveryRequest
     {
         public int OrderID { get; set; }
         /// <summary>

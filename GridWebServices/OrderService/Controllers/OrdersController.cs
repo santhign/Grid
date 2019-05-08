@@ -4863,7 +4863,7 @@ namespace OrderService.Controllers
 
         [HttpPost]
         [Route("RescheduleDelivery")]
-        public async Task<IActionResult> RescheduleDelivery([FromHeader(Name = "Grid-Authorization-Token")] string token, Order_RescheduleDeliveryRequest detailsrequest)
+        public async Task<IActionResult> RescheduleDelivery([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] OrderRescheduleDeliveryRequest detailsrequest)
         {
             try
             {
