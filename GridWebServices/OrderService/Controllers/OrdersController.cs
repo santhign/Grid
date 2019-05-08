@@ -5550,7 +5550,7 @@ namespace OrderService.Controllers
             OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
             ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
             DatabaseResponse registrationResponse = await _configAccess.GetEmailNotificationTemplate(NotificationEvent.OrderSuccess.ToString());
-            var details = await _messageQueueDataAccess.GetMessageDetails(MPGSOrderID);
+            //var details = await _messageQueueDataAccess.GetMessageDetails(MPGSOrderID);
 
             // Get Customer Data from CustomerID for email and Name
             var customer = await _orderAccess.GetCustomerDetailByOrder(customerID, orderID);
