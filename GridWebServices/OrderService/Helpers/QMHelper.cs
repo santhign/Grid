@@ -158,7 +158,16 @@ namespace OrderService.Helpers
 
                 }
 
-              return 1;
+                else if (((OrderSource)sourceTyeResponse.Results).SourceType == CheckOutType.AccountInvoices.ToString())
+                {                   
+                        //send queue message
+
+                  ProcessOrderQueueMessage(((OrderSource)sourceTyeResponse.Results).SourceID);                 
+
+                }
+
+
+                return 1;
             }
 
             else

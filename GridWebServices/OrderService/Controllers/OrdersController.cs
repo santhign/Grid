@@ -2427,7 +2427,7 @@ namespace OrderService.Controllers
         /// </summary>
         /// <param name="token" in="Header"></param>     
         /// <param name="orderId">Initial OrderID/ChangeRequestID in case of sim replacement/planchange/numberchange</param>
-        /// <param name="orderType"> Initial Order = 1, ChangeRequest = 2, AccountInvoices = 4</param>
+        /// <param name="orderType"> Initial Order = 1, ChangeRequest = 2, AccountInvoices = 3</param>
         /// <returns>OperationsResponse</returns>
         [HttpGet("GetCheckOutDetails/{orderId}/{orderType}")]
         public async Task<IActionResult> GetCheckOutDetails([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute]int orderId, [FromRoute]int orderType)
