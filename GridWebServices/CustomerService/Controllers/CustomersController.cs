@@ -603,11 +603,11 @@ namespace CustomerService.Controllers
                     Publisher customerNotificationPublisher = new Publisher(_iconfiguration, notificationConfig.SNSTopic);
                     await customerNotificationPublisher.PublishAsync(notificationMessage);
 
-                    //Pushed to message queue
-                    var publisher = new InfrastructureService.MessageQueue.Publisher(_iconfiguration, ConfigHelper.GetValueByKey("SNS_Topic_CreateCustomer", _iconfiguration).Results.ToString().Trim());
-                    Dictionary<string, string> attr = new Dictionary<string, string>();
-                    attr.Add("evet_type", "NewCustomer");
-                    await publisher.PublishAsync(response.Results, attr);
+                    ////Pushed to message queue ----Not required
+                    //var publisher = new InfrastructureService.MessageQueue.Publisher(_iconfiguration, ConfigHelper.GetValueByKey("SNS_Topic_CreateCustomer", _iconfiguration).Results.ToString().Trim());
+                    //Dictionary<string, string> attr = new Dictionary<string, string>();
+                    //attr.Add("evet_type", "NewCustomer");
+                    //await publisher.PublishAsync(response.Results, attr);
 
                     return Ok(new OperationResponse
                     {
