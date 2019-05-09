@@ -509,5 +509,81 @@ namespace OrderService.DataAccess
 
             await _DataHelper.RunAsync();
         }
+
+        public async Task<DatabaseResponse> GetAccountInvoiceMessageQueueBody(int invoiceId)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@InvoiceID",  SqlDbType.Int)
+               };
+
+                parameters[0].Value = invoiceId;
+
+                _DataHelper = new DataAccessHelper("Orders_GetInvoiceMessageQueueBody", parameters, _configuration);
+
+                DataSet ds = new DataSet();
+
+                int result = await _DataHelper.RunAsync(ds); // 105 /102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 105)
+                {
+                    InvoceQM order = new InvoceQM();
+
+                    if (ds != null && ds.Tables[0] != null && ds.Tables[0].Rows.Count > 0)
+                    {
+
+                        order = (from model in ds.Tables[0].AsEnumerable()
+                                 select new InvoceQM()
+                                 {
+                                     accountID = model.Field<int>("accountID"),
+                                     customerID = model.Field<int>("customerID"), 
+                                     mobilenumber = model.Field<string>("mobilenumber"),
+                                     email = model.Field<string>("email"),                                    
+                                     MPGSOrderID = model.Field<string>("MPGSOrderID"),
+                                     MaskedCardNumber = model.Field<string>("MaskedCardNumber"),
+                                     Token = model.Field<string>("Token"),
+                                     CardType = model.Field<string>("CardType"),
+                                     IsDefault  = model.Field<int?>("IsDefault"),
+                                     CardHolderName = model.Field<string>("CardHolderName"),
+                                     ExpiryMonth = model.Field<int?>("ExpiryMonth"),
+                                     ExpiryYear = model.Field<int?>("ExpiryYear"),
+                                     CardFundMethod = model.Field<string>("CardFundMethod"),
+                                     CardBrand = model.Field<string>("CardBrand"),
+                                     CardIssuer = model.Field<string>("CardIssuer"),                                                                            
+                                     //paymentmode
+                                      amountpaid= model.Field<double?>("amountPaid"),
+                                     //invoicelist-- need to take from bss
+                                      invoiceamounts = model.Field<double?>("invoiceamounts") 
+                                 }).FirstOrDefault();
+
+                      
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = order };
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }      
     }
 }

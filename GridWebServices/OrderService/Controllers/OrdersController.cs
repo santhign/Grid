@@ -2590,159 +2590,6 @@ namespace OrderService.Controllers
             }
         }
 
-
-        /// <summary>
-        /// This will update checkout response to database and retrieve checkout infor from gateway
-        /// </summary>
-        /// <param name="token"></param>
-        /// <param name="updateRequest">
-        /// body{
-        /// "MPGSOrderID" :"f88bere0",
-        /// "CheckOutSessionID" :"SESSION0002391471348N70583782K8",
-        /// "Result":"Success"       
-        /// }
-        /// </param>
-        /// <returns>OperationResponse</returns>
-        [Route("UpdateCheckOutResponse")]
-        [HttpPost]
-        public async Task<IActionResult> UpdateCheckOutResponse([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] CheckOutResponseUpdate updateRequest)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
-                {
-                    HasSucceeded = false,
-                    IsDomainValidationErrors = true,
-                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
-
-                });
-                AuthHelper helper = new AuthHelper(_iconfiguration);
-
-                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_update_checkout_response);
-
-                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
-                {
-                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
-                    {
-                        int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
-                        if (!ModelState.IsValid)
-                        {
-                            return Ok(new OperationResponse
-                            {
-                                HasSucceeded = false,
-                                IsDomainValidationErrors = true,
-                                Message = string.Join("; ", ModelState.Values
-                                                          .SelectMany(x => x.Errors)
-                                                          .Select(x => x.ErrorMessage))
-                            });
-                        }
-
-                        OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
-                        //update checkout details
-                        DatabaseResponse updateCheckoutDetailsResponse = await _orderAccess.UpdateCheckOutResponse(updateRequest);
-
-                        // retrieve transaction details from MPGS
-                        //Preeti : Validatechckoutdetails against customer ID
-                        DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.MPGS.ToString());
-
-                        PaymentHelper gatewayHelper = new PaymentHelper();
-
-                        GridMPGSConfig gatewayConfig = gatewayHelper.GetGridMPGSConfig((List<Dictionary<string, string>>)configResponse.Results);
-
-                        TransactionRetrieveResponseOperation transactionResponse = new TransactionRetrieveResponseOperation();
-
-                        transactionResponse = gatewayHelper.RetrieveCheckOutTransaction(gatewayConfig, updateRequest);
-
-                        // deside on the fields to update to database for payment processing and call SP to update
-
-                        DatabaseResponse paymentProcessingRespose = new DatabaseResponse();
-
-                        paymentProcessingRespose = await _orderAccess.UpdateCheckOutReceipt(transactionResponse.TrasactionResponse);
-
-                        if (paymentProcessingRespose.ResponseCode == (int)DbReturnValue.TransactionSuccess)
-                        {
-                            LogInfo.Information(EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess));
-
-                            QMHelper qMHelper = new QMHelper(_iconfiguration, _messageQueueDataAccess);
-
-                            if (await qMHelper.ProcessSuccessTransaction(updateRequest) == 1)
-                            {
-                                return Ok(new OperationResponse
-                                {
-                                    HasSucceeded = true,
-                                    Message = EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
-                                    IsDomainValidationErrors = false,
-                                    ReturnedObject = transactionResponse // check if need to return this data 
-                                });
-                            }
-
-                            else
-                            {
-                                // 0
-                                LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.SourceTypeNotFound));
-
-                                return Ok(new OperationResponse
-                                {
-                                    HasSucceeded = false,
-                                    Message = EnumExtensions.GetDescription(CommonErrors.SourceTypeNotFound),
-                                    IsDomainValidationErrors = false
-                                });
-                            }
-                        }
-                        else
-                        {
-                            LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TransactionFailed));
-                            return Ok(new OperationResponse
-                            {
-                                HasSucceeded = false,
-                                Message = EnumExtensions.GetDescription(DbReturnValue.TransactionFailed),
-                                IsDomainValidationErrors = false
-                            });
-                        }
-                    }
-
-                    else
-                    {
-                        //Token expired
-
-                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
-
-                        return Ok(new OperationResponse
-                        {
-                            HasSucceeded = false,
-                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
-                            IsDomainValidationErrors = true
-                        });
-
-                    }
-                }
-                else
-                {
-                    // token auth failure
-                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
-
-                    return Ok(new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
-                        IsDomainValidationErrors = false
-                    });
-                }
-            }
-            catch (Exception ex)
-            {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-
-                return Ok(new OperationResponse
-                {
-                    HasSucceeded = false,
-                    Message = StatusMessages.ServerError,
-                    IsDomainValidationErrors = false
-                });
-
-            }
-        }
-
         /// <summary>
         /// This will remove the added additional lines from the order
         /// </summary>
@@ -3159,11 +3006,11 @@ namespace OrderService.Controllers
         }
 
         /// <summary>
-        /// 
+        /// This will returns Customer ID Image as well as details of the ID
         /// </summary>
         /// <param name="token" in="Header"></param>
         /// <param name="OrderID"></param>
-        /// <returns></returns>
+        /// <returns>OperationResponse</returns>
         [Route("GetCustomerIDImages/{OrderID}")]
         [HttpGet]
         public async Task<IActionResult> GetCustomerIDImages([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int OrderID)
@@ -3511,157 +3358,7 @@ namespace OrderService.Controllers
         /// </summary>
         /// <param name="token" in="Header"></param>            
         /// <returns>OperationsResponse</returns>
-      
-        [HttpPost("Tokenize")]
-        public async Task<IActionResult> Tokenize([FromHeader(Name = "Grid-Authorization-Token")] string token)
-        {
-            try
-            {
-
-                CreateTokenResponse request = new CreateTokenResponse();
-
-                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
-                {
-                    HasSucceeded = false,
-                    IsDomainValidationErrors = true,
-                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
-
-                });
-                AuthHelper helper = new AuthHelper(_iconfiguration);
-
-                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
-
-                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
-                {
-                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
-                    {
-                        int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
-
-                        if (!ModelState.IsValid)
-                        {
-                            return Ok(new OperationResponse
-                            {
-                                HasSucceeded = false,
-                                IsDomainValidationErrors = true,
-                                Message = string.Join("; ", ModelState.Values
-                                                      .SelectMany(x => x.Errors)
-                                                      .Select(x => x.ErrorMessage))
-                            });
-                        }
-
-                        OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
-
-                        DatabaseResponse updateTokenSesisonDetails = new DatabaseResponse();
-
-                       // updateTokenSesisonDetails = await _orderAccess.UpdateMPGSCreateTokenSessionDetails(request);
-                        //updateTokenSesisonDetails.ResponseCode == (int)DbReturnValue.RecordExists && customerID == ((CreateTokenUpdatedDetails)updateTokenSesisonDetails.Results).CustomerID
-                        if (1==1)
-                        {
-                            // Call MPGS to create a checkout session and retuen details
-
-                            PaymentHelper gatewayHelper = new PaymentHelper();
-
-                            DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.MPGS.ToString());
-
-                            GridMPGSConfig gatewayConfig = gatewayHelper.GetGridMPGSConfig((List<Dictionary<string, string>>)configResponse.Results);
-
-                            TokenResponse tokenizeResponse = new TokenResponse();
-                            TransactionResponseModel transactionResponse = new TransactionResponseModel();
-                            //
-
-                           // tokenizeResponse = gatewayHelper.TokenizeTest(gatewayConfig);
-                            // transactionResponse = gatewayHelper.PayWithToken(gatewayConfig, request, (CreateTokenUpdatedDetails)updateTokenSesisonDetails.Results, tokenizeResponse);
-
-                            string response = gatewayHelper.VoidTransaction(gatewayConfig);
-                           // string response = gatewayHelper.Capture(gatewayConfig);
-                           // string response = gatewayHelper.CaptureTest(gatewayConfig);//transactionResponse = gatewayHelper.PayWithToken(gatewayConfig, request, (CreateTokenUpdatedDetails)updateTokenSesisonDetails.Results, tokenizeResponse); 
-                            if (tokenizeResponse != null)
-                            {
-                                // update token reponse in database and then call gatewayHelper.PayWithToken to pay the amount
-
-                              //  TransactionResponseModel transactionResponse = new TransactionResponseModel();
-
-//transactionResponse = gatewayHelper.PayWithToken(gatewayConfig, request, (CreateTokenUpdatedDetails)updateTokenSesisonDetails.Results, tokenizeResponse); 
-
-                                // update transaction
-                                // push order message to queue
-                                return Ok(new OperationResponse
-                                {
-                                    // add message and result here
-                                    HasSucceeded = true,
-                                   // Message = 
-                                    IsDomainValidationErrors = false
-                                });
-                            }
-                            else
-                            {
-                                // failed to tokenize the payment details
-
-                                LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToTokenizeCustomerAccount));
-
-                                return Ok(new OperationResponse
-                                {
-                                    HasSucceeded = false,
-                                    Message = EnumExtensions.GetDescription(CommonErrors.FailedToTokenizeCustomerAccount) + ". " + EnumExtensions.GetDescription(CommonErrors.PayWithTokenFailed),
-                                    IsDomainValidationErrors = false
-                                });
-                            }
-                        }
-                        //else
-                        //{
-                        //    // CustomerID not matching
-                        //    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToGetCustomer));
-
-                        //    return Ok(new OperationResponse
-                        //    {
-                        //        HasSucceeded = false,
-                        //        Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
-                        //        IsDomainValidationErrors = false
-                        //    });
-                        //}
-                    }
-
-                    else
-                    {
-                        //Token expired
-
-                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
-
-                        return Ok(new OperationResponse
-                        {
-                            HasSucceeded = false,
-                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
-                            IsDomainValidationErrors = true
-                        });
-
-                    }
-                }
-                else
-                {
-                    // token auth failure
-                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
-
-                    return Ok(new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
-                        IsDomainValidationErrors = false
-                    });
-                }
-            }
-            catch (Exception ex)
-            {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-
-                return Ok(new OperationResponse
-                {
-                    HasSucceeded = false,
-                    Message = StatusMessages.ServerError,
-                    IsDomainValidationErrors = false
-                });
-            }
-        }
-
+       
         /// <summary>
         /// This will update Order subscription details
         /// </summary>
@@ -3801,8 +3498,7 @@ namespace OrderService.Controllers
 
             }
         }
-
-
+        
         /// <summary>
         /// This will returns a set of available delivery slots
         /// </summary>
@@ -4204,6 +3900,12 @@ namespace OrderService.Controllers
 
         }
 
+        /// <summary>
+        /// Update authorization status after a payment checkout with new card details, generate token for the card, and capture the authorized amount
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="updateRequest"></param>
+        /// <returns>OperationResponse</returns>
         [Route("UpdateTokenizeCheckOutResponse")]
         [HttpPost]
         public async Task<IActionResult> UpdateTokenizeCheckOutResponse([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] CheckOutResponseUpdate updateRequest)
@@ -4588,6 +4290,13 @@ namespace OrderService.Controllers
             }
         }
 
+        /// <summary>
+        /// To pay the chekout amount with the token against the default payment method of the customer
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="orderId"></param>
+        /// <param name="orderType"></param>
+        /// <returns></returns>
         [HttpGet("PaywithToken/{orderId}/{orderType}")]
         public async Task<IActionResult> PaywithToken([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute]int orderId, [FromRoute]int orderType)
         {
@@ -4697,6 +4406,12 @@ namespace OrderService.Controllers
                                             CheckOutResponseUpdate updateRequest = new CheckOutResponseUpdate { MPGSOrderID = checkoutDetails.OrderId, Result = captureResponse };
 
                                             transactionResponse = gatewayHelper.RetrieveCheckOutTransaction(gatewayConfig, updateRequest);
+
+                                            transactionResponse.TrasactionResponse.CardType = paymentMethod.CardType;
+
+                                            transactionResponse.TrasactionResponse.CardHolderName = paymentMethod.CardHolderName;
+
+                                            transactionResponse.TrasactionResponse.Token = paymentMethod.Token;
 
                                             DatabaseResponse paymentProcessingRespose = new DatabaseResponse();
 
@@ -4988,6 +4703,12 @@ namespace OrderService.Controllers
 
         }       
 
+        /// <summary>
+        /// Create a payment gateway session for the customer to change existing card details
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="customerID"></param>
+        /// <returns></returns>
         [HttpGet("GetChangePaymentMethodSession/{customerID}")]
         public async Task<IActionResult> GetChangePaymentMethodSession([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int customerID)
         {
@@ -5137,6 +4858,12 @@ namespace OrderService.Controllers
             }
         }
 
+        /// <summary>
+        /// Update change card details status, and upon success, will tokenize the new card and remove the existing one from gateway
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="updateRequest"></param>
+        /// <returns></returns>
         [HttpPost("UpdateChangePaymentMethodStatus")]
         public async Task<IActionResult> UpdateChangePaymentMethodStatus([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] CheckOutResponseUpdate updateRequest)
         {
@@ -5371,10 +5098,9 @@ namespace OrderService.Controllers
 
             }
         }
-
-
+        
         /// <summary>
-        /// 
+        /// Create an account Invoce Entry, which inturn is used for outstanding invoice/bill payment
         /// </summary>
         /// <param name="token"></param>
         /// <param name="accountInvoiceRequest">
@@ -5526,7 +5252,6 @@ namespace OrderService.Controllers
 
             }
         }
-
 
     }
 }

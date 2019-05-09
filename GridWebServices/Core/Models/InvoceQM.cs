@@ -8,15 +8,15 @@ namespace Core.Models
     {
         public int accountID { get; set; }
         public int customerID { get; set; }
-        public int subscriberID { get; set; }
+        public int? subscriberID { get; set; }
         public string mobilenumber { get; set; }
         public string MaskedCardNumber { get; set; }
         public string Token { get; set; }
         public string CardType { get; set; }
-        public string IsDefault { get; set; }
+        public int? IsDefault { get; set; }
         public string CardHolderName { get; set; }
-        public int ExpiryMonth { get; set; }
-        public int ExpiryYear { get; set; }
+        public int? ExpiryMonth { get; set; }
+        public int? ExpiryYear { get; set; }
         public string CardFundMethod { get; set; }
         public string CardBrand { get; set; }
         public string CardIssuer { get; set; }
@@ -30,10 +30,10 @@ namespace Core.Models
         public string email { get; set; }
         public string displayname { get; set; }
         public string paymentmode { get; set; }
-        public float amountpaid { get; set; }
+        public double? amountpaid { get; set; }
         public string MPGSOrderID { get; set; }
-        public Recordset invoicelist { get; set; }
-        public float invoiceamounts { get; set; }
+        public List<Recordset> invoicelist { get; set; }
+        public double? invoiceamounts { get; set; }
 
     }
 }

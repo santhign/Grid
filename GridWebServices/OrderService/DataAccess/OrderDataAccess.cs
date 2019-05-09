@@ -2506,6 +2506,7 @@ namespace OrderService.DataAccess
                                          Token = model.Field<string>("Token"),
                                          SourceType = model.Field<string>("SourceType"),
                                          CardHolderName = model.Field<string>("CardHolderName"),
+                                         CardType = model.Field<string>("CardType"),
                                      }).FirstOrDefault();
 
                     response = new DatabaseResponse { ResponseCode = result, Results = paymentMethod };

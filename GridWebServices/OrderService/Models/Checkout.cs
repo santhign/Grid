@@ -54,7 +54,8 @@ namespace OrderService.Models
         public string Token { get; set; }
         public string SourceType { get; set; }
         public string CardHolderName { get; set; }
-        
+        public string CardType { get; set; }
+
     }
     public class CheckOutRequestDBUpdateModel
     {
