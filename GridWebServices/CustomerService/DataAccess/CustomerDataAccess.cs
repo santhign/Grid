@@ -148,6 +148,7 @@ namespace CustomerService.DataAccess
                                     EmailSubscription = model.Field<string>("EmailSubscription"),
                                     Status = model.Field<string>("Status"),
                                     JoinedOn = model.Field<DateTime>("JoinedOn"),
+                                    OrderCount = model.Field<int>("OrderCount"),
                                     PendingAllowedSubscribers = model.Field<int>("PendingAllowedSubscribers")
                                 }).FirstOrDefault();
                 }
