@@ -61,4 +61,15 @@ namespace OrderService.Enums
         [Description("CAPTURED")]
         CAPTURED = 9,
     }
+
+    public enum PaymentMode
+    {
+        [EnumMember(Value = "CC")]
+        [Description("CREDIT")]
+        CC = 1,
+
+        [EnumMember(Value = "DC")]
+        [Description("DEBIT")]
+        DC = 2,       
+    }
 }
