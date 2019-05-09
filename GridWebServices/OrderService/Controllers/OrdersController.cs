@@ -5563,9 +5563,28 @@ namespace OrderService.Controllers
             MiscHelper parser = new MiscHelper();
             var notificationConfig = parser.GetNotificationConfig((List<Dictionary<string, string>>)notificationResponse.Results);
 
-            Publisher forgotPassNotificationPublisher = new Publisher(_iconfiguration, notificationConfig.SNSTopic);
-            await forgotPassNotificationPublisher.PublishAsync(notificationMessage);
+            Publisher notificationPublisher = new Publisher(_iconfiguration, notificationConfig.SNSTopic);
+            await notificationPublisher.PublishAsync(notificationMessage);
+            try
+            {
+                DatabaseResponse notificationLogResponse = await _configAccess.CreateEMailNotificationLog(
+                        new NotificationLogForDevPurpose
+                        {
+                            Status = 1,
+                            Email = customer.ToEmailList,
+                            EmailTemplate = ((EmailTemplate)registrationResponse.Results).TemplateName,
+                            EmailBody = notificationMessage.Message.ToString(),
+                            EmailSubject = notificationMessage.MessageName,
+                            ScheduledOn = DateTime.UtcNow,
+                            SendOn = DateTime.UtcNow
+                        });
+            }
+            catch(Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+            }
+
         }
-       
+
     }
 }
