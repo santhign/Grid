@@ -602,7 +602,7 @@ namespace CustomerService.Controllers
                     await customerNotificationPublisher.PublishAsync(notificationMessage);
                     try
                     {
-                        DatabaseResponse notificationLogResponse = await _configAccess.CreateEMailNotificationLog(
+                        DatabaseResponse notificationLogResponse = await _configAccess.CreateEMailNotificationLogForDevPurpose(
                             new NotificationLogForDevPurpose
                             {
                                 Status = 1,
@@ -1065,7 +1065,7 @@ namespace CustomerService.Controllers
                         await forgotPassNotificationPublisher.PublishAsync(notificationMessage);
                         try
                         {
-                            DatabaseResponse notificationLogResponse = await _configAccess.CreateEMailNotificationLog(
+                            DatabaseResponse notificationLogResponse = await _configAccess.CreateEMailNotificationLogForDevPurpose(
                        new NotificationLogForDevPurpose
                        {
                            Status = 1,
@@ -2602,6 +2602,108 @@ namespace CustomerService.Controllers
                 }
 
             }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
+
+        [HttpPost]
+        [Route("ValidatePassword")]
+        public async Task<IActionResult> ValidatePassword([FromHeader(Name = "Grid-Authorization-Token")] string token, LoginDto login)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+
+                AuthHelper helper = new AuthHelper(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    {
+                        int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+                        if (!ModelState.IsValid)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = string.Join("; ", ModelState.Values
+                                                           .SelectMany(x => x.Errors)
+                                                           .Select(x => x.ErrorMessage))
+                            });
+                        }
+                        var customerAccess = new CustomerDataAccess(_iconfiguration);
+
+                        var response = await customerAccess.ValidatePassword(login);
+
+                        if (response.ResponseCode == ((int)DbReturnValue.AuthSuccess))
+                        {
+                            //Authentication success
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = true,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.AuthSuccess),
+                                IsDomainValidationErrors = true
+                            });
+                        }
+                        else
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.PasswordIncorrect),
+                                IsDomainValidationErrors = true
+                            });
+                        }
+
+                    }
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+
             catch (Exception ex)
             {
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
