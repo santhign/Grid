@@ -44,7 +44,7 @@ namespace OrderService.Models
         [DataMember]
         public string MobileNumber { get; set; }
         [DataMember]
-        public int ? PremiumType { get; set; }
+        public int? PremiumType { get; set; }
         [DataMember]
         public int? IsPorted { get; set; }
         [DataMember]
@@ -96,7 +96,7 @@ namespace OrderService.Models
         [DataMember]
         public DateTime? SlotDate { get; set; }
         [DataMember]
-        public TimeSpan?  SlotFromTime { get; set; }
+        public TimeSpan? SlotFromTime { get; set; }
         [DataMember]
         public TimeSpan? SlotToTime { get; set; }
         [DataMember]
@@ -112,7 +112,7 @@ namespace OrderService.Models
         public List<CurrBundleDetails> CurrBundles { get; set; }
 
         [DataMember(Name = "CurrBundles")]
-        public List<BundleDetails> Bundles { get; set; }        
+        public List<BundleDetails> Bundles { get; set; }
 
 
         [DataMember(Name = "Charges")]
@@ -135,10 +135,13 @@ namespace OrderService.Models
 
 
     }
-        /// <summary>
-        /// Subscriber details
-        /// </summary>
-        public class BundleDetails
+    /// <summary>
+    /// Subscriber details
+    /// </summary>
+    /// <summary>
+    /// Subscriber details
+    /// </summary>
+    public class BundleDetails
     {
         [DataMember]
         public int? BundleID { get; set; }
@@ -166,14 +169,14 @@ namespace OrderService.Models
         public string ServiceName { get; set; }
         [DataMember]
         public double? ApplicableServiceFee { get; set; }
-        
+
         [DataMember]
         public int? OldPlanID { get; set; }
         [DataMember]
         public string OldBSSPlanId { get; set; }
         [DataMember]
         public string OldBSSPlanName { get; set; }
-        
+
 
     }
 
@@ -194,7 +197,7 @@ namespace OrderService.Models
         public int? IsRecurring { get; set; }
         [DataMember]
         public int? IsGSTIncluded { get; set; }
-      
+
 
     }
 
@@ -218,5 +221,36 @@ namespace OrderService.Models
         /// </value>
         public int ChangeRequestID { get; set; }
     }
-   
+
+    public class ProfileMQ
+    {
+        public int accountID { get; set; }
+        public int customerID { get; set; }
+        public int? subscriberID { get; set; }
+        public string mobilenumber { get; set; }
+        public string MaskedCardNumber { get; set; }
+        public string Token { get; set; }
+        public string CardType { get; set; }
+        public int? IsDefault { get; set; }
+        public string CardHolderName { get; set; }
+        public int? ExpiryMonth { get; set; }
+        public int? ExpiryYear { get; set; }
+        public string CardFundMethod { get; set; }
+        public string CardBrand { get; set; }
+        public string CardIssuer { get; set; }
+        public string billingUnit { get; set; }
+        public string billingFloor { get; set; }
+        public string billingBuildingNumber { get; set; }
+        public string billingBuildingName { get; set; }
+        public string billingStreetName { get; set; }
+        public string billingPostCode { get; set; }
+        public string billingContactNumber { get; set; }
+        public string email { get; set; }
+        public string displayname { get; set; }
+        public string paymentmode { get; set; }
+        public double? amountpaid { get; set; }
+        public string MPGSOrderID { get; set; }
+        public string invoicelist { get; set; }
+        public string invoiceamounts { get; set; }
+    }
 }
