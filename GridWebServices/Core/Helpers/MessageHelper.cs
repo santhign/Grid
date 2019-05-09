@@ -26,39 +26,39 @@ namespace Core.Helpers
             {
                 msgParams.param1 = param1;
             }
-            else if (!string.IsNullOrEmpty(param2))
+            if (!string.IsNullOrEmpty(param2))
             {
                 msgParams.param2 = param2;
             }
-            else if (!string.IsNullOrEmpty(param3))
+            if (!string.IsNullOrEmpty(param3))
             {
                 msgParams.param3 = param3;
             }
-            else if (!string.IsNullOrEmpty(param4))
+            if (!string.IsNullOrEmpty(param4))
             {
                 msgParams.param4 = param4;
             }
-            else if (!string.IsNullOrEmpty(param5))
+            if (!string.IsNullOrEmpty(param5))
             {
                 msgParams.param5 = param5;
             }
-            else if (!string.IsNullOrEmpty(param6))
+            if (!string.IsNullOrEmpty(param6))
             {
                 msgParams.param6 = param6;
             }
-            else if (!string.IsNullOrEmpty(param7))
+            if (!string.IsNullOrEmpty(param7))
             {
                 msgParams.param7 = param7;
             }
-            else if (!string.IsNullOrEmpty(param8))
+            if (!string.IsNullOrEmpty(param8))
             {
                 msgParams.param8 = param8;
             }
-            else if (!string.IsNullOrEmpty(param9))
+            if (!string.IsNullOrEmpty(param9))
             {
                 msgParams.param9 = param9;
             }
-            else if (!string.IsNullOrEmpty(param10))
+            if (!string.IsNullOrEmpty(param10))
             {
                 msgParams.param10 = param10;
             }          

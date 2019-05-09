@@ -573,8 +573,7 @@ namespace CustomerService.Controllers
                 CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
 
                 DatabaseResponse response = await _customerAccess.CreateCustomer(customer);
-
-
+                var customerObject = (Customer)response.Results;
                 if (response.ResponseCode == ((int)DbReturnValue.EmailExists))
                 {
                     return Ok(new OperationResponse
@@ -586,11 +585,29 @@ namespace CustomerService.Controllers
                 }
                 else
                 {
-                    //Pushed to message queue
-                    var publisher = new InfrastructureService.MessageQueue.Publisher(_iconfiguration, ConfigHelper.GetValueByKey("SNS_Topic_CreateCustomer", _iconfiguration).Results.ToString().Trim());
-                    Dictionary<string, string> attr = new Dictionary<string, string>();
-                    attr.Add("evet_type", "NewCustomer");
-                    await publisher.PublishAsync(response.Results, attr);
+                    // Send email to customer email
+                    ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
+                    DatabaseResponse registrationResponse = await _configAccess.GetEmailNotificationTemplate(NotificationEvent.Registration.ToString());
+                    //var details = await _messageQueueDataAccess.GetMessageDetails(updateRequest.MPGSOrderID);
+
+                    // Get Customer Data from CustomerID for email and Name
+                    //var customer = await _orderAccess.GetCustomerDetailByOrder(customerID, ((OrderSource)sourceTyeResponse.Results).SourceID);
+                    var notificationMessage = MessageHelper.GetMessage(customer.Email, customerObject.Name, NotificationEvent.Registration.GetDescription(),
+                   ((EmailTemplate)registrationResponse.Results).TemplateName,
+               _iconfiguration);
+                    DatabaseResponse notificationResponse = await _configAccess.GetConfiguration(ConfiType.Notification.ToString());
+
+                    MiscHelper parser = new MiscHelper();
+                    var notificationConfig = parser.GetNotificationConfig((List<Dictionary<string, string>>)notificationResponse.Results);
+
+                    Publisher customerNotificationPublisher = new Publisher(_iconfiguration, notificationConfig.SNSTopic);
+                    await customerNotificationPublisher.PublishAsync(notificationMessage);
+
+                    ////Pushed to message queue ----Not required
+                    //var publisher = new InfrastructureService.MessageQueue.Publisher(_iconfiguration, ConfigHelper.GetValueByKey("SNS_Topic_CreateCustomer", _iconfiguration).Results.ToString().Trim());
+                    //Dictionary<string, string> attr = new Dictionary<string, string>();
+                    //attr.Add("evet_type", "NewCustomer");
+                    //await publisher.PublishAsync(response.Results, attr);
 
                     return Ok(new OperationResponse
                     {

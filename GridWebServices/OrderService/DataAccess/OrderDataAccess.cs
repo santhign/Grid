@@ -2634,7 +2634,7 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
-        public async Task<DatabaseResponse> RescheduleDelivery(int customerID, Order_RescheduleDeliveryRequest detailsrequest)
+        public async Task<DatabaseResponse> RescheduleDelivery(int customerID, OrderRescheduleDeliveryRequest detailsrequest)
         {
             try
             {
@@ -3045,5 +3045,60 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+
+
+        public async Task<CustomerDetails> GetCustomerDetailByOrder(int customerID, int orderID)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                     new SqlParameter( "@OrderID",  SqlDbType.Int ),
+                     new SqlParameter( "@CustomerID",  SqlDbType.Int )
+
+                };
+
+                parameters[0].Value = orderID;
+                parameters[1].Value = customerID;
+
+                _DataHelper = new DataAccessHelper("Orders_GetCustomerDetails", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt);    // 105 / 102
+
+                //DatabaseResponse response = new DatabaseResponse();
+
+                var customer = new CustomerDetails();
+
+                if (dt != null && dt.Rows.Count > 0)
+                {
+                    customer = (from model in dt.AsEnumerable()
+                                      select new CustomerDetails()
+                                      {
+                                          Name = model.Field<string>("Name"),
+                                          ToEmailList = model.Field<string>("ToEmailList"),
+                                          
+                                      }).FirstOrDefault();
+
+                    //response = new DatabaseResponse { ResponseCode = result, Results = customer };
+                }
+                
+
+                return customer;
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+
     }
 }

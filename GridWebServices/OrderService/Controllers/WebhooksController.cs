@@ -50,7 +50,7 @@ namespace OrderService.Controllers
         {
             try
             {
-                if (notification.OrderStatus == MPGSAPIResponse.CAPTURED.ToString())
+                if (notification.Order.Status == MPGSAPIResponse.CAPTURED.ToString())
                 {
                     _notificationModel = notification;
 
@@ -184,7 +184,7 @@ namespace OrderService.Controllers
                 System.IO.File.WriteAllText($@"{GatewayApiConfig.WEBHOOKS_NOTIFICATION_FOLDER}/WebHookNotifications_{notification.Timestamp}.json", json);
 
 
-                CheckOutResponseUpdate updateRequest = new CheckOutResponseUpdate { MPGSOrderID = notification.OrderId, Result = notification.OrderStatus };
+                CheckOutResponseUpdate updateRequest = new CheckOutResponseUpdate { MPGSOrderID = notification.Order.Id, Result = notification.Order.Status };
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
 
