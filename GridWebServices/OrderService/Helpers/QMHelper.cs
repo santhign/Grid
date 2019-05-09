@@ -14,6 +14,7 @@ using Core.Helpers;
 using System.IO;
 using OrderService.Enums;
 using Newtonsoft.Json;
+using Core.DataAccess;
 
 namespace OrderService.Helpers
 {

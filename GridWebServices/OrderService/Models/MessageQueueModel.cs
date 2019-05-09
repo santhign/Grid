@@ -218,25 +218,5 @@ namespace OrderService.Models
         /// </value>
         public int ChangeRequestID { get; set; }
     }
-
-    public class MessageQueueRequest
-    {
-        public string Source { get; set; }
-        public string SNSTopic { get; set; }
-        public string MessageAttribute { get; set; }
-        public string MessageBody { get; set; }
-        public int Status { get; set; }
-        public DateTime ? PublishedOn { get; set; }
-        public DateTime ? CreatedOn { get; set; }
-        public int NumberOfRetries { get; set; }
-        public DateTime ? LastTriedOn { get; set; }
-
-
-    }
-
-    public class MessageQueueRequestException : MessageQueueRequest
-    {
-        public string Remark { get; set; }
-        public string Exception { get; set; }
-    }
+   
 }

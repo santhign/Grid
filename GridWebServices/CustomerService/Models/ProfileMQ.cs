@@ -35,20 +35,6 @@ namespace CustomerService.Models
         public string MPGSOrderID { get; set; }
         public string invoicelist { get; set; }
         public string invoiceamounts { get; set; }
-    }
+    }  
 
-    public class MessageQueueRequest
-    {
-        public string Source { get; set; }
-        public string SNSTopic { get; set; }
-        public string MessageAttribute { get; set; }
-        public string MessageBody { get; set; }
-        public int Status { get; set; }
-        public DateTime? PublishedOn { get; set; }
-        public DateTime? CreatedOn { get; set; }
-        public int NumberOfRetries { get; set; }
-        public DateTime? LastTriedOn { get; set; }
-
-
-    }
 }

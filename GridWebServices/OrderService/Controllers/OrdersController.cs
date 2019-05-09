@@ -102,11 +102,11 @@ namespace OrderService.Controllers
                         else
                         {
                             // failed to locate customer
-                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToGetCustomer));
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.TokenNotMatching));
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = false,
-                                Message = EnumExtensions.GetDescription(DbReturnValue.NoRecords),
+                                Message = EnumExtensions.GetDescription(CommonErrors.TokenNotMatching),
                                 IsDomainValidationErrors = false
                             });
                         }
@@ -649,11 +649,11 @@ namespace OrderService.Controllers
                         else
                         {
                             // failed to locate customer
-                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToGetCustomer));
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.TokenNotMatching));
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = false,
-                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
+                                Message = EnumExtensions.GetDescription(CommonErrors.TokenNotMatching),
                                 IsDomainValidationErrors = false
                             });
                         }
@@ -943,11 +943,11 @@ namespace OrderService.Controllers
                         else
                         {
                             // failed to locate customer
-                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToGetCustomer));
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.TokenNotMatching));
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = false,
-                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
+                                Message = EnumExtensions.GetDescription(CommonErrors.TokenNotMatching),
                                 IsDomainValidationErrors = false
                             });
                         }
@@ -1172,11 +1172,11 @@ namespace OrderService.Controllers
                         else
                         {
                             // failed to locate customer
-                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToGetCustomer));
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.TokenNotMatching));
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = false,
-                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
+                                Message = EnumExtensions.GetDescription(CommonErrors.TokenNotMatching),
                                 IsDomainValidationErrors = false
                             });
                         }
@@ -1435,11 +1435,11 @@ namespace OrderService.Controllers
                         else
                         {
                             // failed to locate customer
-                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToGetCustomer));
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.TokenNotMatching));
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = false,
-                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
+                                Message = EnumExtensions.GetDescription(CommonErrors.TokenNotMatching),
                                 IsDomainValidationErrors = false
                             });
                         }
@@ -1570,11 +1570,11 @@ namespace OrderService.Controllers
                         else
                         {
                             // failed to locate customer
-                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToGetCustomer));
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.TokenNotMatching));
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = false,
-                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
+                                Message = EnumExtensions.GetDescription(CommonErrors.TokenNotMatching),
                                 IsDomainValidationErrors = false
                             });
                         }
@@ -1707,11 +1707,11 @@ namespace OrderService.Controllers
                         else
                         {
                             // failed to locate customer
-                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToGetCustomer));
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.TokenNotMatching));
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = false,
-                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
+                                Message = EnumExtensions.GetDescription(CommonErrors.TokenNotMatching),
                                 IsDomainValidationErrors = false
                             });
                         }
@@ -1841,11 +1841,11 @@ namespace OrderService.Controllers
                         else
                         {
                             // failed to locate customer
-                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToGetCustomer));
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.TokenNotMatching));
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = false,
-                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
+                                Message = EnumExtensions.GetDescription(CommonErrors.TokenNotMatching),
                                 IsDomainValidationErrors = false
                             });
                         }
@@ -1968,11 +1968,11 @@ namespace OrderService.Controllers
                         else
                         {
                             // failed to locate customer
-                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToGetCustomer));
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.TokenNotMatching));
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = false,
-                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
+                                Message = EnumExtensions.GetDescription(CommonErrors.TokenNotMatching),
                                 IsDomainValidationErrors = false
                             });
                         }
@@ -2096,11 +2096,11 @@ namespace OrderService.Controllers
                         else
                         {
                             // failed to locate customer
-                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToGetCustomer));
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.TokenNotMatching));
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = false,
-                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
+                                Message = EnumExtensions.GetDescription(CommonErrors.TokenNotMatching),
                                 IsDomainValidationErrors = false
                             });
                         }
@@ -2266,11 +2266,11 @@ namespace OrderService.Controllers
                         else
                         {
                             // failed to locate customer
-                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToGetCustomer));
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.TokenNotMatching));
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = false,
-                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
+                                Message = EnumExtensions.GetDescription(CommonErrors.TokenNotMatching),
                                 IsDomainValidationErrors = false
                             });
                         }
@@ -2541,11 +2541,11 @@ namespace OrderService.Controllers
                         else
                         {
                             // failed to locate customer
-                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToGetCustomer));
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.TokenNotMatching));
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = false,
-                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
+                                Message = EnumExtensions.GetDescription(CommonErrors.TokenNotMatching),
                                 IsDomainValidationErrors = false
                             });
                         }
@@ -2740,11 +2740,11 @@ namespace OrderService.Controllers
                         else
                         {
                             // failed to locate customer
-                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToGetCustomer));
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.TokenNotMatching));
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = false,
-                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
+                                Message = EnumExtensions.GetDescription(CommonErrors.TokenNotMatching),
                                 IsDomainValidationErrors = false
                             });
                         }
@@ -2952,11 +2952,11 @@ namespace OrderService.Controllers
                         else
                         {
                             // failed to locate customer
-                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToGetCustomer));
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.TokenNotMatching));
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = false,
-                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
+                                Message = EnumExtensions.GetDescription(CommonErrors.TokenNotMatching),
                                 IsDomainValidationErrors = false
                             });
                         }
@@ -3101,11 +3101,11 @@ namespace OrderService.Controllers
                         else
                         {
                             // failed to locate customer
-                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToGetCustomer));
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.TokenNotMatching));
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = false,
-                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
+                                Message = EnumExtensions.GetDescription(CommonErrors.TokenNotMatching),
                                 IsDomainValidationErrors = false
                             });
                         }
@@ -3303,11 +3303,11 @@ namespace OrderService.Controllers
                         else
                         {
                             // failed to locate customer
-                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToGetCustomer));
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.TokenNotMatching));
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = false,
-                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
+                                Message = EnumExtensions.GetDescription(CommonErrors.TokenNotMatching),
                                 IsDomainValidationErrors = false
                             });
                         }
@@ -3450,11 +3450,11 @@ namespace OrderService.Controllers
                         else
                         {
                             // failed to locate customer
-                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToGetCustomer));
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.TokenNotMatching));
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = false,
-                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
+                                Message = EnumExtensions.GetDescription(CommonErrors.TokenNotMatching),
                                 IsDomainValidationErrors = false
                             });
                         }
@@ -3661,7 +3661,7 @@ namespace OrderService.Controllers
                             return Ok(new ServerResponse
                             {
                                 HasSucceeded = true,
-                                Message = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess),
+                                Message = EnumExtensions.GetDescription(CommonErrors.LOARemoved),
                                 Result = LOAResponse.Results
 
                             });
@@ -3673,7 +3673,7 @@ namespace OrderService.Controllers
                             return Ok(new ServerResponse
                             {
                                 HasSucceeded = false,
-                                Message = EnumExtensions.GetDescription(DbReturnValue.UpdationFailed)
+                                Message = EnumExtensions.GetDescription(CommonErrors.FailedToRemoveLoa)
                             });
 
                         }
@@ -4526,11 +4526,11 @@ namespace OrderService.Controllers
                         else
                         {
                             // failed to locate customer
-                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToGetCustomer));
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.TokenNotMatching));
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = false,
-                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
+                                Message = EnumExtensions.GetDescription(CommonErrors.TokenNotMatching),
                                 IsDomainValidationErrors = false
                             });
                         }
@@ -4824,11 +4824,11 @@ namespace OrderService.Controllers
                         else
                         {
                             // failed to locate customer
-                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToGetCustomer));
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.TokenNotMatching));
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = false,
-                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
+                                Message = EnumExtensions.GetDescription(CommonErrors.TokenNotMatching),
                                 IsDomainValidationErrors = false
                             });
                         }

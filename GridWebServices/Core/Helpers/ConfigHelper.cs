@@ -105,7 +105,7 @@ namespace Core.Helpers
             }
         }
 
-        public static async  Task<DatabaseResponse> GetValueByKey(string serviceKey, string connectionString)
+        public static  DatabaseResponse GetValueByKey(string serviceKey, string connectionString)
         {
             try
             {
@@ -122,7 +122,7 @@ namespace Core.Helpers
 
                 DataTable dt = new DataTable();
 
-                int result = await _DataHelper.RunAsync(dt); // 102 /105
+                int result =  _DataHelper.Run(dt); // 102 /105
 
                 DatabaseResponse response = new DatabaseResponse();
 
@@ -147,6 +147,56 @@ namespace Core.Helpers
             {
                 throw (ex);
             }
-        }        
+        }
+
+        public static DatabaseResponse GetValue(string serviceCode, string connectionString)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@ConfigType",  SqlDbType.NVarChar )
+
+                };
+
+                parameters[0].Value = serviceCode;
+
+                DataAccessHelper _DataHelper = new DataAccessHelper("Admin_GetConfigurations", parameters, connectionString);
+
+                DataTable dt = new DataTable();
+
+                int result =  _DataHelper.Run(dt); // 102 /105
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 105)
+                {
+
+                    List<Dictionary<string, string>> configDictionary = new List<Dictionary<string, string>>();
+
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+
+                        configDictionary = LinqExtensions.GetDictionary(dt);
+
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = configDictionary };
+
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                throw (ex);
+            }
+        }
     }
 }
