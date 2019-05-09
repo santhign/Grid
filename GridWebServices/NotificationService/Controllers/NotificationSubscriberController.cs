@@ -167,9 +167,9 @@ namespace NotificationService.Controllers
 
             ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
 
-            DatabaseResponse forgotPasswordMsgTemplate = await _configAccess.GetEmailNotificationTemplate(NotificationEvent.ForgetPassword.ToString());
+            DatabaseResponse emailTemplate = await _configAccess.GetEmailNotificationTemplate(NotMessage.Message.messagetemplate.ToString());
 
-            EmailTemplate template = (EmailTemplate)forgotPasswordMsgTemplate.Results;            
+            EmailTemplate template = (EmailTemplate)emailTemplate.Results;            
 
             var responses = await _email.SendEmail(NotMessage, _iconfiguration, template);
 
