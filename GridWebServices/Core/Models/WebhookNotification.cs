@@ -9,10 +9,6 @@ namespace Core.Models
         public long Timestamp { get; set; }
         public TransactionModel Transaction { get; set; }
         public OrderModel Order { get; set; }
-        public string OrderId => Order.Id;
-        public string TransactionId => Transaction.Id;
-        public string OrderStatus => Order.Status;
-        public string Amount => Order.Amount;
     }
 
     public class OrderModel

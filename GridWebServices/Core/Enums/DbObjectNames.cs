@@ -79,6 +79,8 @@ namespace Core.Enums
         public const string Orders_ProcessRescheduleDelivery = "Orders_ProcessRescheduleDelivery";
 
         public const string CR_GetBuddyDetails = "CR_GetBuddyDetails";
+
+        public const string Orders_GetCROrOrderDetailsForMessageQueue = "Orders_GetCROrOrderDetailsForMessageQueue";
     }
 
 }

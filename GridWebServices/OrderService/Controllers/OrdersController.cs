@@ -2429,7 +2429,7 @@ namespace OrderService.Controllers
         /// </summary>
         /// <param name="token" in="Header"></param>     
         /// <param name="orderId">Initial OrderID/ChangeRequestID in case of sim replacement/planchange/numberchange</param>
-        /// <param name="orderType"> Initial Order = 1, ChangeRequest = 2, AccountInvoices = 4</param>
+        /// <param name="orderType"> Initial Order = 1, ChangeRequest = 2, AccountInvoices = 3</param>
         /// <returns>OperationsResponse</returns>
         [HttpGet("GetCheckOutDetails/{orderId}/{orderType}")]
         public async Task<IActionResult> GetCheckOutDetails([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute]int orderId, [FromRoute]int orderType)
@@ -3393,7 +3393,7 @@ namespace OrderService.Controllers
 
                                     AmazonS3 s3Helper = new AmazonS3(awsConfig);
 
-                                    string fileNameFront = "IDNUMBER_Front_" + DateTime.UtcNow.ToString("yyMMddhhmmss") + request.IDNumber.Substring(1, request.IDNumber.Length - 2) + Path.GetExtension(frontImage.FileName); //Grid_IDNUMBER_yyyymmddhhmmss.extension
+                                    string fileNameFront = request.IDNumber.Substring(1, request.IDNumber.Length - 2) + "_Front_" + DateTime.UtcNow.ToString("yyMMddhhmmss") + Path.GetExtension(frontImage.FileName); //Grid_IDNUMBER_yyyymmddhhmmss.extension
 
                                     UploadResponse s3UploadResponse = await s3Helper.UploadFile(frontImage, fileNameFront);
 
@@ -3406,7 +3406,7 @@ namespace OrderService.Controllers
                                         LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.S3UploadFailed));
                                     }
 
-                                    string fileNameBack = "IDNUMBER_Back_" + DateTime.UtcNow.ToString("yyMMddhhmmss") + request.IDNumber.Substring(1, request.IDNumber.Length - 2) + Path.GetExtension(frontImage.FileName); //Grid_IDNUMBER_yyyymmddhhmmss.extension
+                                    string fileNameBack = request.IDNumber.Substring(1, request.IDNumber.Length - 2) + "_Back_" + DateTime.UtcNow.ToString("yyMMddhhmmss") + Path.GetExtension(frontImage.FileName); //Grid_IDNUMBER_yyyymmddhhmmss.extension
 
                                     s3UploadResponse = await s3Helper.UploadFile(backImage, fileNameBack);
 
@@ -4940,7 +4940,7 @@ namespace OrderService.Controllers
 
         [HttpPost]
         [Route("RescheduleDelivery")]
-        public async Task<IActionResult> RescheduleDelivery([FromHeader(Name = "Grid-Authorization-Token")] string token, Order_RescheduleDeliveryRequest detailsrequest)
+        public async Task<IActionResult> RescheduleDelivery([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] OrderRescheduleDeliveryRequest detailsrequest)
         {
             try
             {
@@ -5627,7 +5627,7 @@ namespace OrderService.Controllers
             OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
             ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
             DatabaseResponse registrationResponse = await _configAccess.GetEmailNotificationTemplate(NotificationEvent.OrderSuccess.ToString());
-            var details = await _messageQueueDataAccess.GetMessageDetails(MPGSOrderID);
+            //var details = await _messageQueueDataAccess.GetMessageDetails(MPGSOrderID);
 
             // Get Customer Data from CustomerID for email and Name
             var customer = await _orderAccess.GetCustomerDetailByOrder(customerID, orderID);
