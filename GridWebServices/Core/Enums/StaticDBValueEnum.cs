@@ -46,7 +46,18 @@ namespace Core.Enums
         PayBill = 13,
         [EnumMember(Value = "ChangeNumber")]
         [Description("ChangeNumber")]
-        ChangeNumber = 14
+        ChangeNumber = 14,
+        [EnumMember(Value = "BuddyRequest")]
+        [Description("BuddyRequest")]
+        BuddyRequest = 17,
+
+        [EnumMember(Value = "EditPaymentMethod")]
+        [Description("EditPaymentMethod")]
+        EditPaymentMethod = 18,
+
+        [EnumMember(Value = "EditDisplayName")]
+        [Description("EditDisplayName")]
+        EditDisplayName = 19
 
     }
 

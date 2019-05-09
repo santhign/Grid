@@ -4284,7 +4284,7 @@ namespace OrderService.Controllers
 
 
                                             topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration).Results.ToString().Trim();
-                                            attribute.Add(EventTypeString.EventType, RequestType.ChangePlan.GetDescription());
+                                            attribute.Add(EventTypeString.EventType, RequestType.EditPaymentMethod.GetDescription());
 
                                             var sourceTyeResponse = await _orderAccess.GetSourceTypeByMPGSSOrderId(updateRequest.MPGSOrderID);
                                             if (((OrderSource)sourceTyeResponse.Results).SourceType == CheckOutType.Orders.ToString())
@@ -4303,7 +4303,7 @@ namespace OrderService.Controllers
                                                         CreatedOn = DateTime.Now,
                                                         LastTriedOn = DateTime.Now,
                                                         PublishedOn = DateTime.Now,
-                                                        MessageAttribute = RequestType.CancelOrder.GetDescription(),
+                                                        MessageAttribute = RequestType.EditPaymentMethod.GetDescription(),
                                                         MessageBody = JsonConvert.SerializeObject(msgBody),
                                                         Status = 1
                                                     };
@@ -4319,12 +4319,16 @@ namespace OrderService.Controllers
                                                         CreatedOn = DateTime.Now,
                                                         LastTriedOn = DateTime.Now,
                                                         PublishedOn = DateTime.Now,
-                                                        MessageAttribute = RequestType.CancelOrder.GetDescription(),
+                                                        MessageAttribute = RequestType.EditPaymentMethod.GetDescription(),
                                                         MessageBody = JsonConvert.SerializeObject(msgBody),
                                                         Status = 0
                                                     };
                                                     await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
                                                 }
+                                            }
+                                            else
+                                            {
+                                                LogInfo.Information(updateRequest.MPGSOrderID.ToString() + " ID is not having Order as Source Type");
                                             }
                                         }
                                         catch (Exception ex)
@@ -4338,10 +4342,10 @@ namespace OrderService.Controllers
                                                 CreatedOn = DateTime.Now,
                                                 LastTriedOn = DateTime.Now,
                                                 PublishedOn = DateTime.Now,
-                                                MessageAttribute = Core.Enums.RequestType.CancelOrder.GetDescription().ToString(),
+                                                MessageAttribute = Core.Enums.RequestType.EditPaymentMethod.GetDescription().ToString(),
                                                 MessageBody = msgBody != null ? JsonConvert.SerializeObject(msgBody) : null,
                                                 Status = 0,
-                                                Remark = "Error Occured in BuyVASService",
+                                                Remark = "Error Occured in UpdateTokenizeCheckOutResponse method while generating message",
                                                 Exception = new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)
 
 
