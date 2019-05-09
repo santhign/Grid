@@ -3973,10 +3973,11 @@ namespace OrderService.Controllers
 
                                     LogInfo.Information(JsonConvert.SerializeObject(tokenizeResponse));
 
-                                    tokenDetailsCreateResponse = await _orderAccess.CreatePaymentMethod(tokenizeResponse, customerID);
+                                    tokenDetailsCreateResponse = await _orderAccess.CreatePaymentMethod(tokenizeResponse, customerID, updateRequest.MPGSOrderID);
 
                                     if (tokenDetailsCreateResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                                     {
+                                        
                                         tokenSession.SourceOfFundType = tokenizeResponse.Type;
 
                                         tokenSession.Token = tokenizeResponse.Token;
@@ -4945,7 +4946,7 @@ namespace OrderService.Controllers
 
                                     DatabaseResponse tokenDetailsCreateResponse = new DatabaseResponse();
 
-                                    tokenDetailsCreateResponse = await _orderAccess.CreatePaymentMethod(tokenizeResponse, customerID);
+                                    tokenDetailsCreateResponse = await _orderAccess.CreatePaymentMethod(tokenizeResponse, customerID, updateRequest.MPGSOrderID);
 
                                     if (tokenDetailsCreateResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                                     {
