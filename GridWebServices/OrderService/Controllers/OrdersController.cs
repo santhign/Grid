@@ -3360,156 +3360,7 @@ namespace OrderService.Controllers
         /// </summary>
         /// <param name="token" in="Header"></param>            
         /// <returns>OperationsResponse</returns>
-
-        [HttpPost("Tokenize")]
-        public async Task<IActionResult> Tokenize([FromHeader(Name = "Grid-Authorization-Token")] string token)
-        {
-            try
-            {
-
-                CreateTokenResponse request = new CreateTokenResponse();
-
-                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
-                {
-                    HasSucceeded = false,
-                    IsDomainValidationErrors = true,
-                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
-
-                });
-                AuthHelper helper = new AuthHelper(_iconfiguration);
-
-                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
-
-                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
-                {
-                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
-                    {
-                        int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
-
-                        if (!ModelState.IsValid)
-                        {
-                            return Ok(new OperationResponse
-                            {
-                                HasSucceeded = false,
-                                IsDomainValidationErrors = true,
-                                Message = string.Join("; ", ModelState.Values
-                                                      .SelectMany(x => x.Errors)
-                                                      .Select(x => x.ErrorMessage))
-                            });
-                        }
-
-                        OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
-
-                        DatabaseResponse updateTokenSesisonDetails = new DatabaseResponse();
-
-                        // updateTokenSesisonDetails = await _orderAccess.UpdateMPGSCreateTokenSessionDetails(request);
-                        //updateTokenSesisonDetails.ResponseCode == (int)DbReturnValue.RecordExists && customerID == ((CreateTokenUpdatedDetails)updateTokenSesisonDetails.Results).CustomerID
-                        if (1 == 1)
-                        {
-                            // Call MPGS to create a checkout session and retuen details
-
-                            PaymentHelper gatewayHelper = new PaymentHelper();
-
-                            DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.MPGS.ToString());
-
-                            GridMPGSConfig gatewayConfig = gatewayHelper.GetGridMPGSConfig((List<Dictionary<string, string>>)configResponse.Results);
-
-                            TokenResponse tokenizeResponse = new TokenResponse();
-                            TransactionResponseModel transactionResponse = new TransactionResponseModel();
-                            //
-
-                            // tokenizeResponse = gatewayHelper.TokenizeTest(gatewayConfig);
-                            // transactionResponse = gatewayHelper.PayWithToken(gatewayConfig, request, (CreateTokenUpdatedDetails)updateTokenSesisonDetails.Results, tokenizeResponse);
-
-                            string response = gatewayHelper.VoidTransaction(gatewayConfig);
-                            // string response = gatewayHelper.Capture(gatewayConfig);
-                            // string response = gatewayHelper.CaptureTest(gatewayConfig);//transactionResponse = gatewayHelper.PayWithToken(gatewayConfig, request, (CreateTokenUpdatedDetails)updateTokenSesisonDetails.Results, tokenizeResponse); 
-                            if (tokenizeResponse != null)
-                            {
-                                // update token reponse in database and then call gatewayHelper.PayWithToken to pay the amount
-
-                                //  TransactionResponseModel transactionResponse = new TransactionResponseModel();
-
-                                //transactionResponse = gatewayHelper.PayWithToken(gatewayConfig, request, (CreateTokenUpdatedDetails)updateTokenSesisonDetails.Results, tokenizeResponse); 
-
-                                // update transaction
-                                // push order message to queue
-                                return Ok(new OperationResponse
-                                {
-                                    // add message and result here
-                                    HasSucceeded = true,
-                                    // Message = 
-                                    IsDomainValidationErrors = false
-                                });
-                            }
-                            else
-                            {
-                                // failed to tokenize the payment details
-
-                                LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToTokenizeCustomerAccount));
-
-                                return Ok(new OperationResponse
-                                {
-                                    HasSucceeded = false,
-                                    Message = EnumExtensions.GetDescription(CommonErrors.FailedToTokenizeCustomerAccount) + ". " + EnumExtensions.GetDescription(CommonErrors.PayWithTokenFailed),
-                                    IsDomainValidationErrors = false
-                                });
-                            }
-                        }
-                        //else
-                        //{
-                        //    // CustomerID not matching
-                        //    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToGetCustomer));
-
-                        //    return Ok(new OperationResponse
-                        //    {
-                        //        HasSucceeded = false,
-                        //        Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
-                        //        IsDomainValidationErrors = false
-                        //    });
-                        //}
-                    }
-
-                    else
-                    {
-                        //Token expired
-
-                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
-
-                        return Ok(new OperationResponse
-                        {
-                            HasSucceeded = false,
-                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
-                            IsDomainValidationErrors = true
-                        });
-
-                    }
-                }
-                else
-                {
-                    // token auth failure
-                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
-
-                    return Ok(new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
-                        IsDomainValidationErrors = false
-                    });
-                }
-            }
-            catch (Exception ex)
-            {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-
-                return Ok(new OperationResponse
-                {
-                    HasSucceeded = false,
-                    Message = StatusMessages.ServerError,
-                    IsDomainValidationErrors = false
-                });
-            }
-        }
+      
 
         /// <summary>
         /// This will update Order subscription details
@@ -5418,9 +5269,7 @@ namespace OrderService.Controllers
 
             }
         }
-
-
-       
+                      
         private async Task SendEmailNotification(string MPGSOrderID, int customerID, int orderID)
         {
             OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -5438,8 +5287,8 @@ namespace OrderService.Controllers
             MiscHelper parser = new MiscHelper();
             var notificationConfig = parser.GetNotificationConfig((List<Dictionary<string, string>>)notificationResponse.Results);
 
-            Publisher forgotPassNotificationPublisher = new Publisher(_iconfiguration, notificationConfig.SNSTopic);
-            await forgotPassNotificationPublisher.PublishAsync(notificationMessage);
+            Publisher registrationNotificationPublisher = new Publisher(_iconfiguration, notificationConfig.SNSTopic);
+            await registrationNotificationPublisher.PublishAsync(notificationMessage);
         }
        
     }
