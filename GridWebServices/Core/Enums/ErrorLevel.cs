@@ -244,5 +244,13 @@ namespace Core.Enums
         [EnumMember(Value = "AccountNotExists")]
         [Description("Account Not Exists")]
         AccountNotExists = 55,
+
+        [EnumMember(Value = "FailedToGetBillingAccount")]
+        [Description("Failed To Get Billing Account")]
+        FailedToGetBillingAccount = 56,
+
+        [EnumMember(Value = "NoInvoiceFound")]
+        [Description("No Invoice Found for Customer")]
+        NoInvoiceFound = 57,
     }
 }
