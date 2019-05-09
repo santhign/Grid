@@ -45,10 +45,10 @@ namespace NotificationService.Controllers
                     return BadRequest();
                 }
 
-                if (isRawDelivery)
-                {
-                    string msg = "message is raw"; // for testing pupose, 
-                }
+                //if (isRawDelivery)
+                //{
+                //    string msg = "message is raw"; // for testing pupose, 
+                //}
 
                 SNSSubscription notification = new SNSSubscription();
 

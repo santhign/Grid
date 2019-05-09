@@ -720,13 +720,9 @@ namespace OrderService.Controllers
         /// This will return Customer's BSS Invoice for the given date range, though optional
         /// </summary>
         /// <param name="token"></param>
-        /// <param name="request">
         /// body{
-        /// "Token":"Auth token"
-        /// "StartDate" :"1/1/2019", //dd/MM/yyyy - optional
-        /// "EndDate" :"15/12/2019", //dd/MM/yyyy  - optional      
+        /// "Token":"Auth token"     
         /// }
-        /// </param>
         /// <returns>OperationsResponse</returns>
         [Route("GetCustomerInvoice")]
         [HttpPost]
