@@ -797,7 +797,7 @@ namespace AdminService.Controllers
         /// <param name="Password">The Password.</param>
         /// <returns></returns>
         [HttpGet("ValidateAdminUserPassword/{AdminUserID}/{Password}")]
-        public async Task<IActionResult> ValidatePassword([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int AdminUserID, [FromRoute] string Password)
+        public async Task<IActionResult> ValidateAdminUserPassword([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int AdminUserID, [FromRoute] string Password)
         {
             try
             {
