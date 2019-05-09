@@ -98,6 +98,81 @@ namespace CatelogService.Controllers
         }
 
         /// <summary>
+        /// This will returns value added Services list
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="MobileNumber"></param>
+        /// <returns>VAS</returns>
+        // GET: api/VASes
+        [HttpGet("GetVASForPurchase/{MobileNumber}")]
+        public async Task<IActionResult> GetVASForPurchase([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] string MobileNumber)
+        {
+
+            try
+            {
+                AuthHelper helper = new AuthHelper(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Customer_VASPurchaseScreen);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    {
+                        int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+                        VASDataAccess _vasAccess = new VASDataAccess(_iconfiguration);
+
+                        return Ok(new ServerResponse
+                        {
+                            HasSucceeded = true,
+                            Message = StatusMessages.SuccessMessage,
+                            Result = await _vasAccess.GetVASForPurchase(customerID, MobileNumber)
+
+                        });
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+
+                }
+
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+            }
+        }
+
+        /// <summary>
         /// Returns details of a value added service specified by the id
         /// </summary>
         /// <param name="id"></param>
