@@ -194,6 +194,67 @@ namespace Core.DataAccess
                 _DataHelper.Dispose();
             }
         }
-      
+
+        public async Task<DatabaseResponse> CreateEMailNotificationLogForDevPurpose(NotificationLogForDevPurpose log)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+
+                    new SqlParameter( "@Email",  SqlDbType.NVarChar ),
+
+                    new SqlParameter( "@EmailSubject",  SqlDbType.NVarChar ),
+
+                    new SqlParameter( "@EmailBody",  SqlDbType.NVarChar ),
+
+                    new SqlParameter( "@ScheduledOn",  SqlDbType.DateTime ),
+
+                    new SqlParameter( "@EmailTemplateID",  SqlDbType.NVarChar ),
+
+                    new SqlParameter( "@SendOn",  SqlDbType.DateTime ),
+
+                    new SqlParameter( "@Status",  SqlDbType.Int ),
+                    new SqlParameter( "@Remark",  SqlDbType.Int )
+
+                };
+
+                parameters[0].Value = log.CustomerID;
+                parameters[1].Value = log.Email;
+                parameters[2].Value = log.EmailSubject;
+                parameters[3].Value = log.EmailBody;
+                parameters[4].Value = log.ScheduledOn;
+                parameters[5].Value = log.EmailTemplate;
+                parameters[6].Value = log.SendOn;
+                parameters[7].Value = log.Status;
+                parameters[8].Value = log.Remark;
+
+
+                _DataHelper = new DataAccessHelper("z_EmailNotificationsLogEntryForDevPurpose", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt); // 107 /100
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                response = new DatabaseResponse { ResponseCode = result };
+
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
     }
 }

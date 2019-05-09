@@ -1487,5 +1487,39 @@ namespace CustomerService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+
+        public async Task<DatabaseResponse> ValidatePassword(LoginDto request)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@Email",  SqlDbType.VarChar ),
+                    new SqlParameter( "@Password",  SqlDbType.VarChar )
+                };
+
+                parameters[0].Value = request.Email;
+                parameters[1].Value = new Sha2().Hash(request.Password);
+
+                _DataHelper = new DataAccessHelper("Customer_ValidatePassword", parameters, _configuration);                
+
+                int result = await _DataHelper.RunAsync();
+
+                return new DatabaseResponse { ResponseCode = result };
+
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw ex;
+
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
     }
 }
