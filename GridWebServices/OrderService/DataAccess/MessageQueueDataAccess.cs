@@ -83,7 +83,7 @@ namespace OrderService.DataAccess
                                    DonorProvider = model.Field<string>("DonorProvider"),
                                    PortedNumberTransferForm = model.Field<string>("PortedNumberTransferForm"),
                                    PortedNumberOwnedBy = model.Field<string>("PortedNumberOwnedBy"),
-                                   PortedNumberOwnerRegistrationID = model.Field<string>("PortedNumberOwnerRegistrationID"),                                   
+                                   PortedNumberOwnerRegistrationID = model.Field<string>("PortedNumberOwnerRegistrationID"),
                                    Title = model.Field<string>("Title"),
                                    Name = model.Field<string>("Name"),
                                    Email = model.Field<string>("Email"),
@@ -115,52 +115,52 @@ namespace OrderService.DataAccess
                     if (ds.Tables.Count > 1 && ds.Tables[1].Rows.Count != 0)
                     {
                         msgBody.Bundles = (from model in ds.Tables[1].AsEnumerable()
-                                                     select new BundleDetails()
-                                                     {
-                                                         BundleID = model.Field<int?>("BundleID"),
-                                                         BSSPlanCode = model.Field<string>("BSSPlanCode"),
-                                                         BSSPlanName = model.Field<string>("BSSPlanName"),
-                                                         PlanType = model.Field<int?>("PlanType"),
-                                                         OldBundleID = model.Field<int?>("OldBundleID"),
-                                                         PlanMarketingName = model.Field<string>("PlanMarketingName"),
-                                                         PortalDescription = model.Field<string>("PortalDescription"),
-                                                         TotalData = model.Field<double?>("TotalData"),
-                                                         TotalSMS = model.Field<double?>("TotalSMS"),
-                                                         TotalVoice = model.Field<double?>("TotalVoice"),
-                                                         ApplicableSubscriptionFee = model.Field<double?>("ApplicableSubscriptionFee"),
-                                                         ServiceName = model.Field<string>("ServiceName"),
-                                                         ApplicableServiceFee = model.Field<double?>("ApplicableServiceFee"),
-                                                         OldPlanID = model.Field<int?>("OldPlanID"),
-                                                         OldBSSPlanId = model.Field<string>("OldBSSPlanId"),
-                                                         OldBSSPlanName = model.Field<string>("OldBSSPlanName"),
-                                                         
-                                                     }).ToList();
-
-                        msgBody.CurrBundles = (from model in ds.Tables[2].AsEnumerable()
-                                           select new CurrBundleDetails()
+                                           select new BundleDetails()
                                            {
                                                BundleID = model.Field<int?>("BundleID"),
                                                BSSPlanCode = model.Field<string>("BSSPlanCode"),
                                                BSSPlanName = model.Field<string>("BSSPlanName"),
                                                PlanType = model.Field<int?>("PlanType"),
-                                               StartDate = model.Field<DateTime?>("StartDate"),
-                                               ExpiryDate = model.Field<DateTime?>("ExpiryDate"),
+                                               OldBundleID = model.Field<int?>("OldBundleID"),
+                                               PlanMarketingName = model.Field<string>("PlanMarketingName"),
+                                               PortalDescription = model.Field<string>("PortalDescription"),
+                                               TotalData = model.Field<double?>("TotalData"),
+                                               TotalSMS = model.Field<double?>("TotalSMS"),
+                                               TotalVoice = model.Field<double?>("TotalVoice"),
+                                               ApplicableSubscriptionFee = model.Field<double?>("ApplicableSubscriptionFee"),
+                                               ServiceName = model.Field<string>("ServiceName"),
+                                               ApplicableServiceFee = model.Field<double?>("ApplicableServiceFee"),
+                                               OldPlanID = model.Field<int?>("OldPlanID"),
+                                               OldBSSPlanId = model.Field<string>("OldBSSPlanId"),
+                                               OldBSSPlanName = model.Field<string>("OldBSSPlanName"),
 
                                            }).ToList();
 
+                        msgBody.CurrBundles = (from model in ds.Tables[2].AsEnumerable()
+                                               select new CurrBundleDetails()
+                                               {
+                                                   BundleID = model.Field<int?>("BundleID"),
+                                                   BSSPlanCode = model.Field<string>("BSSPlanCode"),
+                                                   BSSPlanName = model.Field<string>("BSSPlanName"),
+                                                   PlanType = model.Field<int?>("PlanType"),
+                                                   StartDate = model.Field<DateTime?>("StartDate"),
+                                                   ExpiryDate = model.Field<DateTime?>("ExpiryDate"),
+
+                                               }).ToList();
+
                         if (ds.Tables.Count > 2 && ds.Tables[3].Rows.Count != 0)
                             msgBody.Charges = (from model in ds.Tables[3].AsEnumerable()
-                                                                       select new ChargesDetails()
-                                                                       {
-                                                                           ChangeRequestID = model.Field<int>("ChangeRequestID"),
-                                                                           SubscriberID = model.Field<int?>("SubscriberID"),
-                                                                           PortalServiceName = model.Field<string>("PortalServiceName"),
-                                                                           ServiceFee = model.Field<double?>("ServiceFee"),
-                                                                           IsRecurring = model.Field<int?>("IsRecurring"),
-                                                                           IsGSTIncluded = model.Field<int?>("IsGSTIncluded"),
+                                               select new ChargesDetails()
+                                               {
+                                                   ChangeRequestID = model.Field<int>("ChangeRequestID"),
+                                                   SubscriberID = model.Field<int?>("SubscriberID"),
+                                                   PortalServiceName = model.Field<string>("PortalServiceName"),
+                                                   ServiceFee = model.Field<double?>("ServiceFee"),
+                                                   IsRecurring = model.Field<int?>("IsRecurring"),
+                                                   IsGSTIncluded = model.Field<int?>("IsGSTIncluded"),
 
 
-                                                                       }).ToList();
+                                               }).ToList();
 
                     }
                 }
@@ -213,24 +213,24 @@ namespace OrderService.DataAccess
                               }).FirstOrDefault();
             }
 
-           
+
             return msgDetails;
 
         }
 
-        public async Task<string> PublishMessageToMessageQueue(string topicName, object msgBody, Dictionary<string,string> messageAttribute, string subject)
+        public async Task<string> PublishMessageToMessageQueue(string topicName, object msgBody, Dictionary<string, string> messageAttribute, string subject)
         {
             try
             {
                 var publisher = new InfrastructureService.MessageQueue.Publisher(_configuration, topicName);
                 return await publisher.PublishAsync(msgBody, messageAttribute, subject);
-                
+
             }
             catch (Exception)
             {
                 throw;
             }
-           
+
         }
 
         public async Task<string> PublishMessageToMessageQueue(string topicName, object msgBody, Dictionary<string, string> messageAttribute)
@@ -250,7 +250,7 @@ namespace OrderService.DataAccess
 
         public async Task<int> InsertMessageInMessageQueueRequest(MessageQueueRequest messageQueueRequest)
         {
-            
+
             SqlParameter[] parameters =
             {
                     new SqlParameter( "@Source",  SqlDbType.NVarChar ),
@@ -261,7 +261,7 @@ namespace OrderService.DataAccess
                     new SqlParameter( "@PublishedOn",  SqlDbType.DateTime ),
                     new SqlParameter( "@CreatedOn",  SqlDbType.DateTime ),
                     new SqlParameter( "@NumberOfRetries",  SqlDbType.Int ),
-                    new SqlParameter( "@LastTriedOn",  SqlDbType.DateTime)                    
+                    new SqlParameter( "@LastTriedOn",  SqlDbType.DateTime)
             };
 
             parameters[0].Value = messageQueueRequest.Source;
@@ -273,7 +273,7 @@ namespace OrderService.DataAccess
             parameters[6].Value = messageQueueRequest.CreatedOn;
             parameters[7].Value = messageQueueRequest.NumberOfRetries;
             parameters[8].Value = messageQueueRequest.LastTriedOn;
-                
+
 
             _DataHelper = new DataAccessHelper(DbObjectNames.z_InsertIntoMessageQueueRequests, parameters, _configuration);
 
@@ -311,65 +311,65 @@ namespace OrderService.DataAccess
                     {
 
                         order = (from model in ds.Tables[0].AsEnumerable()
-                                        select new OrderQM()
-                                        { 
-                                            accountID = model.Field<int>("accountID"),
-                                            customerID = model.Field<int>("customerID"),
-                                            orderID = model.Field<int>("orderID"),
-                                            orderNumber = model.Field<string>("orderNumber"),
-                                            orderDate = model.Field<DateTime>("orderDate"),
-                                            billingUnit = model.Field<string>("billingUnit"),
-                                            billingFloor = model.Field<string>("billingFloor"),
-                                            billingBuildingNumber = model.Field<string>("billingBuildingNumber"),
-                                            billingBuildingName = model.Field<string>("billingBuildingName"),
-                                            billingStreetName = model.Field<string>("billingStreetName"),
-                                            billingPostCode = model.Field<string>("billingPostCode"),
-                                            billingContactNumber = model.Field<string>("billingContactNumber"),
-                                            orderReferralCode = model.Field<string>("orderReferralCode"),
-                                            title = model.Field<string>("title"),
-                                            name = model.Field<string>("name"),
-                                            email = model.Field<string>("email"),
-                                            nationality = model.Field<string>("nationality"),
-                                            idType = model.Field<string>("idType"),
-                                            idNumber = model.Field<string>("idNumber"),
-                                            isSameAsBilling =  model.Field<int?>("isSameAsBilling"),
-                                            shippingUnit = model.Field<string>("shippingUnit"),
-                                            shippingFloor = model.Field<string>("shippingFloor"),
-                                            shippingBuildingNumber = model.Field<string>("shippingBuildingNumber"),
-                                            shippingBuildingName = model.Field<string>("shippingBuildingName"),
-                                            shippingStreetName = model.Field<string>("shippingStreetName"),
-                                            shippingPostCode = model.Field<string>("shippingPostCode"),
-                                            shippingContactNumber = model.Field<string>("shippingContactNumber"),
-                                            alternateRecipientContact = model.Field<string>("alternateRecipientContact"),
-                                            alternateRecipientName = model.Field<string>("alternateRecipientName"),
-                                            alternateRecipientEmail = model.Field<string>("alternateRecipientEmail"),
-                                            portalSlotID = model.Field<string>("portalSlotID"),
-                                            slotDate = model.Field<DateTime?>("slotDate"),
-                                            slotFromTime = model.Field<TimeSpan?>("slotFromTime"),
-                                            slotToTime = model.Field<TimeSpan?>("slotToTime"),
-                                            scheduledDate = model.Field<DateTime?>("scheduledDate"),
-                                            submissionDate = model.Field<DateTime>("submissionDate"),
-                                            serviceFee = model.Field<double?>("serviceFee"),
-                                            amountPaid = model.Field<double?>("amountPaid"),
-                                            paymentMode = model.Field<string>("paymentMode"),
-                                            MPGSOrderID = model.Field<string>("MPGSOrderID"),
-                                            MaskedCardNumber = model.Field<string>("MaskedCardNumber"),
-                                            Token = model.Field<string>("Token"),
-                                            CardType = model.Field<string>("CardType"),
-                                            CardHolderName = model.Field<string>("CardHolderName"),
-                                            ExpiryMonth = model.Field<int?>("ExpiryMonth"),
-                                            ExpiryYear = model.Field<int?>("ExpiryYear"),
-                                            CardFundMethod = model.Field<string>("CardFundMethod"),
-                                            CardBrand = model.Field<string>("CardBrand"),
-                                            CardIssuer = model.Field<string>("CardIssuer"),
-                                            DateofBirth = model.Field<DateTime?>("DateofBirth"),
-                                            ReferralCode = model.Field<string>("ReferralCode"),
-                                            ProcessedOn = model.Field<DateTime?>("ProcessedOn"),
-                                            InvoiceNumber = model.Field<string>("InvoiceNumber"),
-                                            InvoiceUrl = model.Field<string>("InvoiceUrl"),
-                                            CreatedOn = model.Field<DateTime>("CreatedOn")   
-    
-                                        }).FirstOrDefault();
+                                 select new OrderQM()
+                                 {
+                                     accountID = model.Field<int>("accountID"),
+                                     customerID = model.Field<int>("customerID"),
+                                     orderID = model.Field<int>("orderID"),
+                                     orderNumber = model.Field<string>("orderNumber"),
+                                     orderDate = model.Field<DateTime>("orderDate"),
+                                     billingUnit = model.Field<string>("billingUnit"),
+                                     billingFloor = model.Field<string>("billingFloor"),
+                                     billingBuildingNumber = model.Field<string>("billingBuildingNumber"),
+                                     billingBuildingName = model.Field<string>("billingBuildingName"),
+                                     billingStreetName = model.Field<string>("billingStreetName"),
+                                     billingPostCode = model.Field<string>("billingPostCode"),
+                                     billingContactNumber = model.Field<string>("billingContactNumber"),
+                                     orderReferralCode = model.Field<string>("orderReferralCode"),
+                                     title = model.Field<string>("title"),
+                                     name = model.Field<string>("name"),
+                                     email = model.Field<string>("email"),
+                                     nationality = model.Field<string>("nationality"),
+                                     idType = model.Field<string>("idType"),
+                                     idNumber = model.Field<string>("idNumber"),
+                                     isSameAsBilling = model.Field<int?>("isSameAsBilling"),
+                                     shippingUnit = model.Field<string>("shippingUnit"),
+                                     shippingFloor = model.Field<string>("shippingFloor"),
+                                     shippingBuildingNumber = model.Field<string>("shippingBuildingNumber"),
+                                     shippingBuildingName = model.Field<string>("shippingBuildingName"),
+                                     shippingStreetName = model.Field<string>("shippingStreetName"),
+                                     shippingPostCode = model.Field<string>("shippingPostCode"),
+                                     shippingContactNumber = model.Field<string>("shippingContactNumber"),
+                                     alternateRecipientContact = model.Field<string>("alternateRecipientContact"),
+                                     alternateRecipientName = model.Field<string>("alternateRecipientName"),
+                                     alternateRecipientEmail = model.Field<string>("alternateRecipientEmail"),
+                                     portalSlotID = model.Field<string>("portalSlotID"),
+                                     slotDate = model.Field<DateTime?>("slotDate"),
+                                     slotFromTime = model.Field<TimeSpan?>("slotFromTime"),
+                                     slotToTime = model.Field<TimeSpan?>("slotToTime"),
+                                     scheduledDate = model.Field<DateTime?>("scheduledDate"),
+                                     submissionDate = model.Field<DateTime>("submissionDate"),
+                                     serviceFee = model.Field<double?>("serviceFee"),
+                                     amountPaid = model.Field<double?>("amountPaid"),
+                                     paymentMode = model.Field<string>("paymentMode"),
+                                     MPGSOrderID = model.Field<string>("MPGSOrderID"),
+                                     MaskedCardNumber = model.Field<string>("MaskedCardNumber"),
+                                     Token = model.Field<string>("Token"),
+                                     CardType = model.Field<string>("CardType"),
+                                     CardHolderName = model.Field<string>("CardHolderName"),
+                                     ExpiryMonth = model.Field<int?>("ExpiryMonth"),
+                                     ExpiryYear = model.Field<int?>("ExpiryYear"),
+                                     CardFundMethod = model.Field<string>("CardFundMethod"),
+                                     CardBrand = model.Field<string>("CardBrand"),
+                                     CardIssuer = model.Field<string>("CardIssuer"),
+                                     DateofBirth = model.Field<DateTime?>("DateofBirth"),
+                                     ReferralCode = model.Field<string>("ReferralCode"),
+                                     ProcessedOn = model.Field<DateTime?>("ProcessedOn"),
+                                     InvoiceNumber = model.Field<string>("InvoiceNumber"),
+                                     InvoiceUrl = model.Field<string>("InvoiceUrl"),
+                                     CreatedOn = model.Field<DateTime>("CreatedOn")
+
+                                 }).FirstOrDefault();
 
                         List<OrderSubscriber> Subscribers = new List<OrderSubscriber>();
 
@@ -394,55 +394,55 @@ namespace OrderService.DataAccess
                                                totalSMS = model.Field<double?>("totalSMS"),
                                                totalVoice = model.Field<double?>("totalVoice"),
                                                applicableSubscriptionFee = model.Field<double?>("applicableSubscriptionFee")
-                                           }).ToList();                              
+                                           }).ToList();
 
                             }
 
 
 
                             Subscribers = (from model in ds.Tables[1].AsEnumerable()
-                                            select new OrderSubscriber()
-                                            {
-                                                OrderID = model.Field<int>("OrderID"),
-                                                subscriberID = model.Field<int>("subscriberID"),
-                                                mobileNumber = model.Field<string>("mobileNumber"),
-                                                displayName = model.Field<string>("displayName"),
-                                                isPrimaryNumber = model.Field<int>("isPrimaryNumber"),
-                                                premiumType = model.Field<int?>("premiumType"),
-                                                isPorted = model.Field<int?>("isPorted"),
-                                                isOwnNumber = model.Field<int?>("isOwnNumber"),
-                                                donorProvider = model.Field<string>("donorProvider"),
-                                                DepositFee = model.Field<double?>("DepositFee"),
-                                                IsBuddyLine = model.Field<int?>("IsBuddyLine"),
-                                                LinkedSubscriberID = model.Field<int?>("LinkedSubscriberID"),
-                                                RefOrderSubscriberID = model.Field<int?>("RefOrderSubscriberID"),
-                                                portedNumberTransferForm = model.Field<string>("portedNumberTransferForm"),
-                                                portedNumberOwnedBy = model.Field<string>("portedNumberOwnedBy"),
-                                                portedNumberOwnerRegistrationID = model.Field<string>("portedNumberOwnerRegistrationID"),                                                
-                                                Bundles= Bundles != null? Bundles.Where(b=>b.SubscriberID== model.Field<int>("subscriberID")).ToList():null
-                                            }).ToList();
+                                           select new OrderSubscriber()
+                                           {
+                                               OrderID = model.Field<int>("OrderID"),
+                                               subscriberID = model.Field<int>("subscriberID"),
+                                               mobileNumber = model.Field<string>("mobileNumber"),
+                                               displayName = model.Field<string>("displayName"),
+                                               isPrimaryNumber = model.Field<int>("isPrimaryNumber"),
+                                               premiumType = model.Field<int?>("premiumType"),
+                                               isPorted = model.Field<int?>("isPorted"),
+                                               isOwnNumber = model.Field<int?>("isOwnNumber"),
+                                               donorProvider = model.Field<string>("donorProvider"),
+                                               DepositFee = model.Field<double?>("DepositFee"),
+                                               IsBuddyLine = model.Field<int?>("IsBuddyLine"),
+                                               LinkedSubscriberID = model.Field<int?>("LinkedSubscriberID"),
+                                               RefOrderSubscriberID = model.Field<int?>("RefOrderSubscriberID"),
+                                               portedNumberTransferForm = model.Field<string>("portedNumberTransferForm"),
+                                               portedNumberOwnedBy = model.Field<string>("portedNumberOwnedBy"),
+                                               portedNumberOwnerRegistrationID = model.Field<string>("portedNumberOwnerRegistrationID"),
+                                               Bundles = Bundles != null ? Bundles.Where(b => b.SubscriberID == model.Field<int>("subscriberID")).ToList() : null
+                                           }).ToList();
 
-                            order.Subscribers = Subscribers;                          
+                            order.Subscribers = Subscribers;
 
                         }
 
-                       
-                      
+
+
                         List<OrderServiceCharge> serviceCharges = new List<OrderServiceCharge>();
 
                         if (ds.Tables[3] != null && ds.Tables[3].Rows.Count > 0)
                         {
 
                             serviceCharges = (from model in ds.Tables[3].AsEnumerable()
-                                                   select new OrderServiceCharge()
-                                                   {
-                                                       OrderID = model.Field<int>("OrderID"),
-                                                       SubscriberID = model.Field<int>("SubscriberID"),
-                                                       portalServiceName = model.Field<string>("portalServiceName"),
-                                                       serviceFee = model.Field<double?>("serviceFee"),
-                                                       isRecurring = model.Field<int>("isRecurring"),
-                                                       isGSTIncluded = model.Field<int>("isGSTIncluded"),
-                                                   }).ToList();
+                                              select new OrderServiceCharge()
+                                              {
+                                                  OrderID = model.Field<int>("OrderID"),
+                                                  SubscriberID = model.Field<int>("SubscriberID"),
+                                                  portalServiceName = model.Field<string>("portalServiceName"),
+                                                  serviceFee = model.Field<double?>("serviceFee"),
+                                                  isRecurring = model.Field<int>("isRecurring"),
+                                                  isGSTIncluded = model.Field<int>("isGSTIncluded"),
+                                              }).ToList();
 
                             order.Charges = serviceCharges;
 
@@ -508,6 +508,83 @@ namespace OrderService.DataAccess
 
 
             await _DataHelper.RunAsync();
+        }
+
+        /// <summary>
+        /// Gets the message body by change request.
+        /// </summary>
+        /// <param name="CustomerID">The change request identifier.</param>
+        /// <returns></returns>
+        public async Task<ProfileMQ> GetProfileUpdateMessageBody(int CustomerID)
+        {
+            try
+            {
+
+                DataSet ds = new DataSet();
+                SqlParameter[] parameters =
+                 {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+                     };
+
+                parameters[0].Value = CustomerID;
+
+                _DataHelper = new DataAccessHelper("Customers_GetProfileMessageQueue", parameters, _configuration);
+
+
+                var result = await _DataHelper.RunAsync(ds);
+
+
+                var msgBody = new ProfileMQ();
+
+                if (ds.Tables.Count > 0)
+                {
+                    msgBody = (from model in ds.Tables[0].AsEnumerable()
+                               select new ProfileMQ()
+                               {
+                                   accountID = model.Field<int>("accountID"),
+                                   customerID = model.Field<int>("customerID"),
+                                   subscriberID = model.Field<int?>("subscriberID"),
+                                   mobilenumber = model.Field<string>("mobilenumber"),
+                                   MaskedCardNumber = model.Field<string>("MaskedCardNumber"),
+                                   Token = model.Field<string>("Token"),
+                                   CardType = model.Field<string>("CardType"),
+                                   IsDefault = model.Field<int?>("IsDefault"),
+                                   CardHolderName = model.Field<string>("CardHolderName"),
+                                   ExpiryMonth = model.Field<int?>("ExpiryMonth"),
+                                   ExpiryYear = model.Field<int?>("ExpiryYear"),
+                                   CardFundMethod = model.Field<string>("CardFundMethod"),
+                                   CardBrand = model.Field<string>("CardBrand"),
+                                   CardIssuer = model.Field<string>("CardIssuer"),
+                                   billingUnit = model.Field<string>("billingUnit"),
+                                   billingFloor = model.Field<string>("billingFloor"),
+                                   billingBuildingNumber = model.Field<string>("billingBuildingNumber"),
+                                   billingBuildingName = model.Field<string>("billingBuildingName"),
+                                   billingStreetName = model.Field<string>("billingStreetName"),
+                                   billingPostCode = model.Field<string>("billingPostCode"),
+                                   billingContactNumber = model.Field<string>("billingContactNumber"),
+                                   email = model.Field<string>("email"),
+                                   displayname = model.Field<string>("displayname"),
+                                   paymentmode = model.Field<string>("paymentmode"),
+                                   amountpaid = model.Field<double?>("amountpaid"),
+                                   MPGSOrderID = model.Field<string>("MPGSOrderID"),
+                                   invoicelist = model.Field<string>("invoicelist"),
+                                   invoiceamounts = model.Field<string>("invoiceamounts")
+                               }).FirstOrDefault();
+                }
+
+                return msgBody;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw;
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
         }
     }
 }
