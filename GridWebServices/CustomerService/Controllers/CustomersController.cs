@@ -1110,8 +1110,8 @@ namespace CustomerService.Controllers
         /// <param name="token" in="Header"></param>
         /// <param name="customerReferralCode">The customer referral code.</param>
         /// <returns></returns>
-        [HttpPost("UpdateReferralCode")]
-        public async Task<IActionResult> UpdateReferralCode([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody]CustomerNewReferralCode customerReferralCode)
+        [HttpPost("ValidateUpdateSelfReferralCode")]
+        public async Task<IActionResult> ValidateUpdateSelfReferralCode([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody]CustomerNewReferralCode customerReferralCode)
         {
             try
             {
