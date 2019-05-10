@@ -657,7 +657,7 @@ namespace CustomerService.DataAccess
 
                 DatabaseResponse response = new DatabaseResponse();
 
-                if (result == 105)
+                if (result == ((int)DbReturnValue.UpdateSuccess))
                 {
 
                     ValidateReferralCodeResponse vrcResponse = new ValidateReferralCodeResponse();
