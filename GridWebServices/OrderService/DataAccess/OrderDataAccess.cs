@@ -688,6 +688,7 @@ namespace OrderService.DataAccess
                         foreach (DataRow dr in ds.Tables[1].Rows)
                         {
                             Bundle OrderBundle = new Bundle();
+                            OrderBundle.OrderSubscriberID = Convert.ToInt32(dr["OrderSubscriberID"].ToString());
                             OrderBundle.BundleID = Convert.ToInt32(dr["BundleID"].ToString());
                             OrderBundle.DisplayName = dr["DisplayName"].ToString();
                             OrderBundle.MobileNumber = dr["MobileNumber"].ToString();
@@ -718,11 +719,12 @@ namespace OrderService.DataAccess
                                 subscriberServiceCharges = (from model in ds.Tables[3].AsEnumerable()
                                                        select new ServiceCharge()
                                                        {
+                                                           OrderSubscriberID = model.Field<int>("OrderSubscriberID"),
                                                            PortalServiceName = model.Field<string>("PortalServiceName"),
                                                            ServiceFee = model.Field<double?>("ServiceFee"),
                                                            IsRecurring = model.Field<int>("IsRecurring"),
                                                            IsGSTIncluded = model.Field<int>("IsGSTIncluded"),
-                                                       }).Where(c => c.OrderSubscriberID == OrderBundle.OrderSubscriberID).ToList();
+                                                       }).Where(c => c.OrderSubscriberID == Convert.ToInt32(dr["OrderSubscriberID"].ToString())).ToList();
 
                                 OrderBundle.ServiceCharges = subscriberServiceCharges;
 

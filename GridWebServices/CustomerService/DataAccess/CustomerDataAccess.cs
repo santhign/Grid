@@ -148,6 +148,7 @@ namespace CustomerService.DataAccess
                                     EmailSubscription = model.Field<string>("EmailSubscription"),
                                     Status = model.Field<string>("Status"),
                                     JoinedOn = model.Field<DateTime>("JoinedOn"),
+                                    OrderCount = model.Field<int>("OrderCount"),
                                     PendingAllowedSubscribers = model.Field<int>("PendingAllowedSubscribers")
                                 }).FirstOrDefault();
                 }
@@ -656,7 +657,7 @@ namespace CustomerService.DataAccess
 
                 DatabaseResponse response = new DatabaseResponse();
 
-                if (result == 105)
+                if (result == ((int)DbReturnValue.UpdateSuccess))
                 {
 
                     ValidateReferralCodeResponse vrcResponse = new ValidateReferralCodeResponse();
@@ -1416,6 +1417,40 @@ namespace CustomerService.DataAccess
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 throw;
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> ValidatePassword(LoginDto request)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@Email",  SqlDbType.VarChar ),
+                    new SqlParameter( "@Password",  SqlDbType.VarChar )
+                };
+
+                parameters[0].Value = request.Email;
+                parameters[1].Value = new Sha2().Hash(request.Password);
+
+                _DataHelper = new DataAccessHelper("Customer_ValidatePassword", parameters, _configuration);                
+
+                int result = await _DataHelper.RunAsync();
+
+                return new DatabaseResponse { ResponseCode = result };
+
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw ex;
+
             }
             finally
             {
