@@ -2438,7 +2438,9 @@ namespace OrderService.DataAccess
                         attribute.Add(EventTypeString.EventType, RequestType.EditPaymentMethod.GetDescription());
 
                         var sourceTyeResponse = await GetSourceTypeByMPGSSOrderId(MPGSOrderID);
-                        if (((OrderSource)sourceTyeResponse.Results).SourceType == CheckOutType.Orders.ToString())
+                        DatabaseResponse OrderCountResponse = await GetCustomerOrderCount(customerID);
+                        //(OrderCount)OrderCountResponse.Results).SuccessfulOrders == 1
+                        if ((((OrderSource)sourceTyeResponse.Results).SourceType == CheckOutType.Orders.ToString()) && (((OrderCount)OrderCountResponse.Results).SuccessfulOrders > 1))
                         {                            
                             msgBody = await _messageQueueDataAccess.GetProfileUpdateMessageBody(customerID);
                             pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
@@ -3187,6 +3189,42 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+
+        //public async Task<CustomerDetails> GetCustomerDetailByOrder(int customerID)
+        //{
+        //    try
+        //    {
+        //        SqlParameter[] parameters =               {
+                     
+        //             new SqlParameter( "@CustomerID",  SqlDbType.Int )
+        //        };
+
+        //        parameters[0].Value = customerID;
+                
+
+        //        _DataHelper = new DataAccessHelper("Order_CheckForOrderCount", parameters, _configuration);
+
+               
+
+        //        int result = await _DataHelper.RunAsync();    // 105 / 102
+
+        //        DatabaseResponse response = new DatabaseResponse();
+
+               
+
+        //        return customer;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+        //        throw (ex);
+        //    }
+        //    finally
+        //    {
+        //        _DataHelper.Dispose();
+        //    }
+        //}
 
 
     }
