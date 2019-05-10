@@ -1253,7 +1253,7 @@ namespace CustomerService.Controllers
                                                            .Select(x => x.ErrorMessage))
                             });
                         }
-                        var customerAccess = new CustomerDataAccess(_iconfiguration);
+                        var customerAccess = new CommonDataAccess(_iconfiguration);
 
                         var customerBilling = await customerAccess.GetCustomerBillingDetails(customerID);
 
