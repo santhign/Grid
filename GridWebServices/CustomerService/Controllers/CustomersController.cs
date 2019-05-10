@@ -1182,14 +1182,32 @@ namespace CustomerService.Controllers
 
                         var validationResponse = await _customerAccess.UpdateReferralCode(aTokenResp.CustomerID, customerReferralCode.ReferralCode);
 
-                        if (validationResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                        if (validationResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
                         {
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = true,
-                                Message = EnumExtensions.GetDescription(DbReturnValue.RecordExists),
+                                Message = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess),
                                 IsDomainValidationErrors = false,
                                 ReturnedObject = validationResponse.Results
+                            });
+                        }
+                        else if (validationResponse.ResponseCode == (int)DbReturnValue.ActiveTryDelete)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.ActiveTryDelete),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                        else if (validationResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.RecordExists),
+                                IsDomainValidationErrors = false
                             });
                         }
                         else
@@ -1287,7 +1305,7 @@ namespace CustomerService.Controllers
                                                            .Select(x => x.ErrorMessage))
                             });
                         }
-                        var customerAccess = new CustomerDataAccess(_iconfiguration);
+                        var customerAccess = new CommonDataAccess(_iconfiguration);
 
                         var customerBilling = await customerAccess.GetCustomerBillingDetails(customerID);
 
