@@ -157,8 +157,8 @@ namespace Core.Enums
         [Description("Your account is locked")]
         AccountIsLocked = 138,
 
-        [EnumMember(Value = "Action is Invalid")]
-        [Description("Action is Invalid")]
+        [EnumMember(Value = "Subscriber state is not Active")]
+        [Description("Subscriber state is not Active")]
         ActionIsInvalid = 139,
 
         [EnumMember(Value = "Allowed to add more subscribers")]
