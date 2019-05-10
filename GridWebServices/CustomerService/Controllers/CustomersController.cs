@@ -2218,6 +2218,75 @@ namespace CustomerService.Controllers
 
                         if (statusResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
                         {
+                            ProfileMQ msgBody = new ProfileMQ();
+                            Dictionary<string, string> attribute = new Dictionary<string, string>();
+                            string topicName = string.Empty, subject = string.Empty;
+                            MQDataAccess _MQDataAccess = new MQDataAccess(_iconfiguration);
+                            try
+                            {
+                                msgBody = await _MQDataAccess.GetProfileUpdateMessageBody(((AuthTokenResponse)tokenAuthResponse.Results).CustomerID);
+
+                                topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration).Results.ToString().Trim();
+                                attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.EditDisplayName.GetDescription());
+                                var pushResult = await _MQDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
+                                if (pushResult.Trim().ToUpper() == "OK")
+                                {
+
+
+                                    MessageQueueRequest queueRequest = new MessageQueueRequest
+                                    {
+                                        Source = Source.ChangeRequest,
+                                        NumberOfRetries = 1,
+                                        SNSTopic = topicName,
+                                        CreatedOn = DateTime.Now,
+                                        LastTriedOn = DateTime.Now,
+                                        PublishedOn = DateTime.Now,
+                                        MessageAttribute = Core.Enums.RequestType.EditDisplayName.GetDescription().ToString(),
+                                        MessageBody = JsonConvert.SerializeObject(msgBody),
+                                        Status = 1
+                                    };
+                                    await _MQDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                                }
+                                else
+                                {
+                                    MessageQueueRequest queueRequest = new MessageQueueRequest
+                                    {
+                                        Source = Source.ChangeRequest,
+                                        NumberOfRetries = 1,
+                                        SNSTopic = topicName,
+                                        CreatedOn = DateTime.Now,
+                                        LastTriedOn = DateTime.Now,
+                                        PublishedOn = DateTime.Now,
+                                        MessageAttribute = Core.Enums.RequestType.EditDisplayName.GetDescription().ToString(),
+                                        MessageBody = JsonConvert.SerializeObject(msgBody),
+                                        Status = 0
+                                    };
+                                    await _MQDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                                //MessageQueueRequestException queueRequest = new MessageQueueRequestException
+                                //{
+                                //    Source = Source.ChangeRequest,
+                                //    NumberOfRetries = 1,
+                                //    SNSTopic = string.IsNullOrWhiteSpace(topicName) ? null : topicName,
+                                //    CreatedOn = DateTime.Now,
+                                //    LastTriedOn = DateTime.Now,
+                                //    PublishedOn = DateTime.Now,
+                                //    MessageAttribute = Core.Enums.RequestType.CancelOrder.GetDescription().ToString(),
+                                //    MessageBody = msgBody != null ? JsonConvert.SerializeObject(msgBody) : null,
+                                //    Status = 0,
+                                //    Remark = "Error Occured in UpateDisplayName",
+                                //    Exception = new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)
+
+
+                                //};
+
+                                //await _MQDataAccess.InsertMessageInMessageQueueRequestException(queueRequest);
+                            }
+                            
                             return Ok(new ServerResponse
                             {
                                 HasSucceeded = true,
