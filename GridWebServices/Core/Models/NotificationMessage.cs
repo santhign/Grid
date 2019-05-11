@@ -96,9 +96,9 @@ namespace Core.Models
 
     public class NotificationLogForDevPurpose : NotificationLog
     {
-        public string Remark { get; set; }
+        public string EventType { get; set; }
 
-        public string EmailTemplate { get; set; }
+        public string Message { get; set; }
     }
 
     public class NotificationConfig

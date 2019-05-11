@@ -202,34 +202,15 @@ namespace Core.DataAccess
 
                 SqlParameter[] parameters =
                {
-                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
 
-                    new SqlParameter( "@Email",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@EventType",  SqlDbType.NVarChar ),
 
-                    new SqlParameter( "@EmailSubject",  SqlDbType.NVarChar ),
-
-                    new SqlParameter( "@EmailBody",  SqlDbType.NVarChar ),
-
-                    new SqlParameter( "@ScheduledOn",  SqlDbType.DateTime ),
-
-                    new SqlParameter( "@EmailTemplateID",  SqlDbType.NVarChar ),
-
-                    new SqlParameter( "@SendOn",  SqlDbType.DateTime ),
-
-                    new SqlParameter( "@Status",  SqlDbType.Int ),
-                    new SqlParameter( "@Remark",  SqlDbType.Int )
-
+                    new SqlParameter( "@Message",  SqlDbType.NVarChar )                
                 };
 
-                parameters[0].Value = log.CustomerID;
-                parameters[1].Value = log.Email;
-                parameters[2].Value = log.EmailSubject;
-                parameters[3].Value = log.EmailBody;
-                parameters[4].Value = log.ScheduledOn;
-                parameters[5].Value = log.EmailTemplate;
-                parameters[6].Value = log.SendOn;
-                parameters[7].Value = log.Status;
-                parameters[8].Value = log.Remark;
+                parameters[0].Value = log.EventType;
+                parameters[1].Value = log.Message;
+               
 
 
                 _DataHelper = new DataAccessHelper("z_EmailNotificationsLogEntryForDevPurpose", parameters, _configuration);

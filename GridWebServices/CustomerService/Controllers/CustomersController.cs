@@ -605,13 +605,9 @@ namespace CustomerService.Controllers
                         DatabaseResponse notificationLogResponse = await _configAccess.CreateEMailNotificationLogForDevPurpose(
                             new NotificationLogForDevPurpose
                             {
-                                Status = 1,
-                                Email = customer.Email,
-                                EmailTemplate = ((EmailTemplate)registrationResponse.Results).TemplateName,
-                                EmailBody = notificationMessage.Message.ToString(),
-                                EmailSubject = notificationMessage.MessageName,
-                                ScheduledOn = DateTime.UtcNow,
-                                SendOn = DateTime.UtcNow
+                                EventType = NotificationEvent.Registration.ToString(),
+                                Message = JsonConvert.SerializeObject(notificationMessage)
+
                             });
 
                     }
@@ -1066,16 +1062,12 @@ namespace CustomerService.Controllers
                         try
                         {
                             DatabaseResponse notificationLogResponse = await _configAccess.CreateEMailNotificationLogForDevPurpose(
-                       new NotificationLogForDevPurpose
-                       {
-                           Status = 1,
-                           Email = email,
-                           EmailTemplate = ((EmailTemplate)forgotPasswordMsgTemplate.Results).TemplateName,
-                           EmailBody = notificationMessage.Message.ToString(),
-                           EmailSubject = notificationMessage.MessageName,
-                           ScheduledOn = DateTime.UtcNow,
-                           SendOn = DateTime.UtcNow
-                       });
+                            new NotificationLogForDevPurpose
+                            {
+                                EventType = NotificationEvent.ForgetPassword.ToString(),
+                                Message = JsonConvert.SerializeObject(notificationMessage)
+
+                            });
                         }
                         catch (Exception ex)
                         {
