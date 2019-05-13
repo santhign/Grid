@@ -168,5 +168,9 @@ namespace Core.Enums
         [EnumMember(Value = "Not allowed to add more subscribers")]
         [Description("Not allowed to add more subscribers")]
         NotAllowSubscribers = 141,
+
+        [EnumMember(Value = "Invalid ID detail")]
+        [Description("Provided IC details are invalid")]
+        InvalidNRIC = 142,
     }
 }
