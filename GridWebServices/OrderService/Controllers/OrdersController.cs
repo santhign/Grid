@@ -3244,6 +3244,18 @@ namespace OrderService.Controllers
 
                         if (customerResponse.ResponseCode == (int)DbReturnValue.RecordExists && customerID == ((OrderCustomer)customerResponse.Results).CustomerId)
                         {
+                            string nricwarning = "";
+                            EmailValidationHelper _helper = new EmailValidationHelper();
+                            if(!_helper.NRICValidation((request.IDType == "NRIC" ? "S" : "F"), request.IDNumber, out nricwarning))
+                            {
+                                LogInfo.Error(nricwarning);
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = false,
+                                    Message = EnumExtensions.GetDescription(DbReturnValue.InvalidNRIC),
+                                    IsDomainValidationErrors = false
+                                });
+                            }
                             IFormFile frontImage = request.IDImageFront;
 
                             IFormFile backImage = request.IDImageBack;
@@ -5393,17 +5405,13 @@ namespace OrderService.Controllers
             await registrationNotificationPublisher.PublishAsync(notificationMessage);
             try
             {
-                DatabaseResponse notificationLogResponse = await _configAccess.CreateEMailNotificationLog(
-                        new NotificationLogForDevPurpose
-                        {
-                            Status = 1,
-                            Email = customer.ToEmailList,
-                            EmailTemplate = ((EmailTemplate)registrationResponse.Results).TemplateName,
-                            EmailBody = notificationMessage.Message.ToString(),
-                            EmailSubject = notificationMessage.MessageName,
-                            ScheduledOn = DateTime.UtcNow,
-                            SendOn = DateTime.UtcNow
-                        });
+                DatabaseResponse notificationLogResponse = await _configAccess.CreateEMailNotificationLogForDevPurpose(
+                            new NotificationLogForDevPurpose
+                            {
+                                EventType = NotificationEvent.ForgetPassword.ToString(),
+                                Message = JsonConvert.SerializeObject(notificationMessage)
+
+                            });
             }
             catch (Exception ex)
             {

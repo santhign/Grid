@@ -10,9 +10,8 @@ namespace Core.Helpers
         public string GetString()
         {
             string[] randomChars = new[] {
-                "ABCDEFGHJKLMNOPQRSTUVWXYZ",    // uppercase 
-                "abcdefghijkmnopqrstuvwxyz",    // lowercase
-                "0123456789"                    // digits
+                "ABCDEFGHJKLMNPQRSTUVWXYZ",    // uppercase 
+                "23456789"                    // digits
             };
             Random rand = new Random(Environment.TickCount);
             List<char> chars = new List<char>();

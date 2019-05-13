@@ -367,6 +367,8 @@ namespace CustomerService.Models
         public int TerminationRaised { get; set; }
         public int PlanChangeRaised { get; set; }
         public string PlanChangeMessage { get; set; }
+        public int SMSSubscription { get; set; }
+        public int VoiceSubscription { get; set; }
     }
 
     /// <summary>

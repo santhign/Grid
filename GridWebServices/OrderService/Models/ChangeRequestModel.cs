@@ -463,7 +463,7 @@ namespace OrderService.Models
         /// The is billing same.
         /// </value>
         
-        public int IsBillingSame { get; set; }
+        public int ? IsBillingSame { get; set; }
 
         /// <summary>
         /// Gets or sets the portal slot identifier.
