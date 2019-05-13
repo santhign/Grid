@@ -2492,8 +2492,38 @@ namespace OrderService.Controllers
 
                             GridMPGSConfig gatewayConfig = gatewayHelper.GetGridMPGSConfig((List<Dictionary<string, string>>)configResponse.Results);
 
-                            checkoutDetails = gatewayHelper.CreateCheckoutSession(gatewayConfig);
+                            customerBilling billingAddress = new customerBilling();
 
+                            DatabaseResponse billingResponse = new DatabaseResponse();
+
+                            CommonDataAccess commonAccess = new CommonDataAccess(_iconfiguration);
+
+                            billingResponse = await commonAccess.GetCustomerBillingDetails(customerID);
+
+                            if(billingResponse!=null)
+                            {
+                                billingAddress = (customerBilling)billingResponse.Results;
+                            }
+
+                            checkoutDetails.OrderId = PaymentHelper.GenerateOrderId();
+
+                            checkoutDetails.TransactionID = PaymentHelper.GenerateOrderId();
+
+                            CheckOutRequestDBUpdateModel createcheckOutModel = new CheckOutRequestDBUpdateModel
+                            {
+                                Source = ((CheckOutType)orderType).ToString(),
+
+                                SourceID = orderId,                              
+
+                                MPGSOrderID = checkoutDetails.OrderId,
+
+                                TransactionID = checkoutDetails.TransactionID
+                            };
+
+                            DatabaseResponse checkOutAmountResponse = await _orderAccess.GetCheckoutRequestDetails(createcheckOutModel);
+
+                            checkoutDetails = gatewayHelper.CreateCheckoutSession(gatewayConfig, billingAddress, checkoutDetails.OrderId, checkoutDetails.TransactionID, ((Checkout) checkOutAmountResponse.Results).ReceiptNumber);
+                            
                             CheckOutRequestDBUpdateModel checkoutUpdateModel = new CheckOutRequestDBUpdateModel
                             {
                                 Source = ((CheckOutType)orderType).ToString(),
@@ -2508,16 +2538,18 @@ namespace OrderService.Controllers
 
                                 MPGSOrderID = checkoutDetails.OrderId,
 
-                                TransactionID = checkoutDetails.TransactionID
+                                TransactionID = checkoutDetails.TransactionID,
                             };
 
                             //Update checkout details and return amount
 
-                            DatabaseResponse checkOutAmountResponse = await _orderAccess.GetCheckoutRequestDetails(checkoutUpdateModel);
+                             checkOutAmountResponse = await _orderAccess.GetCheckoutRequestDetails(checkoutUpdateModel);
 
                             if (checkOutAmountResponse.ResponseCode == (int)DbReturnValue.RecordExists)
                             {
                                 checkoutDetails.Amount = ((Checkout)checkOutAmountResponse.Results).Amount;
+
+                                checkoutDetails.ReceiptNumber= ((Checkout)checkOutAmountResponse.Results).ReceiptNumber;
 
                                 return Ok(new OperationResponse
                                 {
@@ -3640,6 +3672,7 @@ namespace OrderService.Controllers
                     if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
                     {
                         int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+
                         if (!ModelState.IsValid)
                         {
                             return Ok(new OperationResponse
@@ -3667,15 +3700,27 @@ namespace OrderService.Controllers
                             });
                         }
 
-                        else
+                        else if(LOAResponse.ResponseCode == (int)DbReturnValue.UpdationFailed)
                         {
-                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedUpdateLOADetails));
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedUpdateLOADetails) + " token:" + token + ", orderID:"+ OrderID);
+
                             return Ok(new ServerResponse
                             {
                                 HasSucceeded = false,
                                 Message = EnumExtensions.GetDescription(CommonErrors.FailedToRemoveLoa)
                             });
 
+                        }
+
+                        else
+                        { 
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.DeliveryInfoNotExists) + " token:" + token + ", orderID:" + OrderID);
+
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(CommonErrors.DeliveryInfoNotExists)
+                            });
                         }
                     }
 
@@ -4007,6 +4052,7 @@ namespace OrderService.Controllers
                                         {
                                             //Get Order Type
                                             var sourceTyeResponse = await _orderAccess.GetSourceTypeByMPGSSOrderId(updateRequest.MPGSOrderID);
+
                                             if (((OrderSource)sourceTyeResponse.Results).SourceType == CheckOutType.Orders.ToString())
                                             {
                                                 await SendEmailNotification(updateRequest.MPGSOrderID, customerID, ((OrderSource)sourceTyeResponse.Results).SourceID);
@@ -4378,7 +4424,39 @@ namespace OrderService.Controllers
 
                                 GridMPGSConfig gatewayConfig = gatewayHelper.GetGridMPGSConfig((List<Dictionary<string, string>>)configResponse.Results);
 
-                                checkoutDetails = gatewayHelper.CreateCheckoutSession(gatewayConfig);
+                                customerBilling billingAddress = new customerBilling();
+
+                                DatabaseResponse billingResponse = new DatabaseResponse();
+
+                                CommonDataAccess commonAccess = new CommonDataAccess(_iconfiguration);
+
+                                billingResponse = await commonAccess.GetCustomerBillingDetails(customerID);
+
+                                if (billingResponse != null)
+                                {
+                                    billingAddress = (customerBilling)billingResponse.Results;
+                                }
+
+                                checkoutDetails.OrderId = PaymentHelper.GenerateOrderId();
+
+                                checkoutDetails.TransactionID = PaymentHelper.GenerateOrderId();
+
+
+                                CheckOutRequestDBUpdateModel createcheckOutModel = new CheckOutRequestDBUpdateModel
+                                {
+                                    Source = ((CheckOutType)orderType).ToString(),
+
+                                    SourceID = orderId,                                  
+
+                                    MPGSOrderID = checkoutDetails.OrderId,
+
+                                    TransactionID = checkoutDetails.TransactionID
+                                };                               
+
+                                DatabaseResponse checkOutAmountResponse = await _orderAccess.GetCheckoutRequestDetails(createcheckOutModel);
+
+                                checkoutDetails = gatewayHelper.CreateCheckoutSession(gatewayConfig, billingAddress, checkoutDetails.OrderId, checkoutDetails.TransactionID,((Checkout)checkOutAmountResponse.Results).ReceiptNumber);
+
                                 // Call MPGS to create a checkout session and retuen details
                                 CheckOutRequestDBUpdateModel checkoutUpdateModel = new CheckOutRequestDBUpdateModel
                                 {
@@ -4399,11 +4477,13 @@ namespace OrderService.Controllers
 
                                 //Update checkout details and return amount
 
-                                DatabaseResponse checkOutAmountResponse = await _orderAccess.GetCheckoutRequestDetails(checkoutUpdateModel);
+                                checkOutAmountResponse = await _orderAccess.GetCheckoutRequestDetails(checkoutUpdateModel);
 
                                 if (checkOutAmountResponse.ResponseCode == (int)DbReturnValue.RecordExists)
                                 {
-                                    checkoutDetails.Amount = ((Checkout)checkOutAmountResponse.Results).Amount;
+                                    checkoutDetails.Amount = ((Checkout)checkOutAmountResponse.Results).Amount;                                   
+
+                                    checkoutDetails.ReceiptNumber = ((Checkout)checkOutAmountResponse.Results).ReceiptNumber;
 
                                     string authorizeResponse = gatewayHelper.Authorize(gatewayConfig, checkoutDetails, paymentMethod);
 
@@ -4435,10 +4515,12 @@ namespace OrderService.Controllers
 
                                                 //Get Order Type
                                                 var sourceTyeResponse = await _orderAccess.GetSourceTypeByMPGSSOrderId(updateRequest.MPGSOrderID);
+
                                                 if (((OrderSource)sourceTyeResponse.Results).SourceType == CheckOutType.Orders.ToString())
                                                 {
                                                     await SendEmailNotification(updateRequest.MPGSOrderID, customerID, ((OrderSource)sourceTyeResponse.Results).SourceID);
                                                 }
+
                                                 QMHelper qMHelper = new QMHelper(_iconfiguration, _messageQueueDataAccess);
 
                                                 if (await qMHelper.ProcessSuccessTransaction(updateRequest) == 1)
@@ -4776,7 +4858,24 @@ namespace OrderService.Controllers
 
                             GridMPGSConfig gatewayConfig = gatewayHelper.GetGridMPGSConfig((List<Dictionary<string, string>>)configResponse.Results);
 
-                            checkoutDetails = gatewayHelper.CreateCheckoutSession(gatewayConfig);
+                            customerBilling billingAddress = new customerBilling();
+
+                            DatabaseResponse billingResponse = new DatabaseResponse();
+
+                            CommonDataAccess commonAccess = new CommonDataAccess(_iconfiguration);
+
+                            billingResponse = await commonAccess.GetCustomerBillingDetails(customerID);
+
+                            if (billingResponse != null)
+                            {
+                                billingAddress = (customerBilling)billingResponse.Results;
+                            }
+
+                            checkoutDetails.OrderId = PaymentHelper.GenerateOrderId();
+
+                            checkoutDetails.TransactionID = PaymentHelper.GenerateOrderId();                           
+
+                            checkoutDetails = gatewayHelper.CreateCheckoutSession(gatewayConfig, billingAddress, checkoutDetails.OrderId, checkoutDetails.TransactionID,"");                           
 
                             CheckOutRequestDBUpdateModel checkoutUpdateModel = new CheckOutRequestDBUpdateModel
                             {
@@ -5011,19 +5110,21 @@ namespace OrderService.Controllers
                                         }
                                     }
 
-                                    else
+                                    else 
                                     {
                                         // token details update failed
 
-                                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToCreatePaymentMethod));
+                                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToCreatePaymentMethod)+ ". " + EnumExtensions.GetDescription(CommonErrors.CardAlreadyExists));
 
                                         return Ok(new OperationResponse
                                         {
                                             HasSucceeded = false,
-                                            Message = EnumExtensions.GetDescription(CommonErrors.FailedToCreatePaymentMethod),
+                                            Message = EnumExtensions.GetDescription(CommonErrors.FailedToCreatePaymentMethod) + ". " + EnumExtensions.GetDescription(CommonErrors.CardAlreadyExists),
                                             IsDomainValidationErrors = false
                                         });
                                     }
+
+                                    
 
                                 }
 
@@ -5116,15 +5217,15 @@ namespace OrderService.Controllers
 
             }
         }
-        
+
         /// <summary>
         /// Create an account Invoce Entry, which inturn is used for outstanding invoice/bill payment
         /// </summary>
         /// <param name="token"></param>
         /// <param name="accountInvoiceRequest">
         /// body{
-        /// "InvoiceID" :"3000001", //account_id
-        /// "InvoiceName" :"3123201", //seq_id
+        /// "InvoiceID" :"3000001", //bill_id
+        /// "InvoiceName" :"3123201", 
         /// "FinalAmount":20       
         /// }
         /// </param>
@@ -5182,7 +5283,7 @@ namespace OrderService.Controllers
                             {
                                 AccountID = AccountID,
                                 CreatedBy = customerID,
-                                InvoiceID = int.Parse(accountInvoiceRequest.InvoiceID),
+                                BSSBillId = accountInvoiceRequest.InvoiceID,
                                 InvoiceName = accountInvoiceRequest.InvoiceName,
                                 FinalAmount = accountInvoiceRequest.FinalAmount,
                                 InvoiceUrl = downloadLinkPrefix + accountInvoiceRequest.InvoiceID,

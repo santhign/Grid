@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using OrderService.Models;
 using Newtonsoft.Json;
 using OrderService.Helpers;
+using Core.Models;
 
 namespace OrderService.Models
 {   
@@ -60,6 +61,37 @@ namespace OrderService.Models
 
         private String apiBaseUrl { get; set; }
 
+        private String CustomerName { get; set; }
+
+        private String BillingUnit { get; set; }
+
+        private String BillingFloor { get; set; }
+
+        private String BillingStreetName { get; set; }
+
+        private String BillingBuildingNumber { get; set; }
+
+        private String BillingBuildingName { get; set; }
+
+        private String BillingContactNumber { get; set; }
+
+        private String BillingPostCode { get; set; }
+
+        private String Street { get; set; }
+
+        private String Street2 { get; set; }
+
+        private String MerchantName { get; set; }
+        private String MerchantAddress1 { get; set; }
+
+        private String MerchantAddress2 { get; set; }
+
+        private String MerchantPostCode { get; set; }
+
+        private String MerchantContactNumber { get; set; }
+        private String ReceiptNumber { get; set; }
+
+
         public GatewayApiRequest()
         {
         }
@@ -69,6 +101,50 @@ namespace OrderService.Models
             GatewayApiConfig = gatewayApiConfig;
         }
 
+        public GatewayApiRequest(GatewayApiConfig gatewayApiConfig, customerBilling billingAddress, string receiptNumber)
+        {
+            GatewayApiConfig = gatewayApiConfig;
+
+            if(billingAddress!=null)
+            {
+              if(!string.IsNullOrEmpty(billingAddress.Name))
+
+                    CustomerName = billingAddress.Name;
+
+              if (!string.IsNullOrEmpty(billingAddress.BillingUnit))
+
+                    BillingUnit = billingAddress.BillingUnit;
+
+              if (!string.IsNullOrEmpty(billingAddress.BillingFloor))
+
+                    BillingFloor = billingAddress.BillingFloor;
+
+              if (!string.IsNullOrEmpty(billingAddress.BillingStreetName))
+
+                    BillingStreetName = billingAddress.BillingStreetName;
+
+              if (!string.IsNullOrEmpty(billingAddress.BillingBuildingNumber))
+
+                    BillingBuildingNumber = billingAddress.BillingBuildingNumber;
+
+              if (!string.IsNullOrEmpty(billingAddress.BillingBuildingName))
+
+                    BillingBuildingName = billingAddress.BillingBuildingName;
+
+              if (!string.IsNullOrEmpty(billingAddress.BillingContactNumber))
+
+                    BillingContactNumber = billingAddress.BillingContactNumber;
+
+              if (!string.IsNullOrEmpty(billingAddress.BillingPostCode))
+
+                    BillingPostCode = billingAddress.BillingPostCode;
+            }
+
+            if (!string.IsNullOrEmpty(receiptNumber))
+            {
+                ReceiptNumber = receiptNumber;
+            }
+        }
         public GatewayApiConfig GatewayApiConfig
         {
             get => gatewayApiConfig;
@@ -209,6 +285,122 @@ namespace OrderService.Models
             {
                 nvc.Add("sourceOfFunds.token", Token);
             }
+
+
+            //payer name
+            if (!String.IsNullOrEmpty(CustomerName))
+            {
+                nvc.Add("order.requestorName", CustomerName);              
+                
+            }
+
+            //payer's contact number
+            if (!String.IsNullOrEmpty(BillingContactNumber))
+            {
+                nvc.Add("customer.mobilePhone", BillingContactNumber);    
+
+            }
+           
+            // billing address
+            //street = BillingBuildingNumber BillingStreetName
+            if (!String.IsNullOrEmpty(BillingBuildingNumber) && !String.IsNullOrEmpty(BillingStreetName))
+            {
+                Street = BillingBuildingNumber + " " + BillingStreetName;
+            }
+
+            else if (String.IsNullOrEmpty(BillingBuildingNumber) && !String.IsNullOrEmpty(BillingStreetName))
+            {
+                Street = BillingStreetName;
+            }
+
+            else if (!String.IsNullOrEmpty(BillingBuildingNumber) && String.IsNullOrEmpty(BillingStreetName))
+            {
+                Street = BillingBuildingNumber;
+            }
+
+            else 
+            {
+                Street = "";
+            }
+
+            if(!String.IsNullOrEmpty(Street))
+            {
+                nvc.Add("billing.address.street", Street);
+
+            }
+
+            //street2 = BillingFloor-BillingUnit BillingBuildingName
+            if (!String.IsNullOrEmpty(BillingFloor) && !String.IsNullOrEmpty(BillingUnit) && !String.IsNullOrEmpty(BillingBuildingName))
+            {
+                Street2 = BillingFloor + "-" + BillingUnit + " " + BillingBuildingName;
+            }
+
+            else if (String.IsNullOrEmpty(BillingFloor) && !String.IsNullOrEmpty(BillingUnit) && !String.IsNullOrEmpty(BillingBuildingName))
+            {
+                Street2 =  BillingUnit + " " + BillingBuildingName;
+            }
+
+           else if (String.IsNullOrEmpty(BillingFloor) && String.IsNullOrEmpty(BillingUnit) && !String.IsNullOrEmpty(BillingBuildingName))
+            {
+                Street2 =  BillingBuildingName;
+            }
+
+           else if (String.IsNullOrEmpty(BillingFloor) && String.IsNullOrEmpty(BillingUnit) && String.IsNullOrEmpty(BillingBuildingName))
+            {
+                Street2 = "";
+            }
+
+            else if (!String.IsNullOrEmpty(BillingFloor) && !String.IsNullOrEmpty(BillingUnit) && String.IsNullOrEmpty(BillingBuildingName))
+            {
+                Street2 = BillingFloor + "-" + BillingUnit;
+            }
+
+            else if (!String.IsNullOrEmpty(BillingFloor) && String.IsNullOrEmpty(BillingUnit) && String.IsNullOrEmpty(BillingBuildingName))
+            {
+                Street2 = BillingFloor ;
+            }
+
+            else if (!String.IsNullOrEmpty(BillingFloor) && String.IsNullOrEmpty(BillingUnit) && !String.IsNullOrEmpty(BillingBuildingName))
+            {
+                Street2 = BillingFloor + " " + BillingBuildingName;
+            }
+
+            else if (String.IsNullOrEmpty(BillingFloor) && !String.IsNullOrEmpty(BillingUnit) && String.IsNullOrEmpty(BillingBuildingName))
+            {
+                Street2 = BillingUnit;
+            }
+
+
+            if (!String.IsNullOrEmpty(Street2))
+            {
+                nvc.Add("billing.address.street2", Street2);
+            } 
+
+            nvc.Add("billing.address.city", "Singapore");
+            nvc.Add("billing.address.stateProvince", "Singapore");
+            nvc.Add("billing.address.country", "SGP");
+
+            if (!String.IsNullOrEmpty(BillingPostCode))
+            {
+                nvc.Add("billing.address.postcodeZip", BillingPostCode);
+            }
+
+            //statement Descriptor
+            //nvc.Add("order.statementDescriptor.name", gatewayApiConfig.GridMerchantName);
+            //nvc.Add("order.statementDescriptor.address.company", gatewayApiConfig.GridMerchantName);
+            //nvc.Add("order.statementDescriptor.address.street", gatewayApiConfig.GridMerchantAddress1);
+            //nvc.Add("order.statementDescriptor.address.street2", gatewayApiConfig.GridMerchantAddress2);
+           
+            //nvc.Add("order.statementDescriptor.address.city", "Singapore");
+            //nvc.Add("order.statementDescriptor.address.stateProvince", "Singapore");
+            //nvc.Add("order.statementDescriptor.address.country", "SGP");
+            //nvc.Add("order.statementDescriptor.address.postcodeZip", gatewayApiConfig.GridMerchantPostCode);
+
+            
+
+
+
+
 
             if (!String.IsNullOrEmpty(CardNumber))
             {

@@ -126,6 +126,7 @@ namespace OrderService.Models
     {
         public int InvoiceID { get; set; }
         public int AccountID { get; set; }
+        public string BSSBillId { get; set; }
         public string InvoiceName { get; set; }
         public string InvoiceUrl { get; set; }
         public double FinalAmount { get; set; }
