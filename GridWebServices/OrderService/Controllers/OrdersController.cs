@@ -3212,6 +3212,18 @@ namespace OrderService.Controllers
 
                         if (customerResponse.ResponseCode == (int)DbReturnValue.RecordExists && customerID == ((OrderCustomer)customerResponse.Results).CustomerId)
                         {
+                            string nricwarning = "";
+                            EmailValidationHelper _helper = new EmailValidationHelper();
+                            if(!_helper.NRICValidation((request.IDType == "NRIC" ? "S" : "F"), request.IDNumber, out nricwarning))
+                            {
+                                LogInfo.Error(nricwarning);
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = false,
+                                    Message = EnumExtensions.GetDescription(DbReturnValue.InvalidNRIC),
+                                    IsDomainValidationErrors = false
+                                });
+                            }
                             IFormFile frontImage = request.IDImageFront;
 
                             IFormFile backImage = request.IDImageBack;
