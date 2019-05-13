@@ -229,6 +229,7 @@ namespace OrderService.Controllers
                             // order creation failed
 
                             LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.CreateOrderFailed));
+
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = false,
@@ -2522,53 +2523,79 @@ namespace OrderService.Controllers
 
                             DatabaseResponse checkOutAmountResponse = await _orderAccess.GetCheckoutRequestDetails(createcheckOutModel);
 
-                            checkoutDetails = gatewayHelper.CreateCheckoutSession(gatewayConfig, billingAddress, checkoutDetails.OrderId, checkoutDetails.TransactionID, ((Checkout) checkOutAmountResponse.Results).ReceiptNumber);
-                            
-                            CheckOutRequestDBUpdateModel checkoutUpdateModel = new CheckOutRequestDBUpdateModel
+                            if(checkOutAmountResponse.ResponseCode==(int)DbReturnValue.CreateSuccess)
                             {
-                                Source = ((CheckOutType)orderType).ToString(),
+                                checkoutDetails = gatewayHelper.CreateCheckoutSession(gatewayConfig, billingAddress, checkoutDetails.OrderId, checkoutDetails.TransactionID, ((Checkout)checkOutAmountResponse.Results).ReceiptNumber);
 
-                                SourceID = orderId,
+                                CheckOutRequestDBUpdateModel checkoutUpdateModel = new CheckOutRequestDBUpdateModel
+                                {
+                                    Source = ((CheckOutType)orderType).ToString(),
 
-                                CheckOutSessionID = checkoutDetails.CheckoutSession.Id,
+                                    SourceID = orderId,
 
-                                CheckoutVersion = checkoutDetails.CheckoutSession.Version,
+                                    CheckOutSessionID = checkoutDetails.CheckoutSession.Id,
 
-                                SuccessIndicator = checkoutDetails.CheckoutSession.SuccessIndicator,
+                                    CheckoutVersion = checkoutDetails.CheckoutSession.Version,
 
-                                MPGSOrderID = checkoutDetails.OrderId,
+                                    SuccessIndicator = checkoutDetails.CheckoutSession.SuccessIndicator,
 
-                                TransactionID = checkoutDetails.TransactionID,
-                            };
+                                    MPGSOrderID = checkoutDetails.OrderId,
 
-                            //Update checkout details and return amount
+                                    TransactionID = checkoutDetails.TransactionID,
+                                };
 
-                             checkOutAmountResponse = await _orderAccess.GetCheckoutRequestDetails(checkoutUpdateModel);
+                                //Update checkout details and return amount
 
-                            if (checkOutAmountResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                                checkOutAmountResponse = await _orderAccess.GetCheckoutRequestDetails(checkoutUpdateModel);
+
+                                if (checkOutAmountResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                                {
+                                    checkoutDetails.Amount = ((Checkout)checkOutAmountResponse.Results).Amount;
+
+                                    checkoutDetails.ReceiptNumber = ((Checkout)checkOutAmountResponse.Results).ReceiptNumber;
+
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = true,
+                                        Message = EnumExtensions.GetDescription(CommonErrors.CheckoutSessionCreated),
+                                        IsDomainValidationErrors = false,
+                                        ReturnedObject = checkoutDetails
+                                    });
+                                }
+                                else
+                                {
+                                    LogInfo.Error(EnumExtensions.GetDescription(checkOutAmountResponse.ResponseCode));
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = false,
+                                        Message = EnumExtensions.GetDescription(checkOutAmountResponse.ResponseCode),
+                                        IsDomainValidationErrors = false
+                                    });
+                                }
+                            }
+                            else if(checkOutAmountResponse.ResponseCode==(int)DbReturnValue.PaymentAlreadyProcessed)
                             {
-                                checkoutDetails.Amount = ((Checkout)checkOutAmountResponse.Results).Amount;
+                                // already processed order
 
-                                checkoutDetails.ReceiptNumber= ((Checkout)checkOutAmountResponse.Results).ReceiptNumber;
-
+                                LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.PaymentAlreadyProcessed));
                                 return Ok(new OperationResponse
                                 {
-                                    HasSucceeded = true,
-                                    Message = EnumExtensions.GetDescription(CommonErrors.CheckoutSessionCreated),
-                                    IsDomainValidationErrors = false,
-                                    ReturnedObject = checkoutDetails
+                                    HasSucceeded = false,
+                                    Message = EnumExtensions.GetDescription(DbReturnValue.PaymentAlreadyProcessed),
+                                    IsDomainValidationErrors = false
                                 });
                             }
                             else
                             {
-                                LogInfo.Error(EnumExtensions.GetDescription(checkOutAmountResponse.ResponseCode));
+                                LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.NotExists));
                                 return Ok(new OperationResponse
                                 {
                                     HasSucceeded = false,
-                                    Message = EnumExtensions.GetDescription(checkOutAmountResponse.ResponseCode),
+                                    Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
                                     IsDomainValidationErrors = false
                                 });
                             }
+                         
                         }
                         else
                         {

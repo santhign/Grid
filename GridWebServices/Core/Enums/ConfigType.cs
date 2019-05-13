@@ -59,7 +59,10 @@ namespace Core.Enums
         [Description("New Order")]
         NewOrder = 1,
 
-       
+        [EnumMember(Value = "OldUpdatedOrderr")]
+        [Description("OldUpdatedOrder")]
+        OldUpdatedOrder = 2,
+        
     }
 
     /// <summary>
