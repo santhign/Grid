@@ -109,10 +109,10 @@ namespace OrderService.Models
         public string OldSIM { get; set; }
 
         [DataMember(Name = "Bundles")]
-        public List<CurrBundleDetails> CurrBundles { get; set; }
+        public List<BundleDetails> Bundles { get; set; }
 
         [DataMember(Name = "CurrBundles")]
-        public List<BundleDetails> Bundles { get; set; }
+        public List<CurrBundleDetails> CurrBundles { get; set; }
 
 
         [DataMember(Name = "Charges")]

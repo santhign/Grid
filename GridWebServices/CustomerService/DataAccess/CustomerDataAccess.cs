@@ -892,7 +892,7 @@ namespace CustomerService.DataAccess
                             try { orderDetails.PaymentOn = Convert.ToDateTime(dr["PaymentOn"]); }
                             catch { }
                             List<Subscribers> orderSubscribers = new List<Subscribers>();
-                            foreach (DataRow osdr in ds.Tables[1].Rows)
+                            foreach (DataRow osdr in ds.Tables[1].Select("OrderID = " + dr["OrderID"].ToString()))
                             {
                                 Subscribers _subscriber = new Subscribers();
                                 _subscriber.OrderID = Convert.ToInt32(osdr["OrderID"]);
