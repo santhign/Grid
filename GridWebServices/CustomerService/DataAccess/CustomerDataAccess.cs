@@ -58,7 +58,7 @@ namespace CustomerService.DataAccess
 
                 parameters[0].Value = customer.Email;
                 parameters[1].Value = new Sha2().Hash(customer.Password);
-                parameters[2].Value = new RandomSG().GetString();
+                parameters[2].Value = new RandomSG().GetString().ToUpper();
 
                 _DataHelper = new DataAccessHelper("Customer_CreateCustomer", parameters, _configuration);
 
@@ -542,7 +542,9 @@ namespace CustomerService.DataAccess
                                           SuspensionRaised = model.Field<int>("SuspensionRaised"),
                                           TerminationRaised = model.Field<int>("TerminationRaised"),
                                           PlanChangeRaised = model.Field<int>("PlanChangeRaised"),
-                                          PlanChangeMessage = model.Field<string>("PlanChangeMessage")
+                                          PlanChangeMessage = model.Field<string>("PlanChangeMessage"),
+                                          SMSSubscription = model.Field<int>("SMSSubscription"),
+                                          VoiceSubscription = model.Field<int>("VoiceSubscription")
                                       }).ToList();
                     }
 
@@ -647,7 +649,7 @@ namespace CustomerService.DataAccess
                 };
 
                 parameters[0].Value = customerid;
-                parameters[1].Value = ReferralCode;
+                parameters[1].Value = ReferralCode.ToUpper();
 
                 _DataHelper = new DataAccessHelper("Customers_UpdateReferralCode", parameters, _configuration);
 
