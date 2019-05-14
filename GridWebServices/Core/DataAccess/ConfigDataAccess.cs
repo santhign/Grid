@@ -208,8 +208,8 @@ namespace Core.DataAccess
                     new SqlParameter( "@Message",  SqlDbType.NVarChar )                
                 };
 
-                parameters[0].Value = log.EventType;
-                parameters[1].Value = log.Message;
+                parameters[1].Value = log.EventType;
+                parameters[2].Value = log.Message;
                
 
 
