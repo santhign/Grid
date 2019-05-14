@@ -284,5 +284,17 @@ namespace Core.Enums
         [EnumMember(Value = "AlreadyProcessedOrder")]
         [Description("Already Processed Order")]
         AlreadyProcessedOrder = 66,
+
+        [EnumMember(Value = "UnfishedOrderExists")]
+        [Description("Order not created, proceed with unfinished existing order")]
+        UnfishedOrderExists = 67,
+        
+        [EnumMember(Value = "BSSConnectionFailed")]
+        [Description("BSSConnectionFailed")]
+        BSSConnectionFailed = 68,
+
+        [EnumMember(Value = "PaymentProcessed")]
+        [Description("Payment Successfully processed")]
+        PaymentProcessed = 69,
     }
 }

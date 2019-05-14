@@ -8,6 +8,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Net.Http;
+using Serilog;
 
 namespace Core.Helpers
 {
@@ -47,6 +48,8 @@ namespace Core.Helpers
                 request.dataset = param;
 
                 req.Request = request;
+
+                Log.Information(JsonConvert.SerializeObject(req));
 
                 return await client.PostAsync<ResponseObject, RequestObject>(requestUrl, req);
             }
@@ -196,6 +199,8 @@ namespace Core.Helpers
 
                 req.Request = request;
 
+                Log.Information(JsonConvert.SerializeObject(req));
+
                 return await client.PostAsync<BSSUpdateResponseObject, UpdateRequestObject>(requestUrl, req);
             }
             catch (Exception ex)
@@ -302,6 +307,8 @@ namespace Core.Helpers
                 request.dataset = param;
 
                 req.Request = request;
+
+                Log.Information(JsonConvert.SerializeObject(req));
 
                 return await client.PostAsync<ResponseObject, RequestObject>(requestUrl, req);
 
@@ -432,6 +439,8 @@ namespace Core.Helpers
 
                 req.Request = request;
 
+                Log.Information(JsonConvert.SerializeObject(req));
+
                 return await client.PostAsync<BSSQueryPlanResponseObject, QueryPlanRequestObject>(requestUrl, req);
             }
             catch (Exception ex)
@@ -538,6 +547,8 @@ namespace Core.Helpers
 
                 req.Request = request;
 
+                Log.Information(JsonConvert.SerializeObject(req));
+
                 return await client.PostAsync<BSSInvoiceResponseObject, BSSInvoiceRequestObject>(requestUrl, req);
 
             }
@@ -634,6 +645,8 @@ namespace Core.Helpers
                 request.dataset = dataset;
 
                 req.Request = request;
+
+                Log.Information(JsonConvert.SerializeObject(req));
 
                 return await client.PostAsync<BSSAccountQuerySubscriberResponse, QueryPlanRequestObject>(requestUrl, req);
 
