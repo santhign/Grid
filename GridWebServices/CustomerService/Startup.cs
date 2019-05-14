@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
+using InfrastructureService;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -85,6 +86,7 @@ namespace CustomerService
             {
                 app.UseDeveloperExceptionPage();
             }
+            app.UseMiddleware<LogMiddleware>();
 
             app.UseMvc();
             app.Run(async (context) =>

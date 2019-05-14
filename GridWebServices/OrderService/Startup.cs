@@ -12,7 +12,7 @@ using Swashbuckle.AspNetCore.Swagger;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-
+using InfrastructureService;
 
 namespace OrderService
 {
@@ -95,6 +95,7 @@ namespace OrderService
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseMiddleware<LogMiddleware>();
             // Enable Cors
             app.UseCors("GridOrderPolicy");
             app.UseMvc();
