@@ -3,6 +3,7 @@ using AdminService.Models;
 using Core.Enums;
 using Core.Helpers;
 using Core.Models;
+using InfrastructureService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Serilog;

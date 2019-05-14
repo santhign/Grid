@@ -1,6 +1,7 @@
 ﻿using AdminService.Models;
 using Core.Enums;
 using Core.Helpers;
+using InfrastructureService;
 using Microsoft.Extensions.Configuration;
 using Serilog;
 using System;

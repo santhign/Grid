@@ -3430,8 +3430,7 @@ namespace OrderService.Controllers
 
         /// <summary>
         /// This will create a checkout session and returns the details to call MPGS 
-        /// </summary>
-        /// <param name="token" in="Header"></param>            
+        /// </summary>           
         /// <returns>OperationsResponse</returns>
       
 

@@ -9,7 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Core.Enums;
 using Serilog;
-
+using InfrastructureService;
 
 namespace AdminService.DataAccess
 {
