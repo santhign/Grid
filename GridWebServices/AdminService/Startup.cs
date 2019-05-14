@@ -13,6 +13,7 @@ using Swashbuckle.AspNetCore.Swagger;
 using Microsoft.AspNetCore.Routing;
 using System.Linq;
 using InfrastructureService;
+using Microsoft.AspNetCore.Http.Internal;
 
 namespace AdminService
 {
@@ -105,6 +106,11 @@ namespace AdminService
 
             // Enable Cors
             app.UseCors("StratagileAdminPolicy");
+            app.Use(next => context => {
+                context.Request.EnableRewind();
+
+                return next(context);
+            });
             app.UseMiddleware<LogMiddleware>();
 
             app.UseMvc(routes =>

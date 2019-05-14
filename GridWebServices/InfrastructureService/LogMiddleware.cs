@@ -4,7 +4,9 @@ using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace InfrastructureService
@@ -12,7 +14,7 @@ namespace InfrastructureService
     public class LogMiddleware
     {
         const string MessageTemplate =
-               "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
+               "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms with {RequestBody} and {ResponseBody}";
 
         static readonly ILogger Log = Serilog.Log.ForContext<LogMiddleware>();
 
@@ -27,21 +29,46 @@ namespace InfrastructureService
         public async Task Invoke(HttpContext httpContext)
         {
             if (httpContext == null) throw new ArgumentNullException(nameof(httpContext));
+            var stopWatch = Stopwatch.StartNew();
 
-            var sw = Stopwatch.StartNew();
             try
             {
-                await _next(httpContext);
-                sw.Stop();
+                var request = httpContext.Request;
+                if (request.Path.StartsWithSegments(new PathString("/api")))
+                {
+                    var requestTime = DateTime.UtcNow;
+                    var requestBodyContent = await ReadRequestBody(request);
+                    var originalBodyStream = httpContext.Response.Body;
+                    using (var responseBody = new MemoryStream())
+                    {
+                        var response = httpContext.Response;
+                        response.Body = responseBody;
+                        await _next(httpContext);
+                        stopWatch.Stop();
 
-                var statusCode = httpContext.Response?.StatusCode;
-                var level = statusCode > 499 ? LogEventLevel.Error : LogEventLevel.Information;
+                        string responseBodyContent = null;
+                        responseBodyContent = await ReadResponseBody(response);
+                        await responseBody.CopyToAsync(originalBodyStream);
 
-                var log = level == LogEventLevel.Error ? LogForErrorContext(httpContext) : Log;
-                log.Write(level, MessageTemplate, httpContext.Request.Method, httpContext.Request.Path, statusCode, sw.Elapsed.TotalMilliseconds);
+                        var statusCode = httpContext.Response?.StatusCode;
+                        var level = statusCode > 499 ? LogEventLevel.Error : LogEventLevel.Information;
+
+                        SafeLog(request.Path,
+                            request.QueryString.ToString(),
+                            ref requestBodyContent,
+                            ref responseBodyContent);
+
+                        var log = level == LogEventLevel.Error ? LogForErrorContext(httpContext) : Log;
+                        log.Write(level, MessageTemplate, httpContext.Request.Method, httpContext.Request.Path, statusCode, stopWatch.Elapsed.TotalMilliseconds, requestBodyContent, responseBodyContent);
+                    }
+                }
+                else
+                {
+                    await _next(httpContext);
+                }
             }
-            // Never caught, because `LogException()` returns false.
-            catch (Exception ex) when (LogException(httpContext, sw, ex)) { }
+            catch (Exception ex) when (LogException(httpContext, stopWatch, ex))
+            {  }
         }
 
         static bool LogException(HttpContext httpContext, Stopwatch sw, Exception ex)
@@ -67,6 +94,58 @@ namespace InfrastructureService
                 result = result.ForContext("RequestForm", request.Form.ToDictionary(v => v.Key, v => v.Value.ToString()));
 
             return result;
+        }
+        private async Task<string> ReadRequestBody(HttpRequest request)
+        {
+            //request.EnableRewind();
+           
+            var buffer = new byte[Convert.ToInt32(request.ContentLength)];
+            await request.Body.ReadAsync(buffer, 0, buffer.Length);
+            var bodyAsText = Encoding.UTF8.GetString(buffer);
+            request.Body.Seek(0, SeekOrigin.Begin);
+
+            return bodyAsText;
+        }
+
+        private async Task<string> ReadResponseBody(HttpResponse response)
+        {
+            response.Body.Seek(0, SeekOrigin.Begin);
+            var bodyAsText = await new StreamReader(response.Body).ReadToEndAsync();
+            response.Body.Seek(0, SeekOrigin.Begin);
+
+            return bodyAsText;
+        }
+
+        private void SafeLog(string path,
+                            string queryString,
+                            ref string requestBody,
+                            ref string responseBody)
+        {
+            if (path.ToLower().StartsWith("/api/Customers"))
+            {
+                requestBody = "(Request logging disabled for /api/Customers)";
+                responseBody = "(Response logging disabled for /api/Customers)";
+            }
+            if (path.ToLower().StartsWith("/api/Account/authenticate"))
+            {
+                requestBody = "(Request logging disabled for /api/Account/authenticate)";
+                responseBody = "(Response logging disabled for /api/Account/authenticate)";
+            }
+
+            if (requestBody.Length > 100)
+            {
+                requestBody = $"(Truncated to 100 chars) {requestBody.Substring(0, 100)}";
+            }
+
+            if (responseBody.Length > 100)
+            {
+                responseBody = $"(Truncated to 100 chars) {responseBody.Substring(0, 100)}";
+            }
+
+            if (queryString.Length > 100)
+            {
+                queryString = $"(Truncated to 100 chars) {queryString.Substring(0, 100)}";
+            }
         }
     }
 }
