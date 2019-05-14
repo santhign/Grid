@@ -203,13 +203,14 @@ namespace OrderService.Controllers
                                                          .Select(x => x.ErrorMessage))
                             });
                         }
-                        Core.Helpers.EmailValidationHelper _helper = new EmailValidationHelper();
+
+                        EmailValidationHelper _helper = new EmailValidationHelper();
 
                         bool AllowSrubscriber = await _helper.AllowSubscribers(customerID, (int)SubscriberCheckType.CustomerLevel, _iconfiguration);
 
                         if (!AllowSrubscriber)
                         {
-                            LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.NotAllowSubscribers));
+                            LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.NotAllowSubscribers) + " for customer:" + customerID + ". Payload:" + JsonConvert.SerializeObject(request)+ "\n");
 
                             return Ok(new OperationResponse
                             {
@@ -230,7 +231,7 @@ namespace OrderService.Controllers
                         {
                             // order creation failed
 
-                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.CreateOrderFailed));
+                            LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.CreateOrderFailed) + " for customer:" + customerID+ ". Payload:" + JsonConvert.SerializeObject(request) + "\n");
 
                             return Ok(new OperationResponse
                             {
@@ -261,10 +262,27 @@ namespace OrderService.Controllers
 
                                     DatabaseResponse requestIdRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.GetAssets.ToString(), customerID, (int)BSSCalls.NewSession, "");
 
-                                    ResponseObject res = await bsshelper.GetAssetInventory(config, (((List<ServiceFees>)serviceCAF.Results)).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdRes.Results);
+                                    ResponseObject res = new ResponseObject();
+
+                                    try
+                                    {
+                                        res = await bsshelper.GetAssetInventory(config, (((List<ServiceFees>)serviceCAF.Results)).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdRes.Results);
+                                    }
+                                   
+                                    catch(Exception ex)
+                                    {
+                                        LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = false,
+                                            Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed) ,
+                                            IsDomainValidationErrors = false
+                                        });
+
+                                    }
 
                                     string AssetToSubscribe = bsshelper.GetAssetId(res);
-
 
                                     if (res != null)
                                     {
@@ -285,7 +303,25 @@ namespace OrderService.Controllers
 
                                         DatabaseResponse requestIdToUpdateRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.ExistingSession, AssetToSubscribe);
 
-                                        BSSUpdateResponseObject bssUpdateResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateRes.Results, AssetToSubscribe, false);
+                                        BSSUpdateResponseObject bssUpdateResponse = new BSSUpdateResponseObject();
+
+                                        try
+                                        {
+                                            bssUpdateResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateRes.Results, AssetToSubscribe, false);
+                                        }
+
+                                        catch (Exception ex)
+                                        {
+                                            LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+
+                                            return Ok(new OperationResponse
+                                            {
+                                                HasSucceeded = false,
+                                                Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed),
+                                                IsDomainValidationErrors = false
+                                            });
+                                        }
+
 
                                         if (bsshelper.GetResponseCode(bssUpdateResponse) == "0")
                                         {
@@ -313,7 +349,7 @@ namespace OrderService.Controllers
                                             {
                                                 // create subscription failed
 
-                                                LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.CreateSubscriptionFailed));
+                                                LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.CreateSubscriptionFailed) + "\n");
 
                                                 DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID);
 
@@ -342,7 +378,7 @@ namespace OrderService.Controllers
                                         {
                                             //blocking failed
 
-                                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateAssetBlockingFailed));
+                                            LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.UpdateAssetBlockingFailed) + "\n");
 
                                             //ROLLBACK ORDER
                                             DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID);
@@ -372,7 +408,7 @@ namespace OrderService.Controllers
                                     {
                                         // no assets returned                                   
 
-                                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.GetAssetFailed));
+                                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.GetAssetFailed) + "\n");
 
                                         DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID);
 
@@ -400,8 +436,10 @@ namespace OrderService.Controllers
 
                                 catch (Exception ex)
                                 {
-                                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.GetAssetFailed));
-                                    LogInfo.Fatal(ex, EnumExtensions.GetDescription(CommonErrors.GetAssetFailed));
+                                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.GetAssetFailed) + "\n");
+
+                                    LogInfo.Fatal(ex, EnumExtensions.GetDescription(CommonErrors.GetAssetFailed) + "\n");
+
                                     DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID);
 
                                     if (rollbackResponse.ResponseCode == (int)DbReturnValue.DeleteSuccess)
@@ -430,14 +468,14 @@ namespace OrderService.Controllers
                             {
                                 // old order-- return order details
 
-                                LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.CreateOrderFailed));
+                                LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.UnfishedOrderExists) + "\n");
 
                                 DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails(((OrderInit)createOrderRresponse.Results).OrderID);
 
                                 return Ok(new OperationResponse
                                 {
                                     HasSucceeded = true,
-                                    Message = EnumExtensions.GetDescription(DbReturnValue.RecordExists),
+                                    Message = EnumExtensions.GetDescription(CommonErrors.UnfishedOrderExists),
                                     IsDomainValidationErrors = false,
                                     ReturnedObject = orderDetailsResponse.Results
 
@@ -450,7 +488,7 @@ namespace OrderService.Controllers
                     {
                         //Token expired
 
-                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.ExpiredToken) + "\n");
 
                         return Ok(new OperationResponse
                         {
@@ -466,7 +504,7 @@ namespace OrderService.Controllers
                 else
                 {
                     // token auth failure
-                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+                    LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed) + "\n");
 
                     return Ok(new OperationResponse
                     {
@@ -479,7 +517,7 @@ namespace OrderService.Controllers
             }
             catch (Exception ex)
             {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + " for customer token:" + token + ". Payload:" + JsonConvert.SerializeObject(request) + "\n");
 
                 return Ok(new OperationResponse
                 {
@@ -562,7 +600,26 @@ namespace OrderService.Controllers
                             GridBSSConfi config = bsshelper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
 
                             // Unblock
-                            BSSUpdateResponseObject bssUnblockUpdateResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateUnblock.Results, request.OldMobileNumber, true);
+
+                            BSSUpdateResponseObject bssUnblockUpdateResponse = new BSSUpdateResponseObject();
+
+                            try
+                            {
+                                bssUnblockUpdateResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateUnblock.Results, request.OldMobileNumber, true);
+                            }
+                            catch (Exception ex)
+                            {
+                                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + " " + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = false,
+                                    Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed),
+                                    IsDomainValidationErrors = false
+                                });
+
+                            }
+                           
 
                             if (bsshelper.GetResponseCode(bssUnblockUpdateResponse) == "0")
                             {
@@ -570,7 +627,24 @@ namespace OrderService.Controllers
 
                                 DatabaseResponse requestIdToUpdateBlock = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customer.CustomerId, (int)BSSCalls.ExistingSession, request.NewNumber.MobileNumber);
 
-                                BSSUpdateResponseObject bssUpdateResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateBlock.Results, request.NewNumber.MobileNumber, false);
+                                BSSUpdateResponseObject bssUpdateResponse = new BSSUpdateResponseObject();
+
+                                try
+                                {
+                                    bssUpdateResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateBlock.Results, request.NewNumber.MobileNumber, false);
+                                }
+                                catch (Exception ex)
+                                {
+                                    LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + " "+ EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = false,
+                                        Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed),
+                                        IsDomainValidationErrors = false
+                                    });
+
+                                }                                
 
                                 if (bsshelper.GetResponseCode(bssUpdateResponse) == "0")
                                 {
@@ -617,14 +691,13 @@ namespace OrderService.Controllers
                                             IsDomainValidationErrors = false
                                         });
                                     }
-
                                 }
 
                                 else
                                 {
                                     // blocking failed
 
-                                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateAssetBlockingFailed));
+                                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateAssetBlockingFailed) + ". Customer:" + customerID);
                                     return Ok(new OperationResponse
                                     {
                                         HasSucceeded = false,
@@ -638,7 +711,7 @@ namespace OrderService.Controllers
                             else
                             {
                                 // unblocking failed
-                                LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateAssetUnBlockingFailed));
+                                LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateAssetUnBlockingFailed) + ". Customer:" + customerID);
                                 return Ok(new OperationResponse
                                 {
                                     HasSucceeded = false,
@@ -652,7 +725,7 @@ namespace OrderService.Controllers
                         else
                         {
                             // failed to locate customer
-                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.TokenNotMatching));
+                            LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.TokenNotMatching));
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = false,
@@ -666,7 +739,7 @@ namespace OrderService.Controllers
                     {
                         //Token expired
 
-                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
 
                         return Ok(new OperationResponse
                         {
@@ -680,7 +753,7 @@ namespace OrderService.Controllers
                 else
                 {
                     // token auth failure
-                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+                    LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
 
                     return Ok(new OperationResponse
                     {
@@ -690,12 +763,10 @@ namespace OrderService.Controllers
                     });
                 }
 
-
-
             }
             catch (Exception ex)
             {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)+ " for token:" + token);
 
                 return Ok(new OperationResponse
                 {
@@ -826,18 +897,7 @@ namespace OrderService.Controllers
                             if (portResponse.Results.ToString().Trim() == "0")
                             {
                                 customer = (OrderCustomer)customerResponse.Results;
-
-                                //DatabaseResponse requestIdToUpdateUnblock = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customer.CustomerId, (int)BSSCalls.ExistingSession, request.OldMobileNumber);
-
-                                //DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
-
-                                //GridBSSConfi config = bsshelper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
-
-                                //// Unblock
-                                //BSSUpdateResponseObject bssUnblockUpdateResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateUnblock.Results, request.OldMobileNumber, true);
-
-                                //if (bsshelper.GetResponseCode(bssUnblockUpdateResponse) == "0")
-                                //{
+                               
                                 //update subscription porting
                                 DatabaseResponse updateSubscriberResponse = await _orderAccess.UpdateSubscriberPortingNumber(portingRequest);
 
@@ -881,19 +941,7 @@ namespace OrderService.Controllers
                                         IsDomainValidationErrors = false
                                     });
                                 }
-                                //}
-
-                                //else
-                                //{
-                                //    // unblocking failed
-                                //    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateAssetUnBlockingFailed));
-                                //    return Ok(new OperationResponse
-                                //    {
-                                //        HasSucceeded = false,
-                                //        Message = EnumExtensions.GetDescription(DbReturnValue.UnBlockingFailed),
-                                //        IsDomainValidationErrors = false
-                                //    });
-                                //}
+                                
                             }
                             else
                             {
@@ -988,7 +1036,7 @@ namespace OrderService.Controllers
             }
             catch (Exception ex)
             {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + ". token:" + token);
 
                 return Ok(new OperationResponse
                 {
@@ -1217,7 +1265,7 @@ namespace OrderService.Controllers
             }
             catch (Exception ex)
             {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)  +". token:" + token);
 
                 return Ok(new OperationResponse
                 {
@@ -1328,7 +1376,7 @@ namespace OrderService.Controllers
 
             catch (Exception ex)
             {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + ". token:" + token);
 
                 return Ok(new OperationResponse
                 {
@@ -1478,7 +1526,7 @@ namespace OrderService.Controllers
             }
             catch (Exception ex)
             {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + ". token:" + token);
 
                 return Ok(new OperationResponse
                 {
@@ -4067,9 +4115,7 @@ namespace OrderService.Controllers
 
                                         tokenSession.Token = tokenizeResponse.Token;
 
-                                        string captureResponse = gatewayHelper.Capture(gatewayConfig, tokenSession);
-
-                                        //TransactionResponseModel transactionResponse = new TransactionResponseModel();
+                                        string captureResponse = gatewayHelper.Capture(gatewayConfig, tokenSession);                                     
 
                                         // get the session details and transaction details
 
@@ -4105,12 +4151,14 @@ namespace OrderService.Controllers
 
                                             if (await qMHelper.ProcessSuccessTransaction(updateRequest) == 1)
                                             {
+                                                PaymentSuccessResponse paymentResponse = new PaymentSuccessResponse { Source = ((OrderSource)sourceTyeResponse.Results).SourceType, MPGSOrderID = updateRequest.MPGSOrderID, Amount = tokenSession.Amount, Currency = gatewayConfig.Currency };
+                                                    
                                                 return Ok(new OperationResponse
                                                 {
                                                     HasSucceeded = true,
-                                                    Message = EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
+                                                    Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
                                                     IsDomainValidationErrors = false,
-                                                    ReturnedObject = transactionResponse // check if need to return this data 
+                                                    ReturnedObject = paymentResponse
                                                 });
                                             }
 
@@ -4159,7 +4207,7 @@ namespace OrderService.Controllers
                                 {
                                     //failed to create payment token
 
-                                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.TokenGenerationFailed));
+                                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.TokenGenerationFailed)+ " for customer:"+ customerID);
                                     return Ok(new OperationResponse
                                     {
                                         HasSucceeded = false,
@@ -4565,12 +4613,14 @@ namespace OrderService.Controllers
 
                                                 if (await qMHelper.ProcessSuccessTransaction(updateRequest) == 1)
                                                 {
+                                                    PaymentSuccessResponse paymentResponse = new PaymentSuccessResponse {Source = ((CheckOutType)orderType).ToString(), MPGSOrderID = updateRequest.MPGSOrderID, Amount = checkoutDetails.Amount, Currency = gatewayConfig.Currency };
+
                                                     return Ok(new OperationResponse
                                                     {
                                                         HasSucceeded = true,
-                                                        Message = EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
+                                                        Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " +EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
                                                         IsDomainValidationErrors = false,
-                                                        ReturnedObject = transactionResponse // check if need to return this data 
+                                                        ReturnedObject = paymentResponse  
                                                     });
                                                 }
 
@@ -4590,7 +4640,7 @@ namespace OrderService.Controllers
                                             }
                                             else
                                             {
-                                                LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TransactionFailed));
+                                                LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionFailed));
                                                 return Ok(new OperationResponse
                                                 {
                                                     HasSucceeded = false,
@@ -4724,7 +4774,7 @@ namespace OrderService.Controllers
                             .Select(x => x.ErrorMessage))
                     });
                 }
-
+               
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
                 var helper = new AuthHelper(_iconfiguration);
                 var tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_RescheduleDelivery);
@@ -5359,6 +5409,8 @@ namespace OrderService.Controllers
                         }
                         else
                         {
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.AccountNotExists) + ". customer:" + customerID);
+
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = false,
@@ -5374,7 +5426,7 @@ namespace OrderService.Controllers
                     {
                         //Token expired
 
-                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken) + ". token:" + token);
 
                         return Ok(new OperationResponse
                         {
@@ -5388,7 +5440,7 @@ namespace OrderService.Controllers
                 else
                 {
                     // token auth failure
-                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed) + ". token:" + token);
 
                     return Ok(new OperationResponse
                     {
@@ -5443,7 +5495,7 @@ namespace OrderService.Controllers
             }
             catch (Exception ex)
             {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + "MPGS OrderID:" + MPGSOrderID);
             }
         }
 

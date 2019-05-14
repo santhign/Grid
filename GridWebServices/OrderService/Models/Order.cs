@@ -146,4 +146,12 @@ namespace OrderService.Models
         public string InvoiceName { get; set; }       
         public double FinalAmount { get; set; }
     }
+
+    public class PaymentSuccessResponse
+    {      
+        public string Source { get; set; }
+        public string MPGSOrderID { get; set; }
+        public double Amount { get; set; }
+        public string Currency { get; set; }
+    }
 }

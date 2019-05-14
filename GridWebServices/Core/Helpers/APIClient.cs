@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using System.Runtime.Serialization.Json;
 using System.IO;
 using System.Net;
+using Serilog;
 
 namespace Core.Helpers
 {
@@ -35,6 +36,7 @@ namespace Core.Helpers
             var response = await _httpClient.GetAsync(requestUrl, HttpCompletionOption.ResponseHeadersRead);
             response.EnsureSuccessStatusCode();
             var data = await response.Content.ReadAsStringAsync();
+            Log.Information(JsonConvert.SerializeObject(data));
             return JsonConvert.DeserializeObject<T>(data);
         }
 
@@ -55,6 +57,7 @@ namespace Core.Helpers
             var response = await _httpClient.PostAsync(requestUrl.ToString(), CreateHttpContent<T2>(content));
             response.EnsureSuccessStatusCode();
             var data = await response.Content.ReadAsStringAsync();
+            Log.Information(JsonConvert.SerializeObject(data));
             return JsonConvert.DeserializeObject<T1>(data);
         } 
         public async Task<byte[]> DownloadAsync(string requestUri)
@@ -80,6 +83,7 @@ namespace Core.Helpers
             var response = await _httpClient.PostAsync(requestUrl.ToString(), CreateHttpContent<T>(content));
             response.EnsureSuccessStatusCode();
             var data = await response.Content.ReadAsStringAsync();
+            Log.Information(JsonConvert.SerializeObject(data));
             return JsonConvert.DeserializeObject<T>(data);
         }
 
