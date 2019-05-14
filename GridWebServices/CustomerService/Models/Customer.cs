@@ -598,4 +598,45 @@ namespace CustomerService.Models
         [Required(ErrorMessage = "postcode is required")]
         public string ShippingPostCode { get; set; }
     }
+
+    public class ChangeRequest
+    {
+        public int ChangeRequestID { get; set; }
+        public int SubscriberID { get; set; }
+        public string MobileNumber { get; set; }
+        public string ListingStatus { get; set; }
+        public string OrderNumber { get; set; }
+        public string RequestType { get; set; }
+        public string OrderStatus { get; set; }
+        public DateTime RequestOn { get; set; }
+        public string BillingUnit { get; set; }
+        public string BillingFloor { get; set; }
+        public string BillingBuildingNumber { get; set; }
+        public string BillingBuildingName { get; set; }
+        public string BillingStreetName { get; set; }
+        public string BillingPostCode { get; set; }
+        public string BillingContactNumber { get; set; }
+        public string Name { get; set; }
+        public string Email { get; set; }
+        public string IDType { get; set; }
+        public string IDNumber { get; set; }
+        public int? IsSameAsBilling { get; set; }
+        public string ShippingUnit { get; set; }
+        public string ShippingFloor { get; set; }
+        public string ShippingBuildingNumber { get; set; }
+        public string ShippingBuildingName { get; set; }
+        public string ShippingStreetName { get; set; }
+        public string ShippingPostCode { get; set; }
+        public string ShippingContactNumber { get; set; }
+        public string AlternateRecipientContact { get; set; }
+        public string AlternateRecipientName { get; set; }
+        public string AlternateRecipientEmail { get; set; }
+        public string PortalSlotID { get; set; }
+        public DateTime? SlotDate { get; set; }
+        public TimeSpan? SlotFromTime { get; set; }
+        public TimeSpan? SlotToTime { get; set; }
+        public DateTime? ScheduledDate { get; set; }
+        public double? ServiceFee { get; set; }
+        public int AllowRescheduling { get; set; }
+    }
 }

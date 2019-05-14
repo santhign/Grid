@@ -1459,5 +1459,113 @@ namespace CustomerService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+
+        public async Task<DatabaseResponse> GetCustomerChangeRequests(int customerID)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@CustomerID",  SqlDbType.VarChar )
+                   
+                };
+
+                parameters[0].Value = customerID;
+                
+
+                _DataHelper = new DataAccessHelper("Customers_GetCustomerChangeRequests", parameters, _configuration);
+                DataSet ds = new DataSet();
+
+                int result = await _DataHelper.RunAsync(ds); // 105 /102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 100)
+                {
+                    List<ChangeRequest> changeRequests = new List<ChangeRequest>();
+                    foreach (DataRow dr in ds.Tables[0].Rows)
+                    {
+                        ChangeRequest changeDetails = new ChangeRequest();
+
+                        if (dr != null)
+                        {
+
+                            changeDetails.ChangeRequestID = Convert.ToInt32(dr["ChangeRequestID"]);
+                            changeDetails.SubscriberID = Convert.ToInt32(dr["SubscriberID"]);
+                            changeDetails.MobileNumber = dr["MobileNumber"].ToString();
+                            changeDetails.ListingStatus = dr["ListingStatus"].ToString();
+                            changeDetails.OrderNumber = dr["OrderNumber"].ToString();
+                            changeDetails.RequestOn = Convert.ToDateTime(dr["RequestOn"]);
+                            changeDetails.OrderStatus = dr["OrderStatus"].ToString();
+                            changeDetails.RequestType = dr["RequestType"].ToString();
+                            changeDetails.BillingUnit = dr["BillingUnit"].ToString();
+                            changeDetails.BillingFloor = dr["BillingFloor"].ToString();
+                            changeDetails.BillingBuildingNumber = dr["BillingBuildingNumber"].ToString();
+                            changeDetails.BillingBuildingName = dr["BillingBuildingName"].ToString();
+                            changeDetails.BillingStreetName = dr["BillingStreetName"].ToString();
+                            changeDetails.BillingPostCode = dr["BillingPostCode"].ToString();
+                            changeDetails.BillingContactNumber = dr["BillingContactNumber"].ToString();
+                            changeDetails.Name = dr["Name"].ToString();
+                            changeDetails.Email = dr["Email"].ToString();
+                            changeDetails.IDType = dr["IDType"].ToString();
+                            changeDetails.IDNumber = dr["IDNumber"].ToString();
+                            changeDetails.IsSameAsBilling = (dr["IsSameAsBilling"] == DBNull.Value ? 0 : Convert.ToInt32(dr["IsSameAsBilling"]));
+                            changeDetails.ShippingUnit = dr["ShippingUnit"].ToString();
+                            changeDetails.ShippingFloor = dr["ShippingFloor"].ToString();
+                            changeDetails.ShippingBuildingNumber = dr["ShippingBuildingNumber"].ToString();
+                            changeDetails.ShippingBuildingName = dr["ShippingBuildingName"].ToString();
+                            changeDetails.ShippingStreetName = dr["ShippingStreetName"].ToString();
+                            changeDetails.ShippingPostCode = dr["ShippingPostCode"].ToString();
+                            changeDetails.ShippingContactNumber = dr["ShippingContactNumber"].ToString();
+                            changeDetails.AlternateRecipientContact = dr["AlternateRecipientContact"].ToString();
+                            changeDetails.AlternateRecipientName = dr["AlternateRecipientName"].ToString();
+                            changeDetails.AlternateRecipientEmail = dr["AlternateRecipientEmail"].ToString();
+                            changeDetails.PortalSlotID = dr["PortalSlotID"].ToString();
+                            if (dr["SlotDate"] == DBNull.Value)
+                            {
+                                changeDetails.SlotDate = null;
+                            }
+                            else
+                            {
+                                changeDetails.SlotDate = Convert.ToDateTime(dr["SlotDate"]);
+                            }
+                            TimeSpan val;
+                            TimeSpan.TryParse(dr["SlotFromTime"].ToString(), out val);
+                            changeDetails.SlotFromTime = val;
+                            TimeSpan.TryParse(dr["SlotToTime"].ToString(), out val);
+                            changeDetails.SlotToTime = val;
+                            try { changeDetails.ScheduledDate = Convert.ToDateTime(dr["ScheduledDate"]); }
+                            catch { }
+                            try { changeDetails.ServiceFee = Convert.ToDouble(dr["ServiceFee"]); }
+                            catch { }
+                            changeDetails.AllowRescheduling = Convert.ToInt32(dr["AllowRescheduling"]);
+                        }
+                        changeRequests.Add(changeDetails);
+                    }
+                    response = new DatabaseResponse { ResponseCode = result, Results = changeRequests };
+
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw ex;
+
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
     }
 }
