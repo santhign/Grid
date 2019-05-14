@@ -15,6 +15,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Swashbuckle.AspNetCore.Swagger;
 using Microsoft.AspNetCore.Mvc.Cors.Internal;
+using Microsoft.Extensions.Logging;
+using InfrastructureService;
 
 namespace CatelogService
 {
@@ -87,6 +89,7 @@ namespace CatelogService
 
             // Enable Cors
             app.UseCors("MyPolicy");
+            app.UseMiddleware<LogMiddleware>();
             app.UseMvc();
             app.Run(async (context) =>
             {

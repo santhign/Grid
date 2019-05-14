@@ -17,6 +17,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Core.DataAccess;
 using Serilog;
+using InfrastructureService;
 
 namespace BuddyProcessingApp
 {
@@ -176,7 +177,7 @@ namespace BuddyProcessingApp
 
                             queueRequest.PublishedOn = DateTime.Now;
 
-                            Log.Information(EnumExtensions.GetDescription(CommonErrors.PendingBuddyOrderProcessed));
+                            LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PendingBuddyOrderProcessed));
                              
                             await _buddyAccess.InsertMessageInMessageQueueRequest(queueRequest, _connectionString);
 
@@ -195,7 +196,7 @@ namespace BuddyProcessingApp
                     }
                     catch (Exception ex)
                     {
-                        Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                        LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                         queueRequest.Status = 0;
 
@@ -207,14 +208,14 @@ namespace BuddyProcessingApp
 
                 else
                 {
-                    Log.Information(EnumExtensions.GetDescription(CommonErrors.PendingBuddyMQBodyFailed));
+                    LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PendingBuddyMQBodyFailed));
                     return 0;
                 }
                 
             }
             catch (Exception ex)
             {
-                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 return 0;
             }

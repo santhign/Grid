@@ -1014,7 +1014,7 @@ namespace CustomerService.Controllers
                 }
                 catch
                 {
-                    Log.Error(StatusMessages.DomainValidationError);
+                    LogInfo.Error(StatusMessages.DomainValidationError);
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
@@ -2749,6 +2749,112 @@ namespace CustomerService.Controllers
                             {
                                 HasSucceeded = false,
                                 Message = EnumExtensions.GetDescription(DbReturnValue.PasswordIncorrect),
+                                IsDomainValidationErrors = true
+                            });
+                        }
+
+                    }
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
+
+
+
+        [HttpGet]
+        [Route("GetCustomerChangeRequests")]
+        public async Task<IActionResult> GetCustomerChangeRequests([FromHeader(Name = "Grid-Authorization-Token")] string token)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+
+                AuthHelper helper = new AuthHelper(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    {
+                        int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+                        if (!ModelState.IsValid)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = string.Join("; ", ModelState.Values
+                                                           .SelectMany(x => x.Errors)
+                                                           .Select(x => x.ErrorMessage))
+                            });
+                        }
+                        var customerAccess = new CustomerDataAccess(_iconfiguration);
+
+                        var response = await customerAccess.GetCustomerChangeRequests(customerID);
+
+                        if (response.ResponseCode == ((int)DbReturnValue.CreateSuccess))
+                        {
+                            //Authentication success
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = true,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.CreateSuccess),
+                                IsDomainValidationErrors = true,
+                                ReturnedObject = response.Results
+
+                            });
+                        }
+                        else
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = true,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.NoRecords),
                                 IsDomainValidationErrors = true
                             });
                         }

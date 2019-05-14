@@ -3,6 +3,7 @@ using AdminService.Models;
 using Core.Enums;
 using Core.Helpers;
 using Core.Models;
+using InfrastructureService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Serilog;
@@ -72,7 +73,7 @@ namespace AdminService.Controllers
             }
             catch (Exception ex)
             {
-                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 return Ok(new OperationResponse
                 {

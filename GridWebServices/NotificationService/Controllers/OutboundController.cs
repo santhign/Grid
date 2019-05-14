@@ -67,7 +67,7 @@ namespace NotificationService.Controllers
 
                 if (!ModelState.IsValid)
                 {
-                    Log.Error(StatusMessages.DomainValidationError);
+                    LogInfo.Error(StatusMessages.DomainValidationError);
                     new OperationResponse
                     {
                         HasSucceeded = false,
@@ -105,7 +105,7 @@ namespace NotificationService.Controllers
             }
             catch (Exception ex)
             {
-                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 return Ok(new OperationResponse
                 {
@@ -156,7 +156,7 @@ namespace NotificationService.Controllers
             }
             catch (Exception ex)
             {
-                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 return Ok(new OperationResponse
                 {
