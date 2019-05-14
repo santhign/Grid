@@ -204,7 +204,9 @@ namespace OrderService.Controllers
                             });
                         }
                         Core.Helpers.EmailValidationHelper _helper = new EmailValidationHelper();
+
                         bool AllowSrubscriber = await _helper.AllowSubscribers(customerID, (int)SubscriberCheckType.CustomerLevel, _iconfiguration);
+
                         if (!AllowSrubscriber)
                         {
                             LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.NotAllowSubscribers));
@@ -2523,7 +2525,7 @@ namespace OrderService.Controllers
 
                             DatabaseResponse checkOutAmountResponse = await _orderAccess.GetCheckoutRequestDetails(createcheckOutModel);
 
-                            if(checkOutAmountResponse.ResponseCode==(int)DbReturnValue.CreateSuccess)
+                            if(checkOutAmountResponse.ResponseCode==(int)DbReturnValue.RecordExists)
                             {
                                 checkoutDetails = gatewayHelper.CreateCheckoutSession(gatewayConfig, billingAddress, checkoutDetails.OrderId, checkoutDetails.TransactionID, ((Checkout)checkOutAmountResponse.Results).ReceiptNumber);
 
@@ -2577,11 +2579,11 @@ namespace OrderService.Controllers
                             {
                                 // already processed order
 
-                                LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.PaymentAlreadyProcessed));
+                                LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.AlreadyProcessedOrder));
                                 return Ok(new OperationResponse
                                 {
                                     HasSucceeded = false,
-                                    Message = EnumExtensions.GetDescription(DbReturnValue.PaymentAlreadyProcessed),
+                                    Message = EnumExtensions.GetDescription(CommonErrors.AlreadyProcessedOrder),
                                     IsDomainValidationErrors = false
                                 });
                             }
