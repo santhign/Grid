@@ -272,5 +272,13 @@ namespace Core.Enums
         [EnumMember(Value = "AccountNotExists")]
         [Description("Account Not Exists")]
         AccountNotExists = 63,
+
+        [EnumMember(Value = "CardAlreadyExists")]
+        [Description("Card Already Exists")]
+        CardAlreadyExists = 64,
+
+        [EnumMember(Value = "DeliveryInfoNotExists")]
+        [Description("Delivery Info Not Exists")]
+        DeliveryInfoNotExists = 65,
     }
 }

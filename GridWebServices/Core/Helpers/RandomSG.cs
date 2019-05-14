@@ -23,7 +23,7 @@ namespace Core.Helpers
                     randomChars[1][rand.Next(0, randomChars[1].Length)]);
 
             chars.Insert(rand.Next(0, chars.Count),
-                    randomChars[2][rand.Next(0, randomChars[2].Length)]);
+                    randomChars[1][rand.Next(0, randomChars[1].Length)]);
 
             for (int i = chars.Count; i < 8
                 || chars.Distinct().Count() < 4; i++)

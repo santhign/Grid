@@ -1426,6 +1426,7 @@ namespace OrderService.DataAccess
                                     select new Checkout()
                                     {
                                         Amount = model.Field<double>("Amount"),
+                                        ReceiptNumber= model.Field<string>("RecieptNumber")
                                     }).FirstOrDefault();
 
                     }
@@ -1985,7 +1986,7 @@ namespace OrderService.DataAccess
                         checkOut = (from model in dt.AsEnumerable()
                                     select new Checkout()
                                     {
-                                        Amount = model.Field<double>("Amount"),
+                                        Amount = model.Field<double>("Amount")
                                     }).FirstOrDefault();
 
                     }
@@ -3078,14 +3079,15 @@ namespace OrderService.DataAccess
             {
                 SqlParameter[] parameters =
                {
-                     new SqlParameter( "@AccountID",  SqlDbType.Int ),
+                     new SqlParameter( "@AccountID",  SqlDbType.Int ),                                  
                      new SqlParameter( "@InvoiceName",  SqlDbType.NVarChar ),
                      new SqlParameter( "@InvoiceUrl",  SqlDbType.NVarChar ),
                      new SqlParameter( "@FinalAmount",  SqlDbType.Float ),
                      new SqlParameter( "@Remarks",  SqlDbType.NVarChar ),
                      new SqlParameter( "@OrderStatus",  SqlDbType.Int ),
                      new SqlParameter( "@PaymentSourceID",  SqlDbType.Int ),
-                     new SqlParameter( "@CreatedBy",  SqlDbType.Int )  
+                     new SqlParameter( "@CreatedBy",  SqlDbType.Int ),
+                     new SqlParameter( "@BSSBillId",  SqlDbType.NVarChar )
                 };
 
                 parameters[0].Value = request.AccountID;
@@ -3095,8 +3097,8 @@ namespace OrderService.DataAccess
                 parameters[4].Value = request.Remarks;
                 parameters[5].Value = request.OrderStatus;
                 parameters[6].Value = request.PaymentSourceID;
-                parameters[7].Value = request.CreatedBy;                
-
+                parameters[7].Value = request.CreatedBy;
+                parameters[8].Value = request.BSSBillId;
                 _DataHelper = new DataAccessHelper("Orders_CreateAccountInvoice", parameters, _configuration);
 
                 DataTable dt = new DataTable();

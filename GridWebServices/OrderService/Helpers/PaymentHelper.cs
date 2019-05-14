@@ -78,7 +78,9 @@ namespace OrderService.Helpers
                 LogInfo.Fatal(ex, $" {EnumExtensions.GetDescription(MPGSAPIResponse.WebhookNotificationFolderDeleteError) + " : "+GatewayApiConfig.WEBHOOKS_NOTIFICATION_FOLDER}");
             }
         }
-        public Checkout CreateCheckoutSession(GridMPGSConfig mpgsConfig)
+
+        
+        public Checkout CreateCheckoutSession(GridMPGSConfig mpgsConfig, customerBilling customerBillingDetails, string MpgsOrderID, string transactionID, string receiptNumber)
         {
             try
             {
@@ -86,13 +88,13 @@ namespace OrderService.Helpers
 
                 GatewayApiConfig config = new GatewayApiConfig(mpgsConfig);
 
-                GatewayApiRequest gatewayApiRequest = new GatewayApiRequest(config);
+                GatewayApiRequest gatewayApiRequest = new GatewayApiRequest(config, customerBillingDetails, receiptNumber);
 
                 gatewayApiRequest.ApiOperation = MPGSAPIOperation.CREATE_CHECKOUT_SESSION.ToString();
 
-                gatewayApiRequest.OrderId = PaymentHelper.GenerateOrderId();
+                gatewayApiRequest.OrderId = MpgsOrderID;
 
-                gatewayApiRequest.TransactionId= PaymentHelper.GenerateOrderId();
+                gatewayApiRequest.TransactionId = transactionID;
 
                 gatewayApiRequest.OrderCurrency = config.Currency;
 
@@ -153,7 +155,9 @@ namespace OrderService.Helpers
             if (apiOperation == "CAPTURE" || apiOperation == "REFUND")
             {
                 gatewayApiRequest.TransactionAmount = "";
+
                 gatewayApiRequest.TransactionCurrency = gatewayApiConfig.Currency;
+
                 gatewayApiRequest.OrderId = null;
             }
             if (apiOperation == "VOID" || apiOperation == "UPDATE_AUTHORIZATION")
@@ -163,7 +167,9 @@ namespace OrderService.Helpers
             if (apiOperation == "RETRIEVE_ORDER" || apiOperation == "RETRIEVE_TRANSACTION")
             {
                 gatewayApiRequest.ApiMethod = "GET";
+
                 gatewayApiRequest.OrderId = null;
+
                 gatewayApiRequest.TransactionId = null;
             }
 
@@ -310,6 +316,11 @@ namespace OrderService.Helpers
             config.MerchantId = configDict.Single(x => x["key"] == "GatewayGridMerchantId")["value"];
             config.Password = configDict.Single(x => x["key"] == "GatewayGridPassword")["value"];
             config.Currency = configDict.Single(x => x["key"] == "GatewayGridCurrency")["value"];
+            config.GridMerchantName = configDict.Single(x => x["key"] == "GridMerchantName")["value"];
+            config.GridMerchantAddress1 = configDict.Single(x => x["key"] == "GridMerchantAddress1")["value"];
+            config.GridMerchantAddress2 = configDict.Single(x => x["key"] == "GridMerchantAddress2")["value"];
+            config.GridMerchantPostCode = configDict.Single(x => x["key"] == "GridMerchantPostCode")["value"];
+            config.GridMerchantContactNumber = configDict.Single(x => x["key"] == "GridMerchantContactNumber")["value"];
             config.WebhooksNotificationSecret = configDict.Single(x => x["key"] == "GatewayGridWebhookSecret")["value"];
             return config;
         }

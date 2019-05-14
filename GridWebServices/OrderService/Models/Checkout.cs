@@ -34,6 +34,7 @@ namespace OrderService.Models
         public string MerchantId { get; set; }
         public CheckoutSessionModel CheckoutSession { get; set; }
         public string TransactionID { get; set; }
+        public string ReceiptNumber { get; set; }
 
 
     }
