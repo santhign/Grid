@@ -1014,7 +1014,7 @@ namespace CustomerService.Controllers
                 }
                 catch
                 {
-                    Log.Error(StatusMessages.DomainValidationError);
+                    LogInfo.Error(StatusMessages.DomainValidationError);
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = false,

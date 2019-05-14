@@ -47,7 +47,7 @@ namespace CustomerService.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    Log.Error(StatusMessages.DomainValidationError);
+                    LogInfo.Error(StatusMessages.DomainValidationError);
                     new OperationResponse
                     {
                         HasSucceeded = false,
@@ -237,7 +237,7 @@ namespace CustomerService.Controllers
                 }
                 else
                 {
-                    LogInfo.Error("NRIC Validation: " + _warningmsg);
+                    LogInfo.Error("NRIC Validation without type: " + _warningmsg);
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
@@ -249,7 +249,7 @@ namespace CustomerService.Controllers
 
             catch (Exception ex)
             {
-                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 return Ok(new OperationResponse
                 {
@@ -286,7 +286,7 @@ namespace CustomerService.Controllers
                 }
                 else
                 {
-                    LogInfo.Error("NRIC Validation: " + _warningmsg);
+                    LogInfo.Error("NRIC Validation: " + IDType + "_" + _warningmsg);
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
@@ -298,7 +298,7 @@ namespace CustomerService.Controllers
 
             catch (Exception ex)
             {
-                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 return Ok(new OperationResponse
                 {
