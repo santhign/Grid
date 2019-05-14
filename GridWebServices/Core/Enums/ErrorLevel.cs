@@ -280,5 +280,9 @@ namespace Core.Enums
         [EnumMember(Value = "DeliveryInfoNotExists")]
         [Description("Delivery Info Not Exists")]
         DeliveryInfoNotExists = 65,
+
+        [EnumMember(Value = "AlreadyProcessedOrder")]
+        [Description("Already Processed Order")]
+        AlreadyProcessedOrder = 66,
     }
 }
