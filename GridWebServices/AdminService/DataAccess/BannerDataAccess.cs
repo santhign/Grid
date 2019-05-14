@@ -9,7 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Core.Enums;
 using Serilog;
-
+using InfrastructureService;
 
 namespace AdminService.DataAccess
 {
@@ -71,7 +71,7 @@ namespace AdminService.DataAccess
 
             catch (Exception ex)
             {
-                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 throw ex;
             }

@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Text;
 
-namespace CustomerService.Models
+namespace Core.Models
 {
-    public class ProfileMQ
+   public class InvoceQM
     {
         public int accountID { get; set; }
         public int customerID { get; set; }
@@ -33,8 +32,8 @@ namespace CustomerService.Models
         public string paymentmode { get; set; }
         public double? amountpaid { get; set; }
         public string MPGSOrderID { get; set; }
-        public string invoicelist { get; set; }
-        public string invoiceamounts { get; set; }
-    }  
+        public List<Recordset> invoicelist { get; set; }
+        public double? invoiceamounts { get; set; }
 
+    }
 }

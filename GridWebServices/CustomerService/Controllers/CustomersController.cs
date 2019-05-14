@@ -40,7 +40,7 @@ namespace CustomerService.Controllers
         public CustomersController(IConfiguration configuration)
         {
             _iconfiguration = configuration;
-        }       
+        }
 
         // GET: api/Customers/5
         /// <summary>
@@ -151,7 +151,7 @@ namespace CustomerService.Controllers
                 });
 
             }
-           
+
         }
 
         /// <summary>
@@ -318,9 +318,9 @@ namespace CustomerService.Controllers
                     IsDomainValidationErrors = false
                 });
 
-            }           
+            }
         }
-        
+
 
         // GET: api/Customers/5/6532432/1
         /// <summary>
@@ -332,7 +332,7 @@ namespace CustomerService.Controllers
         /// <returns></returns>
         /// <exception cref="Exception">Customer record not found for " + token + " token</exception>
         [HttpGet("CustomerPlans")]
-        public async Task<IActionResult> GetCustomerPlans([FromHeader(Name = "Grid-Authorization-Token")] string token, string mobileNumber, int ? planType)
+        public async Task<IActionResult> GetCustomerPlans([FromHeader(Name = "Grid-Authorization-Token")] string token, string mobileNumber, int? planType)
         {
             try
             {
@@ -367,7 +367,7 @@ namespace CustomerService.Controllers
 
                         var customerAccess = new CustomerDataAccess(_iconfiguration);
 
-                        var customerPlans =  await customerAccess.GetCustomerPlans(((AuthTokenResponse)tokenAuthResponse.Results).CustomerID, mobileNumber, planType);
+                        var customerPlans = await customerAccess.GetCustomerPlans(((AuthTokenResponse)tokenAuthResponse.Results).CustomerID, mobileNumber, planType);
 
                         if (customerPlans == null)
                         {
@@ -432,7 +432,7 @@ namespace CustomerService.Controllers
                     IsDomainValidationErrors = false
                 });
 
-            }           
+            }
         }
 
 
@@ -573,8 +573,7 @@ namespace CustomerService.Controllers
                 CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
 
                 DatabaseResponse response = await _customerAccess.CreateCustomer(customer);
-
-
+                var customerObject = (Customer)response.Results;
                 if (response.ResponseCode == ((int)DbReturnValue.EmailExists))
                 {
                     return Ok(new OperationResponse
@@ -586,11 +585,41 @@ namespace CustomerService.Controllers
                 }
                 else
                 {
-                    //Pushed to message queue
-                    var publisher = new InfrastructureService.MessageQueue.Publisher(_iconfiguration, ConfigHelper.GetValueByKey("SNS_Topic_CreateCustomer", _iconfiguration).Results.ToString().Trim());
-                    Dictionary<string, string> attr = new Dictionary<string, string>();
-                    attr.Add("evet_type", "NewCustomer");
-                    await publisher.PublishAsync(response.Results, attr);
+                    // Send email to customer email
+                    ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
+                    DatabaseResponse registrationResponse = await _configAccess.GetEmailNotificationTemplate(NotificationEvent.Registration.ToString());
+
+                    var notificationMessage = MessageHelper.GetMessage(customer.Email, customerObject.Name, NotificationEvent.Registration.GetDescription(),
+                   ((EmailTemplate)registrationResponse.Results).TemplateName,
+               _iconfiguration);
+                    DatabaseResponse notificationResponse = await _configAccess.GetConfiguration(ConfiType.Notification.ToString());
+
+
+                    MiscHelper parser = new MiscHelper();
+                    var notificationConfig = parser.GetNotificationConfig((List<Dictionary<string, string>>)notificationResponse.Results);
+
+                    Publisher customerNotificationPublisher = new Publisher(_iconfiguration, notificationConfig.SNSTopic);
+                    await customerNotificationPublisher.PublishAsync(notificationMessage);
+                    try
+                    {
+                        DatabaseResponse notificationLogResponse = await _configAccess.CreateEMailNotificationLogForDevPurpose(
+                            new NotificationLogForDevPurpose
+                            {
+                                EventType = NotificationEvent.Registration.ToString(),
+                                Message = JsonConvert.SerializeObject(notificationMessage)
+
+                            });
+
+                    }
+                    catch(Exception ex)
+                    {
+                        LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                    }
+                    ////Pushed to message queue ----Not required
+                    //var publisher = new InfrastructureService.MessageQueue.Publisher(_iconfiguration, ConfigHelper.GetValueByKey("SNS_Topic_CreateCustomer", _iconfiguration).Results.ToString().Trim());
+                    //Dictionary<string, string> attr = new Dictionary<string, string>();
+                    //attr.Add("evet_type", "NewCustomer");
+                    //await publisher.PublishAsync(response.Results, attr);
 
                     return Ok(new OperationResponse
                     {
@@ -724,7 +753,7 @@ namespace CustomerService.Controllers
                     Message = StatusMessages.ServerError,
                     IsDomainValidationErrors = false
                 });
-            }           
+            }
         }
 
         /// <summary>
@@ -768,32 +797,32 @@ namespace CustomerService.Controllers
                             });
                         }
 
-                        var customerAccess = new CustomerDataAccess(_iconfiguration);                     
-                       
-                            var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
-                            var getSubscriber = await customerAccess.GetSubscribers(aTokenResp.CustomerID);
-                            if (getSubscriber.ResponseCode == (int)DbReturnValue.RecordExists)
-                            {
-                                return Ok(new OperationResponse
-                                {
-                                    HasSucceeded = true,
-                                    Message = DbReturnValue.RecordExists.GetDescription(),
-                                    IsDomainValidationErrors = false,
-                                    ReturnedObject = getSubscriber.Results
-                                });
-                            }
-                            else
-                            {
-                                //Unable to validate the referral code
-                                LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
+                        var customerAccess = new CustomerDataAccess(_iconfiguration);
 
-                                return Ok(new OperationResponse
-                                {
-                                    HasSucceeded = false,
-                                    Message = DbReturnValue.NoRecords.GetDescription(),
-                                    IsDomainValidationErrors = false
-                                });
-                            }
+                        var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
+                        var getSubscriber = await customerAccess.GetSubscribers(aTokenResp.CustomerID);
+                        if (getSubscriber.ResponseCode == (int)DbReturnValue.RecordExists)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = true,
+                                Message = DbReturnValue.RecordExists.GetDescription(),
+                                IsDomainValidationErrors = false,
+                                ReturnedObject = getSubscriber.Results
+                            });
+                        }
+                        else
+                        {
+                            //Unable to validate the referral code
+                            LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
+
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = DbReturnValue.NoRecords.GetDescription(),
+                                IsDomainValidationErrors = false
+                            });
+                        }
                     }
 
                     else
@@ -839,7 +868,7 @@ namespace CustomerService.Controllers
                 });
 
             }
-          
+
         }
 
         // GET: api/Customers/SearchCustomer/abc@gmail.com
@@ -950,7 +979,7 @@ namespace CustomerService.Controllers
                     IsDomainValidationErrors = false
                 });
 
-            }           
+            }
 
         }
 
@@ -985,7 +1014,7 @@ namespace CustomerService.Controllers
                 }
                 catch
                 {
-                    Log.Error(StatusMessages.DomainValidationError);
+                    LogInfo.Error(StatusMessages.DomainValidationError);
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
@@ -1020,16 +1049,30 @@ namespace CustomerService.Controllers
                     {
                         passwordTokenDetails = (ForgetPassword)_forgetPassword.Results;
 
-                        NotificationMessage notificationMessage = new NotificationMessage();                      
+                        NotificationMessage notificationMessage = new NotificationMessage();
 
-                        
+
                         notificationMessage = MessageHelper.GetMessage(passwordTokenDetails.Email, passwordTokenDetails.Name, NotificationEvent.ForgetPassword.ToString(),
                             ((EmailTemplate)forgotPasswordMsgTemplate.Results).TemplateName,
-                        _iconfiguration, passwordTokenDetails.Token, forgotPasswordConfig.PasswordResetUrl);                          
-                      
+                        _iconfiguration, passwordTokenDetails.Token, forgotPasswordConfig.PasswordResetUrl);
+
 
                         Publisher forgotPassNotificationPublisher = new Publisher(_iconfiguration, forgotPasswordConfig.ForgotPasswordSNSTopic);
                         await forgotPassNotificationPublisher.PublishAsync(notificationMessage);
+                        try
+                        {
+                            DatabaseResponse notificationLogResponse = await _configAccess.CreateEMailNotificationLogForDevPurpose(
+                            new NotificationLogForDevPurpose
+                            {
+                                EventType = NotificationEvent.ForgetPassword.ToString(),
+                                Message = JsonConvert.SerializeObject(notificationMessage)
+
+                            });
+                        }
+                        catch (Exception ex)
+                        {
+                            LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                        }
 
 
                         return Ok(new ServerResponse
@@ -1093,8 +1136,8 @@ namespace CustomerService.Controllers
         /// <param name="token" in="Header"></param>
         /// <param name="customerReferralCode">The customer referral code.</param>
         /// <returns></returns>
-        [HttpPost("UpdateReferralCode")]
-        public async Task<IActionResult> UpdateReferralCode([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody]CustomerNewReferralCode customerReferralCode)
+        [HttpPost("ValidateUpdateSelfReferralCode")]
+        public async Task<IActionResult> ValidateUpdateSelfReferralCode([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody]CustomerNewReferralCode customerReferralCode)
         {
             try
             {
@@ -1107,8 +1150,8 @@ namespace CustomerService.Controllers
                 });
                 AuthHelper helper = new AuthHelper(_iconfiguration);
 
-                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Customer_ReferralCodeUpdate);               
-              
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Customer_ReferralCodeUpdate);
+
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
                     if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
@@ -1131,14 +1174,32 @@ namespace CustomerService.Controllers
 
                         var validationResponse = await _customerAccess.UpdateReferralCode(aTokenResp.CustomerID, customerReferralCode.ReferralCode);
 
-                        if (validationResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                        if (validationResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
                         {
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = true,
-                                Message = EnumExtensions.GetDescription(DbReturnValue.RecordExists),
+                                Message = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess),
                                 IsDomainValidationErrors = false,
                                 ReturnedObject = validationResponse.Results
+                            });
+                        }
+                        else if (validationResponse.ResponseCode == (int)DbReturnValue.ActiveTryDelete)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.ActiveTryDelete),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                        else if (validationResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.RecordExists),
+                                IsDomainValidationErrors = false
                             });
                         }
                         else
@@ -1168,7 +1229,7 @@ namespace CustomerService.Controllers
                             IsDomainValidationErrors = true
                         });
                     }
-                    
+
                 }
                 else
                 {
@@ -1196,7 +1257,7 @@ namespace CustomerService.Controllers
 
             }
         }
-            
+
         /// <summary>
         /// 
         /// </summary>
@@ -1236,7 +1297,7 @@ namespace CustomerService.Controllers
                                                            .Select(x => x.ErrorMessage))
                             });
                         }
-                        var customerAccess = new CustomerDataAccess(_iconfiguration);
+                        var customerAccess = new CommonDataAccess(_iconfiguration);
 
                         var customerBilling = await customerAccess.GetCustomerBillingDetails(customerID);
 
@@ -2166,7 +2227,76 @@ namespace CustomerService.Controllers
                         var statusResponse = await customerAccess.UpdateDisplayName(customerID, details);
 
                         if (statusResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
-                        {                            
+                        {
+                            ProfileMQ msgBody = new ProfileMQ();
+                            Dictionary<string, string> attribute = new Dictionary<string, string>();
+                            string topicName = string.Empty, subject = string.Empty;
+                            MQDataAccess _MQDataAccess = new MQDataAccess(_iconfiguration);
+                            try
+                            {
+                                msgBody = await _MQDataAccess.GetProfileUpdateMessageBody(((AuthTokenResponse)tokenAuthResponse.Results).CustomerID);
+
+                                topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration).Results.ToString().Trim();
+                                attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.EditDisplayName.GetDescription());
+                                var pushResult = await _MQDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
+                                if (pushResult.Trim().ToUpper() == "OK")
+                                {
+
+
+                                    MessageQueueRequest queueRequest = new MessageQueueRequest
+                                    {
+                                        Source = Source.ChangeRequest,
+                                        NumberOfRetries = 1,
+                                        SNSTopic = topicName,
+                                        CreatedOn = DateTime.Now,
+                                        LastTriedOn = DateTime.Now,
+                                        PublishedOn = DateTime.Now,
+                                        MessageAttribute = Core.Enums.RequestType.EditDisplayName.GetDescription().ToString(),
+                                        MessageBody = JsonConvert.SerializeObject(msgBody),
+                                        Status = 1
+                                    };
+                                    await _MQDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                                }
+                                else
+                                {
+                                    MessageQueueRequest queueRequest = new MessageQueueRequest
+                                    {
+                                        Source = Source.ChangeRequest,
+                                        NumberOfRetries = 1,
+                                        SNSTopic = topicName,
+                                        CreatedOn = DateTime.Now,
+                                        LastTriedOn = DateTime.Now,
+                                        PublishedOn = DateTime.Now,
+                                        MessageAttribute = Core.Enums.RequestType.EditDisplayName.GetDescription().ToString(),
+                                        MessageBody = JsonConvert.SerializeObject(msgBody),
+                                        Status = 0
+                                    };
+                                    await _MQDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                                //MessageQueueRequestException queueRequest = new MessageQueueRequestException
+                                //{
+                                //    Source = Source.ChangeRequest,
+                                //    NumberOfRetries = 1,
+                                //    SNSTopic = string.IsNullOrWhiteSpace(topicName) ? null : topicName,
+                                //    CreatedOn = DateTime.Now,
+                                //    LastTriedOn = DateTime.Now,
+                                //    PublishedOn = DateTime.Now,
+                                //    MessageAttribute = Core.Enums.RequestType.CancelOrder.GetDescription().ToString(),
+                                //    MessageBody = msgBody != null ? JsonConvert.SerializeObject(msgBody) : null,
+                                //    Status = 0,
+                                //    Remark = "Error Occured in UpateDisplayName",
+                                //    Exception = new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)
+
+
+                                //};
+
+                                //await _MQDataAccess.InsertMessageInMessageQueueRequestException(queueRequest);
+                            }
+                            
                             return Ok(new ServerResponse
                             {
                                 HasSucceeded = true,
@@ -2551,6 +2681,214 @@ namespace CustomerService.Controllers
                 }
 
             }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
+
+        [HttpPost]
+        [Route("ValidatePassword")]
+        public async Task<IActionResult> ValidatePassword([FromHeader(Name = "Grid-Authorization-Token")] string token, LoginDto login)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+
+                AuthHelper helper = new AuthHelper(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    {
+                        int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+                        if (!ModelState.IsValid)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = string.Join("; ", ModelState.Values
+                                                           .SelectMany(x => x.Errors)
+                                                           .Select(x => x.ErrorMessage))
+                            });
+                        }
+                        var customerAccess = new CustomerDataAccess(_iconfiguration);
+
+                        var response = await customerAccess.ValidatePassword(login);
+
+                        if (response.ResponseCode == ((int)DbReturnValue.AuthSuccess))
+                        {
+                            //Authentication success
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = true,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.AuthSuccess),
+                                IsDomainValidationErrors = true
+                            });
+                        }
+                        else
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.PasswordIncorrect),
+                                IsDomainValidationErrors = true
+                            });
+                        }
+
+                    }
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
+
+
+
+        [HttpGet]
+        [Route("GetCustomerChangeRequests")]
+        public async Task<IActionResult> GetCustomerChangeRequests([FromHeader(Name = "Grid-Authorization-Token")] string token)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+
+                AuthHelper helper = new AuthHelper(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    {
+                        int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+                        if (!ModelState.IsValid)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = string.Join("; ", ModelState.Values
+                                                           .SelectMany(x => x.Errors)
+                                                           .Select(x => x.ErrorMessage))
+                            });
+                        }
+                        var customerAccess = new CustomerDataAccess(_iconfiguration);
+
+                        var response = await customerAccess.GetCustomerChangeRequests(customerID);
+
+                        if (response.ResponseCode == ((int)DbReturnValue.CreateSuccess))
+                        {
+                            //Authentication success
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = true,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.CreateSuccess),
+                                IsDomainValidationErrors = true,
+                                ReturnedObject = response.Results
+
+                            });
+                        }
+                        else
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = true,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.NoRecords),
+                                IsDomainValidationErrors = true
+                            });
+                        }
+
+                    }
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+
             catch (Exception ex)
             {
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));

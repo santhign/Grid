@@ -239,10 +239,50 @@ namespace Core.Enums
 
         [EnumMember(Value = "ProcessingQueFailed")]
         [Description("Processing Queue Message Failed")]
-        ProcessingQueFailed = 55,
+        ProcessingQueFailed = 55,       
+
+        [EnumMember(Value = "FailedToGetBillingAccount")]
+        [Description("Failed To Get Billing Account")]
+        FailedToGetBillingAccount = 56,
+
+        [EnumMember(Value = "NoInvoiceFound")]
+        [Description("No Invoice Found for Customer")]
+        NoInvoiceFound = 57,
+
+        [EnumMember(Value = "FailedToRemoveLoa")]
+        [Description("Failed To Remove Loa")]
+        FailedToRemoveLoa = 58,
+
+        [EnumMember(Value = "LOARemoved")]
+        [Description("LOA Removed Successfully")]
+        LOARemoved = 59,
+
+        [EnumMember(Value = "TokenNotMatching")]
+        [Description("Invalid Account access. Token not matching")]
+        TokenNotMatching = 60,
+
+        [EnumMember(Value = "PendingBuddyOrderProcessed")]
+        [Description("Pending Buddy Order Processed and Order Queue Message Published")]
+        PendingBuddyOrderProcessed = 61,
+
+        [EnumMember(Value = "PendingBuddyMQBodyFailed")]
+        [Description("Pending Buddy Order Processed Failed to get Message Body")]
+        PendingBuddyMQBodyFailed = 62,
 
         [EnumMember(Value = "AccountNotExists")]
         [Description("Account Not Exists")]
-        AccountNotExists = 55,
+        AccountNotExists = 63,
+
+        [EnumMember(Value = "CardAlreadyExists")]
+        [Description("Card Already Exists")]
+        CardAlreadyExists = 64,
+
+        [EnumMember(Value = "DeliveryInfoNotExists")]
+        [Description("Delivery Info Not Exists")]
+        DeliveryInfoNotExists = 65,
+
+        [EnumMember(Value = "AlreadyProcessedOrder")]
+        [Description("Already Processed Order")]
+        AlreadyProcessedOrder = 66,
     }
 }

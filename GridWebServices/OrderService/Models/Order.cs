@@ -126,9 +126,10 @@ namespace OrderService.Models
     {
         public int InvoiceID { get; set; }
         public int AccountID { get; set; }
+        public string BSSBillId { get; set; }
         public string InvoiceName { get; set; }
         public string InvoiceUrl { get; set; }
-        public float FinalAmount { get; set; }
+        public double FinalAmount { get; set; }
         public string Remarks { get; set; }
         public int OrderStatus { get; set; }
         public int PaymentSourceID { get; set; }
@@ -143,6 +144,6 @@ namespace OrderService.Models
     {
         public string InvoiceID { get; set; }       
         public string InvoiceName { get; set; }       
-        public float FinalAmount { get; set; }
+        public double FinalAmount { get; set; }
     }
 }

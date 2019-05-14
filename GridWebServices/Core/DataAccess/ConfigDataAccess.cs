@@ -194,6 +194,48 @@ namespace Core.DataAccess
                 _DataHelper.Dispose();
             }
         }
-      
+
+        public async Task<DatabaseResponse> CreateEMailNotificationLogForDevPurpose(NotificationLogForDevPurpose log)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+
+                    new SqlParameter( "@EventType",  SqlDbType.NVarChar ),
+
+                    new SqlParameter( "@Message",  SqlDbType.NVarChar )                
+                };
+
+                parameters[0].Value = log.EventType;
+                parameters[1].Value = log.Message;
+               
+
+
+                _DataHelper = new DataAccessHelper("z_EmailNotificationsLogEntryForDevPurpose", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt); // 107 /100
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                response = new DatabaseResponse { ResponseCode = result };
+
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
     }
 }

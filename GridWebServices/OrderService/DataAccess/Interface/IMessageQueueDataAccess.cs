@@ -55,5 +55,9 @@ namespace OrderService.DataAccess
         Task<DatabaseResponse> GetOrderMessageQueueBody(int orderId);
 
         Task InsertMessageInMessageQueueRequestException(MessageQueueRequestException messageQueueRequestException);
+
+        Task<ProfileMQ> GetProfileUpdateMessageBody(int CustomerID);
+
+        Task<DatabaseResponse> GetAccountInvoiceMessageQueueBody(int invoiceId);
     }
 }

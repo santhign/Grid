@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Runtime.Serialization;
 
-namespace OrderService.Enums
+namespace Core.Enums
 {
     public enum CheckOutType
     {

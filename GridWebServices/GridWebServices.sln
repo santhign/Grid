@@ -49,7 +49,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{C7A50D39-1
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageQueueConsoleAppService", "MessageQueueConsoleAppService\MessageQueueConsoleAppService.csproj", "{0F6FD3D7-937D-4529-910F-6EDD1A60DDB8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuddyProcessingApp", "BuddyProcessingApp\BuddyProcessingApp.csproj", "{7FA1628E-9CBF-46DA-ACB8-E1E0D65A3870}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BuddyProcessingApp", "BuddyProcessingApp\BuddyProcessingApp.csproj", "{7FA1628E-9CBF-46DA-ACB8-E1E0D65A3870}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -11,23 +11,30 @@ using Core.Enums;
 using InfrastructureService;
 using Core.Models;
 using Core.Extensions;
-
+using OrderService.Enums;
+using Newtonsoft.Json;
 
 namespace OrderService.DataAccess
 {
     public class OrderDataAccess
     {
         internal DataAccessHelper _DataHelper = null;
-
+        private readonly IMessageQueueDataAccess _messageQueueDataAccess;
         private IConfiguration _configuration;
 
         /// <summary>
         /// Constructor setting configuration
         /// </summary>
         /// <param name="configuration"></param>
+        public OrderDataAccess(IConfiguration configuration, IMessageQueueDataAccess messageQueueDataAccess)
+        {
+            _configuration = configuration;
+            _messageQueueDataAccess = messageQueueDataAccess;
+        }
         public OrderDataAccess(IConfiguration configuration)
         {
             _configuration = configuration;
+            _messageQueueDataAccess = new MessageQueueDataAccess(configuration);
         }
 
         /// <summary>
@@ -681,6 +688,7 @@ namespace OrderService.DataAccess
                         foreach (DataRow dr in ds.Tables[1].Rows)
                         {
                             Bundle OrderBundle = new Bundle();
+                            OrderBundle.OrderSubscriberID = Convert.ToInt32(dr["OrderSubscriberID"].ToString());
                             OrderBundle.BundleID = Convert.ToInt32(dr["BundleID"].ToString());
                             OrderBundle.DisplayName = dr["DisplayName"].ToString();
                             OrderBundle.MobileNumber = dr["MobileNumber"].ToString();
@@ -711,11 +719,12 @@ namespace OrderService.DataAccess
                                 subscriberServiceCharges = (from model in ds.Tables[3].AsEnumerable()
                                                        select new ServiceCharge()
                                                        {
+                                                           OrderSubscriberID = model.Field<int>("OrderSubscriberID"),
                                                            PortalServiceName = model.Field<string>("PortalServiceName"),
                                                            ServiceFee = model.Field<double?>("ServiceFee"),
                                                            IsRecurring = model.Field<int>("IsRecurring"),
                                                            IsGSTIncluded = model.Field<int>("IsGSTIncluded"),
-                                                       }).Where(c => c.OrderSubscriberID == OrderBundle.OrderSubscriberID).ToList();
+                                                       }).Where(c => c.OrderSubscriberID == Convert.ToInt32(dr["OrderSubscriberID"].ToString())).ToList();
 
                                 OrderBundle.ServiceCharges = subscriberServiceCharges;
 
@@ -1417,6 +1426,7 @@ namespace OrderService.DataAccess
                                     select new Checkout()
                                     {
                                         Amount = model.Field<double>("Amount"),
+                                        ReceiptNumber= model.Field<string>("RecieptNumber")
                                     }).FirstOrDefault();
 
                     }
@@ -1976,7 +1986,7 @@ namespace OrderService.DataAccess
                         checkOut = (from model in dt.AsEnumerable()
                                     select new Checkout()
                                     {
-                                        Amount = model.Field<double>("Amount"),
+                                        Amount = model.Field<double>("Amount")
                                     }).FirstOrDefault();
 
                     }
@@ -2282,11 +2292,12 @@ namespace OrderService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                int result = await _DataHelper.RunAsync(dt); // 105 /102
+                int result = await _DataHelper.RunAsync(dt); //101/ 106 /102
 
                 DatabaseResponse response = new DatabaseResponse();
 
                 response = new DatabaseResponse { ResponseCode = result };
+
                 return response;
             }
 
@@ -2379,7 +2390,7 @@ namespace OrderService.DataAccess
             }
         }
 
-        public async Task<DatabaseResponse> CreatePaymentMethod(TokenResponse tokenResponse, int customerID)
+        public async Task<DatabaseResponse> CreatePaymentMethod(TokenResponse tokenResponse, int customerID, string MPGSOrderID = "")
         {
             try
             {
@@ -2417,6 +2428,88 @@ namespace OrderService.DataAccess
                 DatabaseResponse response = new DatabaseResponse();
 
                 response = new DatabaseResponse { ResponseCode = result };
+
+                if (!string.IsNullOrWhiteSpace(MPGSOrderID))
+                {
+                    string topicName = string.Empty;
+                    string pushResult = string.Empty;
+                    Dictionary<string, string> attribute = new Dictionary<string, string>();
+                    ProfileMQ msgBody = new ProfileMQ();
+                    try
+                    {
+                        topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _configuration).Results.ToString().Trim();
+                        attribute.Add(EventTypeString.EventType, RequestType.EditPaymentMethod.GetDescription());
+
+                        var sourceTyeResponse = await GetSourceTypeByMPGSSOrderId(MPGSOrderID);
+                        DatabaseResponse OrderCountResponse = await GetCustomerOrderCount(customerID);                        
+                        if ((((OrderSource)sourceTyeResponse.Results).SourceType == CheckOutType.Orders.ToString()) && (((OrderCount)OrderCountResponse.Results).SuccessfulOrders > 1))
+                        {                            
+                            msgBody = await _messageQueueDataAccess.GetProfileUpdateMessageBody(customerID);
+                            pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
+
+                            if (pushResult.Trim().ToUpper() == "OK")
+                            {
+                                MessageQueueRequest queueRequest = new MessageQueueRequest
+                                {
+                                    Source = CheckOutType.Orders.ToString(),
+                                    NumberOfRetries = 1,
+                                    SNSTopic = topicName,
+                                    CreatedOn = DateTime.Now,
+                                    LastTriedOn = DateTime.Now,
+                                    PublishedOn = DateTime.Now,
+                                    MessageAttribute = RequestType.EditPaymentMethod.GetDescription(),
+                                    MessageBody = JsonConvert.SerializeObject(msgBody),
+                                    Status = 1
+                                };
+                                await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                            }
+                            else
+                            {
+                                MessageQueueRequest queueRequest = new MessageQueueRequest
+                                {
+                                    Source = CheckOutType.Orders.ToString(),
+                                    NumberOfRetries = 1,
+                                    SNSTopic = topicName,
+                                    CreatedOn = DateTime.Now,
+                                    LastTriedOn = DateTime.Now,
+                                    PublishedOn = DateTime.Now,
+                                    MessageAttribute = RequestType.EditPaymentMethod.GetDescription(),
+                                    MessageBody = JsonConvert.SerializeObject(msgBody),
+                                    Status = 0
+                                };
+                                await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                            }
+                        }
+                        else
+                        {
+                            LogInfo.Information(MPGSOrderID.ToString() + " ID is not having Order as Source Type");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                        MessageQueueRequestException queueRequest = new MessageQueueRequestException
+                        {
+                            Source = Source.ChangeRequest,
+                            NumberOfRetries = 1,
+                            SNSTopic = string.IsNullOrWhiteSpace(topicName) ? null : topicName,
+                            CreatedOn = DateTime.Now,
+                            LastTriedOn = DateTime.Now,
+                            PublishedOn = DateTime.Now,
+                            MessageAttribute = Core.Enums.RequestType.EditPaymentMethod.GetDescription().ToString(),
+                            MessageBody = msgBody != null ? JsonConvert.SerializeObject(msgBody) : null,
+                            Status = 0,
+                            Remark = "Error Occured in UpdateTokenizeCheckOutResponse method while generating message",
+                            Exception = new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)
+
+
+                        };
+
+                        await _messageQueueDataAccess.InsertMessageInMessageQueueRequestException(queueRequest);
+                    }
+
+                    //End Message
+                }
 
                 return response;
             }
@@ -2506,6 +2599,7 @@ namespace OrderService.DataAccess
                                          Token = model.Field<string>("Token"),
                                          SourceType = model.Field<string>("SourceType"),
                                          CardHolderName = model.Field<string>("CardHolderName"),
+                                         CardType = model.Field<string>("CardType"),
                                      }).FirstOrDefault();
 
                     response = new DatabaseResponse { ResponseCode = result, Results = paymentMethod };
@@ -2633,7 +2727,7 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
-        public async Task<DatabaseResponse> RescheduleDelivery(int customerID, Order_RescheduleDeliveryRequest detailsrequest)
+        public async Task<DatabaseResponse> RescheduleDelivery(int customerID, OrderRescheduleDeliveryRequest detailsrequest)
         {
             try
             {
@@ -2985,14 +3079,15 @@ namespace OrderService.DataAccess
             {
                 SqlParameter[] parameters =
                {
-                     new SqlParameter( "@AccountID",  SqlDbType.Int ),
+                     new SqlParameter( "@AccountID",  SqlDbType.Int ),                                  
                      new SqlParameter( "@InvoiceName",  SqlDbType.NVarChar ),
                      new SqlParameter( "@InvoiceUrl",  SqlDbType.NVarChar ),
                      new SqlParameter( "@FinalAmount",  SqlDbType.Float ),
                      new SqlParameter( "@Remarks",  SqlDbType.NVarChar ),
                      new SqlParameter( "@OrderStatus",  SqlDbType.Int ),
                      new SqlParameter( "@PaymentSourceID",  SqlDbType.Int ),
-                     new SqlParameter( "@CreatedBy",  SqlDbType.Int )  
+                     new SqlParameter( "@CreatedBy",  SqlDbType.Int ),
+                     new SqlParameter( "@BSSBillId",  SqlDbType.NVarChar )
                 };
 
                 parameters[0].Value = request.AccountID;
@@ -3002,8 +3097,8 @@ namespace OrderService.DataAccess
                 parameters[4].Value = request.Remarks;
                 parameters[5].Value = request.OrderStatus;
                 parameters[6].Value = request.PaymentSourceID;
-                parameters[7].Value = request.CreatedBy;                
-
+                parameters[7].Value = request.CreatedBy;
+                parameters[8].Value = request.BSSBillId;
                 _DataHelper = new DataAccessHelper("Orders_CreateAccountInvoice", parameters, _configuration);
 
                 DataTable dt = new DataTable();
@@ -3044,5 +3139,96 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+
+
+        public async Task<CustomerDetails> GetCustomerDetailByOrder(int customerID, int orderID)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                     new SqlParameter( "@OrderID",  SqlDbType.Int ),
+                     new SqlParameter( "@CustomerID",  SqlDbType.Int )
+
+                };
+
+                parameters[0].Value = orderID;
+                parameters[1].Value = customerID;
+
+                _DataHelper = new DataAccessHelper("Orders_GetCustomerDetails", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt);    // 105 / 102
+
+                //DatabaseResponse response = new DatabaseResponse();
+
+                var customer = new CustomerDetails();
+
+                if (dt != null && dt.Rows.Count > 0)
+                {
+                    customer = (from model in dt.AsEnumerable()
+                                      select new CustomerDetails()
+                                      {
+                                          Name = model.Field<string>("Name"),
+                                          ToEmailList = model.Field<string>("ToEmailList"),
+                                          
+                                      }).FirstOrDefault();
+
+                    //response = new DatabaseResponse { ResponseCode = result, Results = customer };
+                }
+                
+
+                return customer;
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        //public async Task<CustomerDetails> GetCustomerDetailByOrder(int customerID)
+        //{
+        //    try
+        //    {
+        //        SqlParameter[] parameters =               {
+                     
+        //             new SqlParameter( "@CustomerID",  SqlDbType.Int )
+        //        };
+
+        //        parameters[0].Value = customerID;
+                
+
+        //        _DataHelper = new DataAccessHelper("Order_CheckForOrderCount", parameters, _configuration);
+
+               
+
+        //        int result = await _DataHelper.RunAsync();    // 105 / 102
+
+        //        DatabaseResponse response = new DatabaseResponse();
+
+               
+
+        //        return customer;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+        //        throw (ex);
+        //    }
+        //    finally
+        //    {
+        //        _DataHelper.Dispose();
+        //    }
+        //}
+
+
     }
 }

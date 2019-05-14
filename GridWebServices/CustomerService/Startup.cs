@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
+using InfrastructureService;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -70,6 +71,8 @@ namespace CustomerService
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            // Enable Cors
+            app.UseCors("MyPolicy");
             app.UseSwagger();
 
             // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.), 
@@ -83,9 +86,8 @@ namespace CustomerService
             {
                 app.UseDeveloperExceptionPage();
             }
+            app.UseMiddleware<LogMiddleware>();
 
-            // Enable Cors
-            app.UseCors("MyPolicy");
             app.UseMvc();
             app.Run(async (context) =>
             {

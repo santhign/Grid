@@ -10,9 +10,8 @@ namespace Core.Helpers
         public string GetString()
         {
             string[] randomChars = new[] {
-                "ABCDEFGHJKLMNOPQRSTUVWXYZ",    // uppercase 
-                "abcdefghijkmnopqrstuvwxyz",    // lowercase
-                "0123456789"                    // digits
+                "ABCDEFGHJKLMNPQRSTUVWXYZ",    // uppercase 
+                "23456789"                    // digits
             };
             Random rand = new Random(Environment.TickCount);
             List<char> chars = new List<char>();
@@ -24,7 +23,7 @@ namespace Core.Helpers
                     randomChars[1][rand.Next(0, randomChars[1].Length)]);
 
             chars.Insert(rand.Next(0, chars.Count),
-                    randomChars[2][rand.Next(0, randomChars[2].Length)]);
+                    randomChars[1][rand.Next(0, randomChars[1].Length)]);
 
             for (int i = chars.Count; i < 8
                 || chars.Distinct().Count() < 4; i++)

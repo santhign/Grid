@@ -51,7 +51,7 @@ namespace AdminService.Controllers
 
                 if ((string.IsNullOrEmpty(userdetails.Email)) || (string.IsNullOrEmpty(userdetails.Password)))
                 {
-                    Log.Error(StatusMessages.MissingRequiredFields);
+                    LogInfo.Error(StatusMessages.MissingRequiredFields);
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
@@ -140,7 +140,7 @@ namespace AdminService.Controllers
             }
             catch (Exception ex)
             {
-                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 return Ok(new OperationResponse
                 {
@@ -190,7 +190,7 @@ namespace AdminService.Controllers
                         int _AdminUserID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
                         if (!ModelState.IsValid)
                         {
-                            Log.Error(StatusMessages.DomainValidationError);
+                            LogInfo.Error(StatusMessages.DomainValidationError);
                             new OperationResponse
                             {
                                 HasSucceeded = false,
@@ -304,7 +304,7 @@ namespace AdminService.Controllers
                         int _AdminUserID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
                         if (!ModelState.IsValid)
                         {
-                            Log.Error(StatusMessages.DomainValidationError);
+                            LogInfo.Error(StatusMessages.DomainValidationError);
                             new OperationResponse
                             {
                                 HasSucceeded = false,
@@ -418,7 +418,7 @@ namespace AdminService.Controllers
 
                         if (AdminUsersList == null || AdminUsersList.Count == 0)
                         {
-                            Log.Error(EnumExtensions.GetDescription(DbReturnValue.NotExists));
+                            LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.NotExists));
 
                             return Ok(new ServerResponse
                             {
@@ -518,7 +518,7 @@ namespace AdminService.Controllers
 
                         if (AdminUsersList == null || AdminUsersList.Count == 0)
                         {
-                            Log.Error(EnumExtensions.GetDescription(DbReturnValue.NotExists));
+                            LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.NotExists));
 
                             return Ok(new ServerResponse
                             {
@@ -616,7 +616,7 @@ namespace AdminService.Controllers
                         int _AdminUserID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
                         if (!ModelState.IsValid)
                         {
-                            Log.Error(StatusMessages.DomainValidationError);
+                            LogInfo.Error(StatusMessages.DomainValidationError);
                             new OperationResponse
                             {
                                 HasSucceeded = false,
@@ -797,7 +797,7 @@ namespace AdminService.Controllers
         /// <param name="Password">The Password.</param>
         /// <returns></returns>
         [HttpGet("ValidateAdminUserPassword/{AdminUserID}/{Password}")]
-        public async Task<IActionResult> ValidatePassword([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int AdminUserID, [FromRoute] string Password)
+        public async Task<IActionResult> ValidateAdminUserPassword([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int AdminUserID, [FromRoute] string Password)
         {
             try
             {

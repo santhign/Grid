@@ -44,10 +44,10 @@ namespace OrderService.DataAccess
 
                 };
 
-                parameters[0].Value = notification.OrderId;
-                parameters[1].Value = notification.TransactionId;
-                parameters[2].Value = notification.OrderStatus;
-                parameters[3].Value = notification.Amount;
+                parameters[0].Value = notification.Order.Id;
+                parameters[1].Value = notification.Transaction.Id;
+                parameters[2].Value = notification.Order.Status;
+                parameters[3].Value = notification.Order.Amount;
                 parameters[4].Value = notification.Timestamp.ToString();
 
                 _DataHelper = new DataAccessHelper("Orders_UpdateCheckoutWebhookNotification", parameters, _configuration);

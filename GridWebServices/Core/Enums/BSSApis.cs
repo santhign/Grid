@@ -163,5 +163,21 @@ namespace Core.Enums
         Account = 0,
 
     }
-   
+
+    public enum BSSCalls
+    {
+        [EnumMember(Value = "NoSession")]
+        [Description("No Session")]
+        NoSession = 0,
+
+        [EnumMember(Value = "BSSNewCallSession")]
+        [Description("BSS New Call Session")]
+        NewSession = 1,
+
+        [EnumMember(Value = "BSSExistingSessionCall")]
+        [Description("BSS Call with  Existing Session UserID")]
+        ExistingSession = 2,
+
+
+    }
 }

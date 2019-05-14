@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using Newtonsoft.Json;
 using System.Runtime.Serialization.Json;
+using System.IO;
+using System.Net;
 
 namespace Core.Helpers
 {
@@ -54,7 +56,20 @@ namespace Core.Helpers
             response.EnsureSuccessStatusCode();
             var data = await response.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<T1>(data);
-        }
+        } 
+        public async Task<byte[]> DownloadAsync(string requestUri)
+        {
+            WebClient webClient = new WebClient();
+
+            byte[] fileBytes = null;
+
+            await Task.Run(() => {
+
+            fileBytes=   webClient.DownloadData(requestUri);
+
+            });
+            return fileBytes;
+        }        
 
         /// <summary>  
         /// Common method for making form POST calls  

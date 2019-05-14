@@ -48,6 +48,30 @@ namespace InfrastructureService.MessageQueue
             }
         }
 
+        public Publisher(string connectionString, string topicName)
+        {
+            try
+            {
+                DatabaseResponse configResponse =  ConfigHelper.GetValue(ConfiType.AWS.ToString(), connectionString);
+                List<Dictionary<string, string>> _result = ((List<Dictionary<string, string>>)configResponse.Results);
+                var credentials = new BasicAWSCredentials(_result.Single(x => x["key"] == "AWSAccessKey")["value"], _result.Single(x => x["key"] == "AWSSecretKey")["value"]);
+
+                _snsClient = new AmazonSimpleNotificationServiceClient(credentials, Amazon.RegionEndpoint.APSoutheast1);
+                _topicName = topicName;
+            }
+            catch (ArgumentNullException ex)
+            {
+                LogInfo.Fatal(ex, "Error while publishing the message queue");
+            }
+            catch (WebException ex)
+            {
+                LogInfo.Fatal(ex, "Error while publishing the message queue");
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Fatal(ex, "Error while publishing the message queue");
+            }
+        }
         public Publisher(string accessKey, string secretKey, string topicName)
         {
             try

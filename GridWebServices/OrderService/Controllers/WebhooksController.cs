@@ -39,12 +39,18 @@ namespace OrderService.Controllers
             _messageQueueDataAccess = messageQueueDataAccess;
         }
       
+        /// <summary>
+        /// Receiver endpoint for payment gateway to post transaction notifications
+        /// </summary>
+        /// <param name="notification"></param>
+        /// <param name="notificationSecret"></param>
+        /// <returns></returns>
         [HttpPost("process-webhook")]
         public  IActionResult ProcessWebhook([FromBody] WebhookNotificationModel notification, [FromHeader(Name = "X-Notification-Secret")] string notificationSecret)
         {
             try
             {
-                if (notification.OrderStatus == MPGSAPIResponse.CAPTURED.ToString())
+                if (notification.Order.Status == MPGSAPIResponse.CAPTURED.ToString())
                 {
                     _notificationModel = notification;
 
@@ -93,6 +99,11 @@ namespace OrderService.Controllers
                 return Ok();
             }
         }
+
+        /// <summary>
+        /// This will returns the transaction notificaiton log
+        /// </summary>
+        /// <returns></returns>
         [HttpGet("list-webhook-notifications")]
         public ActionResult ListWebhooks()
         {
@@ -126,104 +137,7 @@ namespace OrderService.Controllers
 
             return Ok(notifications);
         }
-
-        [HttpPost("process-webhook-mq")]
-        public async Task<IActionResult> ProcessWebhookMq([FromBody] WebhookNotificationModel notification, [FromHeader(Name = "X-Notification-Secret")] string notificationSecret)
-        {
-            try
-            {
-                var watch = new System.Diagnostics.Stopwatch();
-
-                watch.Start();
-
-                PaymentHelper.InitWebhooksNotificationsFolder();
-
-                DatabaseResponse configResponse = ConfigHelper.GetValue(ConfiType.MPGS.ToString(), _iconfiguration);
-
-                PaymentHelper gatewayHelper = new PaymentHelper();
-
-                GridMPGSConfig gatewayConfig = gatewayHelper.GetGridMPGSConfig((List<Dictionary<string, string>>)configResponse.Results);
-
-                GatewayApiConfig _gatewayApiConfig = new GatewayApiConfig(gatewayConfig);
-
-                LogInfo.Information("Webhooks controller ProcessWebhook action");
-
-                Debug.WriteLine($"-------------GatewayApiConfig.WebhooksNotificationSecret {_gatewayApiConfig.WebhooksNotificationSecret} --- {notificationSecret}");
-
-                if (_gatewayApiConfig.WebhooksNotificationSecret == null || notificationSecret == null || notificationSecret != _gatewayApiConfig.WebhooksNotificationSecret)
-                {
-                    LogInfo.Error("Webhooks notification secret doesn't match, so not processing the incoming request!");
-
-                    return Ok();
-                }
-
-                LogInfo.Information("Webhooks notification secret matches");
-
-                string json = JsonConvert.SerializeObject(notification);
-
-                LogInfo.Information($"Webhooks notification model {json}");
-
-                WebhookDataAccess _webhookAccess = new WebhookDataAccess(_iconfiguration);
-
-                DatabaseResponse databaseResponse = _webhookAccess.UpdateMPGSWebhookNotification(notification);
-
-                // epoch
-                notification.Timestamp = Convert.ToInt64((DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds);
-
-                System.IO.File.WriteAllText($@"{GatewayApiConfig.WEBHOOKS_NOTIFICATION_FOLDER}/WebHookNotifications_{notification.Timestamp}.json", json);
-
-                // need to change config settings here
-                Publisher mpgsWhNotificationPublisher = new Publisher(_iconfiguration, "WebhookNotification-Payment");
-
-                 await  mpgsWhNotificationPublisher.PublishAsync(notification);
-
-                watch.Stop();
-
-                // we can trace this and decide wether to implement a queue here or not
-                LogInfo.Information($"MPGS Webhook Execution Time: {watch.ElapsedMilliseconds} ms");
-
-                /*               
-                The gateway will consider the delivery of the Webhook notification as successful
-                
-                if  system responds with a successful acknowledgement message containing 
-                
-                HTTP 200 Status Code within 30 seconds.  */
-
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-
-                return Ok();
-            }
-
-
-        }
-
-        [HttpGet("aws-mq")]
-        public async Task<IActionResult> GetAWSMQ()
-        {
-            try
-            {
-                //change the config settings here
-               Subscriber mpgsWhNotificationPublisher = new Subscriber(_iconfiguration, "WebhookNotification-Payment", "OrderPayment");
-
-               Action<object> MPGSOrderFinalProcessing = SQSHandler.FinalProcessing;
-
-               await   mpgsWhNotificationPublisher.ListenAsync(MPGSOrderFinalProcessing);
-
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-
-                return Ok();
-            }
-
-        }
-
+        
         [NonAction]
         public void ProcessPayment(Action paymentProcessor)
         {
@@ -270,7 +184,7 @@ namespace OrderService.Controllers
                 System.IO.File.WriteAllText($@"{GatewayApiConfig.WEBHOOKS_NOTIFICATION_FOLDER}/WebHookNotifications_{notification.Timestamp}.json", json);
 
 
-                CheckOutResponseUpdate updateRequest = new CheckOutResponseUpdate { MPGSOrderID = notification.OrderId, Result = notification.OrderStatus };
+                CheckOutResponseUpdate updateRequest = new CheckOutResponseUpdate { MPGSOrderID = notification.Order.Id, Result = notification.Order.Status };
 
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
 

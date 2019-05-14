@@ -58,7 +58,7 @@ namespace CustomerService.DataAccess
 
                 parameters[0].Value = customer.Email;
                 parameters[1].Value = new Sha2().Hash(customer.Password);
-                parameters[2].Value = new RandomSG().GetString();
+                parameters[2].Value = new RandomSG().GetString().ToUpper();
 
                 _DataHelper = new DataAccessHelper("Customer_CreateCustomer", parameters, _configuration);
 
@@ -76,6 +76,7 @@ namespace CustomerService.DataAccess
                                    {
                                        CustomerID = model.Field<int>("CustomerID"),
                                        Email = model.Field<string>("Email"),
+                                       Name = model.Field<string>("Name"),
                                        Password = model.Field<string>("Password"),
                                        MobileNumber = model.Field<string>("MobileNumber"),
                                        ReferralCode = model.Field<string>("ReferralCode"),
@@ -147,6 +148,7 @@ namespace CustomerService.DataAccess
                                     EmailSubscription = model.Field<string>("EmailSubscription"),
                                     Status = model.Field<string>("Status"),
                                     JoinedOn = model.Field<DateTime>("JoinedOn"),
+                                    OrderCount = model.Field<int>("OrderCount"),
                                     PendingAllowedSubscribers = model.Field<int>("PendingAllowedSubscribers")
                                 }).FirstOrDefault();
                 }
@@ -540,7 +542,9 @@ namespace CustomerService.DataAccess
                                           SuspensionRaised = model.Field<int>("SuspensionRaised"),
                                           TerminationRaised = model.Field<int>("TerminationRaised"),
                                           PlanChangeRaised = model.Field<int>("PlanChangeRaised"),
-                                          PlanChangeMessage = model.Field<string>("PlanChangeMessage")
+                                          PlanChangeMessage = model.Field<string>("PlanChangeMessage"),
+                                          SMSSubscription = model.Field<int>("SMSSubscription"),
+                                          VoiceSubscription = model.Field<int>("VoiceSubscription")
                                       }).ToList();
                     }
 
@@ -645,7 +649,7 @@ namespace CustomerService.DataAccess
                 };
 
                 parameters[0].Value = customerid;
-                parameters[1].Value = ReferralCode;
+                parameters[1].Value = ReferralCode.ToUpper();
 
                 _DataHelper = new DataAccessHelper("Customers_UpdateReferralCode", parameters, _configuration);
 
@@ -655,7 +659,7 @@ namespace CustomerService.DataAccess
 
                 DatabaseResponse response = new DatabaseResponse();
 
-                if (result == 105)
+                if (result == ((int)DbReturnValue.UpdateSuccess))
                 {
 
                     ValidateReferralCodeResponse vrcResponse = new ValidateReferralCodeResponse();
@@ -694,72 +698,7 @@ namespace CustomerService.DataAccess
             {
                 _DataHelper.Dispose();
             }
-        }
-
-        public async Task<DatabaseResponse> GetCustomerBillingDetails(int CustomerID)
-        {
-            try
-            {
-                SqlParameter[] parameters =
-                {
-                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
-
-                };
-
-                parameters[0].Value = CustomerID;
-                _DataHelper = new DataAccessHelper("Customers_GetBillingDetails", parameters, _configuration);
-
-                var dt = new DataTable();
-
-                var result = await _DataHelper.RunAsync(dt); // 105 /119
-
-                DatabaseResponse response;
-
-                if (result == 105)
-                {
-
-                    var _customerBilling = new customerBilling();
-
-                    if (dt.Rows.Count > 0)
-                    {
-
-                        _customerBilling = (from model in dt.AsEnumerable()
-                                      select new customerBilling()
-                                      {
-                                          Name = model.Field<string>("Name"),
-                                          BillingUnit = model.Field<string>("BillingUnit"),
-                                          BillingFloor = model.Field<string>("BillingFloor"),
-                                          BillingStreetName = model.Field<string>("BillingStreetName"),
-                                          BillingBuildingNumber = model.Field<string>("BillingBuildingNumber"),
-                                          BillingBuildingName = model.Field<string>("BillingBuildingName"),
-                                          BillingContactNumber = model.Field<string>("BillingContactNumber"),
-                                          BillingPostCode = model.Field<string>("BillingPostCode")
-                                      }).FirstOrDefault();
-                    }
-
-                    response = new DatabaseResponse { ResponseCode = result, Results = _customerBilling };
-
-                }
-
-                else
-                {
-                    response = new DatabaseResponse { ResponseCode = result };
-                }
-
-                return response;
-            }
-
-            catch (Exception ex)
-            {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-
-                throw;
-            }
-            finally
-            {
-                _DataHelper.Dispose();
-            }
-        }
+        }      
 
         public async Task<DatabaseResponse> GetPaymentMethod(int CustomerID)
         {
@@ -955,7 +894,7 @@ namespace CustomerService.DataAccess
                             try { orderDetails.PaymentOn = Convert.ToDateTime(dr["PaymentOn"]); }
                             catch { }
                             List<Subscribers> orderSubscribers = new List<Subscribers>();
-                            foreach (DataRow osdr in ds.Tables[1].Rows)
+                            foreach (DataRow osdr in ds.Tables[1].Select("OrderID = " + dr["OrderID"].ToString()))
                             {
                                 Subscribers _subscriber = new Subscribers();
                                 _subscriber.OrderID = Convert.ToInt32(osdr["OrderID"]);
@@ -1480,6 +1419,148 @@ namespace CustomerService.DataAccess
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 throw;
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> ValidatePassword(LoginDto request)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@Email",  SqlDbType.VarChar ),
+                    new SqlParameter( "@Password",  SqlDbType.VarChar )
+                };
+
+                parameters[0].Value = request.Email;
+                parameters[1].Value = new Sha2().Hash(request.Password);
+
+                _DataHelper = new DataAccessHelper("Customer_ValidatePassword", parameters, _configuration);                
+
+                int result = await _DataHelper.RunAsync();
+
+                return new DatabaseResponse { ResponseCode = result };
+
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw ex;
+
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> GetCustomerChangeRequests(int customerID)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@CustomerID",  SqlDbType.VarChar )
+                   
+                };
+
+                parameters[0].Value = customerID;
+                
+
+                _DataHelper = new DataAccessHelper("Customers_GetCustomerChangeRequests", parameters, _configuration);
+                DataSet ds = new DataSet();
+
+                int result = await _DataHelper.RunAsync(ds); // 105 /102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 100)
+                {
+                    List<ChangeRequest> changeRequests = new List<ChangeRequest>();
+                    foreach (DataRow dr in ds.Tables[0].Rows)
+                    {
+                        ChangeRequest changeDetails = new ChangeRequest();
+
+                        if (dr != null)
+                        {
+
+                            changeDetails.ChangeRequestID = Convert.ToInt32(dr["ChangeRequestID"]);
+                            changeDetails.SubscriberID = Convert.ToInt32(dr["SubscriberID"]);
+                            changeDetails.MobileNumber = dr["MobileNumber"].ToString();
+                            changeDetails.ListingStatus = dr["ListingStatus"].ToString();
+                            changeDetails.OrderNumber = dr["OrderNumber"].ToString();
+                            changeDetails.RequestOn = Convert.ToDateTime(dr["RequestOn"]);
+                            changeDetails.OrderStatus = dr["OrderStatus"].ToString();
+                            changeDetails.RequestType = dr["RequestType"].ToString();
+                            changeDetails.BillingUnit = dr["BillingUnit"].ToString();
+                            changeDetails.BillingFloor = dr["BillingFloor"].ToString();
+                            changeDetails.BillingBuildingNumber = dr["BillingBuildingNumber"].ToString();
+                            changeDetails.BillingBuildingName = dr["BillingBuildingName"].ToString();
+                            changeDetails.BillingStreetName = dr["BillingStreetName"].ToString();
+                            changeDetails.BillingPostCode = dr["BillingPostCode"].ToString();
+                            changeDetails.BillingContactNumber = dr["BillingContactNumber"].ToString();
+                            changeDetails.Name = dr["Name"].ToString();
+                            changeDetails.Email = dr["Email"].ToString();
+                            changeDetails.IDType = dr["IDType"].ToString();
+                            changeDetails.IDNumber = dr["IDNumber"].ToString();
+                            changeDetails.IsSameAsBilling = (dr["IsSameAsBilling"] == DBNull.Value ? 0 : Convert.ToInt32(dr["IsSameAsBilling"]));
+                            changeDetails.ShippingUnit = dr["ShippingUnit"].ToString();
+                            changeDetails.ShippingFloor = dr["ShippingFloor"].ToString();
+                            changeDetails.ShippingBuildingNumber = dr["ShippingBuildingNumber"].ToString();
+                            changeDetails.ShippingBuildingName = dr["ShippingBuildingName"].ToString();
+                            changeDetails.ShippingStreetName = dr["ShippingStreetName"].ToString();
+                            changeDetails.ShippingPostCode = dr["ShippingPostCode"].ToString();
+                            changeDetails.ShippingContactNumber = dr["ShippingContactNumber"].ToString();
+                            changeDetails.AlternateRecipientContact = dr["AlternateRecipientContact"].ToString();
+                            changeDetails.AlternateRecipientName = dr["AlternateRecipientName"].ToString();
+                            changeDetails.AlternateRecipientEmail = dr["AlternateRecipientEmail"].ToString();
+                            changeDetails.PortalSlotID = dr["PortalSlotID"].ToString();
+                            if (dr["SlotDate"] == DBNull.Value)
+                            {
+                                changeDetails.SlotDate = null;
+                            }
+                            else
+                            {
+                                changeDetails.SlotDate = Convert.ToDateTime(dr["SlotDate"]);
+                            }
+                            TimeSpan val;
+                            TimeSpan.TryParse(dr["SlotFromTime"].ToString(), out val);
+                            changeDetails.SlotFromTime = val;
+                            TimeSpan.TryParse(dr["SlotToTime"].ToString(), out val);
+                            changeDetails.SlotToTime = val;
+                            try { changeDetails.ScheduledDate = Convert.ToDateTime(dr["ScheduledDate"]); }
+                            catch { }
+                            try { changeDetails.ServiceFee = Convert.ToDouble(dr["ServiceFee"]); }
+                            catch { }
+                            changeDetails.AllowRescheduling = Convert.ToInt32(dr["AllowRescheduling"]);
+                        }
+                        changeRequests.Add(changeDetails);
+                    }
+                    response = new DatabaseResponse { ResponseCode = result, Results = changeRequests };
+
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw ex;
+
             }
             finally
             {

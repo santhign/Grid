@@ -26,6 +26,11 @@ namespace Core.Models
         public string messagetemplate { get; set; }
         public string bccAddress { get; set; }
         public List<NotificationParams> parameters { get; set; }
+
+        public override string ToString()
+        {
+            return "{messagetemplate: " + messagetemplate + ", bccAddress: " + bccAddress + ", parameters list: " + string.Join(", ", parameters) + "}";
+        }
     }
 
 
@@ -87,6 +92,13 @@ namespace Core.Models
 
         public int Status { get; set; }
 
+    }
+
+    public class NotificationLogForDevPurpose : NotificationLog
+    {
+        public string EventType { get; set; }
+
+        public string Message { get; set; }
     }
 
     public class NotificationConfig

@@ -14,6 +14,7 @@ using Core.Helpers;
 using System.IO;
 using OrderService.Enums;
 using Newtonsoft.Json;
+using Core.DataAccess;
 
 namespace OrderService.Helpers
 {
@@ -158,7 +159,16 @@ namespace OrderService.Helpers
 
                 }
 
-              return 1;
+                else if (((OrderSource)sourceTyeResponse.Results).SourceType == CheckOutType.AccountInvoices.ToString())
+                {
+                    //send invoice queue message
+
+                    ProcessAccountInvoiceQueueMessage(((OrderSource)sourceTyeResponse.Results).SourceID);                 
+
+                }
+
+
+                return 1;
             }
 
             else
@@ -263,6 +273,84 @@ namespace OrderService.Helpers
             }
         }
 
+        public async void ProcessAccountInvoiceQueueMessage(int InvoiceID)
+        {
+            try
+            {
+                OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+
+                DatabaseResponse invoiceMqResponse = new DatabaseResponse();
+
+                invoiceMqResponse = await _messageQueueDataAccess.GetAccountInvoiceMessageQueueBody(InvoiceID);
+
+                InvoceQM invoiceDetails = new InvoceQM();
+
+                string topicName = string.Empty;
+
+                string pushResult = string.Empty;
+
+                if (invoiceMqResponse != null && invoiceMqResponse.Results != null)
+                {
+                    invoiceDetails = (InvoceQM)invoiceMqResponse.Results;
+
+                   // invoiceDetails.invoicelist= await GetInvoiceList(invoiceDetails.customerID);
+
+                    invoiceDetails.paymentmode = invoiceDetails.CardFundMethod == EnumExtensions.GetDescription(PaymentMode.CC) ? PaymentMode.CC.ToString() : PaymentMode.DC.ToString();
+
+                    MessageQueueRequest queueRequest = new MessageQueueRequest
+                    {
+                        Source = CheckOutType.AccountInvoices.ToString(),
+                        NumberOfRetries = 1,
+                        SNSTopic = topicName,
+                        CreatedOn = DateTime.Now,
+                        LastTriedOn = DateTime.Now,
+                        PublishedOn = DateTime.Now,
+                        MessageAttribute = EnumExtensions.GetDescription(RequestType.PayBill),
+                        MessageBody = JsonConvert.SerializeObject(invoiceDetails),
+                        Status = 0
+                    };
+
+                    try
+                    {
+                        Dictionary<string, string> attribute = new Dictionary<string, string>();
+
+                        topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration).Results.ToString().Trim();
+                        
+                        attribute.Add(EventTypeString.EventType, EnumExtensions.GetDescription(RequestType.PayBill));
+
+                        pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, invoiceDetails, attribute);
+
+                        queueRequest.PublishedOn = DateTime.Now;
+
+                        if (pushResult.Trim().ToUpper() == "OK")
+                        {
+                           queueRequest.Status = 1;                          
+
+                           await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                        }
+                        else
+                        {
+                            queueRequest.Status = 0;
+
+                            await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                        }
+
+                    }
+                    catch (Exception ex)
+                    {
+                        LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                        queueRequest.Status = 0;
+
+                        await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
         public void ProcessBuddy(Action buddyProcessor)
         {
             try
@@ -419,6 +507,71 @@ namespace OrderService.Helpers
                 return 0;
             }
            
+        }
+
+        public async Task<List<Recordset>> GetInvoiceList(int customerID)
+        {
+            BSSAPIHelper bsshelper = new BSSAPIHelper();
+
+            OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+
+            DatabaseResponse systemConfigResponse = await _orderAccess.GetConfiguration(ConfiType.System.ToString());
+
+            DatabaseResponse bssConfigResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
+
+            GridBSSConfi bssConfig = bsshelper.GetGridConfig((List<Dictionary<string, string>>)bssConfigResponse.Results);
+
+            GridSystemConfig systemConfig = bsshelper.GetGridSystemConfig((List<Dictionary<string, string>>)systemConfigResponse.Results);
+
+            DatabaseResponse accountResponse = await _orderAccess.GetCustomerBSSAccountNumber(customerID);
+
+            if (accountResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+            {
+                if (!string.IsNullOrEmpty(((BSSAccount)accountResponse.Results).AccountNumber))
+                {
+                    // Get default daterange in month from config by key - BSSInvoiceDefaultDateRangeInMonths
+                    DatabaseResponse dateRangeResponse = ConfigHelper.GetValueByKey(ConfigKeys.BSSInvoiceDefaultDateRangeInMonths.ToString(), _iconfiguration);
+
+                    int rangeInMonths = int.Parse(((string)dateRangeResponse.Results));
+
+                    DatabaseResponse requestIdRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.GetInvoiceDetails.ToString(), customerID, 0, "");
+
+                    BSSInvoiceResponseObject invoiceResponse = await bsshelper.GetBSSCustomerInvoice(bssConfig, ((BSSAssetRequest)requestIdRes.Results).request_id, ((BSSAccount)accountResponse.Results).AccountNumber, rangeInMonths);
+
+                    if (invoiceResponse.Response.result_code == "0")
+                    {
+                        // Get download link prefix from config
+                        DatabaseResponse downloadLinkResponse = ConfigHelper.GetValueByKey(ConfigKeys.BSSInvoiceDownloadLink.ToString(), _iconfiguration);
+
+                        string downloadLinkPrefix = (string)downloadLinkResponse.Results;
+
+                        foreach (Recordset recordset in invoiceResponse.Response.invoice_details.recordset)
+                        {
+                            recordset.download_url = downloadLinkPrefix + recordset.bill_id;
+                        }
+                        return invoiceResponse.Response.invoice_details.recordset;
+                    }
+
+                    else
+                    {                        
+                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.NoInvoiceFound) + " : " + customerID);
+                        return new List<Recordset>();
+                    }
+                }
+                else
+                {                    
+                   
+                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.MandatoryRecordEmpty) + " for Customer - " + customerID);
+                    return new List<Recordset>();
+                }
+            }
+
+            else
+            {
+                // move message to enum
+                LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.FailedToGetBillingAccount));
+                return new List<Recordset>();
+            }
         }
     }
 }

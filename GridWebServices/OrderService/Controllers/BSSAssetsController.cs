@@ -720,13 +720,9 @@ namespace OrderService.Controllers
         /// This will return Customer's BSS Invoice for the given date range, though optional
         /// </summary>
         /// <param name="token"></param>
-        /// <param name="request">
         /// body{
-        /// "Token":"Auth token"
-        /// "StartDate" :"1/1/2019", //dd/MM/yyyy - optional
-        /// "EndDate" :"15/12/2019", //dd/MM/yyyy  - optional      
+        /// "Token":"Auth token"     
         /// }
-        /// </param>
         /// <returns>OperationsResponse</returns>
         [Route("GetCustomerInvoice")]
         [HttpPost]
@@ -1004,6 +1000,123 @@ namespace OrderService.Controllers
                         }
                     }
 
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+
+                }
+
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+            }
+        }
+
+        /// <summary>
+        /// This will return invoive pdf as base64 encoded bytearray
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="invoice_id"></param>
+        /// <returns></returns>
+        [HttpPost("DownLoadInvoice/{invoice_id}")]
+        public async Task<IActionResult> DownLoadInvoice([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int invoice_id)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+                AuthHelper helper = new AuthHelper(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    {
+                        int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+                        if (!ModelState.IsValid)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = string.Join("; ", ModelState.Values
+                                                           .SelectMany(x => x.Errors)
+                                                           .Select(x => x.ErrorMessage))
+                            });
+                        }
+
+                        BSSAPIHelper bsshelper = new BSSAPIHelper();
+
+                        OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+                       
+                        DatabaseResponse downloadLinkResponse = ConfigHelper.GetValueByKey(ConfigKeys.BSSInvoiceDownloadLink.ToString(), _iconfiguration);
+
+                        string downloadLinkPrefix = (string)downloadLinkResponse.Results;
+
+                        DatabaseResponse accountResponse = await _orderAccess.GetCustomerBSSAccountNumber(customerID);
+
+                        byte[] responseObject= await bsshelper.GetInvoiceStream(downloadLinkPrefix+ invoice_id);
+
+                        MiscHelper configHelper = new MiscHelper();
+
+                        if (responseObject!=null && responseObject.Length>0)
+                                {
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = true,
+                                        IsDomainValidationErrors = false,
+                                        Message= responseObject == null ? "": "Invoice_"+((BSSAccount)accountResponse.Results).AccountNumber+ "_"+ invoice_id + "_" + DateTime.Now.DayOfWeek + "_" + DateTime.Now.ToString("MMMM_dd_yyyy_hh_mm_ss") + ".pdf",
+                                        ReturnedObject = responseObject==null?null: configHelper.GetBase64StringFromByteArray(responseObject, ((BSSAccount)accountResponse.Results).AccountNumber + "_Invoice_" + invoice_id + "_" + DateTime.Now.DayOfWeek + "_" + DateTime.Now.ToString("MMMM_dd_yyyy_hh_mm_ss") + ".pdf")
+                                    });
+                                }
+
+                                else
+                                {
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = true,
+                                        IsDomainValidationErrors = false,
+                                        Message = EnumExtensions.GetDescription(DbReturnValue.NoRecords),
+
+                                    });
+                                }
+                     }
                     else
                     {
                         //Token expired

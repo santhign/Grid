@@ -14,13 +14,20 @@ namespace OrderService.Models
             GatewayUrlCertificate =  mPGSConfig.GatewayUrlCertificate;
             Currency =  mPGSConfig.Currency;
             MerchantId =  mPGSConfig.MerchantId;
+            GridMerchantName = mPGSConfig.GridMerchantName;
+            GridMerchantPostCode = mPGSConfig.GridMerchantPostCode;
+            GridMerchantContactNumber = mPGSConfig.GridMerchantContactNumber;
+            GridMerchantAddress1 = mPGSConfig.GridMerchantAddress1;
+            GridMerchantAddress2 = mPGSConfig.GridMerchantAddress2;
             Password = mPGSConfig.Password;
             Username = "merchant." + mPGSConfig.MerchantId; ;
             CertificateLocation = mPGSConfig.CertificateLocation;
             CertificatePassword = mPGSConfig.CertificatePassword;
             AuthenticationByCertificate = mPGSConfig.AuthenticationByCertificate;
             WebhooksNotificationSecret = mPGSConfig.WebhooksNotificationSecret;
-        }
+
+            }
+
             public static string WEBHOOKS_NOTIFICATION_FOLDER = "webhooks-notifications";
 
             public Boolean Debug { get; set; }
@@ -34,8 +41,6 @@ namespace OrderService.Models
         public String ProxyUser { get; set; }
         public String ProxyPassword { get; set; }
         public String ProxyDomain { get; set; }
-
-
         
         public string Version { get; set; }  
             public string GatewayUrl { get; set; } 
@@ -47,8 +52,14 @@ namespace OrderService.Models
             public string CertificateLocation { get; set; }
             public string CertificatePassword { get; set; }
             public bool AuthenticationByCertificate { get; set; }
-            public string WebhooksNotificationSecret { get; set; }       
+            public string WebhooksNotificationSecret { get; set; }
+            public string GridMerchantName { get; set; }        
+            public string GridMerchantPostCode { get; set; }       
+            public string GridMerchantAddress1 { get; set; }       
+            public string GridMerchantAddress2 { get; set; }       
+            public string GridMerchantContactNumber { get; set; }
     }
+
     [DataContract]
     public class GridMPGSConfig
     {
@@ -72,6 +83,21 @@ namespace OrderService.Models
 
         [DataMember(Name = "Username")]
         public string Username { get; set; }
+
+        [DataMember(Name = "GridMerchantName")]
+        public string GridMerchantName { get; set; }
+
+        [DataMember(Name = "GridMerchantPostCode")]
+        public string GridMerchantPostCode { get; set; }
+
+        [DataMember(Name = "GridMerchantAddress1")]
+        public string GridMerchantAddress1 { get; set; }
+
+        [DataMember(Name = "GridMerchantAddress2")]
+        public string GridMerchantAddress2 { get; set; }
+
+        [DataMember(Name = "GridMerchantContactNumber")]
+        public string GridMerchantContactNumber { get; set; }        
 
         [DataMember(Name = "CertificateLocation")]
         public string CertificateLocation { get; set; }

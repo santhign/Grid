@@ -660,5 +660,21 @@ namespace Core.Helpers
                 throw ex;
             }
         }
+
+        public async Task<byte[]> GetInvoiceStream(string url)
+        {
+            try
+
+            {
+                ApiClient client = new ApiClient(new Uri(url)); 
+
+                return await client.DownloadAsync(url);
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
     }
 }

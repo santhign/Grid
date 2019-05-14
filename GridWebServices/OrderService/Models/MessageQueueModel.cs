@@ -44,7 +44,7 @@ namespace OrderService.Models
         [DataMember]
         public string MobileNumber { get; set; }
         [DataMember]
-        public int ? PremiumType { get; set; }
+        public int? PremiumType { get; set; }
         [DataMember]
         public int? IsPorted { get; set; }
         [DataMember]
@@ -96,9 +96,9 @@ namespace OrderService.Models
         [DataMember]
         public DateTime? SlotDate { get; set; }
         [DataMember]
-        public DateTime ? SlotFromTime { get; set; }
+        public TimeSpan? SlotFromTime { get; set; }
         [DataMember]
-        public DateTime? SlotToTime { get; set; }
+        public TimeSpan? SlotToTime { get; set; }
         [DataMember]
         public DateTime? ScheduledDate { get; set; }
         [DataMember]
@@ -109,10 +109,10 @@ namespace OrderService.Models
         public string OldSIM { get; set; }
 
         [DataMember(Name = "Bundles")]
-        public List<CurrBundleDetails> CurrBundles { get; set; }
+        public List<BundleDetails> Bundles { get; set; }
 
         [DataMember(Name = "CurrBundles")]
-        public List<BundleDetails> Bundles { get; set; }        
+        public List<CurrBundleDetails> CurrBundles { get; set; }
 
 
         [DataMember(Name = "Charges")]
@@ -135,10 +135,13 @@ namespace OrderService.Models
 
 
     }
-        /// <summary>
-        /// Subscriber details
-        /// </summary>
-        public class BundleDetails
+    /// <summary>
+    /// Subscriber details
+    /// </summary>
+    /// <summary>
+    /// Subscriber details
+    /// </summary>
+    public class BundleDetails
     {
         [DataMember]
         public int? BundleID { get; set; }
@@ -166,14 +169,14 @@ namespace OrderService.Models
         public string ServiceName { get; set; }
         [DataMember]
         public double? ApplicableServiceFee { get; set; }
-        
+
         [DataMember]
         public int? OldPlanID { get; set; }
         [DataMember]
         public string OldBSSPlanId { get; set; }
         [DataMember]
         public string OldBSSPlanName { get; set; }
-        
+
 
     }
 
@@ -194,7 +197,7 @@ namespace OrderService.Models
         public int? IsRecurring { get; set; }
         [DataMember]
         public int? IsGSTIncluded { get; set; }
-      
+
 
     }
 
@@ -219,24 +222,35 @@ namespace OrderService.Models
         public int ChangeRequestID { get; set; }
     }
 
-    public class MessageQueueRequest
+    public class ProfileMQ
     {
-        public string Source { get; set; }
-        public string SNSTopic { get; set; }
-        public string MessageAttribute { get; set; }
-        public string MessageBody { get; set; }
-        public int Status { get; set; }
-        public DateTime ? PublishedOn { get; set; }
-        public DateTime ? CreatedOn { get; set; }
-        public int NumberOfRetries { get; set; }
-        public DateTime ? LastTriedOn { get; set; }
-
-
-    }
-
-    public class MessageQueueRequestException : MessageQueueRequest
-    {
-        public string Remark { get; set; }
-        public string Exception { get; set; }
+        public int accountID { get; set; }
+        public int customerID { get; set; }
+        public int? subscriberID { get; set; }
+        public string mobilenumber { get; set; }
+        public string MaskedCardNumber { get; set; }
+        public string Token { get; set; }
+        public string CardType { get; set; }
+        public int? IsDefault { get; set; }
+        public string CardHolderName { get; set; }
+        public int? ExpiryMonth { get; set; }
+        public int? ExpiryYear { get; set; }
+        public string CardFundMethod { get; set; }
+        public string CardBrand { get; set; }
+        public string CardIssuer { get; set; }
+        public string billingUnit { get; set; }
+        public string billingFloor { get; set; }
+        public string billingBuildingNumber { get; set; }
+        public string billingBuildingName { get; set; }
+        public string billingStreetName { get; set; }
+        public string billingPostCode { get; set; }
+        public string billingContactNumber { get; set; }
+        public string email { get; set; }
+        public string displayname { get; set; }
+        public string paymentmode { get; set; }
+        public double? amountpaid { get; set; }
+        public string MPGSOrderID { get; set; }
+        public string invoicelist { get; set; }
+        public string invoiceamounts { get; set; }
     }
 }
