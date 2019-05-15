@@ -5378,7 +5378,7 @@ namespace OrderService.Controllers
                                 FinalAmount = accountInvoiceRequest.FinalAmount,
                                 InvoiceUrl = downloadLinkPrefix + accountInvoiceRequest.InvoiceID,
                                 Remarks = Misc.Account.ToString(),
-                                PaymentSourceID = int.Parse(((BSSAccount)accountResponse.Results).AccountNumber),
+                                PaymentSourceID = ((BSSAccount)accountResponse.Results).AccountNumber,
                                 OrderStatus = 0
 
                             };
