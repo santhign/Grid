@@ -150,45 +150,86 @@ namespace NotificationService.Controllers
         {
             try
             {
-           
-            Amazon.SQS.Model.Message msg = (Amazon.SQS.Model.Message)message;
 
-            string queMessage = msg.Body;
+                Amazon.SQS.Model.Message msg = (Amazon.SQS.Model.Message)message;
 
-            SNSSubscription subscription = JsonConvert.DeserializeObject<SNSSubscription>(queMessage);
-            
-            NotificationMessage NotMessage = JsonConvert.DeserializeObject<NotificationMessage>(subscription.Message);
+                string queMessage = msg.Body;
 
-            // SNSSubscription messageObject= new SNSSubscription {  Message=me};
+                SNSSubscription subscription = JsonConvert.DeserializeObject<SNSSubscription>(queMessage);
 
-            //   NotificationMessage notification= JsonConvert.DeserializeObject<NotificationMessage>(messageObject.Message);
+                NotificationMessage NotMessage = JsonConvert.DeserializeObject<NotificationMessage>(subscription.Message);
 
-            OutboundEmail _email = new OutboundEmail();
+                // SNSSubscription messageObject= new SNSSubscription {  Message=me};
 
-            ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
-
-            DatabaseResponse emailTemplate = await _configAccess.GetEmailNotificationTemplate(NotMessage.Message.messagetemplate.ToString());
-
-            EmailTemplate template = (EmailTemplate)emailTemplate.Results;            
-
-            var responses = await _email.SendEmail(NotMessage, _iconfiguration, template);
-
-
-            foreach (Mandrill.Model.MandrillSendMessageResponse response in responses)
-            {
-                foreach(NotificationParams param in NotMessage.Message.parameters)
+                //   NotificationMessage notification= JsonConvert.DeserializeObject<NotificationMessage>(messageObject.Message);
+                if (NotMessage.MessageType == NotificationMsgType.Email.GetDescription())
                 {
-                    if(response.Email==param.emailaddress)
+                    OutboundEmail _email = new OutboundEmail();
+
+                    ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
+
+                    DatabaseResponse emailTemplate = await _configAccess.GetEmailNotificationTemplate(NotMessage.Message.messagetemplate.ToString());
+
+                    EmailTemplate template = (EmailTemplate)emailTemplate.Results;
+
+                    var responses = await _email.SendEmail(NotMessage, _iconfiguration, template);
+
+
+                    foreach (Mandrill.Model.MandrillSendMessageResponse response in responses)
                     {
-                        DatabaseResponse notificationLogResponse = await _configAccess.CreateEMailNotificationLog(new NotificationLog { Status = response.Status.ToString()=="Sent"? 1:0, Email = response.Email, EmailTemplateID = template.EmailTemplateID, EmailBody = _email.GetMergedTemplate(param, template), EmailSubject=template.EmailSubject, ScheduledOn= subscription.Timestamp, SendOn=DateTime.UtcNow});
+                        foreach (NotificationParams param in NotMessage.Message.parameters)
+                        {
+                            if (response.Email == param.emailaddress)
+                            {
+                                DatabaseResponse notificationLogResponse = await _configAccess.CreateEMailNotificationLog(new NotificationLog {
+                                    Status = response.Status.ToString() == "Sent" ? 1 : 0, Email = response.Email,
+                                    EmailTemplateID = template.EmailTemplateID, EmailBody = _email.GetMergedTemplate(param, template),
+                                    EmailSubject = template.EmailSubject, ScheduledOn = subscription.Timestamp, SendOn = DateTime.UtcNow });
+                            }
+                        }
+
                     }
+
                 }
-                
+                else if (NotMessage.MessageType == NotificationMsgType.SMS.GetDescription())
+                {
+                    OutboundSMS _SMS = new OutboundSMS();
+                    Sms smsData = new Sms();
+                    ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
+
+                    DatabaseResponse emailTemplate = await _configAccess.GetSMSNotificationTemplate(NotMessage.Message.messagetemplate.ToString());
+                    SMSTemplates template = (SMSTemplates)emailTemplate.Results;                    
+                    smsData.PhoneNumber = NotMessage.Message.parameters.Select(x => x.mobilenumber).FirstOrDefault();
+
+                    smsData.SMSText = template.SMSTemplate.Replace("NAME", NotMessage.MessageName)
+                        .Replace("PARAM1", NotMessage.Message.parameters.Select(x => x.param1).FirstOrDefault())
+                        .Replace("PARAM2", NotMessage.Message.parameters.Select(x => x.param2).FirstOrDefault())
+                        .Replace("PARAM3", NotMessage.Message.parameters.Select(x => x.param3).FirstOrDefault())
+                        .Replace("PARAM4", NotMessage.Message.parameters.Select(x => x.param4).FirstOrDefault())
+                        .Replace("PARAM5", NotMessage.Message.parameters.Select(x => x.param5).FirstOrDefault())
+                        .Replace("PARAM6", NotMessage.Message.parameters.Select(x => x.param6).FirstOrDefault())
+                        .Replace("PARAM7", NotMessage.Message.parameters.Select(x => x.param7).FirstOrDefault())
+                        .Replace("PARAM8", NotMessage.Message.parameters.Select(x => x.param8).FirstOrDefault())
+                        .Replace("PARAM9", NotMessage.Message.parameters.Select(x => x.param9).FirstOrDefault())
+                        .Replace("PARAM10", NotMessage.Message.parameters.Select(x => x.param10).FirstOrDefault());
+                        
+                    string response = await _SMS.SendSMS(smsData, _iconfiguration);
+                   
+                    await _configAccess.CreateSMSNotificationLog(new SMSNotificationLog()
+                    {
+                        Email = NotMessage.Message.parameters.Select(x => x.emailaddress).FirstOrDefault(),
+                        Mobile = smsData.PhoneNumber,
+                        SMSTemplateID = template.SMSTemplateID,
+                        SMSText = smsData.SMSText,
+                        Status = response != "failure" ? 1 : 0,
+                        ScheduledOn = subscription.Timestamp,                        
+                        SendOn = DateTime.UtcNow
+
+                    });
+                }
             }
 
-            }
-
-            catch(Exception ex)
+            catch (Exception ex)
             {
 
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));

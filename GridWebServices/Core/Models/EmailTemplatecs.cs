@@ -11,4 +11,12 @@ namespace Core.Models
         public string EmailSubject { get; set; }
         public string EmailBody { get; set; }
     }
+
+    public class SMSTemplates
+    {
+        public int SMSTemplateID { get; set; }
+        public string TemplateName { get; set; }
+        public string SMSTemplate { get; set; }
+        
+    }
 }

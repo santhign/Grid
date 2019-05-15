@@ -237,5 +237,116 @@ namespace Core.DataAccess
             }
         }
 
+        public async Task<DatabaseResponse> GetSMSNotificationTemplate(string templateName)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@TemplateName",  SqlDbType.NVarChar )
+
+                };
+
+                parameters[0].Value = templateName;
+
+                _DataHelper = new DataAccessHelper("z_GetSMSTemplateByName", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt); // 109 /105
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                SMSTemplates template = new SMSTemplates();
+
+                if (dt != null && dt.Rows.Count > 0)
+                {
+                    template = (from model in dt.AsEnumerable()
+                                select new SMSTemplates()
+                                {
+                                    SMSTemplateID = model.Field<int>("SMSTemplateID"),
+                                    TemplateName = model.Field<string>("TemplateName"),
+                                    SMSTemplate = model.Field<string>("SMSTemplate")
+                                }).FirstOrDefault();
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = template };
+                }
+
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> CreateSMSNotificationLog(SMSNotificationLog log)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@Email",  SqlDbType.NVarChar ),
+
+                    new SqlParameter( "@SMSText",  SqlDbType.NVarChar ),
+
+                    new SqlParameter( "@Mobile",  SqlDbType.NVarChar ),
+
+                    new SqlParameter( "@ScheduledOn",  SqlDbType.DateTime ),
+
+                    new SqlParameter( "@SMSTemplateID",  SqlDbType.Int ),
+
+                    new SqlParameter( "@SendOn",  SqlDbType.DateTime ),
+
+                    new SqlParameter( "@Status",  SqlDbType.Int )
+
+                };
+
+                parameters[0].Value = log.Email;
+                parameters[1].Value = log.SMSText;
+                parameters[2].Value = log.Mobile;               
+                parameters[4].Value = log.ScheduledOn;
+                parameters[5].Value = log.SMSTemplateID;
+                parameters[6].Value = log.SendOn;
+                parameters[7].Value = log.Status;
+
+
+                _DataHelper = new DataAccessHelper("z_EmailNotificationsLogEntry", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt); // 107 /100
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                response = new DatabaseResponse { ResponseCode = result };
+
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
     }
 }
