@@ -113,8 +113,9 @@ namespace CustomerService.DataAccess
                 return await publisher.PublishAsync(msgBody, messageAttribute, subject);
 
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
                 throw;
             }
 
@@ -128,8 +129,9 @@ namespace CustomerService.DataAccess
                 return await publisher.PublishAsync(msgBody, messageAttribute);
 
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
                 throw;
             }
 
@@ -137,9 +139,10 @@ namespace CustomerService.DataAccess
 
         public async Task<int> InsertMessageInMessageQueueRequest(MessageQueueRequest messageQueueRequest)
         {
-
-            SqlParameter[] parameters =
+            try
             {
+                SqlParameter[] parameters =
+                {
                     new SqlParameter( "@Source",  SqlDbType.NVarChar ),
                     new SqlParameter( "@SNSTopic",  SqlDbType.NVarChar ),
                     new SqlParameter( "@MessageAttribute",  SqlDbType.NVarChar ),
@@ -149,23 +152,29 @@ namespace CustomerService.DataAccess
                     new SqlParameter( "@CreatedOn",  SqlDbType.DateTime ),
                     new SqlParameter( "@NumberOfRetries",  SqlDbType.Int ),
                     new SqlParameter( "@LastTriedOn",  SqlDbType.DateTime)
-            };
+                };
 
-            parameters[0].Value = messageQueueRequest.Source;
-            parameters[1].Value = messageQueueRequest.SNSTopic;
-            parameters[2].Value = messageQueueRequest.MessageAttribute;
-            parameters[3].Value = messageQueueRequest.MessageBody;
-            parameters[4].Value = messageQueueRequest.Status;
-            parameters[5].Value = messageQueueRequest.PublishedOn;
-            parameters[6].Value = messageQueueRequest.CreatedOn;
-            parameters[7].Value = messageQueueRequest.NumberOfRetries;
-            parameters[8].Value = messageQueueRequest.LastTriedOn;
-
-
-            _DataHelper = new DataAccessHelper(DbObjectNames.z_InsertIntoMessageQueueRequests, parameters, _configuration);
+                parameters[0].Value = messageQueueRequest.Source;
+                parameters[1].Value = messageQueueRequest.SNSTopic;
+                parameters[2].Value = messageQueueRequest.MessageAttribute;
+                parameters[3].Value = messageQueueRequest.MessageBody;
+                parameters[4].Value = messageQueueRequest.Status;
+                parameters[5].Value = messageQueueRequest.PublishedOn;
+                parameters[6].Value = messageQueueRequest.CreatedOn;
+                parameters[7].Value = messageQueueRequest.NumberOfRetries;
+                parameters[8].Value = messageQueueRequest.LastTriedOn;
 
 
-            return await _DataHelper.RunAsync();
+                _DataHelper = new DataAccessHelper(DbObjectNames.z_InsertIntoMessageQueueRequests, parameters, _configuration);
+
+
+                return await _DataHelper.RunAsync();
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                throw;
+            }
         }
     }
 }

@@ -1,6 +1,8 @@
-﻿using Core.Helpers;
+﻿using Core.Enums;
+using Core.Helpers;
 using Core.Models;
 using CustomerService.Models;
+using InfrastructureService;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
@@ -80,6 +82,7 @@ namespace CustomerService.DataAccess
 
             catch (Exception e)
             {
+                LogInfo.Error(new ExceptionHelper().GetLogString(e, ErrorLevel.Critical));
                 throw e;
             }
 
