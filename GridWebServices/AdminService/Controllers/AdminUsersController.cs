@@ -83,6 +83,16 @@ namespace AdminService.Controllers
                     });
                 }
 
+                else if (response.ResponseCode == ((int)DbReturnValue.AccountDeactivated))
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.AccountDeactivated),
+                        IsDomainValidationErrors = true
+                    });
+                }
+
                 else if (response.ResponseCode == ((int)DbReturnValue.AuthSuccess))
                 {
                     //Authentication success
@@ -837,6 +847,146 @@ namespace AdminService.Controllers
                             Result = orderDetailsResponse.Results
 
                         });
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+
+                }
+
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+            }
+        }
+
+        /// <summary>
+        /// Update AdminUser Account Accessibility - toggle for activating /deactivating
+        /// </summary>
+        /// <param name="token">token of the logged in adminUser</param>
+        /// <param name="AdminUserID">AdminUserID of the account to be activated/deactivated</param>
+        /// <param name="Status">1-Activate, 0- Deactivate</param>
+        /// <returns></returns>
+        [HttpGet("UpdateAdminAccountAccessibility/{AdminUserID}/{Status}")]
+        public async Task<IActionResult> UpdateAdminAccountAccessibility([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int AdminUserID, int Status)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+
+
+                if (!(Status==1 ||Status==0)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.InvalidStatus)
+
+                });
+
+                AdminUsersDataAccess _adminUsersDataAccess = new AdminUsersDataAccess(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await _adminUsersDataAccess.AuthenticateAdminUserToken(token);       
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    {
+                        if (!ModelState.IsValid)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = string.Join("; ", ModelState.Values
+                                                           .SelectMany(x => x.Errors)
+                                                           .Select(x => x.ErrorMessage))
+                            });
+                        }
+
+                        DatabaseResponse updateAdminResponse = await _adminUsersDataAccess.UpdateAdminAccountAccessibility(token,AdminUserID, Status);
+
+                        if (updateAdminResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
+                        {
+                            //update success
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = true,
+                                Message = Status==0? EnumExtensions.GetDescription(CommonErrors.AccountDeactivated): EnumExtensions.GetDescription(CommonErrors.AccountActivated),
+
+                            });
+
+                        }
+                        if (updateAdminResponse.ResponseCode == (int)DbReturnValue.UpdationFailed)
+                        {
+                            //failed to update
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(CommonErrors.FailedToUpdateAccessibility),
+
+                            });
+                        }
+                        if (updateAdminResponse.ResponseCode== (int) DbReturnValue.AdminTokenNotExists)
+                        {
+                            //admin token not exists
+
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(CommonErrors.TokenNotExists),
+
+                            });
+                        }
+                        else
+                        {
+                            //admin user not exists
+
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(CommonErrors.UserNotExists),
+
+                            });
+                        }                        
                     }
 
                     else
