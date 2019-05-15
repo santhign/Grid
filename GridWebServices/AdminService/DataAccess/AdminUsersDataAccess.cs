@@ -417,7 +417,7 @@ namespace AdminService.DataAccess
 
             catch (Exception ex)
             {
-
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
                 throw (ex);
             }
             finally

@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Core.Helpers;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Serilog;
 using Serilog.Events;
 using System;
@@ -54,7 +56,6 @@ namespace InfrastructureService
                         var level = statusCode > 499 ? LogEventLevel.Error : LogEventLevel.Information;
 
                         SafeLog(request.Path,
-                            request.QueryString.ToString(),
                             ref requestBodyContent,
                             ref responseBodyContent);
 
@@ -117,34 +118,27 @@ namespace InfrastructureService
         }
 
         private void SafeLog(string path,
-                            string queryString,
                             ref string requestBody,
                             ref string responseBody)
         {
+            int limit = 500;
+
+            if (requestBody.Length > limit)
+            {
+                requestBody = $"(Truncated to {limit} chars) {requestBody.Substring(0, limit)}";
+            }
+
+            if (responseBody.Length > limit)
+            {
+                responseBody = $"(Truncated to {limit} chars) {responseBody.Substring(0, limit)}";
+            }
             if (path.ToLower().StartsWith("/api/Customers"))
             {
                 requestBody = "(Request logging disabled for /api/Customers)";
-                responseBody = "(Response logging disabled for /api/Customers)";
             }
             if (path.ToLower().StartsWith("/api/Account/authenticate"))
             {
                 requestBody = "(Request logging disabled for /api/Account/authenticate)";
-                responseBody = "(Response logging disabled for /api/Account/authenticate)";
-            }
-
-            if (requestBody.Length > 100)
-            {
-                requestBody = $"(Truncated to 100 chars) {requestBody.Substring(0, 100)}";
-            }
-
-            if (responseBody.Length > 100)
-            {
-                responseBody = $"(Truncated to 100 chars) {responseBody.Substring(0, 100)}";
-            }
-
-            if (queryString.Length > 100)
-            {
-                queryString = $"(Truncated to 100 chars) {queryString.Substring(0, 100)}";
             }
         }
     }

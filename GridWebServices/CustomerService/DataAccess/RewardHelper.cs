@@ -1,6 +1,8 @@
-﻿using Core.Helpers;
+﻿using Core.Enums;
+using Core.Helpers;
 using Core.Models;
 using CustomerService.Models;
+using InfrastructureService;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -15,44 +17,62 @@ namespace CustomerService.DataAccess
     {
         public Rewards GetRewardSummary(string RequestUrl, int AccountID)
         {
-            ApiClient client = new ApiClient(new Uri(RequestUrl));
-            var requestUrl = GetRequestUrl(RequestUrl, ref client);
-
-            RequestObject req = new RequestObject();
-            string html = string.Empty;
-            string url = requestUrl + $"{AccountID}";
-
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-            request.AutomaticDecompression = DecompressionMethods.GZip;
-
-            using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
-            using (Stream stream = response.GetResponseStream())
-            using (StreamReader reader = new StreamReader(stream))
+            Rewards _resp = null;
+            try
             {
-                html = reader.ReadToEnd();
+                ApiClient client = new ApiClient(new Uri(RequestUrl));
+                var requestUrl = GetRequestUrl(RequestUrl, ref client);
+
+                RequestObject req = new RequestObject();
+                string html = string.Empty;
+                string url = requestUrl + $"{AccountID}";
+
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+                request.AutomaticDecompression = DecompressionMethods.GZip;
+
+                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                using (Stream stream = response.GetResponseStream())
+                using (StreamReader reader = new StreamReader(stream))
+                {
+                    html = reader.ReadToEnd();
+                }
+                _resp = JsonConvert.DeserializeObject<Rewards>(html);
             }
-            Rewards _resp = JsonConvert.DeserializeObject<Rewards>(html);
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                throw;
+            }
             return _resp;
         }
         public RewardDetails GetRewardDetails(string RequestUrl, int AccountID, DateTime FromDate, DateTime ToDate)
         {
-            ApiClient client = new ApiClient(new Uri(RequestUrl));
-            var requestUrl = GetRequestUrl(RequestUrl, ref client);
-
-            RequestObject req = new RequestObject();
-            string html = string.Empty;
-            string url = requestUrl + $"{AccountID}?sartDate={FromDate.ToString("yyyyMMdd")}&endDate={ToDate.ToString("yyyyMMdd")}";
-
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-            request.AutomaticDecompression = DecompressionMethods.GZip;
-
-            using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
-            using (Stream stream = response.GetResponseStream())
-            using (StreamReader reader = new StreamReader(stream))
+            RewardDetails _resp = null;
+            try
             {
-                html = reader.ReadToEnd();
+                ApiClient client = new ApiClient(new Uri(RequestUrl));
+                var requestUrl = GetRequestUrl(RequestUrl, ref client);
+
+                RequestObject req = new RequestObject();
+                string html = string.Empty;
+                string url = requestUrl + $"{AccountID}?sartDate={FromDate.ToString("yyyyMMdd")}&endDate={ToDate.ToString("yyyyMMdd")}";
+
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+                request.AutomaticDecompression = DecompressionMethods.GZip;
+
+                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                using (Stream stream = response.GetResponseStream())
+                using (StreamReader reader = new StreamReader(stream))
+                {
+                    html = reader.ReadToEnd();
+                }
+                _resp = JsonConvert.DeserializeObject<RewardDetails>(html);
             }
-            RewardDetails _resp = JsonConvert.DeserializeObject<RewardDetails>(html);
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                throw;
+            }
             return _resp;
         }
 
