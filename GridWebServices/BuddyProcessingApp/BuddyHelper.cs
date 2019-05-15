@@ -114,6 +114,7 @@ namespace BuddyProcessingApp
             }
             catch (Exception ex)
             {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
                 buddy.IsProcessed = false;
 
                 return buddy;

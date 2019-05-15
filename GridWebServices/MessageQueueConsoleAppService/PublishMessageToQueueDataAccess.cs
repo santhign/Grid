@@ -15,6 +15,7 @@ using Core.Extensions;
 using Core.Enums;
 using System.Linq;
 using Newtonsoft.Json;
+using InfrastructureService;
 
 namespace MessageQueueConsoleAppService
 {
@@ -79,6 +80,7 @@ namespace MessageQueueConsoleAppService
 
             catch (Exception ex)
             {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
                 Console.WriteLine("Critical error in GetMessageFromMessageQueueTable. Exception is as follows \n " + ex);
                 throw;
             }
@@ -166,6 +168,7 @@ namespace MessageQueueConsoleAppService
             }
             catch (Exception ex)
             {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
                 throw (ex);
             }
             finally
@@ -220,6 +223,7 @@ namespace MessageQueueConsoleAppService
             }
             catch (Exception ex)
             {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
                 throw (ex);
             }
             finally
@@ -259,6 +263,7 @@ namespace MessageQueueConsoleAppService
             }
             catch (Exception ex)
             {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
                 Console.WriteLine("Critical error in UpdateMessageQueueObjectToTable. Exception is as follows \n " + ex);
                 return 0;
             }
@@ -309,6 +314,7 @@ namespace MessageQueueConsoleAppService
             }
             catch (Exception ex)
             {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
                 MessageQueueRequest messageQueueRequest = new MessageQueueRequest();
                 messageQueueRequest.LastTriedOn = DateTime.Now;
                 messageQueueRequest.MessageQueueRequestID = responseData.MessageQueueRequestID;
