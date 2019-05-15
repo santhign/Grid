@@ -201,17 +201,17 @@ namespace NotificationService.Controllers
                     SMSTemplates template = (SMSTemplates)emailTemplate.Results;                    
                     smsData.PhoneNumber = NotMessage.Message.parameters.Select(x => x.mobilenumber).FirstOrDefault();
 
-                    smsData.SMSText = template.SMSTemplate.Replace("NAME", NotMessage.MessageName)
-                        .Replace("PARAM1", NotMessage.Message.parameters.Select(x => x.param1).FirstOrDefault())
-                        .Replace("PARAM2", NotMessage.Message.parameters.Select(x => x.param2).FirstOrDefault())
-                        .Replace("PARAM3", NotMessage.Message.parameters.Select(x => x.param3).FirstOrDefault())
-                        .Replace("PARAM4", NotMessage.Message.parameters.Select(x => x.param4).FirstOrDefault())
-                        .Replace("PARAM5", NotMessage.Message.parameters.Select(x => x.param5).FirstOrDefault())
-                        .Replace("PARAM6", NotMessage.Message.parameters.Select(x => x.param6).FirstOrDefault())
-                        .Replace("PARAM7", NotMessage.Message.parameters.Select(x => x.param7).FirstOrDefault())
-                        .Replace("PARAM8", NotMessage.Message.parameters.Select(x => x.param8).FirstOrDefault())
-                        .Replace("PARAM9", NotMessage.Message.parameters.Select(x => x.param9).FirstOrDefault())
-                        .Replace("PARAM10", NotMessage.Message.parameters.Select(x => x.param10).FirstOrDefault());
+                    smsData.SMSText = template.SMSTemplate.Replace("[NAME]", NotMessage.MessageName)
+                        .Replace("[PARAM1]", NotMessage.Message.parameters.Select(x => x.param1).FirstOrDefault())
+                        .Replace("[PARAM2]", NotMessage.Message.parameters.Select(x => x.param2).FirstOrDefault())
+                        .Replace("[PARAM3]", NotMessage.Message.parameters.Select(x => x.param3).FirstOrDefault())
+                        .Replace("[PARAM4]", NotMessage.Message.parameters.Select(x => x.param4).FirstOrDefault())
+                        .Replace("[PARAM5]", NotMessage.Message.parameters.Select(x => x.param5).FirstOrDefault())
+                        .Replace("[PARAM6]", NotMessage.Message.parameters.Select(x => x.param6).FirstOrDefault())
+                        .Replace("[PARAM7]", NotMessage.Message.parameters.Select(x => x.param7).FirstOrDefault())
+                        .Replace("[PARAM8]", NotMessage.Message.parameters.Select(x => x.param8).FirstOrDefault())
+                        .Replace("[PARAM9]", NotMessage.Message.parameters.Select(x => x.param9).FirstOrDefault())
+                        .Replace("[PARAM10]", NotMessage.Message.parameters.Select(x => x.param10).FirstOrDefault());
                         
                     string response = await _SMS.SendSMS(smsData, _iconfiguration);
                    
