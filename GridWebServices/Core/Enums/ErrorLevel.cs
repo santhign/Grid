@@ -296,5 +296,25 @@ namespace Core.Enums
         [EnumMember(Value = "PaymentProcessed")]
         [Description("Payment Successfully processed")]
         PaymentProcessed = 69,
+
+        [EnumMember(Value = "UserNotExists")]
+        [Description("UserNotExists")]
+        UserNotExists = 69,
+
+        [EnumMember(Value = "FailedToUpdateAccessibility")]
+        [Description("FailedToUpdateAccessibility")]
+        FailedToUpdateAccessibility = 70,
+
+        [EnumMember(Value = "AccountActivated")]
+        [Description("Account Activated")]
+        AccountActivated = 71,
+
+        [EnumMember(Value = "AccountDeactivated")]
+        [Description("Account Deactivated")]
+        AccountDeactivated = 72,
+
+        [EnumMember(Value = "InvalidStatus")]
+        [Description("Invalid Account Status")]
+        InvalidStatus = 73,
     }
 }

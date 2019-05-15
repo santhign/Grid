@@ -74,6 +74,15 @@ namespace CustomerService.Controllers
                         IsDomainValidationErrors = true
                     });
                 }
+                else if (response.ResponseCode == ((int)DbReturnValue.AccountDeactivated))
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.AccountDeactivated),
+                        IsDomainValidationErrors = true
+                    });
+                }
                 else if (response.ResponseCode == ((int)DbReturnValue.PasswordIncorrect))
                 {
                     return Ok(new OperationResponse

@@ -775,5 +775,39 @@ namespace AdminService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+
+        public async Task<DatabaseResponse> UpdateCustomerAccountAccessibility(string Token, int CustomerID, int Status)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                 {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+                    new SqlParameter( "@UpdatorToken",  SqlDbType.VarChar ),
+                    new SqlParameter( "@Status",  SqlDbType.Int )
+                };
+
+                parameters[0].Value = CustomerID;
+                parameters[1].Value = Token;
+                parameters[2].Value = Status;
+
+                _DataHelper = new DataAccessHelper("Admin_UpdateCustomerAccountAccessibility", parameters, _configuration);
+
+                int result = await _DataHelper.RunAsync(); //101,106,102,143 - admin token not matching
+
+                return new DatabaseResponse { ResponseCode = result };
+
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw ex;
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
     }
 }
