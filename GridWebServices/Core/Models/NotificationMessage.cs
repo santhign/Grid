@@ -94,6 +94,25 @@ namespace Core.Models
 
     }
 
+    public class SMSNotificationLog
+    {
+      
+        public string Email { get; set; }
+
+        public string SMSText { get; set; }
+
+        public string Mobile { get; set; }
+
+        public DateTime ScheduledOn { get; set; }
+
+        public int SMSTemplateID { get; set; }
+
+        public DateTime SendOn { get; set; }
+
+        public int Status { get; set; }
+
+    }
+
     public class NotificationLogForDevPurpose : NotificationLog
     {
         public string EventType { get; set; }

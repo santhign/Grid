@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
+using InfrastructureService;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Cors.Internal;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -84,6 +86,13 @@ namespace NotificationService
 
             // Enable Cors
             app.UseCors("GridNotificationPolicy");
+
+            app.Use(next => context => {
+                context.Request.EnableRewind();
+
+                return next(context);
+            });
+            app.UseMiddleware<LogMiddleware>();
             app.UseMvc();
             app.Run(async (context) =>
             {

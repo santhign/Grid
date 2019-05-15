@@ -226,8 +226,9 @@ namespace OrderService.DataAccess
                 return await publisher.PublishAsync(msgBody, messageAttribute, subject);
 
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
                 throw;
             }
 
@@ -241,8 +242,9 @@ namespace OrderService.DataAccess
                 return await publisher.PublishAsync(msgBody, messageAttribute);
 
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
                 throw;
             }
 

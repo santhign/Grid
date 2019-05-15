@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using InfrastructureService;
+using Microsoft.AspNetCore.Http.Internal;
 
 namespace OrderService
 {
@@ -94,10 +95,15 @@ namespace OrderService
             {
                 app.UseDeveloperExceptionPage();
             }
-
-            app.UseMiddleware<LogMiddleware>();
             // Enable Cors
             app.UseCors("GridOrderPolicy");
+
+            app.Use(next => context => {
+                context.Request.EnableRewind();
+
+                return next(context);
+            });
+            app.UseMiddleware<LogMiddleware>();
             app.UseMvc();
             app.Run(async (context) =>
             {
