@@ -133,7 +133,7 @@ namespace NotificationService.Controllers
             try
             {
                 OutboundSMS _SMS = new OutboundSMS();
-                string response = await _SMS.SendSMS(_smsdata, _iconfiguration);
+                string response = await _SMS.SendSMSNotification(_smsdata, _iconfiguration);
 
                 if (response != "failure")
                 {

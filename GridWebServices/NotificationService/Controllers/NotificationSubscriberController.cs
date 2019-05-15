@@ -222,7 +222,7 @@ namespace NotificationService.Controllers
                         .Replace("[PARAM9]", NotMessage.Message.parameters.Select(x => x.param9).FirstOrDefault())
                         .Replace("[PARAM10]", NotMessage.Message.parameters.Select(x => x.param10).FirstOrDefault());
                     LogInfo.Information("10 - SendSMS is  { "+ smsData+ "}");
-                    string response = await _SMS.SendSMS(smsData, _iconfiguration);
+                    string response = await _SMS.SendSMSNotification(smsData, _iconfiguration);
                    
                     await _configAccess.CreateSMSNotificationLog(new SMSNotificationLog()
                     {
