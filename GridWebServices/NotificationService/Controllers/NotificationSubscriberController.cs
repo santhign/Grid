@@ -38,6 +38,9 @@ namespace NotificationService.Controllers
         {
             try
             {
+
+                LogInfo.Information("1 - ProcessSnsNotification started with {"+ snsMessageType + "} object");
+
                 if (string.IsNullOrEmpty(snsMessageType))
                 {
                     LogInfo.Information(SNSNotification.EmptySNSTypeHeader.ToString());
@@ -58,9 +61,9 @@ namespace NotificationService.Controllers
                 {
                     requestBody =  reader.ReadToEndAsync().Result;              
                 }
-
+                LogInfo.Information("2 - Now fetching Body with {" + requestBody + "} object");
                 var requestMessage = Amazon.SimpleNotificationService.Util.Message.ParseMessage(requestBody);
-
+                LogInfo.Information("3 - Parsing messages with {" + requestMessage + "} object");
                 if (!requestMessage.IsMessageSignatureValid())
                 {
                     LogInfo.Information(SNSNotification.InvalidSignature.ToString());
@@ -80,21 +83,25 @@ namespace NotificationService.Controllers
 
                 // end temp
 
-                if (string.IsNullOrEmpty(snsMessageType)) return BadRequest(); 
+                if (string.IsNullOrEmpty(snsMessageType)) {
+                    LogInfo.Information("4 - snsMessageType is  {" + snsMessageType + "} object");
+                    return BadRequest();
+                }
 
                 if (snsMessageType == Amazon.SimpleNotificationService.Util.Message.MESSAGE_TYPE_SUBSCRIPTION_CONFIRMATION && requestMessage.IsSubscriptionType)
                 {
+                    
                     Subscriber subscriber = new Subscriber(_iconfiguration);
 
                     var client = subscriber.GetAmazonSimpleNotificationServiceClient();
-
+                    LogInfo.Information("5 - before snsMessageType is  {" + client + "} object");
                     Amazon.SimpleNotificationService.Model.ConfirmSubscriptionResponse confirmSubscriptionResponse = await client.ConfirmSubscriptionAsync(requestMessage.TopicArn, requestMessage.Token);
                        
                     if(confirmSubscriptionResponse.HttpStatusCode == HttpStatusCode.OK)
                     {
                         LogInfo.Information(SNSNotification.SubscriptionConfirmed.ToString());
                     }
-
+                    LogInfo.Information("5.1 - before snsMessageType is  {" + client + "} object");
                     return Ok();
                 }
 
@@ -105,13 +112,13 @@ namespace NotificationService.Controllers
                     var client = subscriber.GetAmazonSimpleNotificationServiceClient();
 
                     Amazon.SimpleNotificationService.Model.UnsubscribeResponse confirmUnSubscriptionResponse = await client.UnsubscribeAsync(notification.TopicArn);
-
+                    LogInfo.Information("6 - before snsMessageType is  {" + snsMessageType + "} object");
                     return Ok();
                 }
 
                 else if(snsMessageType == Amazon.SimpleNotificationService.Util.Message.MESSAGE_TYPE_NOTIFICATION && requestMessage.IsNotificationType)
                 {
-
+                    LogInfo.Information("7 - before snsMessageType is  {" + snsMessageType + "} object");
                     ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
 
                     MiscHelper helper = new MiscHelper();
@@ -154,16 +161,18 @@ namespace NotificationService.Controllers
                 Amazon.SQS.Model.Message msg = (Amazon.SQS.Model.Message)message;
 
                 string queMessage = msg.Body;
-
+                LogInfo.Information("8 - bsubscription is  {" + msg.MessageId + "} object");
                 SNSSubscription subscription = JsonConvert.DeserializeObject<SNSSubscription>(queMessage);
 
+                LogInfo.Information("8 - bsubscription is  {" + subscription.MessageId + "} object");
                 NotificationMessage NotMessage = JsonConvert.DeserializeObject<NotificationMessage>(subscription.Message);
-
+                LogInfo.Information("9 - NotMessage is  {" + NotMessage.Message +" "+ NotMessage.MessageType + "} object");
                 // SNSSubscription messageObject= new SNSSubscription {  Message=me};
 
                 //   NotificationMessage notification= JsonConvert.DeserializeObject<NotificationMessage>(messageObject.Message);
                 if (NotMessage.MessageType == NotificationMsgType.Email.GetDescription())
                 {
+
                     OutboundEmail _email = new OutboundEmail();
 
                     ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
@@ -212,7 +221,7 @@ namespace NotificationService.Controllers
                         .Replace("[PARAM8]", NotMessage.Message.parameters.Select(x => x.param8).FirstOrDefault())
                         .Replace("[PARAM9]", NotMessage.Message.parameters.Select(x => x.param9).FirstOrDefault())
                         .Replace("[PARAM10]", NotMessage.Message.parameters.Select(x => x.param10).FirstOrDefault());
-                        
+                    LogInfo.Information("10 - SendSMS is  { "+ smsData+ "}");
                     string response = await _SMS.SendSMS(smsData, _iconfiguration);
                    
                     await _configAccess.CreateSMSNotificationLog(new SMSNotificationLog()
@@ -226,7 +235,9 @@ namespace NotificationService.Controllers
                         SendOn = DateTime.UtcNow
 
                     });
+                    LogInfo.Information("10 - SendSMSLog is  { " + NotMessage.Message.parameters.Select(x => x.emailaddress).FirstOrDefault() + " " + smsData.PhoneNumber + " "+ response + "}");
                 }
+                
             }
 
             catch (Exception ex)
@@ -234,6 +245,8 @@ namespace NotificationService.Controllers
 
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
             }
+
+            LogInfo.Information("Last Step for sending SMS");
 
         }
 
