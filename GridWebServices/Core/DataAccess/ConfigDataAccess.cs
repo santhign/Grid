@@ -318,10 +318,10 @@ namespace Core.DataAccess
                 parameters[0].Value = log.Email;
                 parameters[1].Value = log.SMSText;
                 parameters[2].Value = log.Mobile;               
-                parameters[4].Value = log.ScheduledOn;
-                parameters[5].Value = log.SMSTemplateID;
-                parameters[6].Value = log.SendOn;
-                parameters[7].Value = log.Status;
+                parameters[3].Value = log.ScheduledOn;
+                parameters[4].Value = log.SMSTemplateID;
+                parameters[5].Value = log.SendOn;
+                parameters[6].Value = log.Status;
 
 
                 _DataHelper = new DataAccessHelper("z_EmailNotificationsLogEntry", parameters, _configuration);
