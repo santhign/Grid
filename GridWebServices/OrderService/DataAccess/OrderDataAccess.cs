@@ -3085,7 +3085,7 @@ namespace OrderService.DataAccess
                      new SqlParameter( "@FinalAmount",  SqlDbType.Float ),
                      new SqlParameter( "@Remarks",  SqlDbType.NVarChar ),
                      new SqlParameter( "@OrderStatus",  SqlDbType.Int ),
-                     new SqlParameter( "@PaymentSourceID",  SqlDbType.NVarChar ),
+                     new SqlParameter( "@PaymentSourceID",  SqlDbType.Int ),
                      new SqlParameter( "@CreatedBy",  SqlDbType.Int ),
                      new SqlParameter( "@BSSBillId",  SqlDbType.NVarChar )
                 };

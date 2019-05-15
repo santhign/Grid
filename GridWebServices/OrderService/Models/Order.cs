@@ -132,7 +132,7 @@ namespace OrderService.Models
         public double FinalAmount { get; set; }
         public string Remarks { get; set; }
         public int OrderStatus { get; set; }
-        public string PaymentSourceID { get; set; }
+        public int PaymentSourceID { get; set; }
         public DateTime CreatedOn { get; set; }
         public int CreatedBy { get; set; }
         public int PaymentID { get; set; }
