@@ -2,6 +2,7 @@
 using Core.Models;
 using InfrastructureService;
 using Microsoft.Extensions.Configuration;
+using Nexmo.Api;
 using NotificationService.Models;
 using System;
 using System.Collections.Generic;
@@ -12,8 +13,9 @@ using System.Threading.Tasks;
 namespace NotificationService.OutboundHelper
 {
     public class OutboundSMS
-    {
-        public async Task<string> SendSMS(Sms _smsdata, IConfiguration _iconfiguration)
+    {      
+
+        public async Task<string> SendSMSNotification(Sms _smsdata, IConfiguration _iconfiguration)
         {
             try
             {
@@ -48,36 +50,32 @@ namespace NotificationService.OutboundHelper
 
                 List<Dictionary<string, string>> _result = (List<Dictionary<string, string>>)configResponse.Results;
 
-                string _nexmoUserName = _result.Single(x => x["key"] == "NexmoUserName")["value"];
-                string _nexmoPassword = _result.Single(x => x["key"] == "NexmoPassword")["value"];
+                string _nexmoApiKey = _result.Single(x => x["key"] == "NexmoApiKey")["value"];
+                string _nexmoSecret = _result.Single(x => x["key"] == "NexmoSecret")["value"];
                 string _nexmoSmsSignature = _result.Single(x => x["key"] == "NexmoSmsSignature")["value"];
                 string _nexmoWebRequestUrl = _result.Single(x => x["key"] == "NexmoWebRequestUrl")["value"];
 
-                _smsdata.Username = _nexmoUserName;
-                _smsdata.Password = _nexmoPassword;
-                _smsdata.FromPhoneNumber = _nexmoSmsSignature;
-                _smsdata.ToPhoneNumber = _smsdata.PhoneNumber;
-                _smsdata.Type = "unicode";
-                _smsdata.PostData = string.Empty;
-                _smsdata.PostData = string.Format("username={0}&password={1}&from={2}&to={3}&text={4}&status-report-req=1", _smsdata.Username, _smsdata.Password, _smsdata.FromPhoneNumber, _smsdata.ToPhoneNumber, _smsdata.SMSText);
-                byte[] buffer;
-
-                if (ContainsUnicodeCharacter(_smsdata.SMSText))
+                //_smsdata.Username = _nexmoApiKey;
+                //_smsdata.Password = _nexmoSecret;
+                //_smsdata.FromPhoneNumber = _nexmoSmsSignature;
+                //_smsdata.ToPhoneNumber = _smsdata.PhoneNumber;
+                //_smsdata.Type = "unicode";
+                
+                var client = new Client(creds: new Nexmo.Api.Request.Credentials
                 {
-                    _smsdata.PostData = string.Format("username={0}&password={1}&from={2}&to={3}&type={4}&text={5}&status-report-req=1", _smsdata.Username, _smsdata.Password, _smsdata.FromPhoneNumber, _smsdata.ToPhoneNumber, _smsdata.Type, _smsdata.SMSText);
-                    buffer = Encoding.UTF8.GetBytes(_smsdata.PostData);
-                }
-                else
+                    ApiKey = _nexmoApiKey,
+                    ApiSecret = _nexmoSecret
+                });
+
+
+                var results = client.SMS.Send(request: new SMS.SMSRequest
                 {
-                    _smsdata.PostData = string.Format("username={0}&password={1}&from={2}&to={3}&text={4}&status-report-req=1", _smsdata.Username, _smsdata.Password, _smsdata.FromPhoneNumber, _smsdata.ToPhoneNumber, _smsdata.SMSText);
-                    _smsdata.buffer = Encoding.ASCII.GetBytes(_smsdata.PostData);
-                }
+                    from = _nexmoSmsSignature,
+                    to = _smsdata.PhoneNumber,
+                    text = _smsdata.SMSText
+                });              
 
-
-                System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
-                ApiClient client = new ApiClient(new Uri(_nexmoWebRequestUrl));
-                ResponseObject _returnObject = await client.PostAsync<ResponseObject, Sms>(new Uri(_nexmoWebRequestUrl), _smsdata);
-                return _returnObject.Response.resultCode;
+                return "success";
             }
             catch (Exception ex)
             {
@@ -85,6 +83,9 @@ namespace NotificationService.OutboundHelper
                 return "failure";
             }
         }
+
+
+
 
         private bool ContainsUnicodeCharacter(string input)
         {
