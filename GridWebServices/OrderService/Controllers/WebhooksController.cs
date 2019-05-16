@@ -176,7 +176,7 @@ namespace OrderService.Controllers
 
                 WebhookDataAccess _webhookAccess = new WebhookDataAccess(_iconfiguration);
 
-                DatabaseResponse databaseResponse = _webhookAccess.UpdateMPGSWebhookNotification(notification);
+                DatabaseResponse webhookLogUpdatedatabaseResponse = _webhookAccess.UpdateMPGSWebhookNotification(notification);
 
                 // epoch
 
@@ -198,18 +198,35 @@ namespace OrderService.Controllers
 
                 PaymentHelper gatewayHelper = new PaymentHelper();
 
+           
+
                 GridMPGSConfig gatewayConfig = gatewayHelper.GetGridMPGSConfig((List<Dictionary<string, string>>)configResponse.Results);
 
                 TransactionRetrieveResponseOperation transactionResponse = new TransactionRetrieveResponseOperation();
               
                 transactionResponse = gatewayHelper.RetrieveCheckOutTransaction(gatewayConfig, updateRequest);
 
+                if (webhookLogUpdatedatabaseResponse != null && webhookLogUpdatedatabaseResponse.Results != null)
+                {
+                    DatabaseResponse paymentMethodResponse = await _orderAccess.GetPaymentMethodToken((int)webhookLogUpdatedatabaseResponse.Results);
+
+                    PaymentMethod paymentMethod = new PaymentMethod();
+
+                    paymentMethod = (PaymentMethod)paymentMethodResponse.Results;
+
+                    transactionResponse.TrasactionResponse.CardType = paymentMethod.CardType;
+
+                    transactionResponse.TrasactionResponse.CardHolderName = paymentMethod.CardHolderName;
+
+                    transactionResponse.TrasactionResponse.Token = paymentMethod.Token;
+                }
+
                 DatabaseResponse paymentProcessingRespose = new DatabaseResponse();
 
                 paymentProcessingRespose = await _orderAccess.UpdateCheckOutReceipt(transactionResponse.TrasactionResponse);
                                
                 if (paymentProcessingRespose.ResponseCode == (int)DbReturnValue.TransactionSuccess)
-                {
+                {  
                     LogInfo.Information(EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess));
 
                     QMHelper qMHelper = new QMHelper(_iconfiguration, _messageQueueDataAccess);
