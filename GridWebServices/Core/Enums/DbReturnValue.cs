@@ -172,5 +172,14 @@ namespace Core.Enums
         [EnumMember(Value = "Invalid ID detail")]
         [Description("Provided IC details are invalid")]
         InvalidNRIC = 142,
+
+        [EnumMember(Value = "AdminTokenNotExists")]
+        [Description("AdminTokenNotExists")]
+        AdminTokenNotExists = 143,
+
+        [EnumMember(Value = "AccountDeactivated")]
+        [Description("Deactivated Account")]
+        AccountDeactivated = 144,
     }
 }
+

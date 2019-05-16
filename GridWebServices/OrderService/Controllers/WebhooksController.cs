@@ -201,7 +201,7 @@ namespace OrderService.Controllers
                 GridMPGSConfig gatewayConfig = gatewayHelper.GetGridMPGSConfig((List<Dictionary<string, string>>)configResponse.Results);
 
                 TransactionRetrieveResponseOperation transactionResponse = new TransactionRetrieveResponseOperation();
-
+              
                 transactionResponse = gatewayHelper.RetrieveCheckOutTransaction(gatewayConfig, updateRequest);
 
                 DatabaseResponse paymentProcessingRespose = new DatabaseResponse();
