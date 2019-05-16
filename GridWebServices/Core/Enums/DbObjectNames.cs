@@ -58,29 +58,80 @@ namespace Core.Enums
         /// The cr get message body
         /// </summary>
         public const string CR_GetMessageBody = "CR_GetMessageBody";
-           
+
+        /// <summary>
+        /// The z insert into message queue requests
+        /// </summary>
         public const string z_InsertIntoMessageQueueRequests = "z_InsertIntoMessageQueueRequests";
 
+        /// <summary>
+        /// The z get single message queue record
+        /// </summary>
         public const string z_GetSingleMessageQueueRecord = "z_GetSingleMessageQueueRecord";
 
+        /// <summary>
+        /// The z update status in message queue requests
+        /// </summary>
         public const string z_UpdateStatusInMessageQueueRequests = "z_UpdateStatusInMessageQueueRequests";
 
+        /// <summary>
+        /// The z update status in message queue requests exception
+        /// </summary>
         public const string z_UpdateStatusInMessageQueueRequestsException = "z_UpdateStatusInMessageQueueRequestsException";
 
+        /// <summary>
+        /// The orders cr buy shared vas
+        /// </summary>
         public const string Orders_CR_BuySharedVAS = "Orders_CR_BuySharedVAS";
 
+        /// <summary>
+        /// The orders cr insert remove shared vas
+        /// </summary>
         public const string Orders_CR_InsertRemoveSharedVAS = "Orders_CR_InsertRemoveSharedVAS";
 
+        /// <summary>
+        /// The orders cr change plan
+        /// </summary>
         public const string Orders_CR_ChangePlan = "Orders_CR_ChangePlan";
 
+        /// <summary>
+        /// The orders cancel order
+        /// </summary>
         public const string Orders_CancelOrder = "Orders_CancelOrder";
 
+        /// <summary>
+        /// The orders reschedule delivery
+        /// </summary>
         public const string Orders_RescheduleDelivery = "Orders_RescheduleDelivery";
+        /// <summary>
+        /// The orders process reschedule delivery
+        /// </summary>
         public const string Orders_ProcessRescheduleDelivery = "Orders_ProcessRescheduleDelivery";
 
+        /// <summary>
+        /// The cr get buddy details
+        /// </summary>
         public const string CR_GetBuddyDetails = "CR_GetBuddyDetails";
 
+        /// <summary>
+        /// The orders get cr or order details for message queue
+        /// </summary>
         public const string Orders_GetCROrOrderDetailsForMessageQueue = "Orders_GetCROrOrderDetailsForMessageQueue";
+
+        /// <summary>
+        /// The z SMS notifications log entry
+        /// </summary>
+        public const string z_SMSNotificationsLogEntry = "z_SMSNotificationsLogEntry";
+
+        /// <summary>
+        /// The z get SMS template by name
+        /// </summary>
+        public const string z_GetSMSTemplateByName = "z_GetSMSTemplateByName";
+
+        /// <summary>
+        /// The z email notifications log entry for dev purpose
+        /// </summary>
+        public const string z_EmailNotificationsLogEntryForDevPurpose = "z_EmailNotificationsLogEntryForDevPurpose";
     }
 
 }

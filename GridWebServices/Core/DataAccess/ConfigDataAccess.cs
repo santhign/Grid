@@ -9,24 +9,38 @@ using Core.Helpers;
 using Core.Models;
 using Core.Extensions;
 using System.Linq;
-
+using Core.Enums;
 
 namespace Core.DataAccess
 {
+    /// <summary>
+    /// Config Data Access class
+    /// </summary>
     public class ConfigDataAccess
     {
+        /// <summary>
+        /// The data helper
+        /// </summary>
         internal DataAccessHelper _DataHelper = null;
 
+        /// <summary>
+        /// The configuration
+        /// </summary>
         private IConfiguration _configuration;
 
         /// <summary>
         /// Constructor setting configuration
         /// </summary>
-        /// <param name="configuration"></param>
+        /// <param name="configuration">The configuration.</param>
         public ConfigDataAccess(IConfiguration configuration)
         {
             _configuration = configuration;
         }
+        /// <summary>
+        /// Gets the configuration.
+        /// </summary>
+        /// <param name="configType">Type of the configuration.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetConfiguration(string configType)
         {
             try
@@ -80,6 +94,11 @@ namespace Core.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the email notification template.
+        /// </summary>
+        /// <param name="templateName">Name of the template.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetEmailNotificationTemplate(string templateName)
         {
             try
@@ -136,6 +155,11 @@ namespace Core.DataAccess
             }
         }
 
+        /// <summary>
+        /// Creates the e mail notification log.
+        /// </summary>
+        /// <param name="log">The log.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> CreateEMailNotificationLog(NotificationLog log)
         {
             try
@@ -195,6 +219,11 @@ namespace Core.DataAccess
             }
         }
 
+        /// <summary>
+        /// Creates the e mail notification log for dev purpose.
+        /// </summary>
+        /// <param name="log">The log.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> CreateEMailNotificationLogForDevPurpose(NotificationLogForDevPurpose log)
         {
             try
@@ -213,7 +242,7 @@ namespace Core.DataAccess
                
 
 
-                _DataHelper = new DataAccessHelper("z_EmailNotificationsLogEntryForDevPurpose", parameters, _configuration);
+                _DataHelper = new DataAccessHelper(DbObjectNames.z_EmailNotificationsLogEntryForDevPurpose, parameters, _configuration);
 
                 DataTable dt = new DataTable();
 
@@ -237,6 +266,11 @@ namespace Core.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the SMS notification template.
+        /// </summary>
+        /// <param name="templateName">Name of the template.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetSMSNotificationTemplate(string templateName)
         {
             try
@@ -250,7 +284,7 @@ namespace Core.DataAccess
 
                 parameters[0].Value = templateName;
 
-                _DataHelper = new DataAccessHelper("z_GetSMSTemplateByName", parameters, _configuration);
+                _DataHelper = new DataAccessHelper(DbObjectNames.z_GetSMSTemplateByName, parameters, _configuration);
 
                 DataTable dt = new DataTable();
 
@@ -292,6 +326,11 @@ namespace Core.DataAccess
             }
         }
 
+        /// <summary>
+        /// Creates the SMS notification log.
+        /// </summary>
+        /// <param name="log">The log.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> CreateSMSNotificationLog(SMSNotificationLog log)
         {
             try
@@ -318,13 +357,13 @@ namespace Core.DataAccess
                 parameters[0].Value = log.Email;
                 parameters[1].Value = log.SMSText;
                 parameters[2].Value = log.Mobile;               
-                parameters[4].Value = log.ScheduledOn;
-                parameters[5].Value = log.SMSTemplateID;
-                parameters[6].Value = log.SendOn;
-                parameters[7].Value = log.Status;
+                parameters[3].Value = log.ScheduledOn;
+                parameters[4].Value = log.SMSTemplateID;
+                parameters[5].Value = log.SendOn;
+                parameters[6].Value = log.Status;
 
 
-                _DataHelper = new DataAccessHelper("z_EmailNotificationsLogEntry", parameters, _configuration);
+                _DataHelper = new DataAccessHelper(DbObjectNames.z_SMSNotificationsLogEntry, parameters, _configuration);
 
                 DataTable dt = new DataTable();
 
