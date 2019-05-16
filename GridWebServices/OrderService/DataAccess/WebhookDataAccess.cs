@@ -54,11 +54,18 @@ namespace OrderService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                int result = _DataHelper.Run(dt);    // 105 / 107
+                int result = _DataHelper.Run(dt);
+
+                int CustomerID=0;
+
+                if(dt!=null && dt.Rows.Count>0)
+                {
+                    CustomerID = int.Parse(dt.Rows[0].ItemArray[0].ToString());
+                }
 
                 DatabaseResponse response = new DatabaseResponse();
 
-                response = new DatabaseResponse { ResponseCode = result };
+                response = new DatabaseResponse { ResponseCode = result ,Results= CustomerID };
 
                 return response;
             }

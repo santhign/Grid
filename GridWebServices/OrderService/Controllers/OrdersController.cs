@@ -278,7 +278,7 @@ namespace OrderService.Controllers
                                         return Ok(new OperationResponse
                                         {
                                             HasSucceeded = false,
-                                            Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed) ,
+                                            Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed) + ". " + EnumExtensions.GetDescription(CommonErrors.OrderRolledBack),
                                             IsDomainValidationErrors = false
                                         });
 
@@ -321,7 +321,7 @@ namespace OrderService.Controllers
                                             return Ok(new OperationResponse
                                             {
                                                 HasSucceeded = false,
-                                                Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed),
+                                                Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed) + ". " + EnumExtensions.GetDescription(CommonErrors.OrderRolledBack),
                                                 IsDomainValidationErrors = false
                                             });
                                         }
