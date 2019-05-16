@@ -3198,22 +3198,22 @@ namespace OrderService.DataAccess
         //    try
         //    {
         //        SqlParameter[] parameters =               {
-                     
+
         //             new SqlParameter( "@CustomerID",  SqlDbType.Int )
         //        };
 
         //        parameters[0].Value = customerID;
-                
+
 
         //        _DataHelper = new DataAccessHelper("Order_CheckForOrderCount", parameters, _configuration);
 
-               
+
 
         //        int result = await _DataHelper.RunAsync();    // 105 / 102
 
         //        DatabaseResponse response = new DatabaseResponse();
 
-               
+
 
         //        return customer;
         //    }
@@ -3228,6 +3228,43 @@ namespace OrderService.DataAccess
         //        _DataHelper.Dispose();
         //    }
         //}
+
+        public async Task<DatabaseResponse> RemoveRescheduleLOADetails(int RescheduleDeliveryInformationID)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                 {
+                     new SqlParameter( "@RescheduleDeliveryInformationID",  SqlDbType.Int )
+                   
+                };
+
+                parameters[0].Value = RescheduleDeliveryInformationID;
+
+                _DataHelper = new DataAccessHelper("Orders_RemoveLOADetailsRescheduleDelivery", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt); //101/ 106 /102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                response = new DatabaseResponse { ResponseCode = result };
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
 
 
     }

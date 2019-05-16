@@ -273,6 +273,8 @@ namespace OrderService.Controllers
                                     {
                                         LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
 
+                                        DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID);
+
                                         return Ok(new OperationResponse
                                         {
                                             HasSucceeded = false,
@@ -313,6 +315,8 @@ namespace OrderService.Controllers
                                         catch (Exception ex)
                                         {
                                             LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+
+                                            DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID);
 
                                             return Ok(new OperationResponse
                                             {
@@ -4776,12 +4780,15 @@ namespace OrderService.Controllers
                 }
                
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+
                 var helper = new AuthHelper(_iconfiguration);
+
                 var tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_RescheduleDelivery);
+
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
                     var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
-                    //DatabaseResponse statusResponse = new DatabaseResponse();
+                 
                     var statusResponse =
                         await _orderAccess.RescheduleDelivery(aTokenResp.CustomerID, detailsrequest);
 
@@ -5499,5 +5506,129 @@ namespace OrderService.Controllers
             }
         }
 
+        /// <summary>
+        /// This will remove the LOA details from rescheduled delivery information
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="rescheduleDeliveryInformationID"></param>       
+        /// <returns>OperationResponse</returns>
+        [HttpGet]
+        [Route("RemoveLOADetailsForRescheduledDelivery/{rescheduleDeliveryInformationID}")]
+        public async Task<IActionResult> RemoveLOADetailsForRescheduledDelivery([FromHeader(Name = "Grid-Authorization-Token")] string token, int rescheduleDeliveryInformationID)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+
+
+                AuthHelper helper = new AuthHelper(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    {
+                        int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+
+                        if (!ModelState.IsValid)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = string.Join("; ", ModelState.Values
+                                                           .SelectMany(x => x.Errors)
+                                                           .Select(x => x.ErrorMessage))
+                            });
+                        }
+
+                        OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+
+                        DatabaseResponse rescheduleLOAResponse = await _orderAccess.RemoveRescheduleLOADetails(rescheduleDeliveryInformationID);
+
+                        if (rescheduleLOAResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
+                        {
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = true,
+                                Message = EnumExtensions.GetDescription(CommonErrors.LOARemoved),
+                                Result = rescheduleLOAResponse.Results
+
+                            });
+                        }
+
+                        else if (rescheduleLOAResponse.ResponseCode == (int)DbReturnValue.UpdationFailed)
+                        {
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedUpdateLOADetails) + " token:" + token + ", RescheduleDeliveryInformationID:" + rescheduleDeliveryInformationID);
+
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(CommonErrors.FailedToRemoveRescheduleLoa)
+                            });
+
+                        }
+
+                        else
+                        {
+                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.DeliveryInfoNotExists) + " token:" + token + ", RescheduleDeliveryInformationID:" + rescheduleDeliveryInformationID);
+
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(CommonErrors.DeliveryInfoNotExists)
+                            });
+                        }
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+            }
+        }
     }
 }

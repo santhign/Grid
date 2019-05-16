@@ -316,5 +316,9 @@ namespace Core.Enums
         [EnumMember(Value = "InvalidStatus")]
         [Description("Invalid Account Status")]
         InvalidStatus = 73,
+
+        [EnumMember(Value = "FailedToRemoveRescheduleLoa")]
+        [Description("Failed To Remove Reschedule Loa")]
+        FailedToRemoveRescheduleLoa = 74,
     }
 }
