@@ -20,15 +20,15 @@ namespace NotificationService.OutboundHelper
             try
             {
                 string _warningmsg = "";
-                if (_smsdata.PhoneNumber.Length < 10)
+                if (_smsdata.PhoneNumber.Length < 8)
                 {
-                    _warningmsg = "Phone number should be atleast 10 digit long.";
+                    _warningmsg = "Phone number should be atleast 8 digit long.";
                     LogInfo.Warning(_warningmsg);
                     throw new Exception(_warningmsg);
                 }
-                else if (_smsdata.PhoneNumber.Length > 13)
+                else if (_smsdata.PhoneNumber.Length > 11)
                 {
-                    _warningmsg = "Phone number should not be longer than 13 digits.";
+                    _warningmsg = "Phone number should not be longer than 11 digits.";
                     LogInfo.Warning(_warningmsg);
                     throw new Exception(_warningmsg);
                 }
