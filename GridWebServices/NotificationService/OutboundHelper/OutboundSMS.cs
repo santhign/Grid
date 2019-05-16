@@ -22,13 +22,13 @@ namespace NotificationService.OutboundHelper
                 string _warningmsg = "";
                 if (_smsdata.PhoneNumber.Length < 10)
                 {
-                    _warningmsg = "Phone number should be atleast 10 numbres long.";
+                    _warningmsg = "Phone number should be atleast 10 digit long.";
                     LogInfo.Warning(_warningmsg);
                     throw new Exception(_warningmsg);
                 }
-                if (_smsdata.PhoneNumber.Length > 13)
+                else if (_smsdata.PhoneNumber.Length > 13)
                 {
-                    _warningmsg = "Phone number should not be longer than 13 numbers.";
+                    _warningmsg = "Phone number should not be longer than 13 digits.";
                     LogInfo.Warning(_warningmsg);
                     throw new Exception(_warningmsg);
                 }
@@ -36,7 +36,7 @@ namespace NotificationService.OutboundHelper
                 long lPhoneNumber = 0;
                 if (!long.TryParse(_smsdata.PhoneNumber, out lPhoneNumber))
                 {
-                    _warningmsg = "Phone number should not be a fully qualified number.";
+                    _warningmsg = "Alphabets are not allowed.";
                     LogInfo.Warning(_warningmsg);
                     throw new Exception(_warningmsg);
                 }
@@ -54,12 +54,6 @@ namespace NotificationService.OutboundHelper
                 string _nexmoSecret = _result.Single(x => x["key"] == "NexmoSecret")["value"];
                 string _nexmoSmsSignature = _result.Single(x => x["key"] == "NexmoSmsSignature")["value"];
                 string _nexmoWebRequestUrl = _result.Single(x => x["key"] == "NexmoWebRequestUrl")["value"];
-
-                //_smsdata.Username = _nexmoApiKey;
-                //_smsdata.Password = _nexmoSecret;
-                //_smsdata.FromPhoneNumber = _nexmoSmsSignature;
-                //_smsdata.ToPhoneNumber = _smsdata.PhoneNumber;
-                //_smsdata.Type = "unicode";
                 
                 var client = new Client(creds: new Nexmo.Api.Request.Credentials
                 {
@@ -67,6 +61,19 @@ namespace NotificationService.OutboundHelper
                     ApiSecret = _nexmoSecret
                 });
 
+                //Remove + sign if present
+                var checkForPlus = _smsdata.PhoneNumber.Substring(0, 1);
+                if(checkForPlus == "+")
+                {
+                    _smsdata.PhoneNumber = _smsdata.PhoneNumber.Remove(0,1);
+                }
+
+                //Append 65 country code if not present
+                var checkForCountryCode = _smsdata.PhoneNumber.Substring(0, 2);              
+                if (checkForCountryCode != "65")
+                {
+                    _smsdata.PhoneNumber = "65" + _smsdata.PhoneNumber;
+                }
 
                 var results = client.SMS.Send(request: new SMS.SMSRequest
                 {
