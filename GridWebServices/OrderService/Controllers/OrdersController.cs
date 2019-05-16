@@ -1130,7 +1130,26 @@ namespace OrderService.Controllers
 
                             DatabaseResponse requestIdRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.GetAssets.ToString(), customerID, (int)BSSCalls.NewSession, "");
 
-                            ResponseObject res = await bsshelper.GetAssetInventory(config, (((List<ServiceFees>)serviceCAF.Results)).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdRes.Results);
+                            ResponseObject res = new ResponseObject();
+
+                            try
+                            {
+                                res = await bsshelper.GetAssetInventory(config, (((List<ServiceFees>)serviceCAF.Results)).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdRes.Results);
+                            }
+
+                            catch (Exception ex)
+                            {
+                                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = false,
+                                    Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed) + ". " + EnumExtensions.GetDescription(CommonErrors.OrderRolledBack),
+                                    IsDomainValidationErrors = false
+                                });
+
+                            }
+
 
                             string AssetToSubscribe = bsshelper.GetAssetId(res);
 
@@ -1153,7 +1172,26 @@ namespace OrderService.Controllers
 
                                 DatabaseResponse requestIdToUpdateRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.ExistingSession, AssetToSubscribe);
 
-                                BSSUpdateResponseObject bssUpdateResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateRes.Results, AssetToSubscribe, false);
+                                BSSUpdateResponseObject bssUpdateResponse = new BSSUpdateResponseObject();
+
+                                try
+                                {
+                                    bssUpdateResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateRes.Results, AssetToSubscribe, false);
+                                }
+
+                                catch (Exception ex)
+                                {
+                                    LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = false,
+                                        Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed) + ". " + EnumExtensions.GetDescription(CommonErrors.OrderRolledBack),
+                                        IsDomainValidationErrors = false
+                                    });
+
+                                }
+
 
                                 if (bsshelper.GetResponseCode(bssUpdateResponse) == "0")
                                 {
@@ -1595,6 +1633,7 @@ namespace OrderService.Controllers
                         }
 
                         OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+
                         DatabaseResponse customerResponse = await _orderAccess.GetCustomerIdFromOrderId(request.OrderID);
 
                         if (customerResponse.ResponseCode == (int)DbReturnValue.RecordExists && customerID == ((OrderCustomer)customerResponse.Results).CustomerId)
@@ -1731,6 +1770,7 @@ namespace OrderService.Controllers
                         }
 
                         OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+
                         DatabaseResponse customerResponse = await _orderAccess.GetCustomerIdFromOrderId(request.OrderID);
 
                         if (customerResponse.ResponseCode == (int)DbReturnValue.RecordExists && customerID == ((OrderCustomer)customerResponse.Results).CustomerId)
@@ -1866,6 +1906,7 @@ namespace OrderService.Controllers
                         OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
 
                         DatabaseResponse customerResponse = await _orderAccess.GetCustomerIdFromOrderId(request.OrderID);
+
                         if (customerResponse.ResponseCode == (int)DbReturnValue.RecordExists && customerID == ((OrderCustomer)customerResponse.Results).CustomerId)
                         {
 

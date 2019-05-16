@@ -1213,7 +1213,7 @@ namespace OrderService.DataAccess
 
                 _DataHelper = new DataAccessHelper("Orders_ValidateReferralCode", parameters, _configuration);
 
-                int result = await _DataHelper.RunAsync();    // 105 / 109 
+                int result = await _DataHelper.RunAsync();    // 105 / 102
 
                 return new DatabaseResponse { ResponseCode = result };
             }

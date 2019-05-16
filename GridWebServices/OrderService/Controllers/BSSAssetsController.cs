@@ -78,8 +78,26 @@ namespace OrderService.Controllers
 
                         DatabaseResponse requestIdRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.GetAssets.ToString(), customerID, (int)BSSCalls.NewSession, "");
 
-                        ResponseObject res = await bsshelper.GetAssetInventory(config, ((List<ServiceFees>)serviceCAF.Results).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdRes.Results);
+                        ResponseObject res = new ResponseObject();
 
+                        try
+                        {
+                            res=await bsshelper.GetAssetInventory(config, ((List<ServiceFees>)serviceCAF.Results).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdRes.Results);
+                        }
+
+                        catch (Exception ex)
+                        {
+                            LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+                             
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed),
+                                IsDomainValidationErrors = false
+                            });
+
+                        }
+                        
                         BSSNumbers receivedNumbers = new BSSNumbers();
 
                         receivedNumbers.FreeNumbers = bsshelper.GetFreeNumbers(res);
@@ -199,8 +217,26 @@ namespace OrderService.Controllers
 
                         DatabaseResponse requestIdResForFreeNumber = await _orderAccess.GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.GetAssets.ToString(), customerID, (int)BSSCalls.NewSession, "");
 
+                        ResponseObject res = new ResponseObject();
+
                         //Getting FreeNumbers
-                        ResponseObject res = await bsshelper.GetAssetInventory(bssConfig, ((List<ServiceFees>)serviceCAF.Results).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdResForFreeNumber.Results, systemConfig.FreeNumberListCount);
+                        try
+                        {
+                            res= await bsshelper.GetAssetInventory(bssConfig, ((List<ServiceFees>)serviceCAF.Results).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdResForFreeNumber.Results, systemConfig.FreeNumberListCount);
+                        }
+
+                        catch (Exception ex)
+                        {
+                            LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed),
+                                IsDomainValidationErrors = false
+                            });
+
+                        }                       
 
                         BSSNumbers numbers = new BSSNumbers();
 
@@ -245,7 +281,18 @@ namespace OrderService.Controllers
 
                                         DatabaseResponse requestIdResForPremium = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.GetAssets.ToString(), customerID, (int)BSSCalls.ExistingSession, numbers.FreeNumbers.FirstOrDefault().MobileNumber);
 
-                                        ResponseObject premumResponse = await bsshelper.GetAssetInventory(bssConfig, fee.ServiceCode, (BSSAssetRequest)requestIdResForPremium.Results, countPerPremium);
+                                        ResponseObject premumResponse = new ResponseObject();
+
+                                        try
+                                        {
+                                            premumResponse= await bsshelper.GetAssetInventory(bssConfig, fee.ServiceCode, (BSSAssetRequest)requestIdResForPremium.Results, countPerPremium);
+                                        }
+
+                                        catch (Exception ex)
+                                        {
+                                            LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+
+                                        }                                        
 
                                         if (premumResponse != null && premumResponse.Response.asset_details != null)
                                         {
@@ -423,7 +470,24 @@ namespace OrderService.Controllers
 
                         if (request.Type == 1) // free numbers
                         {
-                            ResponseObject res = await bsshelper.GetAssetInventory(bssConfig, ((List<ServiceFees>)serviceCAF.Results).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdResForFreeNumber.Results, systemConfig.FreeNumberListCount);
+                            ResponseObject res = new ResponseObject();
+                            try
+                            {
+                                res=await bsshelper.GetAssetInventory(bssConfig, ((List<ServiceFees>)serviceCAF.Results).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdResForFreeNumber.Results, systemConfig.FreeNumberListCount);
+                            }
+
+                            catch (Exception ex)
+                            {
+                                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = false,
+                                    Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed),
+                                    IsDomainValidationErrors = false
+                                });
+
+                            }                           
 
                             if (res != null)
                             {
@@ -471,7 +535,25 @@ namespace OrderService.Controllers
 
                                     DatabaseResponse requestIdResForPremium = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.GetAssets.ToString(), customerID, (int)BSSCalls.NewSession, "");
 
-                                    ResponseObject premumResponse = await bsshelper.GetAssetInventory(bssConfig, fee.ServiceCode, (BSSAssetRequest)requestIdResForPremium.Results, countPerPremium);
+                                    ResponseObject premumResponse = new ResponseObject();
+
+                                    try
+                                    {
+                                        premumResponse= await bsshelper.GetAssetInventory(bssConfig, fee.ServiceCode, (BSSAssetRequest)requestIdResForPremium.Results, countPerPremium);
+                                    }
+
+                                    catch (Exception ex)
+                                    {
+                                        LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = false,
+                                            Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed),
+                                            IsDomainValidationErrors = false
+                                        });
+
+                                    }
 
                                     if (premumResponse != null && premumResponse.Response.asset_details != null)
                                     {
@@ -626,8 +708,6 @@ namespace OrderService.Controllers
 
                         OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
 
-
-
                         DatabaseResponse systemConfigResponse = await _orderAccess.GetConfiguration(ConfiType.System.ToString());
 
                         DatabaseResponse bssConfigResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
@@ -642,8 +722,26 @@ namespace OrderService.Controllers
 
                         BSSQueryPlanResponse numbers = new BSSQueryPlanResponse();
 
-                        BSSQueryPlanResponseObject usageHistory = await bsshelper.GetUsageHistory(bssConfig, mobileNumber, ((BSSAssetRequest)requestIdRes.Results).request_id);
-                                             
+                        BSSQueryPlanResponseObject usageHistory = new BSSQueryPlanResponseObject();
+
+
+                        try
+                        {
+                            usageHistory= await bsshelper.GetUsageHistory(bssConfig, mobileNumber, ((BSSAssetRequest)requestIdRes.Results).request_id);
+                        }
+
+                        catch (Exception ex)
+                        {
+                            LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed),
+                                IsDomainValidationErrors = false
+                            });
+
+                        }                    
 
                         if (usageHistory != null && usageHistory.Response.result_code == "0")
                         {
@@ -666,9 +764,6 @@ namespace OrderService.Controllers
                                 Message = EnumExtensions.GetDescription(CommonErrors.FailedToGetUsageHistory),
                             });
                         }
-
-
-
                     }
 
                     else
@@ -783,7 +878,25 @@ namespace OrderService.Controllers
 
                                 DatabaseResponse requestIdRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.GetInvoiceDetails.ToString(), customerID, 0, "");
 
-                                BSSInvoiceResponseObject invoiceResponse = await bsshelper.GetBSSCustomerInvoice(bssConfig, ((BSSAssetRequest)requestIdRes.Results).request_id, ((BSSAccount)accountResponse.Results).AccountNumber, rangeInMonths);
+                                BSSInvoiceResponseObject invoiceResponse = new BSSInvoiceResponseObject();
+
+                                try
+                                {
+                                    invoiceResponse= await bsshelper.GetBSSCustomerInvoice(bssConfig, ((BSSAssetRequest)requestIdRes.Results).request_id, ((BSSAccount)accountResponse.Results).AccountNumber, rangeInMonths);
+                                }
+
+                                catch (Exception ex)
+                                {
+                                    LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = false,
+                                        Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed),
+                                        IsDomainValidationErrors = false
+                                    });
+
+                                }                                
                                                              
                                 if (invoiceResponse.Response.result_code == "0")
                                 {
@@ -949,7 +1062,25 @@ namespace OrderService.Controllers
 
                                 DatabaseResponse requestIdRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.GetInvoiceDetails.ToString(), customerID, 0, "");
 
-                                BSSAccountQuerySubscriberResponse accountOutstandingResponse = await bsshelper.GetBSSOutstandingPayment(bssConfig, ((BSSAssetRequest)requestIdRes.Results).request_id, ((BSSAccount)accountResponse.Results).AccountNumber);
+                                BSSAccountQuerySubscriberResponse accountOutstandingResponse = new BSSAccountQuerySubscriberResponse();
+
+                                try
+                                {
+                                    accountOutstandingResponse= await bsshelper.GetBSSOutstandingPayment(bssConfig, ((BSSAssetRequest)requestIdRes.Results).request_id, ((BSSAccount)accountResponse.Results).AccountNumber);
+                                }
+
+                                catch (Exception ex)
+                                {
+                                    LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = false,
+                                        Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed),
+                                        IsDomainValidationErrors = false
+                                    });
+
+                                }                              
 
                                 if (accountOutstandingResponse.Response.result_code == "0")
                                 {
@@ -1091,7 +1222,25 @@ namespace OrderService.Controllers
 
                         DatabaseResponse accountResponse = await _orderAccess.GetCustomerBSSAccountNumber(customerID);
 
-                        byte[] responseObject= await bsshelper.GetInvoiceStream(downloadLinkPrefix+ invoice_id);
+                        byte[] responseObject = null;
+
+                        try
+                        {
+                            responseObject= await bsshelper.GetInvoiceStream(downloadLinkPrefix + invoice_id);
+                        }
+
+                        catch (Exception ex)
+                        {
+                            LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed),
+                                IsDomainValidationErrors = false
+                            });
+
+                        }                       
 
                         MiscHelper configHelper = new MiscHelper();
 
