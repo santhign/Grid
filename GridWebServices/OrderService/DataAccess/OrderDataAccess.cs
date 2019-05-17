@@ -2441,8 +2441,8 @@ namespace OrderService.DataAccess
                         attribute.Add(EventTypeString.EventType, RequestType.EditPaymentMethod.GetDescription());
 
                         var sourceTyeResponse = await GetSourceTypeByMPGSSOrderId(MPGSOrderID);
-                        DatabaseResponse OrderCountResponse = await GetCustomerOrderCount(customerID);                        
-                        if ((((OrderSource)sourceTyeResponse.Results).SourceType == CheckOutType.Orders.ToString()) && (((OrderCount)OrderCountResponse.Results).SuccessfulOrders > 1))
+                        DatabaseResponse OrderCountResponse = await GetCustomerOrderCount(customerID);
+                        if (((((OrderSource)sourceTyeResponse.Results).SourceType == CheckOutType.Orders.ToString()) && (((OrderCount)OrderCountResponse.Results).SuccessfulOrders > 1)) || (((OrderSource)sourceTyeResponse.Results).SourceType != CheckOutType.Orders.ToString())) 
                         {                            
                             msgBody = await _messageQueueDataAccess.GetProfileUpdateMessageBody(customerID);
                             pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
