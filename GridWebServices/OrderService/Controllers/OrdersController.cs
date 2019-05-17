@@ -4151,7 +4151,7 @@ namespace OrderService.Controllers
 
                                     LogInfo.Information(JsonConvert.SerializeObject(tokenizeResponse));
 
-                                    tokenDetailsCreateResponse = await _orderAccess.CreatePaymentMethod(tokenizeResponse, customerID, updateRequest.MPGSOrderID);
+                                    tokenDetailsCreateResponse = await _orderAccess.CreatePaymentMethod(tokenizeResponse, customerID, updateRequest.MPGSOrderID, "UpdateTokenizeCheckOutResponse");
 
                                     if (tokenDetailsCreateResponse.ResponseCode == (int)DbReturnValue.CreateSuccess || tokenDetailsCreateResponse.ResponseCode==(int) DbReturnValue.ExistingCard)
                                     {                                        
@@ -5190,7 +5190,7 @@ namespace OrderService.Controllers
 
                                     DatabaseResponse tokenDetailsCreateResponse = new DatabaseResponse();
 
-                                    tokenDetailsCreateResponse = await _orderAccess.CreatePaymentMethod(tokenizeResponse, customerID, updateRequest.MPGSOrderID);
+                                    tokenDetailsCreateResponse = await _orderAccess.CreatePaymentMethod(tokenizeResponse, customerID, updateRequest.MPGSOrderID, "UpdateChangePaymentMethodStatus");
 
                                     if (tokenDetailsCreateResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                                     {
