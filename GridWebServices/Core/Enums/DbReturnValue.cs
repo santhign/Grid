@@ -180,6 +180,10 @@ namespace Core.Enums
         [EnumMember(Value = "AccountDeactivated")]
         [Description("Deactivated Account")]
         AccountDeactivated = 144,
+
+        [EnumMember(Value = "ExistingCard")]
+        [Description("Payed With Existing Card")]
+        ExistingCard = 145,
     }
 }
 

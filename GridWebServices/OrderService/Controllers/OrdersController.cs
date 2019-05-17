@@ -4153,9 +4153,8 @@ namespace OrderService.Controllers
 
                                     tokenDetailsCreateResponse = await _orderAccess.CreatePaymentMethod(tokenizeResponse, customerID, updateRequest.MPGSOrderID);
 
-                                    if (tokenDetailsCreateResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
-                                    {
-                                        
+                                    if (tokenDetailsCreateResponse.ResponseCode == (int)DbReturnValue.CreateSuccess || tokenDetailsCreateResponse.ResponseCode==(int) DbReturnValue.ExistingCard)
+                                    {                                        
                                         tokenSession.SourceOfFundType = tokenizeResponse.Type;
 
                                         tokenSession.Token = tokenizeResponse.Token;
@@ -4169,8 +4168,7 @@ namespace OrderService.Controllers
                                         transactionResponse = gatewayHelper.RetrieveCheckOutTransaction(gatewayConfig, updateRequest);
 
                                         // deside on the fields to update to database for payment processing and call SP to update
-
-
+                                        
                                         DatabaseResponse tokenDetailsUpdateResponse = new DatabaseResponse();
 
                                         DatabaseResponse paymentProcessingRespose = new DatabaseResponse();
@@ -4178,26 +4176,25 @@ namespace OrderService.Controllers
                                         paymentProcessingRespose = await _orderAccess.UpdateCheckOutReceipt(transactionResponse.TrasactionResponse);
 
                                         tokenDetailsUpdateResponse = await _orderAccess.UpdatePaymentMethodDetails(transactionResponse.TrasactionResponse, customerID, tokenSession.Token);
+                                                                               
+                                        //Get Order Type
+                                        var sourceTyeResponse = await _orderAccess.GetSourceTypeByMPGSSOrderId(updateRequest.MPGSOrderID);
+
+                                        PaymentSuccessResponse paymentResponse = new PaymentSuccessResponse { Source = ((OrderSource)sourceTyeResponse.Results).SourceType, MPGSOrderID = updateRequest.MPGSOrderID, Amount = tokenSession.Amount, Currency = gatewayConfig.Currency };
 
                                         if (paymentProcessingRespose.ResponseCode == (int)DbReturnValue.TransactionSuccess)
-                                        {
-                                            //Get Order Type
-                                            var sourceTyeResponse = await _orderAccess.GetSourceTypeByMPGSSOrderId(updateRequest.MPGSOrderID);
-
+                                        { 
                                             if (((OrderSource)sourceTyeResponse.Results).SourceType == CheckOutType.Orders.ToString())
                                             {
                                                 await SendEmailNotification(updateRequest.MPGSOrderID, customerID, ((OrderSource)sourceTyeResponse.Results).SourceID);
                                             }
-
 
                                             LogInfo.Information(EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess));
 
                                             QMHelper qMHelper = new QMHelper(_iconfiguration, _messageQueueDataAccess);
 
                                             if (await qMHelper.ProcessSuccessTransaction(updateRequest) == 1)
-                                            {
-                                                PaymentSuccessResponse paymentResponse = new PaymentSuccessResponse { Source = ((OrderSource)sourceTyeResponse.Results).SourceType, MPGSOrderID = updateRequest.MPGSOrderID, Amount = tokenSession.Amount, Currency = gatewayConfig.Currency };
-                                                    
+                                            {      
                                                 return Ok(new OperationResponse
                                                 {
                                                     HasSucceeded = true,
@@ -4219,6 +4216,16 @@ namespace OrderService.Controllers
                                                     IsDomainValidationErrors = false
                                                 });
                                             }
+                                        }
+                                        else if(paymentProcessingRespose.ResponseCode==(int)DbReturnValue.PaymentAlreadyProcessed)
+                                        {
+                                            return Ok(new OperationResponse
+                                            {
+                                                HasSucceeded = true,
+                                                Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
+                                                IsDomainValidationErrors = false,
+                                                ReturnedObject = paymentResponse
+                                            });
                                         }
                                         else
                                         {
