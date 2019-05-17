@@ -2390,7 +2390,7 @@ namespace OrderService.DataAccess
             }
         }
 
-        public async Task<DatabaseResponse> CreatePaymentMethod(TokenResponse tokenResponse, int customerID, string MPGSOrderID = "")
+        public async Task<DatabaseResponse> CreatePaymentMethod(TokenResponse tokenResponse, int customerID, string MPGSOrderID = "", string SourceMethodName = "")
         {
             try
             {
@@ -2499,7 +2499,7 @@ namespace OrderService.DataAccess
                             MessageAttribute = Core.Enums.RequestType.EditPaymentMethod.GetDescription().ToString(),
                             MessageBody = msgBody != null ? JsonConvert.SerializeObject(msgBody) : null,
                             Status = 0,
-                            Remark = "Error Occured in UpdateTokenizeCheckOutResponse method while generating message",
+                            Remark = "Error Occured in "+ SourceMethodName +" method while generating message",
                             Exception = new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)
 
 
