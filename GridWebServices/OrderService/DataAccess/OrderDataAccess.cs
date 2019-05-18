@@ -1426,7 +1426,8 @@ namespace OrderService.DataAccess
                                     select new Checkout()
                                     {
                                         Amount = model.Field<double>("Amount"),
-                                        ReceiptNumber= model.Field<string>("RecieptNumber")
+                                        ReceiptNumber= model.Field<string>("RecieptNumber"),
+                                        OrderId = model.Field<string>("MPGSOrderID"),
                                     }).FirstOrDefault();
 
                     }

@@ -2601,7 +2601,7 @@ namespace OrderService.Controllers
                                 billingAddress = (customerBilling)billingResponse.Results;
                             }
 
-                            checkoutDetails.OrderId = PaymentHelper.GenerateOrderId();
+                           // checkoutDetails.OrderId = PaymentHelper.GenerateOrderId();
 
                             checkoutDetails.TransactionID = PaymentHelper.GenerateOrderId();
 
@@ -2611,7 +2611,7 @@ namespace OrderService.Controllers
 
                                 SourceID = orderId,                              
 
-                                MPGSOrderID = checkoutDetails.OrderId,
+                              //  MPGSOrderID = checkoutDetails.OrderId,
 
                                 TransactionID = checkoutDetails.TransactionID
                             };
@@ -2620,6 +2620,8 @@ namespace OrderService.Controllers
 
                             if(checkOutAmountResponse.ResponseCode==(int)DbReturnValue.RecordExists)
                             {
+                                checkoutDetails.OrderId = ((Checkout)checkOutAmountResponse.Results).OrderId;
+
                                 checkoutDetails = gatewayHelper.CreateCheckoutSession(gatewayConfig, billingAddress, checkoutDetails.OrderId, checkoutDetails.TransactionID, ((Checkout)checkOutAmountResponse.Results).ReceiptNumber);
 
                                 CheckOutRequestDBUpdateModel checkoutUpdateModel = new CheckOutRequestDBUpdateModel

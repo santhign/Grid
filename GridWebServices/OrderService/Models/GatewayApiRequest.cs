@@ -391,23 +391,28 @@ namespace OrderService.Models
                     nvc.Add("billing.address.postcodeZip", BillingPostCode);
                 }
 
-            }
-            //statement Descriptor
-            //nvc.Add("order.statementDescriptor.name", gatewayApiConfig.GridMerchantName);
-            //nvc.Add("order.statementDescriptor.address.company", gatewayApiConfig.GridMerchantName);
-            //nvc.Add("order.statementDescriptor.address.street", gatewayApiConfig.GridMerchantAddress1);
-            //nvc.Add("order.statementDescriptor.address.street2", gatewayApiConfig.GridMerchantAddress2);
-           
-            //nvc.Add("order.statementDescriptor.address.city", "Singapore");
-            //nvc.Add("order.statementDescriptor.address.stateProvince", "Singapore");
-            //nvc.Add("order.statementDescriptor.address.country", "SGP");
-            //nvc.Add("order.statementDescriptor.address.postcodeZip", gatewayApiConfig.GridMerchantPostCode);
+                //statement Descriptor
 
-            
+                if (!String.IsNullOrEmpty(ReceiptNumber))
+                {
+                    nvc.Add("order.statementDescriptor.name", ReceiptNumber);
+                }
 
+                else
+                {
+                    nvc.Add("order.statementDescriptor.name", gatewayApiConfig.GridMerchantName);
+                }
+                 //pass 
+                nvc.Add("order.statementDescriptor.address.company", gatewayApiConfig.GridMerchantName);
+                nvc.Add("order.statementDescriptor.address.street", gatewayApiConfig.GridMerchantAddress1);
+                nvc.Add("order.statementDescriptor.address.street2", gatewayApiConfig.GridMerchantAddress2);
 
+                nvc.Add("order.statementDescriptor.address.city", "Singapore");
+                nvc.Add("order.statementDescriptor.address.stateProvince", "Singapore");
+                nvc.Add("order.statementDescriptor.address.country", "SGP");
+                nvc.Add("order.statementDescriptor.address.postcodeZip", gatewayApiConfig.GridMerchantPostCode);
 
-
+            }   
 
             if (!String.IsNullOrEmpty(CardNumber))
             {
