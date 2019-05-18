@@ -2391,7 +2391,7 @@ namespace OrderService.DataAccess
             }
         }
 
-        public async Task<DatabaseResponse> CreatePaymentMethod(TokenResponse tokenResponse, int customerID, string MPGSOrderID = "")
+        public async Task<DatabaseResponse> CreatePaymentMethod(TokenResponse tokenResponse, int customerID, string MPGSOrderID = "", string SourceMethodName = "")
         {
             try
             {
@@ -2442,8 +2442,8 @@ namespace OrderService.DataAccess
                         attribute.Add(EventTypeString.EventType, RequestType.EditPaymentMethod.GetDescription());
 
                         var sourceTyeResponse = await GetSourceTypeByMPGSSOrderId(MPGSOrderID);
-                        DatabaseResponse OrderCountResponse = await GetCustomerOrderCount(customerID);                        
-                        if ((((OrderSource)sourceTyeResponse.Results).SourceType == CheckOutType.Orders.ToString()) && (((OrderCount)OrderCountResponse.Results).SuccessfulOrders > 1))
+                        DatabaseResponse OrderCountResponse = await GetCustomerOrderCount(customerID);
+                        if (((((OrderSource)sourceTyeResponse.Results).SourceType == CheckOutType.Orders.ToString()) && (((OrderCount)OrderCountResponse.Results).SuccessfulOrders > 1)) || (((OrderSource)sourceTyeResponse.Results).SourceType != CheckOutType.Orders.ToString())) 
                         {                            
                             msgBody = await _messageQueueDataAccess.GetProfileUpdateMessageBody(customerID);
                             pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
@@ -2500,7 +2500,7 @@ namespace OrderService.DataAccess
                             MessageAttribute = Core.Enums.RequestType.EditPaymentMethod.GetDescription().ToString(),
                             MessageBody = msgBody != null ? JsonConvert.SerializeObject(msgBody) : null,
                             Status = 0,
-                            Remark = "Error Occured in UpdateTokenizeCheckOutResponse method while generating message",
+                            Remark = "Error Occured in "+ SourceMethodName +" method while generating message",
                             Exception = new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)
 
 
