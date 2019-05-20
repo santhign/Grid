@@ -2321,7 +2321,7 @@ namespace OrderService.DataAccess
                 SqlParameter[] parameters =
                {
                     new SqlParameter( "@OrderID",  SqlDbType.Int ),
-                    new SqlParameter( "@MobileNumber",  SqlDbType.Int )
+                    new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar )
                 };
 
                 parameters[0].Value = OrderID;
