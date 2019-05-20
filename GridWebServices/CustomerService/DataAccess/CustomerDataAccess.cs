@@ -544,7 +544,8 @@ namespace CustomerService.DataAccess
                                           PlanChangeRaised = model.Field<int>("PlanChangeRaised"),
                                           PlanChangeMessage = model.Field<string>("PlanChangeMessage"),
                                           SMSSubscription = model.Field<int>("SMSSubscription"),
-                                          VoiceSubscription = model.Field<int>("VoiceSubscription")
+                                          VoiceSubscription = model.Field<int>("VoiceSubscription"),
+                                          SIMReplacementRaised = model.Field<int>("SIMReplacementRaised")
                                       }).ToList();
                     }
 

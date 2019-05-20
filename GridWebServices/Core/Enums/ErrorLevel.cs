@@ -146,7 +146,7 @@ namespace Core.Enums
         UnableToRetrievePasswordToken = 31,
 
         [EnumMember(Value = "TokenEmpty")]
-        [Description("Token header emapy")]
+        [Description("Token header empty")]
         TokenEmpty = 32,
 
         [EnumMember(Value = "Token Not Exists")]
