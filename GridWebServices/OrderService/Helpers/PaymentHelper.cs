@@ -482,7 +482,7 @@ namespace OrderService.Helpers
 
             GatewayApiRequest gatewayApiRequest = new GatewayApiRequest(config)
             {
-                SessionId = checkOutDetails.CheckoutSession.Id,
+              //  SessionId = checkOutDetails.CheckoutSession.Id,
                 OrderId = checkOutDetails.OrderId,
                 TransactionId = checkOutDetails.TransactionID,
                 ApiOperation = MPGSAPIOperation.AUTHORIZE.ToString(),

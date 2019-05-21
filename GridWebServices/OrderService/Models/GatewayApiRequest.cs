@@ -294,18 +294,18 @@ namespace OrderService.Models
 
 
                 //payer name
-                if (!String.IsNullOrEmpty(CustomerName))
-                {
-                    nvc.Add("order.requestorName", CustomerName);
+                //if (!String.IsNullOrEmpty(CustomerName))
+                //{
+                //    nvc.Add("order.requestorName", CustomerName);
 
-                }
+                //}
 
                 //payer's contact number
-                if (!String.IsNullOrEmpty(BillingContactNumber))
-                {
-                    nvc.Add("customer.mobilePhone", BillingContactNumber);
+                //if (!String.IsNullOrEmpty(BillingContactNumber))
+                //{
+                //    nvc.Add("customer.mobilePhone", BillingContactNumber);
 
-                }
+                //}
 
                 // billing address
                 //street = BillingBuildingNumber BillingStreetName
@@ -395,14 +395,14 @@ namespace OrderService.Models
 
                 if (!String.IsNullOrEmpty(ReceiptNumber))
                 {
-                    nvc.Add("order.statementDescriptor.name", ReceiptNumber);
+                    nvc.Add("order.statementDescriptor.name", gatewayApiConfig.GridMerchantName.ToLower() + " " + ReceiptNumber);
                 }
 
                 else
                 {
-                    nvc.Add("order.statementDescriptor.name", gatewayApiConfig.GridMerchantName);
+                    nvc.Add("order.statementDescriptor.name",  gatewayApiConfig.GridMerchantName);
                 }
-                 //pass 
+                //pass 
                 nvc.Add("order.statementDescriptor.address.company", gatewayApiConfig.GridMerchantName);
                 nvc.Add("order.statementDescriptor.address.street", gatewayApiConfig.GridMerchantAddress1);
                 nvc.Add("order.statementDescriptor.address.street2", gatewayApiConfig.GridMerchantAddress2);

@@ -2443,7 +2443,7 @@ namespace OrderService.DataAccess
 
                         var sourceTyeResponse = await GetSourceTypeByMPGSSOrderId(MPGSOrderID);
                         DatabaseResponse OrderCountResponse = await GetCustomerOrderCount(customerID);
-                        if (((((OrderSource)sourceTyeResponse.Results).SourceType == CheckOutType.Orders.ToString()) && (((OrderCount)OrderCountResponse.Results).SuccessfulOrders > 1)) || (((OrderSource)sourceTyeResponse.Results).SourceType != CheckOutType.Orders.ToString())) 
+                        if (((((OrderSource)sourceTyeResponse.Results).SourceType == CheckOutType.Orders.ToString()) && (((OrderCount)OrderCountResponse.Results).SuccessfulOrders >=1)) || (((OrderSource)sourceTyeResponse.Results).SourceType != CheckOutType.Orders.ToString())) 
                         {                            
                             msgBody = await _messageQueueDataAccess.GetProfileUpdateMessageBody(customerID);
                             pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
@@ -2549,7 +2549,7 @@ namespace OrderService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                int result = await _DataHelper.RunAsync();    // 100 / 105
+                int result = await _DataHelper.RunAsync();    // 101 / 105
 
                 DatabaseResponse response = new DatabaseResponse();
 
@@ -3267,6 +3267,56 @@ namespace OrderService.DataAccess
             }
         }
 
+        public async Task<DatabaseResponse> NumberIsPorted(int OrderID, string MobileNumber)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                 {
+                     new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar ),
+                     new SqlParameter( "@OrderID",  SqlDbType.Int )
+
+                };
+
+                parameters[0].Value = MobileNumber;
+                parameters[1].Value = OrderID;
+
+                _DataHelper = new DataAccessHelper("Orders_IsPortedNumber", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt); // 105 /102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                int isPorted = 0;
+
+                if(dt!=null && dt.Rows.Count>0)
+                {
+                    isPorted = int.Parse(dt.Rows[0].ItemArray[0].ToString());
+
+                    response = new DatabaseResponse { ResponseCode = result , Results=isPorted};
+                }
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+              
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }       
 
     }
 }

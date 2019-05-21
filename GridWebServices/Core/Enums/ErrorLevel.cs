@@ -320,5 +320,9 @@ namespace Core.Enums
         [EnumMember(Value = "FailedToRemoveRescheduleLoa")]
         [Description("Failed To Remove Reschedule Loa")]
         FailedToRemoveRescheduleLoa = 74,
+
+        [EnumMember(Value = "OldNumberNotExists")]
+        [Description("Old Number not exists")]
+        OldNumberNotExists = 75,
     }
 }
