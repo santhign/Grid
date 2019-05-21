@@ -878,7 +878,8 @@ namespace CustomerService.DataAccess
                             orderDetails.AlternateRecipientName = dr["AlternateRecipientName"].ToString();
                             orderDetails.AlternateRecipientEmail = dr["AlternateRecipientEmail"].ToString();
                             orderDetails.PortalSlotID = dr["PortalSlotID"].ToString();
-                            orderDetails.SlotDate = Convert.ToDateTime(dr["SlotDate"]);
+                            orderDetails.SlotDate = (dr["SlotDate"] == DBNull.Value) ? (DateTime?)null : ((DateTime)dr["SlotDate"]);
+                            //dr["SlotDate"] != null  Convert.ToDateTime(dr["SlotDate"]);
                             TimeSpan val;
                             TimeSpan.TryParse(dr["SlotFromTime"].ToString(), out val);
                             orderDetails.SlotFromTime = val;
