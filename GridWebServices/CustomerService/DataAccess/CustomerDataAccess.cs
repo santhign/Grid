@@ -1074,7 +1074,7 @@ namespace CustomerService.DataAccess
                     int.TryParse(dt.Rows[0][0].ToString().Trim(), out AccountID);
                     DatabaseResponse configResponse = ConfigHelper.GetValueByKey("RewardDetailsUrl", _configuration);
                     RewardHelper _helper = new RewardHelper();
-                    RewardDetails _rewards = _helper.GetRewardDetails(configResponse.Results.ToString().Trim(), AccountID, FromDate, ToDate);
+                    List<RewardDetails> _rewards = _helper.GetRewardDetails(configResponse.Results.ToString().Trim(), AccountID, FromDate, ToDate);
                     response = new DatabaseResponse { ResponseCode = 105, Results = _rewards };
                 }
                 else

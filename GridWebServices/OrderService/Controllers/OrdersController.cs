@@ -941,7 +941,6 @@ namespace OrderService.Controllers
                                                             .Select(x => x.ErrorMessage))
                             });
                         }
-
                         OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
 
                         IFormFile file = request.PortedNumberTransferForm;
@@ -1004,116 +1003,130 @@ namespace OrderService.Controllers
 
                         if (customerResponse.ResponseCode == (int)DbReturnValue.RecordExists && customerID == ((OrderCustomer)customerResponse.Results).CustomerId)
                         {
-                            if (portResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                            if (portResponse.Results != null && portResponse.Results.ToString().Trim() == "0")
                             {
-                                if (portResponse.Results.ToString().Trim() == "0")
+                                customer = (OrderCustomer)customerResponse.Results;
+
+                                DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
+
+                                GridBSSConfi config = bsshelper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
+
+                                DatabaseResponse requestIdToUpdateUnblock = await _orderAccess.GetBssApiRequestIdAndSubscriberSession(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customer.CustomerId, request.OldMobileNumber);
+
+                                // Unblock
+
+                                BSSUpdateResponseObject bssUnblockUpdateResponse = new BSSUpdateResponseObject();
+
+                                try
                                 {
-                                    customer = (OrderCustomer)customerResponse.Results;
+                                    bssUnblockUpdateResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateUnblock.Results, request.OldMobileNumber, true);
+                                }
+                                catch (Exception ex)
+                                {
+                                    LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + " " + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
 
-                                    //update subscription porting
-                                    DatabaseResponse updateSubscriberResponse = await _orderAccess.UpdateSubscriberPortingNumber(portingRequest);
-
-                                    if (updateSubscriberResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
+                                    return Ok(new OperationResponse
                                     {
-                                        // Get Order Basic Details
+                                        HasSucceeded = false,
+                                        Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed),
+                                        IsDomainValidationErrors = false
+                                    });
 
-                                        DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails(request.OrderID);
+                                }
 
-                                        if (orderDetailsResponse.ResponseCode == (int)DbReturnValue.RecordExists)
-                                        {
-                                            return Ok(new OperationResponse
-                                            {
-                                                HasSucceeded = true,
-                                                Message = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess),
-                                                IsDomainValidationErrors = false,
-                                                ReturnedObject = orderDetailsResponse.Results
-                                            });
-                                        }
+                                //update subscription porting
+                                DatabaseResponse updateSubscriberResponse = await _orderAccess.UpdateSubscriberPortingNumber(portingRequest);
 
-                                        else
-                                        {
-                                            //subscription porting updated, but details not returned
-                                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToLocateUpdatedSubscription));
-                                            return Ok(new OperationResponse
-                                            {
-                                                HasSucceeded = true,
-                                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
-                                                IsDomainValidationErrors = false,
-                                            });
-                                        }
+                                if (updateSubscriberResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
+                                {
+                                    // Get Order Basic Details
 
-                                    }
-                                    else
+                                    DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails(request.OrderID);
+
+                                    if (orderDetailsResponse.ResponseCode == (int)DbReturnValue.RecordExists)
                                     {
-                                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateSubscriptionFailed));
                                         return Ok(new OperationResponse
                                         {
-                                            HasSucceeded = false,
-                                            Message = EnumExtensions.GetDescription(DbReturnValue.UpdationFailed),
-                                            IsDomainValidationErrors = false
+                                            HasSucceeded = true,
+                                            Message = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess),
+                                            IsDomainValidationErrors = false,
+                                            ReturnedObject = orderDetailsResponse.Results
+                                        });
+                                    }
+
+                                    else
+                                    {
+                                        //subscription porting updated, but details not returned
+                                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToLocateUpdatedSubscription));
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = true,
+                                            Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
+                                            IsDomainValidationErrors = false,
                                         });
                                     }
 
                                 }
                                 else
                                 {
-                                    //update subscription porting
-                                    DatabaseResponse updateSubscriberResponse = await _orderAccess.UpdateSubscriberPortingNumber(portingRequest);
-
-                                    if (updateSubscriberResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
+                                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateSubscriptionFailed));
+                                    return Ok(new OperationResponse
                                     {
-                                        // Get Order Basic Details
-
-                                        DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails(request.OrderID);
-
-                                        if (orderDetailsResponse.ResponseCode == (int)DbReturnValue.RecordExists)
-                                        {
-                                            return Ok(new OperationResponse
-                                            {
-                                                HasSucceeded = true,
-                                                Message = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess),
-                                                IsDomainValidationErrors = false,
-                                                ReturnedObject = orderDetailsResponse.Results
-                                            });
-                                        }
-
-                                        else
-                                        {
-                                            //subscription porting updated, but details not returned
-                                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToLocateUpdatedSubscription));
-                                            return Ok(new OperationResponse
-                                            {
-                                                HasSucceeded = true,
-                                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
-                                                IsDomainValidationErrors = false,
-                                            });
-                                        }
-
-                                    }
-                                    else
-                                    {
-                                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateSubscriptionFailed));
-                                        return Ok(new OperationResponse
-                                        {
-                                            HasSucceeded = false,
-                                            Message = EnumExtensions.GetDescription(DbReturnValue.UpdationFailed),
-                                            IsDomainValidationErrors = false
-                                        });
-                                    }
+                                        HasSucceeded = false,
+                                        Message = EnumExtensions.GetDescription(DbReturnValue.UpdationFailed),
+                                        IsDomainValidationErrors = false
+                                    });
                                 }
+
                             }
                             else
                             {
-                                // failed to locate mobile number
-                                LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.MobileNumberMismatch));
-                                return Ok(new OperationResponse
+                                //update subscription porting
+                                DatabaseResponse updateSubscriberResponse = await _orderAccess.UpdateSubscriberPortingNumber(portingRequest);
+
+                                if (updateSubscriberResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
                                 {
-                                    HasSucceeded = false,
-                                    Message = EnumExtensions.GetDescription(DbReturnValue.MobileNumberMismatch),
-                                    IsDomainValidationErrors = false
-                                });
+                                    // Get Order Basic Details
+
+                                    DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails(request.OrderID);
+
+                                    if (orderDetailsResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                                    {
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = true,
+                                            Message = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess),
+                                            IsDomainValidationErrors = false,
+                                            ReturnedObject = orderDetailsResponse.Results
+                                        });
+                                    }
+
+                                    else
+                                    {
+                                        //subscription porting updated, but details not returned
+                                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToLocateUpdatedSubscription));
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = true,
+                                            Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
+                                            IsDomainValidationErrors = false,
+                                        });
+                                    }
+
+                                }
+                                else
+                                {
+                                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateSubscriptionFailed));
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = false,
+                                        Message = EnumExtensions.GetDescription(DbReturnValue.UpdationFailed),
+                                        IsDomainValidationErrors = false
+                                    });
+                                }
                             }
                         }
+
                         else
                         {
                             // failed to locate customer
@@ -2720,7 +2733,7 @@ namespace OrderService.Controllers
                                 billingAddress = (customerBilling)billingResponse.Results;
                             }
 
-                            checkoutDetails.OrderId = PaymentHelper.GenerateOrderId();
+                           // checkoutDetails.OrderId = PaymentHelper.GenerateOrderId();
 
                             checkoutDetails.TransactionID = PaymentHelper.GenerateOrderId();
 
@@ -2730,7 +2743,7 @@ namespace OrderService.Controllers
 
                                 SourceID = orderId,                              
 
-                                MPGSOrderID = checkoutDetails.OrderId,
+                              //  MPGSOrderID = checkoutDetails.OrderId,
 
                                 TransactionID = checkoutDetails.TransactionID
                             };
@@ -2739,6 +2752,8 @@ namespace OrderService.Controllers
 
                             if(checkOutAmountResponse.ResponseCode==(int)DbReturnValue.RecordExists)
                             {
+                                checkoutDetails.OrderId = ((Checkout)checkOutAmountResponse.Results).OrderId;
+
                                 checkoutDetails = gatewayHelper.CreateCheckoutSession(gatewayConfig, billingAddress, checkoutDetails.OrderId, checkoutDetails.TransactionID, ((Checkout)checkOutAmountResponse.Results).ReceiptNumber);
 
                                 CheckOutRequestDBUpdateModel checkoutUpdateModel = new CheckOutRequestDBUpdateModel
@@ -2913,102 +2928,203 @@ namespace OrderService.Controllers
                         OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
 
                         DatabaseResponse customerResponse = await _orderAccess.GetCustomerIdFromOrderId(request.OrderID);
+
                         if (customerResponse.ResponseCode == (int)DbReturnValue.RecordExists && customerID == ((OrderCustomer)customerResponse.Results).CustomerId)
                         {
                             //remove additional line
-                            DatabaseResponse removeLineResponse = await _orderAccess.RemoveAdditionalLine(request);
 
-                            if (removeLineResponse.ResponseCode == (int)DbReturnValue.DeleteSuccess)
+                            DatabaseResponse isPortedResponse = await _orderAccess.NumberIsPorted(request.OrderID, request.MobileNumber);
+
+                            if (isPortedResponse != null && isPortedResponse.ResponseCode == (int)DbReturnValue.RecordExists && isPortedResponse.Results != null)
                             {
-                                // call bss api to release/unblock the number
-
-                                BSSAPIHelper bsshelper = new BSSAPIHelper();
-
-                                MiscHelper configHelper = new MiscHelper();
-
-                                DatabaseResponse requestIdToUpdateUnblock = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.ExistingSession, request.MobileNumber);
-
-                                DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
-
-                                GridBSSConfi config = bsshelper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
-
-                                // Unblock
-                                BSSUpdateResponseObject bssUnblockUpdateResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateUnblock.Results, request.MobileNumber, true);
-
-                                if (bsshelper.GetResponseCode(bssUnblockUpdateResponse) == "0")
+                                if (((int)isPortedResponse.Results) != 1)
                                 {
-                                    return Ok(new OperationResponse
-                                    {
-                                        HasSucceeded = true,
-                                        Message = EnumExtensions.GetDescription(CommonErrors.LineDeleteSuccess),
-                                        IsDomainValidationErrors = false
-                                    });
+                                    // unblock needed only if number not ported
 
+                                    BSSAPIHelper bsshelper = new BSSAPIHelper();
+
+                                    MiscHelper configHelper = new MiscHelper();
+
+                                    DatabaseResponse requestIdToUpdateUnblock = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.ExistingSession, request.MobileNumber);
+
+                                    DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
+
+                                    GridBSSConfi config = bsshelper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
+
+                                    // Unblock
+                                    BSSUpdateResponseObject bssUnblockUpdateResponse = new BSSUpdateResponseObject();
+
+                                    try
+                                    {
+                                        bssUnblockUpdateResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateUnblock.Results, request.MobileNumber, true);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + " " + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = false,
+                                            Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed),
+                                            IsDomainValidationErrors = false
+                                        });
+
+                                    }
+
+                                    if (bsshelper.GetResponseCode(bssUnblockUpdateResponse) == "0")
+                                    {
+                                        DatabaseResponse removeLineResponse = await _orderAccess.RemoveAdditionalLine(request);
+
+                                        if (removeLineResponse.ResponseCode == (int)DbReturnValue.DeleteSuccess)
+                                        {
+
+                                            return Ok(new OperationResponse
+                                            {
+                                                HasSucceeded = true,
+                                                Message = EnumExtensions.GetDescription(CommonErrors.LineDeleteSuccess),
+                                                IsDomainValidationErrors = false
+                                            });
+
+                                        }
+
+                                        else if (removeLineResponse.ResponseCode == (int)DbReturnValue.ActiveTryDelete)
+                                        {
+                                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.LineDeleteFailed));
+
+                                            return Ok(new OperationResponse
+                                            {
+                                                HasSucceeded = false,
+                                                Message = EnumExtensions.GetDescription(DbReturnValue.ActiveTryDelete),
+                                                IsDomainValidationErrors = false
+                                            });
+                                        }
+
+                                        else if (removeLineResponse.ResponseCode == (int)DbReturnValue.PrimaryTryDelete)
+                                        {
+                                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.LineDeleteFailed));
+
+                                            return Ok(new OperationResponse
+                                            {
+                                                HasSucceeded = false,
+                                                Message = EnumExtensions.GetDescription(DbReturnValue.PrimaryTryDelete),
+                                                IsDomainValidationErrors = false
+                                            });
+                                        }
+
+                                        else if (removeLineResponse.ResponseCode == (int)DbReturnValue.CompletedOrderDelete)
+                                        {
+                                            LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.CompletedOrderDelete));
+
+                                            return Ok(new OperationResponse
+                                            {
+                                                HasSucceeded = false,
+                                                Message = EnumExtensions.GetDescription(DbReturnValue.CompletedOrderDelete),
+                                                IsDomainValidationErrors = false
+                                            });
+                                        }
+                                        else
+                                        {
+                                            LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.NotExists));
+                                            return Ok(new OperationResponse
+                                            {
+                                                HasSucceeded = false,
+                                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
+                                                IsDomainValidationErrors = false
+                                            });
+                                        }
+                                    }
+
+                                    else
+                                    {
+                                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateAssetUnBlockingFailed));
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = false,
+                                            Message = EnumExtensions.GetDescription(DbReturnValue.UnBlockingFailed),
+                                            IsDomainValidationErrors = false
+                                        });
+                                    }
                                 }
 
                                 else
                                 {
-                                    /*
-                                     revice - check if revert the line deleted in database in case number releasing failed in BSS
-                                     */
+                                    // ported number - just remove the line
 
-                                    // unblocking failed -  
-                                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateAssetUnBlockingFailed));
-                                    return Ok(new OperationResponse
+                                    DatabaseResponse removeLineResponse = await _orderAccess.RemoveAdditionalLine(request);
+
+                                    if (removeLineResponse.ResponseCode == (int)DbReturnValue.DeleteSuccess)
                                     {
-                                        HasSucceeded = false,
-                                        Message = EnumExtensions.GetDescription(DbReturnValue.UnBlockingFailed),
-                                        IsDomainValidationErrors = false
-                                    });
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = true,
+                                            Message = EnumExtensions.GetDescription(CommonErrors.LineDeleteSuccess),
+                                            IsDomainValidationErrors = false
+                                        });
+
+                                    }
+
+                                    else if (removeLineResponse.ResponseCode == (int)DbReturnValue.ActiveTryDelete)
+                                    {
+                                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.LineDeleteFailed));
+
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = false,
+                                            Message = EnumExtensions.GetDescription(DbReturnValue.ActiveTryDelete),
+                                            IsDomainValidationErrors = false
+                                        });
+                                    }
+
+                                    else if (removeLineResponse.ResponseCode == (int)DbReturnValue.PrimaryTryDelete)
+                                    {
+                                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.LineDeleteFailed));
+
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = false,
+                                            Message = EnumExtensions.GetDescription(DbReturnValue.PrimaryTryDelete),
+                                            IsDomainValidationErrors = false
+                                        });
+                                    }
+
+                                    else if (removeLineResponse.ResponseCode == (int)DbReturnValue.CompletedOrderDelete)
+                                    {
+                                        LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.CompletedOrderDelete));
+
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = false,
+                                            Message = EnumExtensions.GetDescription(DbReturnValue.CompletedOrderDelete),
+                                            IsDomainValidationErrors = false
+                                        });
+                                    }
+                                    else
+                                    {
+                                        LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.NotExists));
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = false,
+                                            Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
+                                            IsDomainValidationErrors = false
+                                        });
+                                    }
+
                                 }
-
                             }
 
-                            else if (removeLineResponse.ResponseCode == (int)DbReturnValue.ActiveTryDelete)
-                            {
-                                LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.LineDeleteFailed));
-
-                                return Ok(new OperationResponse
-                                {
-                                    HasSucceeded = false,
-                                    Message = EnumExtensions.GetDescription(DbReturnValue.ActiveTryDelete),
-                                    IsDomainValidationErrors = false
-                                });
-                            }
-
-                            else if (removeLineResponse.ResponseCode == (int)DbReturnValue.PrimaryTryDelete)
-                            {
-                                LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.LineDeleteFailed));
-
-                                return Ok(new OperationResponse
-                                {
-                                    HasSucceeded = false,
-                                    Message = EnumExtensions.GetDescription(DbReturnValue.PrimaryTryDelete),
-                                    IsDomainValidationErrors = false
-                                });
-                            }
-
-                            else if (removeLineResponse.ResponseCode == (int)DbReturnValue.CompletedOrderDelete)
-                            {
-                                LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.CompletedOrderDelete));
-
-                                return Ok(new OperationResponse
-                                {
-                                    HasSucceeded = false,
-                                    Message = EnumExtensions.GetDescription(DbReturnValue.CompletedOrderDelete),
-                                    IsDomainValidationErrors = false
-                                });
-                            }
                             else
                             {
-                                LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.NotExists));
+                                // Old number not found in database
+
+                                LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.OldNumberNotExists));
                                 return Ok(new OperationResponse
                                 {
                                     HasSucceeded = false,
-                                    Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
+                                    Message = EnumExtensions.GetDescription(CommonErrors.OldNumberNotExists),
                                     IsDomainValidationErrors = false
                                 });
                             }
+                         
                         }
                         else
                         {
@@ -3237,7 +3353,7 @@ namespace OrderService.Controllers
                                         });
                                     }
 
-                                    else
+                                    else 
                                     {
                                         // Assign Newnumber failed
                                         LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.AssignNewNumberFailed));
@@ -4755,10 +4871,9 @@ namespace OrderService.Controllers
                                     billingAddress = (customerBilling)billingResponse.Results;
                                 }
 
-                                checkoutDetails.OrderId = PaymentHelper.GenerateOrderId();
+                               // checkoutDetails.OrderId = PaymentHelper.GenerateOrderId();
 
                                 checkoutDetails.TransactionID = PaymentHelper.GenerateOrderId();
-
 
                                 CheckOutRequestDBUpdateModel createcheckOutModel = new CheckOutRequestDBUpdateModel
                                 {
@@ -4766,142 +4881,157 @@ namespace OrderService.Controllers
 
                                     SourceID = orderId,                                  
 
-                                    MPGSOrderID = checkoutDetails.OrderId,
+                                   // MPGSOrderID = checkoutDetails.OrderId,
 
                                     TransactionID = checkoutDetails.TransactionID
                                 };                               
 
                                 DatabaseResponse checkOutAmountResponse = await _orderAccess.GetCheckoutRequestDetails(createcheckOutModel);
 
-                                checkoutDetails = gatewayHelper.CreateCheckoutSession(gatewayConfig, billingAddress, checkoutDetails.OrderId, checkoutDetails.TransactionID,((Checkout)checkOutAmountResponse.Results).ReceiptNumber);
-
-                                // Call MPGS to create a checkout session and retuen details
-                                CheckOutRequestDBUpdateModel checkoutUpdateModel = new CheckOutRequestDBUpdateModel
-                                {
-                                    Source = ((CheckOutType)orderType).ToString(),
-
-                                    SourceID = orderId,
-
-                                    CheckOutSessionID = checkoutDetails.CheckoutSession.Id,
-
-                                    CheckoutVersion = checkoutDetails.CheckoutSession.Version,
-
-                                    SuccessIndicator = checkoutDetails.CheckoutSession.SuccessIndicator,
-
-                                    MPGSOrderID = checkoutDetails.OrderId,
-
-                                    TransactionID = checkoutDetails.TransactionID
-                                };
-
-                                //Update checkout details and return amount
-
-                                checkOutAmountResponse = await _orderAccess.GetCheckoutRequestDetails(checkoutUpdateModel);
-
                                 if (checkOutAmountResponse.ResponseCode == (int)DbReturnValue.RecordExists)
                                 {
-                                    checkoutDetails.Amount = ((Checkout)checkOutAmountResponse.Results).Amount;                                   
+                                    checkoutDetails.OrderId = ((Checkout)checkOutAmountResponse.Results).OrderId;
 
-                                    checkoutDetails.ReceiptNumber = ((Checkout)checkOutAmountResponse.Results).ReceiptNumber;
+                                    checkoutDetails = gatewayHelper.CreateCheckoutSession(gatewayConfig, billingAddress, checkoutDetails.OrderId, checkoutDetails.TransactionID, ((Checkout)checkOutAmountResponse.Results).ReceiptNumber);
 
-                                    string authorizeResponse = gatewayHelper.Authorize(gatewayConfig, checkoutDetails, paymentMethod);
-
-                                    if (authorizeResponse == MPGSAPIResponse.SUCCESS.ToString())
+                                    // Call MPGS to create a checkout session and retuen details
+                                    CheckOutRequestDBUpdateModel checkoutUpdateModel = new CheckOutRequestDBUpdateModel
                                     {
-                                        string captureResponse = gatewayHelper.Capture(gatewayConfig, new TokenSession { Amount = checkoutDetails.Amount, MPGSOrderID = checkoutDetails.OrderId, Token = paymentMethod.Token, SourceOfFundType = paymentMethod.SourceType });
+                                        Source = ((CheckOutType)orderType).ToString(),
 
-                                        if (captureResponse == MPGSAPIResponse.SUCCESS.ToString())
+                                        SourceID = orderId,
+
+                                        CheckOutSessionID = checkoutDetails.CheckoutSession.Id,
+
+                                        CheckoutVersion = checkoutDetails.CheckoutSession.Version,
+
+                                        SuccessIndicator = checkoutDetails.CheckoutSession.SuccessIndicator,
+
+                                        MPGSOrderID = checkoutDetails.OrderId,
+
+                                        TransactionID = checkoutDetails.TransactionID
+                                    };
+
+                                    //Update checkout details and return amount
+
+                                    checkOutAmountResponse = await _orderAccess.GetCheckoutRequestDetails(checkoutUpdateModel);
+
+                                    if (checkOutAmountResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                                    {
+                                        checkoutDetails.Amount = ((Checkout)checkOutAmountResponse.Results).Amount;
+
+                                        checkoutDetails.ReceiptNumber = ((Checkout)checkOutAmountResponse.Results).ReceiptNumber;
+
+                                        string authorizeResponse = gatewayHelper.Authorize(gatewayConfig, checkoutDetails, paymentMethod);
+
+                                        if (authorizeResponse == MPGSAPIResponse.SUCCESS.ToString())
                                         {
-                                            TransactionRetrieveResponseOperation transactionResponse = new TransactionRetrieveResponseOperation();
+                                            string captureResponse = gatewayHelper.Capture(gatewayConfig, new TokenSession { Amount = checkoutDetails.Amount, MPGSOrderID = checkoutDetails.OrderId, Token = paymentMethod.Token, SourceOfFundType = paymentMethod.SourceType });
 
-                                            CheckOutResponseUpdate updateRequest = new CheckOutResponseUpdate { MPGSOrderID = checkoutDetails.OrderId, Result = captureResponse };
-
-                                            transactionResponse = gatewayHelper.RetrieveCheckOutTransaction(gatewayConfig, updateRequest);
-
-                                            transactionResponse.TrasactionResponse.CardType = paymentMethod.CardType;
-
-                                            transactionResponse.TrasactionResponse.CardHolderName = paymentMethod.CardHolderName;
-
-                                            transactionResponse.TrasactionResponse.Token = paymentMethod.Token;
-
-                                            DatabaseResponse paymentProcessingRespose = new DatabaseResponse();
-
-                                            paymentProcessingRespose = await _orderAccess.UpdateCheckOutReceipt(transactionResponse.TrasactionResponse);
-
-                                            if (paymentProcessingRespose.ResponseCode == (int)DbReturnValue.TransactionSuccess)
+                                            if (captureResponse == MPGSAPIResponse.SUCCESS.ToString())
                                             {
-                                                LogInfo.Information(EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess));
+                                                TransactionRetrieveResponseOperation transactionResponse = new TransactionRetrieveResponseOperation();
 
-                                                //Get Order Type
-                                                var sourceTyeResponse = await _orderAccess.GetSourceTypeByMPGSSOrderId(updateRequest.MPGSOrderID);
+                                                CheckOutResponseUpdate updateRequest = new CheckOutResponseUpdate { MPGSOrderID = checkoutDetails.OrderId, Result = captureResponse };
 
-                                                if (((OrderSource)sourceTyeResponse.Results).SourceType == CheckOutType.Orders.ToString())
+                                                transactionResponse = gatewayHelper.RetrieveCheckOutTransaction(gatewayConfig, updateRequest);
+
+                                                transactionResponse.TrasactionResponse.CardType = paymentMethod.CardType;
+
+                                                transactionResponse.TrasactionResponse.CardHolderName = paymentMethod.CardHolderName;
+
+                                                transactionResponse.TrasactionResponse.Token = paymentMethod.Token;
+
+                                                DatabaseResponse paymentProcessingRespose = new DatabaseResponse();
+
+                                                paymentProcessingRespose = await _orderAccess.UpdateCheckOutReceipt(transactionResponse.TrasactionResponse);
+
+                                                if (paymentProcessingRespose.ResponseCode == (int)DbReturnValue.TransactionSuccess)
                                                 {
-                                                    await SendEmailNotification(updateRequest.MPGSOrderID, customerID, ((OrderSource)sourceTyeResponse.Results).SourceID);
-                                                }
+                                                    LogInfo.Information(EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess));
 
-                                                QMHelper qMHelper = new QMHelper(_iconfiguration, _messageQueueDataAccess);
+                                                    //Get Order Type
+                                                    var sourceTyeResponse = await _orderAccess.GetSourceTypeByMPGSSOrderId(updateRequest.MPGSOrderID);
 
-                                                if (await qMHelper.ProcessSuccessTransaction(updateRequest) == 1)
-                                                {
-                                                    PaymentSuccessResponse paymentResponse = new PaymentSuccessResponse {Source = ((CheckOutType)orderType).ToString(), MPGSOrderID = updateRequest.MPGSOrderID, Amount = checkoutDetails.Amount, Currency = gatewayConfig.Currency };
-
-                                                    return Ok(new OperationResponse
+                                                    if (((OrderSource)sourceTyeResponse.Results).SourceType == CheckOutType.Orders.ToString())
                                                     {
-                                                        HasSucceeded = true,
-                                                        Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " +EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
-                                                        IsDomainValidationErrors = false,
-                                                        ReturnedObject = paymentResponse  
-                                                    });
-                                                }
+                                                        await SendEmailNotification(updateRequest.MPGSOrderID, customerID, ((OrderSource)sourceTyeResponse.Results).SourceID);
+                                                    }
 
+                                                    QMHelper qMHelper = new QMHelper(_iconfiguration, _messageQueueDataAccess);
+
+                                                    if (await qMHelper.ProcessSuccessTransaction(updateRequest) == 1)
+                                                    {
+                                                        PaymentSuccessResponse paymentResponse = new PaymentSuccessResponse { Source = ((CheckOutType)orderType).ToString(), MPGSOrderID = updateRequest.MPGSOrderID, Amount = checkoutDetails.Amount, Currency = gatewayConfig.Currency };
+
+                                                        return Ok(new OperationResponse
+                                                        {
+                                                            HasSucceeded = true,
+                                                            Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
+                                                            IsDomainValidationErrors = false,
+                                                            ReturnedObject = paymentResponse
+                                                        });
+                                                    }
+
+                                                    else
+                                                    {
+                                                        // 0
+                                                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.SourceTypeNotFound));
+
+                                                        return Ok(new OperationResponse
+                                                        {
+                                                            HasSucceeded = false,
+                                                            Message = EnumExtensions.GetDescription(CommonErrors.SourceTypeNotFound),
+                                                            IsDomainValidationErrors = false
+                                                        });
+                                                    }
+
+                                                }
                                                 else
                                                 {
-                                                    // 0
-                                                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.SourceTypeNotFound));
-
+                                                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionFailed));
                                                     return Ok(new OperationResponse
                                                     {
                                                         HasSucceeded = false,
-                                                        Message = EnumExtensions.GetDescription(CommonErrors.SourceTypeNotFound),
+                                                        Message = EnumExtensions.GetDescription(DbReturnValue.TransactionFailed),
                                                         IsDomainValidationErrors = false
                                                     });
                                                 }
-
                                             }
                                             else
                                             {
-                                                LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionFailed));
                                                 return Ok(new OperationResponse
                                                 {
                                                     HasSucceeded = false,
-                                                    Message = EnumExtensions.GetDescription(DbReturnValue.TransactionFailed),
+                                                    Message = EnumExtensions.GetDescription(CommonErrors.CaptureFailed),
                                                     IsDomainValidationErrors = false
                                                 });
+
                                             }
                                         }
                                         else
                                         {
+                                            //authorize failed
+
                                             return Ok(new OperationResponse
                                             {
                                                 HasSucceeded = false,
-                                                Message = EnumExtensions.GetDescription(CommonErrors.CaptureFailed),
+                                                Message = EnumExtensions.GetDescription(CommonErrors.AuthorizeFailed),
                                                 IsDomainValidationErrors = false
                                             });
-
                                         }
+
                                     }
                                     else
                                     {
-                                        //authorize failed
-
+                                        LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.NoRecords));
                                         return Ok(new OperationResponse
                                         {
                                             HasSucceeded = false,
-                                            Message = EnumExtensions.GetDescription(CommonErrors.AuthorizeFailed),
+                                            Message = EnumExtensions.GetDescription(DbReturnValue.NoRecords),
                                             IsDomainValidationErrors = false
                                         });
                                     }
-
                                 }
                                 else
                                 {
@@ -4912,7 +5042,9 @@ namespace OrderService.Controllers
                                         Message = EnumExtensions.GetDescription(DbReturnValue.NoRecords),
                                         IsDomainValidationErrors = false
                                     });
+
                                 }
+                              
                             }
                             else
                             {

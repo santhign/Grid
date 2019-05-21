@@ -1562,7 +1562,8 @@ namespace OrderService.DataAccess
                                     select new Checkout()
                                     {
                                         Amount = model.Field<double>("Amount"),
-                                        ReceiptNumber= model.Field<string>("RecieptNumber")
+                                        ReceiptNumber= model.Field<string>("RecieptNumber"),
+                                        OrderId = model.Field<string>("MPGSOrderID"),
                                     }).FirstOrDefault();
 
                     }
@@ -2687,7 +2688,7 @@ namespace OrderService.DataAccess
 
                         var sourceTyeResponse = await GetSourceTypeByMPGSSOrderId(MPGSOrderID);
                         DatabaseResponse OrderCountResponse = await GetCustomerOrderCount(customerID);
-                        if (((((OrderSource)sourceTyeResponse.Results).SourceType == CheckOutType.Orders.ToString()) && (((OrderCount)OrderCountResponse.Results).SuccessfulOrders > 1)) || (((OrderSource)sourceTyeResponse.Results).SourceType != CheckOutType.Orders.ToString())) 
+                        if (((((OrderSource)sourceTyeResponse.Results).SourceType == CheckOutType.Orders.ToString()) && (((OrderCount)OrderCountResponse.Results).SuccessfulOrders >=1)) || (((OrderSource)sourceTyeResponse.Results).SourceType != CheckOutType.Orders.ToString())) 
                         {                            
                             msgBody = await _messageQueueDataAccess.GetProfileUpdateMessageBody(customerID);
                             pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
@@ -2800,7 +2801,7 @@ namespace OrderService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                int result = await _DataHelper.RunAsync();    // 100 / 105
+                int result = await _DataHelper.RunAsync();    // 101 / 105
 
                 DatabaseResponse response = new DatabaseResponse();
 
