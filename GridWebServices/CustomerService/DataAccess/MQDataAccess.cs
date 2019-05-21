@@ -175,6 +175,10 @@ namespace CustomerService.DataAccess
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
                 throw;
             }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
         }
     }
 }
