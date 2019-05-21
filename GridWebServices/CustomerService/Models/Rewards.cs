@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,7 +17,6 @@ namespace CustomerService.Models
         public int? totalReferralCount { get; set; }
         public DateTime? lastUpdatedOn { get; set; }
     }
-
     public class RewardDetails
     {
         public int? rowID { get; set; }
