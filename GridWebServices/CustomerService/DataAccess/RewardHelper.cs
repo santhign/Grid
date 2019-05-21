@@ -45,9 +45,9 @@ namespace CustomerService.DataAccess
             }
             return _resp;
         }
-        public RewardDetails GetRewardDetails(string RequestUrl, int AccountID, DateTime FromDate, DateTime ToDate)
+        public List<RewardDetails> GetRewardDetails(string RequestUrl, int AccountID, DateTime FromDate, DateTime ToDate)
         {
-            RewardDetails _resp = null;
+            List<RewardDetails> _resp = null;
             try
             {
                 ApiClient client = new ApiClient(new Uri(RequestUrl));
@@ -66,7 +66,7 @@ namespace CustomerService.DataAccess
                 {
                     html = reader.ReadToEnd();
                 }
-                _resp = JsonConvert.DeserializeObject<RewardDetails>(html);
+                _resp = JsonConvert.DeserializeObject<List<RewardDetails>>(html);
             }
             catch (Exception ex)
             {

@@ -542,9 +542,11 @@ namespace CustomerService.DataAccess
                                           SuspensionRaised = model.Field<int>("SuspensionRaised"),
                                           TerminationRaised = model.Field<int>("TerminationRaised"),
                                           PlanChangeRaised = model.Field<int>("PlanChangeRaised"),
+                                          PlanChangeAllowed = model.Field<int>("PlanChangeAllowed"),
                                           PlanChangeMessage = model.Field<string>("PlanChangeMessage"),
                                           SMSSubscription = model.Field<int>("SMSSubscription"),
-                                          VoiceSubscription = model.Field<int>("VoiceSubscription")
+                                          VoiceSubscription = model.Field<int>("VoiceSubscription"),
+                                          SIMReplacementRaised = model.Field<int>("SIMReplacementRaised")
                                       }).ToList();
                     }
 
@@ -876,7 +878,8 @@ namespace CustomerService.DataAccess
                             orderDetails.AlternateRecipientName = dr["AlternateRecipientName"].ToString();
                             orderDetails.AlternateRecipientEmail = dr["AlternateRecipientEmail"].ToString();
                             orderDetails.PortalSlotID = dr["PortalSlotID"].ToString();
-                            orderDetails.SlotDate = Convert.ToDateTime(dr["SlotDate"]);
+                            orderDetails.SlotDate = (dr["SlotDate"] == DBNull.Value) ? (DateTime?)null : ((DateTime)dr["SlotDate"]);
+                            //dr["SlotDate"] != null  Convert.ToDateTime(dr["SlotDate"]);
                             TimeSpan val;
                             TimeSpan.TryParse(dr["SlotFromTime"].ToString(), out val);
                             orderDetails.SlotFromTime = val;
@@ -1071,7 +1074,7 @@ namespace CustomerService.DataAccess
                     int.TryParse(dt.Rows[0][0].ToString().Trim(), out AccountID);
                     DatabaseResponse configResponse = ConfigHelper.GetValueByKey("RewardDetailsUrl", _configuration);
                     RewardHelper _helper = new RewardHelper();
-                    RewardDetails _rewards = _helper.GetRewardDetails(configResponse.Results.ToString().Trim(), AccountID, FromDate, ToDate);
+                    List<RewardDetails> _rewards = _helper.GetRewardDetails(configResponse.Results.ToString().Trim(), AccountID, FromDate, ToDate);
                     response = new DatabaseResponse { ResponseCode = 105, Results = _rewards };
                 }
                 else

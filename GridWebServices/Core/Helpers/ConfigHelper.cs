@@ -14,6 +14,7 @@ namespace Core.Helpers
     {
         public static DatabaseResponse GetValue(string serviceCode, IConfiguration _configuration)
         {
+            DataAccessHelper _DataHelper = null;
             try
             {
 
@@ -25,7 +26,7 @@ namespace Core.Helpers
 
                 parameters[0].Value = serviceCode;
 
-                DataAccessHelper _DataHelper = new DataAccessHelper("Admin_GetConfigurations", parameters, _configuration);
+                _DataHelper = new DataAccessHelper("Admin_GetConfigurations", parameters, _configuration);
 
                 DataTable dt = new DataTable();
 
@@ -60,13 +61,17 @@ namespace Core.Helpers
             {
                 throw (ex);
             }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
         }
 
         public static DatabaseResponse GetValueByKey(string serviceKey, IConfiguration _configuration)
         {
+            DataAccessHelper _DataHelper = null;
             try
             {
-
                 SqlParameter[] parameters =
                 {
                     new SqlParameter( "@ConfigKey",  SqlDbType.NVarChar )
@@ -75,7 +80,7 @@ namespace Core.Helpers
 
                 parameters[0].Value = serviceKey;
 
-                DataAccessHelper _DataHelper = new DataAccessHelper("Admin_GetConfigurationByKey", parameters, _configuration);
+                _DataHelper = new DataAccessHelper("Admin_GetConfigurationByKey", parameters, _configuration);
 
                 DataTable dt = new DataTable();
 
@@ -103,10 +108,15 @@ namespace Core.Helpers
             {
                 throw (ex);
             }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
         }
 
         public static  DatabaseResponse GetValueByKey(string serviceKey, string connectionString)
         {
+            DataAccessHelper _DataHelper = null;
             try
             {
 
@@ -118,7 +128,7 @@ namespace Core.Helpers
 
                 parameters[0].Value = serviceKey;
 
-                DataAccessHelper _DataHelper = new DataAccessHelper("Admin_GetConfigurationByKey", parameters, connectionString);
+                _DataHelper = new DataAccessHelper("Admin_GetConfigurationByKey", parameters, connectionString);
 
                 DataTable dt = new DataTable();
 
@@ -151,9 +161,9 @@ namespace Core.Helpers
 
         public static DatabaseResponse GetValue(string serviceCode, string connectionString)
         {
+            DataAccessHelper _DataHelper = null;
             try
             {
-
                 SqlParameter[] parameters =
                {
                     new SqlParameter( "@ConfigType",  SqlDbType.NVarChar )
@@ -162,7 +172,7 @@ namespace Core.Helpers
 
                 parameters[0].Value = serviceCode;
 
-                DataAccessHelper _DataHelper = new DataAccessHelper("Admin_GetConfigurations", parameters, connectionString);
+                _DataHelper = new DataAccessHelper("Admin_GetConfigurations", parameters, connectionString);
 
                 DataTable dt = new DataTable();
 
@@ -196,6 +206,10 @@ namespace Core.Helpers
             catch (Exception ex)
             {
                 throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
             }
         }
     }

@@ -26,6 +26,7 @@ namespace OrderService.DataAccess
         /// Constructor setting configuration
         /// </summary>
         /// <param name="configuration"></param>
+        /// <param name="messageQueueDataAccess"></param>
         public OrderDataAccess(IConfiguration configuration, IMessageQueueDataAccess messageQueueDataAccess)
         {
             _configuration = configuration;
@@ -2322,7 +2323,7 @@ namespace OrderService.DataAccess
                 SqlParameter[] parameters =
                {
                     new SqlParameter( "@OrderID",  SqlDbType.Int ),
-                    new SqlParameter( "@MobileNumber",  SqlDbType.Int )
+                    new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar )
                 };
 
                 parameters[0].Value = OrderID;
@@ -3266,7 +3267,6 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
-
         public async Task<DatabaseResponse> NumberIsPorted(int OrderID, string MobileNumber)
         {
             try
@@ -3291,17 +3291,17 @@ namespace OrderService.DataAccess
 
                 int isPorted = 0;
 
-                if(dt!=null && dt.Rows.Count>0)
+                if (dt != null && dt.Rows.Count > 0)
                 {
                     isPorted = int.Parse(dt.Rows[0].ItemArray[0].ToString());
 
-                    response = new DatabaseResponse { ResponseCode = result , Results=isPorted};
+                    response = new DatabaseResponse { ResponseCode = result, Results = isPorted };
                 }
                 else
                 {
                     response = new DatabaseResponse { ResponseCode = result };
                 }
-              
+
 
                 return response;
             }
@@ -3316,7 +3316,6 @@ namespace OrderService.DataAccess
             {
                 _DataHelper.Dispose();
             }
-        }       
-
+        }
     }
 }

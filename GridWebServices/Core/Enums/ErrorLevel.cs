@@ -146,7 +146,7 @@ namespace Core.Enums
         UnableToRetrievePasswordToken = 31,
 
         [EnumMember(Value = "TokenEmpty")]
-        [Description("Token header emapy")]
+        [Description("Token header empty")]
         TokenEmpty = 32,
 
         [EnumMember(Value = "Token Not Exists")]
@@ -318,11 +318,12 @@ namespace Core.Enums
         InvalidStatus = 73,
 
         [EnumMember(Value = "FailedToRemoveRescheduleLoa")]
-        [Description("Failed To Remove Reschedule Loa")]
+        [Description("Failed To Remove Reschedule LOA")]
         FailedToRemoveRescheduleLoa = 74,
 
         [EnumMember(Value = "OldNumberNotExists")]
-        [Description("Old Number not exists")]
+        [Description("Old number does not exists")]
         OldNumberNotExists = 75,
+        
     }
 }

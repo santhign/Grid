@@ -183,39 +183,51 @@ namespace OrderService.DataAccess
 
         public async Task<MessageDetailsForCROrOrder> GetMessageDetails(string MPGSOrderID)
         {
-            DataTable dt = new DataTable();
-
-            SqlParameter[] parameters =
+            try
             {
+                DataTable dt = new DataTable();
+
+                SqlParameter[] parameters =
+                {
                     new SqlParameter( "@MPGSOrderID",  SqlDbType.NVarChar )
             };
 
-            parameters[0].Value = MPGSOrderID;
+                parameters[0].Value = MPGSOrderID;
 
-            _DataHelper = new DataAccessHelper(DbObjectNames.Orders_GetCROrOrderDetailsForMessageQueue, parameters, _configuration);
+                _DataHelper = new DataAccessHelper(DbObjectNames.Orders_GetCROrOrderDetailsForMessageQueue, parameters, _configuration);
 
 
-            var result = await _DataHelper.RunAsync(dt);
+                var result = await _DataHelper.RunAsync(dt);
 
-            //if (result != (int)Core.Enums.DbReturnValue.CreateSuccess)
-            //    return new DatabaseResponse { ResponseCode = result };
+                //if (result != (int)Core.Enums.DbReturnValue.CreateSuccess)
+                //    return new DatabaseResponse { ResponseCode = result };
 
-            var msgDetails = new MessageDetailsForCROrOrder();
+                var msgDetails = new MessageDetailsForCROrOrder();
 
-            if (dt.Rows.Count > 0)
-            {
-                msgDetails = (from model in dt.AsEnumerable()
-                              select new MessageDetailsForCROrOrder()
-                              {
-                                  ChangeRequestID = model.Field<int>("ChangeRequestID"),
-                                  RequestTypeID = model.Field<int>("RequestTypeID")
+                if (dt.Rows.Count > 0)
+                {
+                    msgDetails = (from model in dt.AsEnumerable()
+                                  select new MessageDetailsForCROrOrder()
+                                  {
+                                      ChangeRequestID = model.Field<int>("ChangeRequestID"),
+                                      RequestTypeID = model.Field<int>("RequestTypeID")
 
-                              }).FirstOrDefault();
+                                  }).FirstOrDefault();
+                }
+
+
+                return msgDetails;
             }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
-
-            return msgDetails;
-
+                throw;
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
         }
 
         public async Task<string> PublishMessageToMessageQueue(string topicName, object msgBody, Dictionary<string, string> messageAttribute, string subject)
@@ -252,8 +264,9 @@ namespace OrderService.DataAccess
 
         public async Task<int> InsertMessageInMessageQueueRequest(MessageQueueRequest messageQueueRequest)
         {
-
-            SqlParameter[] parameters =
+            try
+            {
+                SqlParameter[] parameters =
             {
                     new SqlParameter( "@Source",  SqlDbType.NVarChar ),
                     new SqlParameter( "@SNSTopic",  SqlDbType.NVarChar ),
@@ -266,21 +279,32 @@ namespace OrderService.DataAccess
                     new SqlParameter( "@LastTriedOn",  SqlDbType.DateTime)
             };
 
-            parameters[0].Value = messageQueueRequest.Source;
-            parameters[1].Value = messageQueueRequest.SNSTopic;
-            parameters[2].Value = messageQueueRequest.MessageAttribute;
-            parameters[3].Value = messageQueueRequest.MessageBody;
-            parameters[4].Value = messageQueueRequest.Status;
-            parameters[5].Value = messageQueueRequest.PublishedOn;
-            parameters[6].Value = messageQueueRequest.CreatedOn;
-            parameters[7].Value = messageQueueRequest.NumberOfRetries;
-            parameters[8].Value = messageQueueRequest.LastTriedOn;
+                parameters[0].Value = messageQueueRequest.Source;
+                parameters[1].Value = messageQueueRequest.SNSTopic;
+                parameters[2].Value = messageQueueRequest.MessageAttribute;
+                parameters[3].Value = messageQueueRequest.MessageBody;
+                parameters[4].Value = messageQueueRequest.Status;
+                parameters[5].Value = messageQueueRequest.PublishedOn;
+                parameters[6].Value = messageQueueRequest.CreatedOn;
+                parameters[7].Value = messageQueueRequest.NumberOfRetries;
+                parameters[8].Value = messageQueueRequest.LastTriedOn;
 
 
-            _DataHelper = new DataAccessHelper(DbObjectNames.z_InsertIntoMessageQueueRequests, parameters, _configuration);
+                _DataHelper = new DataAccessHelper(DbObjectNames.z_InsertIntoMessageQueueRequests, parameters, _configuration);
 
 
-            return await _DataHelper.RunAsync();
+                return await _DataHelper.RunAsync();
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw;
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
         }
 
         public async Task<DatabaseResponse> GetOrderMessageQueueBody(int orderId)
@@ -477,8 +501,10 @@ namespace OrderService.DataAccess
 
         public async Task InsertMessageInMessageQueueRequestException(MessageQueueRequestException messageQueueRequestException)
         {
-            SqlParameter[] parameters =
+            try
             {
+                SqlParameter[] parameters =
+                {
                     new SqlParameter( "@Source",  SqlDbType.NVarChar ),
                     new SqlParameter( "@SNSTopic",  SqlDbType.NVarChar ),
                     new SqlParameter( "@MessageAttribute",  SqlDbType.NVarChar ),
@@ -493,23 +519,34 @@ namespace OrderService.DataAccess
 
             };
 
-            parameters[0].Value = messageQueueRequestException.Source;
-            parameters[1].Value = messageQueueRequestException.SNSTopic;
-            parameters[2].Value = messageQueueRequestException.MessageAttribute;
-            parameters[3].Value = messageQueueRequestException.MessageBody;
-            parameters[4].Value = messageQueueRequestException.Status;
-            parameters[5].Value = messageQueueRequestException.PublishedOn;
-            parameters[6].Value = messageQueueRequestException.CreatedOn;
-            parameters[7].Value = messageQueueRequestException.NumberOfRetries;
-            parameters[8].Value = messageQueueRequestException.LastTriedOn;
-            parameters[9].Value = messageQueueRequestException.Remark;
-            parameters[10].Value = messageQueueRequestException.Exception;
+                parameters[0].Value = messageQueueRequestException.Source;
+                parameters[1].Value = messageQueueRequestException.SNSTopic;
+                parameters[2].Value = messageQueueRequestException.MessageAttribute;
+                parameters[3].Value = messageQueueRequestException.MessageBody;
+                parameters[4].Value = messageQueueRequestException.Status;
+                parameters[5].Value = messageQueueRequestException.PublishedOn;
+                parameters[6].Value = messageQueueRequestException.CreatedOn;
+                parameters[7].Value = messageQueueRequestException.NumberOfRetries;
+                parameters[8].Value = messageQueueRequestException.LastTriedOn;
+                parameters[9].Value = messageQueueRequestException.Remark;
+                parameters[10].Value = messageQueueRequestException.Exception;
 
 
-            _DataHelper = new DataAccessHelper(DbObjectNames.z_UpdateStatusInMessageQueueRequestsException, parameters, _configuration);
+                _DataHelper = new DataAccessHelper(DbObjectNames.z_UpdateStatusInMessageQueueRequestsException, parameters, _configuration);
 
 
-            await _DataHelper.RunAsync();
+                await _DataHelper.RunAsync();
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw;
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
         }
 
         /// <summary>

@@ -184,6 +184,10 @@ namespace Core.Enums
         [EnumMember(Value = "ExistingCard")]
         [Description("Payed With Existing Card")]
         ExistingCard = 145,
+        
+        [EnumMember(Value = "Mobile number mismatch")]
+        [Description("Mobile number does not exist in specified order")]
+        MobileNumberMismatch = 146,
     }
 }
 
