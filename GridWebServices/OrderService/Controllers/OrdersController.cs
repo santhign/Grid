@@ -1003,116 +1003,130 @@ namespace OrderService.Controllers
 
                         if (customerResponse.ResponseCode == (int)DbReturnValue.RecordExists && customerID == ((OrderCustomer)customerResponse.Results).CustomerId)
                         {
-                            if (portResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                            if (portResponse.Results != null && portResponse.Results.ToString().Trim() == "0")
                             {
-                                if (portResponse.Results.ToString().Trim() == "0")
+                                customer = (OrderCustomer)customerResponse.Results;
+
+                                DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
+
+                                GridBSSConfi config = bsshelper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
+
+                                DatabaseResponse requestIdToUpdateUnblock = await _orderAccess.GetBssApiRequestIdAndSubscriberSession(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customer.CustomerId, request.OldMobileNumber);
+
+                                // Unblock
+
+                                BSSUpdateResponseObject bssUnblockUpdateResponse = new BSSUpdateResponseObject();
+
+                                try
                                 {
-                                    customer = (OrderCustomer)customerResponse.Results;
+                                    bssUnblockUpdateResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateUnblock.Results, request.OldMobileNumber, true);
+                                }
+                                catch (Exception ex)
+                                {
+                                    LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + " " + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
 
-                                    //update subscription porting
-                                    DatabaseResponse updateSubscriberResponse = await _orderAccess.UpdateSubscriberPortingNumber(portingRequest);
-
-                                    if (updateSubscriberResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
+                                    return Ok(new OperationResponse
                                     {
-                                        // Get Order Basic Details
+                                        HasSucceeded = false,
+                                        Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed),
+                                        IsDomainValidationErrors = false
+                                    });
 
-                                        DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails(request.OrderID);
+                                }
 
-                                        if (orderDetailsResponse.ResponseCode == (int)DbReturnValue.RecordExists)
-                                        {
-                                            return Ok(new OperationResponse
-                                            {
-                                                HasSucceeded = true,
-                                                Message = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess),
-                                                IsDomainValidationErrors = false,
-                                                ReturnedObject = orderDetailsResponse.Results
-                                            });
-                                        }
+                                //update subscription porting
+                                DatabaseResponse updateSubscriberResponse = await _orderAccess.UpdateSubscriberPortingNumber(portingRequest);
 
-                                        else
-                                        {
-                                            //subscription porting updated, but details not returned
-                                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToLocateUpdatedSubscription));
-                                            return Ok(new OperationResponse
-                                            {
-                                                HasSucceeded = true,
-                                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
-                                                IsDomainValidationErrors = false,
-                                            });
-                                        }
+                                if (updateSubscriberResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
+                                {
+                                    // Get Order Basic Details
 
-                                    }
-                                    else
+                                    DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails(request.OrderID);
+
+                                    if (orderDetailsResponse.ResponseCode == (int)DbReturnValue.RecordExists)
                                     {
-                                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateSubscriptionFailed));
                                         return Ok(new OperationResponse
                                         {
-                                            HasSucceeded = false,
-                                            Message = EnumExtensions.GetDescription(DbReturnValue.UpdationFailed),
-                                            IsDomainValidationErrors = false
+                                            HasSucceeded = true,
+                                            Message = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess),
+                                            IsDomainValidationErrors = false,
+                                            ReturnedObject = orderDetailsResponse.Results
+                                        });
+                                    }
+
+                                    else
+                                    {
+                                        //subscription porting updated, but details not returned
+                                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToLocateUpdatedSubscription));
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = true,
+                                            Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
+                                            IsDomainValidationErrors = false,
                                         });
                                     }
 
                                 }
                                 else
                                 {
-                                    //update subscription porting
-                                    DatabaseResponse updateSubscriberResponse = await _orderAccess.UpdateSubscriberPortingNumber(portingRequest);
-
-                                    if (updateSubscriberResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
+                                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateSubscriptionFailed));
+                                    return Ok(new OperationResponse
                                     {
-                                        // Get Order Basic Details
-
-                                        DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails(request.OrderID);
-
-                                        if (orderDetailsResponse.ResponseCode == (int)DbReturnValue.RecordExists)
-                                        {
-                                            return Ok(new OperationResponse
-                                            {
-                                                HasSucceeded = true,
-                                                Message = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess),
-                                                IsDomainValidationErrors = false,
-                                                ReturnedObject = orderDetailsResponse.Results
-                                            });
-                                        }
-
-                                        else
-                                        {
-                                            //subscription porting updated, but details not returned
-                                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToLocateUpdatedSubscription));
-                                            return Ok(new OperationResponse
-                                            {
-                                                HasSucceeded = true,
-                                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
-                                                IsDomainValidationErrors = false,
-                                            });
-                                        }
-
-                                    }
-                                    else
-                                    {
-                                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateSubscriptionFailed));
-                                        return Ok(new OperationResponse
-                                        {
-                                            HasSucceeded = false,
-                                            Message = EnumExtensions.GetDescription(DbReturnValue.UpdationFailed),
-                                            IsDomainValidationErrors = false
-                                        });
-                                    }
+                                        HasSucceeded = false,
+                                        Message = EnumExtensions.GetDescription(DbReturnValue.UpdationFailed),
+                                        IsDomainValidationErrors = false
+                                    });
                                 }
+
                             }
                             else
                             {
-                                // failed to locate mobile number
-                                LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.MobileNumberMismatch));
-                                return Ok(new OperationResponse
+                                //update subscription porting
+                                DatabaseResponse updateSubscriberResponse = await _orderAccess.UpdateSubscriberPortingNumber(portingRequest);
+
+                                if (updateSubscriberResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
                                 {
-                                    HasSucceeded = false,
-                                    Message = EnumExtensions.GetDescription(DbReturnValue.MobileNumberMismatch),
-                                    IsDomainValidationErrors = false
-                                });
+                                    // Get Order Basic Details
+
+                                    DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails(request.OrderID);
+
+                                    if (orderDetailsResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                                    {
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = true,
+                                            Message = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess),
+                                            IsDomainValidationErrors = false,
+                                            ReturnedObject = orderDetailsResponse.Results
+                                        });
+                                    }
+
+                                    else
+                                    {
+                                        //subscription porting updated, but details not returned
+                                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToLocateUpdatedSubscription));
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = true,
+                                            Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
+                                            IsDomainValidationErrors = false,
+                                        });
+                                    }
+
+                                }
+                                else
+                                {
+                                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateSubscriptionFailed));
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = false,
+                                        Message = EnumExtensions.GetDescription(DbReturnValue.UpdationFailed),
+                                        IsDomainValidationErrors = false
+                                    });
+                                }
                             }
                         }
+
                         else
                         {
                             // failed to locate customer
