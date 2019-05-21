@@ -155,7 +155,7 @@ namespace Core.Helpers
                     _warningmsg = StatusMessages.InvalidMessage;
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 isvalid = false;
             }

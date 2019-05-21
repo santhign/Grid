@@ -26,6 +26,7 @@ namespace OrderService.DataAccess
         /// Constructor setting configuration
         /// </summary>
         /// <param name="configuration"></param>
+        /// <param name="messageQueueDataAccess"></param>
         public OrderDataAccess(IConfiguration configuration, IMessageQueueDataAccess messageQueueDataAccess)
         {
             _configuration = configuration;
@@ -3265,7 +3266,55 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+        public async Task<DatabaseResponse> NumberIsPorted(int OrderID, string MobileNumber)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                 {
+                     new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar ),
+                     new SqlParameter( "@OrderID",  SqlDbType.Int )
+
+                };
+
+                parameters[0].Value = MobileNumber;
+                parameters[1].Value = OrderID;
+
+                _DataHelper = new DataAccessHelper("Orders_IsPortedNumber", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt); // 105 /102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                int isPorted = 0;
+
+                if (dt != null && dt.Rows.Count > 0)
+                {
+                    isPorted = int.Parse(dt.Rows[0].ItemArray[0].ToString());
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = isPorted };
+                }
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
 
 
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
     }
 }
