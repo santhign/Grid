@@ -93,7 +93,7 @@ namespace CustomerService.Controllers
                     //Invalid email
                     _response.IsValid = false;
 
-                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.InvalidEmail));
+                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.InvalidEmail));
 
                     return Ok(new ServerResponse
                     {
@@ -151,7 +151,7 @@ namespace CustomerService.Controllers
                     {
                         if (postcode.Length == 0)
                         {
-                            LogInfo.Error(StatusMessages.MissingRequiredFields);
+                            LogInfo.Warning(StatusMessages.MissingRequiredFields);
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = false,
@@ -237,7 +237,7 @@ namespace CustomerService.Controllers
                 }
                 else
                 {
-                    LogInfo.Error("NRIC Validation without type: " + _warningmsg);
+                    LogInfo.Warning("NRIC Validation without type: " + _warningmsg);
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
@@ -286,7 +286,7 @@ namespace CustomerService.Controllers
                 }
                 else
                 {
-                    LogInfo.Error("NRIC Validation: " + IDType + "_" + _warningmsg);
+                    LogInfo.Warning("NRIC Validation: " + IDType + "_" + _warningmsg);
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = false,

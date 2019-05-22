@@ -157,6 +157,11 @@ namespace Core.Helpers
             {
                 throw (ex);
             }
+
+            finally
+            {
+                _DataHelper.Dispose();
+            }
         }
 
         public static DatabaseResponse GetValue(string serviceCode, string connectionString)

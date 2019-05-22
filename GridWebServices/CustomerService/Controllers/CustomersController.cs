@@ -701,7 +701,7 @@ namespace CustomerService.Controllers
                         else
                         {
                             //Unable to validate the referral code
-                            LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.NoRecords));
+                            LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.NoRecords));
 
                             return Ok(new OperationResponse
                             {
@@ -814,7 +814,7 @@ namespace CustomerService.Controllers
                         else
                         {
                             //Unable to validate the referral code
-                            LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
+                            LogInfo.Warning(DbReturnValue.NoRecords.GetDescription());
 
                             return Ok(new OperationResponse
                             {
@@ -1205,7 +1205,7 @@ namespace CustomerService.Controllers
                         else
                         {
                             //Unable to validate the referral code
-                            LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.NoRecords));
+                            LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.NoRecords));
 
                             return Ok(new OperationResponse
                             {
@@ -2018,7 +2018,7 @@ namespace CustomerService.Controllers
                         }
                         else
                         {
-                            LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
+                            LogInfo.Warning(DbReturnValue.NoRecords.GetDescription());
 
                             return Ok(new OperationResponse
                             {
@@ -2306,7 +2306,7 @@ namespace CustomerService.Controllers
                         }
                         else
                         {
-                            LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
+                            LogInfo.Warning(DbReturnValue.NoRecords.GetDescription());
 
                             return Ok(new OperationResponse
                             {
@@ -2419,7 +2419,7 @@ namespace CustomerService.Controllers
                         }
                         else
                         {
-                            LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
+                            LogInfo.Warning(DbReturnValue.NoRecords.GetDescription());
 
                             return Ok(new OperationResponse
                             {
@@ -2530,7 +2530,7 @@ namespace CustomerService.Controllers
                         }
                         else
                         {
-                            LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
+                            LogInfo.Warning(DbReturnValue.NoRecords.GetDescription());
 
                             return Ok(new OperationResponse
                             {
