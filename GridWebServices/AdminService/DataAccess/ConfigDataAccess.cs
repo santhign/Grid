@@ -83,10 +83,12 @@ namespace AdminService.DataAccess
                 SqlParameter[] parameters =
                 {
                     new SqlParameter( "@ConfigKey",  SqlDbType.VarChar ),
+
                     new SqlParameter( "@Token",  SqlDbType.VarChar )
                 };
 
                 parameters[0].Value = ConfigKey;
+
                 parameters[1].Value = Token;
 
                 _DataHelper = new DataAccessHelper("Admin_GetConfigValue", parameters, _configuration);
