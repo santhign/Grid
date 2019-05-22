@@ -965,7 +965,7 @@ namespace AdminService.Controllers
                         else
                         {
                             //Unable to validate the referral code
-                            LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
+                            LogInfo.Warning(DbReturnValue.NoRecords.GetDescription());
 
                             return Ok(new OperationResponse
                             {

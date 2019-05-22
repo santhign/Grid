@@ -38,6 +38,7 @@ namespace Core.DataAccess
                 };
 
                 parameters[0].Value = CustomerID;
+
                 _DataHelper = new DataAccessHelper("Customers_GetBillingDetails", parameters, _configuration);
 
                 var dt = new DataTable();

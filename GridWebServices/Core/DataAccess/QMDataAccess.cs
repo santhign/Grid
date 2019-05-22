@@ -10,6 +10,7 @@ using Core.Enums;
 using Core.Models;
 using Core.Extensions;
 using Newtonsoft.Json;
+using Serilog;
 
 namespace Core.DataAccess
 {
@@ -242,7 +243,7 @@ namespace Core.DataAccess
 
             catch (Exception ex)
             {
-               // LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+               Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 throw (ex);
             }

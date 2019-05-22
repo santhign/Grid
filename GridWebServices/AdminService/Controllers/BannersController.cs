@@ -9,8 +9,6 @@ using Core.Enums;
 using Core.Helpers;
 using InfrastructureService;
 
-
-
 namespace CatelogService.Controllers
 { 
    

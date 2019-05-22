@@ -10,6 +10,7 @@ using Core.Models;
 using Core.Extensions;
 using System.Linq;
 using Core.Enums;
+using Serilog;
 
 namespace Core.DataAccess
 {
@@ -85,7 +86,8 @@ namespace Core.DataAccess
             }
 
             catch (Exception ex)
-            {  
+            {
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
                 throw (ex);
             }
             finally
@@ -147,6 +149,8 @@ namespace Core.DataAccess
 
             catch (Exception ex)
             {
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
                 throw (ex);
             }
             finally
@@ -211,6 +215,8 @@ namespace Core.DataAccess
 
             catch (Exception ex)
             {
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
                 throw (ex);
             }
             finally
@@ -258,6 +264,8 @@ namespace Core.DataAccess
 
             catch (Exception ex)
             {
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
                 throw (ex);
             }
             finally
@@ -318,6 +326,8 @@ namespace Core.DataAccess
 
             catch (Exception ex)
             {
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
                 throw (ex);
             }
             finally
@@ -379,6 +389,8 @@ namespace Core.DataAccess
 
             catch (Exception ex)
             {
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
                 throw (ex);
             }
             finally

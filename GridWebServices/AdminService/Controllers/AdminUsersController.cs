@@ -51,7 +51,7 @@ namespace AdminService.Controllers
 
                 if ((string.IsNullOrEmpty(userdetails.Email)) || (string.IsNullOrEmpty(userdetails.Password)))
                 {
-                    LogInfo.Error(StatusMessages.MissingRequiredFields);
+                    LogInfo.Warning(StatusMessages.MissingRequiredFields);
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
@@ -626,7 +626,7 @@ namespace AdminService.Controllers
                         int _AdminUserID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
                         if (!ModelState.IsValid)
                         {
-                            LogInfo.Error(StatusMessages.DomainValidationError);
+                            LogInfo.Warning(StatusMessages.DomainValidationError);
                             new OperationResponse
                             {
                                 HasSucceeded = false,

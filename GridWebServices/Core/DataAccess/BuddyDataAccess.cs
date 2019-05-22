@@ -10,6 +10,7 @@ using Core.Models;
 using Core.Extensions;
 using System.Linq;
 using Core.Enums;
+using Serilog;
 
 namespace Core.DataAccess
 {
@@ -58,6 +59,7 @@ namespace Core.DataAccess
 
             catch (Exception ex)
             {
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
                 throw (ex);
             }
             finally
@@ -91,6 +93,8 @@ namespace Core.DataAccess
 
             catch (Exception ex)
             {
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
                 throw (ex);
             }
             finally
@@ -147,6 +151,8 @@ namespace Core.DataAccess
 
             catch (Exception ex)
             {
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
                 throw (ex);
             }
             finally
@@ -184,7 +190,7 @@ namespace Core.DataAccess
             }
             catch (Exception ex)
             {
-                // LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 throw (ex);
             }
@@ -218,7 +224,7 @@ namespace Core.DataAccess
 
             catch (Exception ex)
             {
-                // LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 throw (ex);
             }
@@ -281,7 +287,7 @@ namespace Core.DataAccess
 
             catch (Exception ex)
             {
-                // LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 throw (ex);
             }
@@ -337,7 +343,7 @@ namespace Core.DataAccess
 
             catch (Exception ex)
             {
-                //  LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 throw (ex);
             }
@@ -403,7 +409,7 @@ namespace Core.DataAccess
 
             catch (Exception ex)
             {
-                // LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 throw (ex);
             }
@@ -415,9 +421,13 @@ namespace Core.DataAccess
 
         public async Task<int> InsertMessageInMessageQueueRequest(MessageQueueRequest messageQueueRequest, string connectionString)
         {
-
-            SqlParameter[] parameters =
+            try
             {
+
+
+
+                SqlParameter[] parameters =
+                {
                     new SqlParameter( "@Source",  SqlDbType.NVarChar ),
                     new SqlParameter( "@SNSTopic",  SqlDbType.NVarChar ),
                     new SqlParameter( "@MessageAttribute",  SqlDbType.NVarChar ),
@@ -429,21 +439,33 @@ namespace Core.DataAccess
                     new SqlParameter( "@LastTriedOn",  SqlDbType.DateTime)
             };
 
-            parameters[0].Value = messageQueueRequest.Source;
-            parameters[1].Value = messageQueueRequest.SNSTopic;
-            parameters[2].Value = messageQueueRequest.MessageAttribute;
-            parameters[3].Value = messageQueueRequest.MessageBody;
-            parameters[4].Value = messageQueueRequest.Status;
-            parameters[5].Value = messageQueueRequest.PublishedOn;
-            parameters[6].Value = messageQueueRequest.CreatedOn;
-            parameters[7].Value = messageQueueRequest.NumberOfRetries;
-            parameters[8].Value = messageQueueRequest.LastTriedOn;
+                parameters[0].Value = messageQueueRequest.Source;
+                parameters[1].Value = messageQueueRequest.SNSTopic;
+                parameters[2].Value = messageQueueRequest.MessageAttribute;
+                parameters[3].Value = messageQueueRequest.MessageBody;
+                parameters[4].Value = messageQueueRequest.Status;
+                parameters[5].Value = messageQueueRequest.PublishedOn;
+                parameters[6].Value = messageQueueRequest.CreatedOn;
+                parameters[7].Value = messageQueueRequest.NumberOfRetries;
+                parameters[8].Value = messageQueueRequest.LastTriedOn;
 
 
-            _DataHelper = new DataAccessHelper(DbObjectNames.z_InsertIntoMessageQueueRequests, parameters, connectionString);
+                _DataHelper = new DataAccessHelper(DbObjectNames.z_InsertIntoMessageQueueRequests, parameters, connectionString);
 
 
-            return await _DataHelper.RunAsync();
+                return await _DataHelper.RunAsync();
+            }           
+
+            catch (Exception ex)
+            {
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
         }
     }
 
