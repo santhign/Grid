@@ -3044,7 +3044,7 @@ namespace OrderService.DataAccess
                 parameters[12].Value = detailsrequest.AlternateRecioientIDNumber;
                 parameters[13].Value = detailsrequest.AlternateRecioientIDType;
                 parameters[14].Value = detailsrequest.PortalSlotID;
-                parameters[15].Value = detailsrequest.ScheduledDate;
+                parameters[15].Value = DBNull.Value;
                 parameters[16].Value = detailsrequest.OrderType;
 
 
