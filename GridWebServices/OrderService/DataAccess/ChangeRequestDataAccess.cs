@@ -14,16 +14,26 @@ using Core.Extensions;
 
 namespace OrderService.DataAccess
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="OrderService.DataAccess.IChangeRequestDataAccess" />
     public class ChangeRequestDataAccess : IChangeRequestDataAccess
     {
+        /// <summary>
+        /// The data helper
+        /// </summary>
         internal DataAccessHelper _DataHelper = null;
 
+        /// <summary>
+        /// The configuration
+        /// </summary>
         private IConfiguration _configuration;
 
         /// <summary>
         /// Constructor setting configuration
         /// </summary>
-        /// <param name="configuration"></param>
+        /// <param name="configuration">The configuration.</param>
         public ChangeRequestDataAccess(IConfiguration configuration)
         {
             _configuration = configuration;
@@ -32,9 +42,9 @@ namespace OrderService.DataAccess
         /// <summary>
         /// Remove VAS Data Access method
         /// </summary>
-        /// <param name="customerId"></param>
-        /// <param name="mobileNumber"></param>
-        /// <param name="subscriptionID"></param>
+        /// <param name="customerId">The customer identifier.</param>
+        /// <param name="mobileNumber">The mobile number.</param>
+        /// <param name="subscriptionID">The subscription identifier.</param>
         /// <returns></returns>
         public async Task<DatabaseResponse> RemoveVasService(int customerId, string mobileNumber, int subscriptionID)
         {
@@ -392,6 +402,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Updates the cr shipping details.
+        /// </summary>
+        /// <param name="shippingDetails">The shipping details.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> UpdateCRShippingDetails(UpdateCRShippingDetailsRequest shippingDetails)
         {
             try
@@ -507,10 +522,10 @@ namespace OrderService.DataAccess
         }
 
         /// <summary>
-        /// Remove Shared VAS Service 
+        /// Remove Shared VAS Service
         /// </summary>
-        /// <param name="customerId"></param>
-        /// <param name="accountSubscriptionId"></param>
+        /// <param name="customerId">The customer identifier.</param>
+        /// <param name="accountSubscriptionId">The account subscription identifier.</param>
         /// <returns></returns>
         public async Task<DatabaseResponse> RemoveSharedVasService(int customerId, int accountSubscriptionId)
         {
@@ -573,6 +588,13 @@ namespace OrderService.DataAccess
 
         }
 
+        /// <summary>
+        /// Changes the plan service.
+        /// </summary>
+        /// <param name="customerId">The customer identifier.</param>
+        /// <param name="mobileNumber">The mobile number.</param>
+        /// <param name="bundleId">The bundle identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> ChangePlanService(int customerId, string mobileNumber, int bundleId)
         {
             try
@@ -659,6 +681,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Verifies the request delivery details.
+        /// </summary>
+        /// <param name="ChangeRequestID">The change request identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> VerifyRequestDeliveryDetails(int ChangeRequestID)
         {
             try
@@ -690,6 +717,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the termination date.
+        /// </summary>
+        /// <param name="CustomerID">The customer identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetTerminationDate(int CustomerID)
         {
             try
@@ -722,6 +754,12 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the buddy details.
+        /// </summary>
+        /// <param name="customerID">The customer identifier.</param>
+        /// <param name="mobileNumber">The mobile number.</param>
+        /// <returns></returns>
         public async Task<BuddyResponse> GetBuddyDetails(int customerID, string mobileNumber)
         {
             try
@@ -762,6 +800,110 @@ namespace OrderService.DataAccess
                     buddy = null;
                 }
                 return buddy;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// Gets the cr details with delivery information.
+        /// </summary>
+        /// <param name="customerID">The customer identifier.</param>
+        /// <param name="changeRequestID">The change request identifier.</param>
+        /// <returns></returns>
+        public async Task<DatabaseResponse> GetCRDetailsWithDeliveryInfo(int customerID, int changeRequestID)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                 {
+                     new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+                     new SqlParameter( "@ChangeRequestID",  SqlDbType.Int )
+
+                };
+
+                parameters[0].Value = customerID;
+                parameters[1].Value = changeRequestID;
+
+                _DataHelper = new DataAccessHelper(DbObjectNames.Orders_CR_GetCRDetails, parameters, _configuration);
+
+                DataSet ds = new DataSet();
+
+                int result = await _DataHelper.RunAsync(ds); // 105 /102
+
+                if (result != (int)Core.Enums.DbReturnValue.RecordExists)
+                    return new DatabaseResponse { ResponseCode = result };
+
+                var TorSresponse = new ChangeSimResponse();
+
+                if (ds.Tables.Count > 0)
+                {
+                    TorSresponse = (from model in ds.Tables[0].AsEnumerable()
+                                    select new ChangeSimResponse()
+                                    {
+                                        ChangeRequestId = model.Field<int>("ChangeRequestID"),
+                                        OrderNumber = model.Field<string>("OrderNumber"),
+                                        RequestOn = model.Field<DateTime>("RequestOn"),
+                                        RequestTypeDescription = model.Field<string>("RequestTypeDescription"),
+                                        BillingUnit = model.Field<string>("BillingUnit"),
+                                        BillingFloor = model.Field<string>("BillingFloor"),
+                                        BillingBuildingName = model.Field<string>("BillingBuildingName"),
+                                        BillingBuildingNumber = model.Field<string>("BillingBuildingNumber"),
+                                        BillingStreetName = model.Field<string>("BillingStreetName"),
+                                        BillingPostCode = model.Field<string>("BillingPostCode"),
+                                        BillingContactNumber = model.Field<string>("BillingContactNumber"),
+                                        Name = model.Field<string>("Name"),
+                                        Email = model.Field<string>("Email"),
+                                        IdentityCardNumber = model.Field<string>("IdentityCardNumber"),
+                                        IdentityCardType = model.Field<string>("IdentityCardType"),
+                                        IsSameAsBilling = model.Field<int>("IsSameAsBilling"),
+                                        ShippingUnit = model.Field<string>("ShippingUnit"),
+                                        ShippingFloor = model.Field<string>("ShippingFloor"),
+                                        ShippingBuildingNumber = model.Field<string>("ShippingBuildingNumber"),
+                                        ShippingStreetName = model.Field<string>("ShippingStreetName"),
+                                        ShippingPostCode = model.Field<string>("ShippingPostCode"),
+                                        ShippingContactNumber = model.Field<string>("ShippingContactNumber"),
+                                        AlternateRecipientName = model.Field<string>("AlternateRecipientName"),
+                                        AlternateRecipientEmail = model.Field<string>("AlternateRecipientEmail"),
+                                        AlternateRecipientContact = model.Field<string>("AlternateRecipientContact"),
+                                        AlternateRecipientIDNumber = model.Field<string>("AlternateRecipientIDNumber"),
+                                        AlternateRecipientIDType = model.Field<string>("AlternateRecipientIDType"),
+                                        PortalSlotID = model.Field<string>("PortalSlotID"),
+                                        ScheduledDate = model.Field<DateTime?>("ScheduledDate"),
+                                        DeliveryVendor = model.Field<string>("DeliveryVendor"),
+                                        DeliveryOn = model.Field<DateTime?>("DeliveryOn"),
+                                        DeliveryTime = model.Field<DateTime?>("DeliveryTime"),
+                                        VendorTrackingCode = model.Field<string>("VendorTrackingCode"),
+                                        VendorTrackingUrl = model.Field<string>("VendorTrackingUrl"),
+                                        DeliveryFee = model.Field<double?>("DeliveryFee"),
+                                        PayableAmount = model.Field<double?>("PayableAmount")
+
+                                    }).FirstOrDefault();
+
+                    if (TorSresponse != null)
+                        TorSresponse.ChangeRequestChargesList = (from model in ds.Tables[1].AsEnumerable()
+                                                                 select new ChangeRequestCharges()
+                                                                 {
+                                                                     PortalServiceName = model.Field<string>("PortalServiceName"),
+                                                                     ServiceFee = model.Field<double?>("ServiceFee"),
+                                                                     IsRecurring = model.Field<int?>("IsRecurring"),
+                                                                     IsGstIncluded = model.Field<int?>("IsGSTIncluded")
+                                                                 }).ToList();
+                }
+
+                var response = new DatabaseResponse { ResponseCode = result, Results = TorSresponse };
+                return response;
+
+
             }
 
             catch (Exception ex)

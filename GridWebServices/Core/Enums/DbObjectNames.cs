@@ -132,6 +132,11 @@ namespace Core.Enums
         /// The z email notifications log entry for dev purpose
         /// </summary>
         public const string z_EmailNotificationsLogEntryForDevPurpose = "z_EmailNotificationsLogEntryForDevPurpose";
+
+        /// <summary>
+        /// The orders cr get cr details
+        /// </summary>
+        public const string Orders_CR_GetCRDetails = "Orders_CR_GetCRDetails";
     }
 
 }
