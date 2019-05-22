@@ -109,7 +109,7 @@ namespace OrderService.Models
         public string AlternateRecioientIDNumber { get; set; }
         public string AlternateRecioientIDType { get; set; }
         public string PortalSlotID { get; set; }
-        public DateTime? ScheduledDate { get; set; }
+        //public DateTime? ScheduledDate { get; set; }
 
     }
 
