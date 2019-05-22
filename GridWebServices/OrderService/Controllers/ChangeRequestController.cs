@@ -184,7 +184,7 @@ namespace OrderService.Controllers
                     }
                     else if (statusResponse.ResponseCode == (int)DbReturnValue.DuplicateCRExists)
                     {
-                        LogInfo.Error(DbReturnValue.DuplicateCRExists.GetDescription());
+                        LogInfo.Warning(DbReturnValue.DuplicateCRExists.GetDescription());
 
                         return Ok(new OperationResponse
                         {
@@ -195,7 +195,7 @@ namespace OrderService.Controllers
                     }
                     else
                     {
-                        LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
+                        LogInfo.Warning(DbReturnValue.NoRecords.GetDescription());
 
                         return Ok(new OperationResponse
                         {
@@ -208,7 +208,7 @@ namespace OrderService.Controllers
                 else
                 {
                     //Token expired
-                    LogInfo.Error(CommonErrors.ExpiredToken.GetDescription());
+                    LogInfo.Warning(CommonErrors.ExpiredToken.GetDescription());
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
@@ -366,7 +366,7 @@ namespace OrderService.Controllers
                     }
                     else
                     {
-                        LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
+                        LogInfo.Warning(DbReturnValue.NoRecords.GetDescription());
 
                         return Ok(new OperationResponse
                         {
@@ -379,7 +379,7 @@ namespace OrderService.Controllers
                 else
                 {
                     //Token expired
-                    LogInfo.Error(CommonErrors.ExpiredToken.GetDescription());
+                    LogInfo.Warning(CommonErrors.ExpiredToken.GetDescription());
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
@@ -532,7 +532,7 @@ namespace OrderService.Controllers
                         }
                         else if (buddyList.ResponseCode == (int)DbReturnValue.ActionIsInvalid)
                         {
-                            LogInfo.Error(DbReturnValue.ActionIsInvalid.GetDescription());
+                            LogInfo.Warning(DbReturnValue.ActionIsInvalid.GetDescription());
 
                             return Ok(new OperationResponse
                             {
@@ -543,7 +543,7 @@ namespace OrderService.Controllers
                         }
                         else if (buddyList.ResponseCode == (int)DbReturnValue.DuplicateCRExists)
                         {
-                            LogInfo.Error(DbReturnValue.DuplicateCRExists.GetDescription());
+                            LogInfo.Warning(DbReturnValue.DuplicateCRExists.GetDescription());
 
                             return Ok(new OperationResponse
                             {
@@ -554,7 +554,7 @@ namespace OrderService.Controllers
                         }
                         else
                         {
-                            LogInfo.Error(DbReturnValue.UpdationFailed.GetDescription());
+                            LogInfo.Warning(DbReturnValue.UpdationFailed.GetDescription());
 
                             return Ok(new OperationResponse
                             {
@@ -654,7 +654,7 @@ namespace OrderService.Controllers
                     }
                     else if (statusResponse.ResponseCode == (int)DbReturnValue.ActionIsInvalid)
                     {
-                        LogInfo.Error(DbReturnValue.ActionIsInvalid.GetDescription());
+                        LogInfo.Warning(DbReturnValue.ActionIsInvalid.GetDescription());
 
                         return Ok(new OperationResponse
                         {
@@ -665,7 +665,7 @@ namespace OrderService.Controllers
                     }
                     else if (statusResponse.ResponseCode == (int)DbReturnValue.DuplicateCRExists)
                     {
-                        LogInfo.Error(DbReturnValue.DuplicateCRExists.GetDescription());
+                        LogInfo.Warning(DbReturnValue.DuplicateCRExists.GetDescription());
 
                         return Ok(new OperationResponse
                         {
@@ -677,7 +677,7 @@ namespace OrderService.Controllers
 
                     else
                     {
-                        LogInfo.Error(DbReturnValue.UpdationFailed.GetDescription());
+                        LogInfo.Warning(DbReturnValue.UpdationFailed.GetDescription());
 
                         return Ok(new OperationResponse
                         {
@@ -692,7 +692,7 @@ namespace OrderService.Controllers
                 else
                 {
                     // token auth failure
-                    LogInfo.Error(DbReturnValue.TokenAuthFailed.GetDescription());
+                    LogInfo.Warning(DbReturnValue.TokenAuthFailed.GetDescription());
 
                     return Ok(new OperationResponse
                     {
@@ -865,7 +865,7 @@ namespace OrderService.Controllers
                     }
                     else if (statusResponse.ResponseCode == (int)DbReturnValue.ActionIsInvalid)
                     {
-                        LogInfo.Error(DbReturnValue.ActionIsInvalid.GetDescription());
+                        LogInfo.Warning(DbReturnValue.ActionIsInvalid.GetDescription());
 
                         return Ok(new OperationResponse
                         {
@@ -876,7 +876,7 @@ namespace OrderService.Controllers
                     }
                     else if (statusResponse.ResponseCode == (int)DbReturnValue.DuplicateCRExists)
                     {
-                        LogInfo.Error(DbReturnValue.DuplicateCRExists.GetDescription());
+                        LogInfo.Warning(DbReturnValue.DuplicateCRExists.GetDescription());
 
                         return Ok(new OperationResponse
                         {
@@ -887,7 +887,7 @@ namespace OrderService.Controllers
                     }
                     else
                     {
-                        LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
+                        LogInfo.Warning(DbReturnValue.NoRecords.GetDescription());
 
                         return Ok(new OperationResponse
                         {
@@ -901,7 +901,7 @@ namespace OrderService.Controllers
                 else
                 {
                     // token auth failure
-                    LogInfo.Error(DbReturnValue.TokenAuthFailed.GetDescription());
+                    LogInfo.Warning(DbReturnValue.TokenAuthFailed.GetDescription());
 
                     return Ok(new OperationResponse
                     {
@@ -1060,7 +1060,7 @@ namespace OrderService.Controllers
                     }
                     else if (statusResponse.ResponseCode == (int)DbReturnValue.ActionIsInvalid)
                     {
-                        LogInfo.Error(DbReturnValue.ActionIsInvalid.GetDescription());
+                        LogInfo.Warning(DbReturnValue.ActionIsInvalid.GetDescription());
 
                         return Ok(new OperationResponse
                         {
@@ -1071,7 +1071,7 @@ namespace OrderService.Controllers
                     }
                     else if (statusResponse.ResponseCode == (int)DbReturnValue.DuplicateCRExists)
                     {
-                        LogInfo.Error(DbReturnValue.DuplicateCRExists.GetDescription());
+                        LogInfo.Warning(DbReturnValue.DuplicateCRExists.GetDescription());
 
                         return Ok(new OperationResponse
                         {
@@ -1082,7 +1082,7 @@ namespace OrderService.Controllers
                     }
                     else
                     {
-                        LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
+                        LogInfo.Warning(DbReturnValue.NoRecords.GetDescription());
 
                         return Ok(new OperationResponse
                         {
@@ -1096,7 +1096,7 @@ namespace OrderService.Controllers
                 else
                 {
                     // token auth failure
-                    LogInfo.Error(DbReturnValue.TokenAuthFailed.GetDescription());
+                    LogInfo.Warning(DbReturnValue.TokenAuthFailed.GetDescription());
 
                     return Ok(new OperationResponse
                     {
@@ -1175,7 +1175,7 @@ namespace OrderService.Controllers
                     }
                     else
                     {
-                        LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
+                        LogInfo.Warning(DbReturnValue.NoRecords.GetDescription());
 
                         return Ok(new OperationResponse
                         {
@@ -1188,7 +1188,7 @@ namespace OrderService.Controllers
                 else
                 {
                     // token auth failure
-                    LogInfo.Error(DbReturnValue.TokenAuthFailed.GetDescription());
+                    LogInfo.Warning(DbReturnValue.TokenAuthFailed.GetDescription());
 
                     return Ok(new OperationResponse
                     {
@@ -1265,7 +1265,7 @@ namespace OrderService.Controllers
                     }
                     else
                     {
-                        LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
+                        LogInfo.Warning(DbReturnValue.NoRecords.GetDescription());
 
                         return Ok(new OperationResponse
                         {
@@ -1427,7 +1427,7 @@ namespace OrderService.Controllers
                     }
                     else if (statusResponse.ResponseCode == (int)DbReturnValue.DuplicateCRExists)
                     {
-                        LogInfo.Error(DbReturnValue.DuplicateCRExists.GetDescription());
+                        LogInfo.Warning(DbReturnValue.DuplicateCRExists.GetDescription());
 
                         return Ok(new OperationResponse
                         {
@@ -1438,7 +1438,7 @@ namespace OrderService.Controllers
                     }
                     else if (statusResponse.ResponseCode == (int)DbReturnValue.UnSuspensionValidation)
                     {
-                        LogInfo.Error(DbReturnValue.UnSuspensionValidation.GetDescription());
+                        LogInfo.Warning(DbReturnValue.UnSuspensionValidation.GetDescription());
 
                         return Ok(new OperationResponse
                         {
@@ -1449,7 +1449,7 @@ namespace OrderService.Controllers
                     }
                     else
                     {
-                        LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
+                        LogInfo.Warning(DbReturnValue.NoRecords.GetDescription());
 
                         return Ok(new OperationResponse
                         {
@@ -1463,7 +1463,7 @@ namespace OrderService.Controllers
                 else
                 {
                     // token auth failure
-                    LogInfo.Error(DbReturnValue.TokenAuthFailed.GetDescription());
+                    LogInfo.Warning(DbReturnValue.TokenAuthFailed.GetDescription());
 
                     return Ok(new OperationResponse
                     {
@@ -1622,7 +1622,7 @@ namespace OrderService.Controllers
                     }
                     else if (statusResponse.ResponseCode == (int)DbReturnValue.DuplicateCRExists)
                     {
-                        LogInfo.Error(DbReturnValue.DuplicateCRExists.GetDescription());
+                        LogInfo.Warning(DbReturnValue.DuplicateCRExists.GetDescription());
 
                         return Ok(new OperationResponse
                         {
@@ -1633,7 +1633,7 @@ namespace OrderService.Controllers
                     }
                     else
                     {
-                        LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
+                        LogInfo.Warning(DbReturnValue.NoRecords.GetDescription());
 
                         return Ok(new OperationResponse
                         {
@@ -1646,7 +1646,7 @@ namespace OrderService.Controllers
                 else
                 {
                     //Token expired
-                    LogInfo.Error(CommonErrors.ExpiredToken.GetDescription());
+                    LogInfo.Warning(CommonErrors.ExpiredToken.GetDescription());
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
@@ -1799,7 +1799,7 @@ namespace OrderService.Controllers
                     }
                     else if (statusResponse.ResponseCode == (int)DbReturnValue.DuplicateCRExists)
                     {
-                        LogInfo.Error(DbReturnValue.DuplicateCRExists.GetDescription());
+                        LogInfo.Warning(DbReturnValue.DuplicateCRExists.GetDescription());
 
                         return Ok(new OperationResponse
                         {
@@ -1810,7 +1810,7 @@ namespace OrderService.Controllers
                     }
                     else
                     {
-                        LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
+                        LogInfo.Warning(DbReturnValue.NoRecords.GetDescription());
 
                         return Ok(new OperationResponse
                         {
@@ -1823,7 +1823,7 @@ namespace OrderService.Controllers
                 else
                 {
                     //Token expired
-                    LogInfo.Error(CommonErrors.ExpiredToken.GetDescription());
+                    LogInfo.Warning(CommonErrors.ExpiredToken.GetDescription());
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
@@ -1978,7 +1978,7 @@ namespace OrderService.Controllers
                     }
                     else if (statusResponse.ResponseCode == (int)DbReturnValue.ActionIsInvalid)
                     {
-                        LogInfo.Error(DbReturnValue.ActionIsInvalid.GetDescription());
+                        LogInfo.Warning(DbReturnValue.ActionIsInvalid.GetDescription());
 
                         return Ok(new OperationResponse
                         {
@@ -1989,7 +1989,7 @@ namespace OrderService.Controllers
                     }
                     else if (statusResponse.ResponseCode == (int)DbReturnValue.DuplicateCRExists)
                     {
-                        LogInfo.Error(DbReturnValue.DuplicateCRExists.GetDescription());
+                        LogInfo.Warning(DbReturnValue.DuplicateCRExists.GetDescription());
 
                         return Ok(new OperationResponse
                         {
@@ -2000,7 +2000,7 @@ namespace OrderService.Controllers
                     }
                     else if (statusResponse.ResponseCode == (int)DbReturnValue.SameBundleValidation)
                     {
-                        LogInfo.Error(DbReturnValue.SameBundleValidation.GetDescription());
+                        LogInfo.Warning(DbReturnValue.SameBundleValidation.GetDescription());
 
                         return Ok(new OperationResponse
                         {
@@ -2011,7 +2011,7 @@ namespace OrderService.Controllers
                     }
                     else
                     {
-                        LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
+                        LogInfo.Warning(DbReturnValue.NoRecords.GetDescription());
 
                         return Ok(new OperationResponse
                         {
@@ -2024,7 +2024,7 @@ namespace OrderService.Controllers
                 else
                 {
                     //Token expired
-                    LogInfo.Error(CommonErrors.ExpiredToken.GetDescription());
+                    LogInfo.Warning(CommonErrors.ExpiredToken.GetDescription());
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
@@ -2103,7 +2103,7 @@ namespace OrderService.Controllers
                         }
                         else
                         {
-                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToUpdatedSubscriptionDetails));
+                            LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.FailedToUpdatedSubscriptionDetails));
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = false,
@@ -2208,7 +2208,7 @@ namespace OrderService.Controllers
                         }
                         else
                         {
-                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.FailedToUpdatedSubscriptionDetails));
+                            LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.FailedToUpdatedSubscriptionDetails));
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = false,
@@ -2308,7 +2308,7 @@ namespace OrderService.Controllers
                         }
                         else
                         {
-                            LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.DeliveryInfoNotExists));
+                            LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.DeliveryInfoNotExists));
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = false,
