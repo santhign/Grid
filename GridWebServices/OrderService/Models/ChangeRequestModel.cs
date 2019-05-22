@@ -171,6 +171,14 @@ namespace OrderService.Models
         /// The shipping building number.
         /// </value>
         public string ShippingBuildingNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the shipping building.
+        /// </summary>
+        /// <value>
+        /// The name of the shipping building.
+        /// </value>
+        public string ShippingBuildingName { get; set; }
         /// <summary>
         /// Gets or sets the name of the shipping street.
         /// </summary>
