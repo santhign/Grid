@@ -16,22 +16,38 @@ using Newtonsoft.Json;
 
 namespace OrderService.DataAccess
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class OrderDataAccess
     {
+        /// <summary>
+        /// The data helper
+        /// </summary>
         internal DataAccessHelper _DataHelper = null;
+        /// <summary>
+        /// The message queue data access
+        /// </summary>
         private readonly IMessageQueueDataAccess _messageQueueDataAccess;
+        /// <summary>
+        /// The configuration
+        /// </summary>
         private IConfiguration _configuration;
 
         /// <summary>
         /// Constructor setting configuration
         /// </summary>
-        /// <param name="configuration"></param>
-        /// <param name="messageQueueDataAccess"></param>
+        /// <param name="configuration">The configuration.</param>
+        /// <param name="messageQueueDataAccess">The message queue data access.</param>
         public OrderDataAccess(IConfiguration configuration, IMessageQueueDataAccess messageQueueDataAccess)
         {
             _configuration = configuration;
             _messageQueueDataAccess = messageQueueDataAccess;
         }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OrderDataAccess"/> class.
+        /// </summary>
+        /// <param name="configuration">The configuration.</param>
         public OrderDataAccess(IConfiguration configuration)
         {
             _configuration = configuration;
@@ -41,7 +57,7 @@ namespace OrderService.DataAccess
         /// <summary>
         /// This method will create a new order for createOrder endpoint
         /// </summary>
-        /// <param name="order"></param>
+        /// <param name="order">The order.</param>
         /// <returns></returns>
         public async Task<DatabaseResponse> CreateOrder(CreateOrder order)
         {
@@ -95,6 +111,12 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Creates the subscriber.
+        /// </summary>
+        /// <param name="subscriber">The subscriber.</param>
+        /// <param name="sessionId">The session identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> CreateSubscriber(CreateSubscriber subscriber, string sessionId)
         {
             try
@@ -137,6 +159,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the order basic details.
+        /// </summary>
+        /// <param name="orderId">The order identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetOrderBasicDetails(int orderId)
         {
             try
@@ -216,6 +243,15 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the BSS API request identifier.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="apiName">Name of the API.</param>
+        /// <param name="customerId">The customer identifier.</param>
+        /// <param name="isNewSession">The is new session.</param>
+        /// <param name="mobileNumber">The mobile number.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetBssApiRequestId(string source, string apiName, int customerId, int isNewSession, string mobileNumber)
         {
             try
@@ -275,6 +311,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the service fee.
+        /// </summary>
+        /// <param name="serviceCode">The service code.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetServiceFee(int serviceCode)
         {
             try
@@ -338,6 +379,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Authenticates the customer token.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> AuthenticateCustomerToken(string token)
         {
             try
@@ -402,6 +448,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Updates the subscriber number.
+        /// </summary>
+        /// <param name="subscriber">The subscriber.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> UpdateSubscriberNumber(UpdateSubscriberNumber subscriber)
         {
             try
@@ -443,6 +494,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Updates the subscriber porting number.
+        /// </summary>
+        /// <param name="portingNumber">The porting number.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> UpdateSubscriberPortingNumber(UpdateSubscriberPortingNumber portingNumber)
         {
             try
@@ -492,6 +548,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the configuration.
+        /// </summary>
+        /// <param name="configType">Type of the configuration.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetConfiguration(string configType)
         {
             try
@@ -547,6 +608,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the BSS service category and fee.
+        /// </summary>
+        /// <param name="serviceType">Type of the service.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetBSSServiceCategoryAndFee(string serviceType)
         {
             try
@@ -613,6 +679,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the order details.
+        /// </summary>
+        /// <param name="orderId">The order identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetOrderDetails(int orderId)
         {
             try
@@ -777,6 +848,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the customer identifier from order identifier.
+        /// </summary>
+        /// <param name="orderId">The order identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetCustomerIdFromOrderId(int orderId)
         {
             try
@@ -841,6 +917,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the customer identifier from change request identifier.
+        /// </summary>
+        /// <param name="orderId">The order identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetCustomerIdFromChangeRequestId(int orderId)
         {
             try
@@ -905,6 +986,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the customer identifier from account invoice identifier.
+        /// </summary>
+        /// <param name="orderId">The order identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetCustomerIdFromAccountInvoiceId(int orderId)
         {
             try
@@ -969,6 +1055,10 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the available slots.
+        /// </summary>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetAvailableSlots()
         {
             try
@@ -1026,6 +1116,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Updates the order personal details.
+        /// </summary>
+        /// <param name="personalDetails">The personal details.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> UpdateOrderPersonalDetails(UpdateOrderPersonalDetails personalDetails)
         {
             try
@@ -1064,8 +1159,13 @@ namespace OrderService.DataAccess
             {
                 _DataHelper.Dispose();
             }
-        }              
+        }
 
+        /// <summary>
+        /// Updates the order billing details.
+        /// </summary>
+        /// <param name="billingDetails">The billing details.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> UpdateOrderBillingDetails(UpdateOrderBillingDetailsRequest billingDetails)
         {
             try
@@ -1110,6 +1210,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Updates the order shipping details.
+        /// </summary>
+        /// <param name="shippingDetails">The shipping details.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> UpdateOrderShippingDetails(UpdateOrderShippingDetailsRequest shippingDetails)
         {
             try
@@ -1158,6 +1263,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Updates the order loa details.
+        /// </summary>
+        /// <param name="loaDetails">The loa details.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> UpdateOrderLOADetails(UpdateOrderLOADetailsRequest loaDetails)
         {
             try
@@ -1198,6 +1308,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Validates the order referral code.
+        /// </summary>
+        /// <param name="order">The order.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> ValidateOrderReferralCode(ValidateOrderReferralCodeRequest order)
         {
             try
@@ -1231,6 +1346,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the ordered numbers.
+        /// </summary>
+        /// <param name="order">The order.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetOrderedNumbers(OrderedNumberRequest order)
         {
             try
@@ -1285,6 +1405,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Updates the order subcription details.
+        /// </summary>
+        /// <param name="subscriptionDetails">The subscription details.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> UpdateOrderSubcriptionDetails(UpdateOrderSubcriptionDetailsRequest subscriptionDetails)
         {
             try
@@ -1330,6 +1455,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the pending order details.
+        /// </summary>
+        /// <param name="customerId">The customer identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetPendingOrderDetails(int customerId)
         {
             try
@@ -1386,6 +1516,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the checkout request details.
+        /// </summary>
+        /// <param name="checkOutRequest">The check out request.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetCheckoutRequestDetails(CheckOutRequestDBUpdateModel checkOutRequest)
         {
             try
@@ -1455,6 +1590,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Updates the check out response.
+        /// </summary>
+        /// <param name="checkOutResponse">The check out response.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> UpdateCheckOutResponse(CheckOutResponseUpdate checkOutResponse)
         {
             try
@@ -1516,6 +1656,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Updates the check out receipt.
+        /// </summary>
+        /// <param name="transactionModel">The transaction model.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> UpdateCheckOutReceipt(TransactionResponseModel transactionModel)
         {
             try
@@ -1588,6 +1733,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Removes the additional line.
+        /// </summary>
+        /// <param name="removeRequest">The remove request.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> RemoveAdditionalLine(RemoveAdditionalLineRequest removeRequest)
         {
             try
@@ -1627,6 +1777,11 @@ namespace OrderService.DataAccess
 
         }
 
+        /// <summary>
+        /// Assigns the new number.
+        /// </summary>
+        /// <param name="newNumberRequest">The new number request.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> AssignNewNumber(AssignNewNumber newNumberRequest)
         {
             try
@@ -1668,6 +1823,11 @@ namespace OrderService.DataAccess
 
         }
 
+        /// <summary>
+        /// Gets the customer BSS account number.
+        /// </summary>
+        /// <param name="CustomerId">The customer identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetCustomerBSSAccountNumber(int CustomerId)
         {
             try
@@ -1724,6 +1884,13 @@ namespace OrderService.DataAccess
 
         }
 
+        /// <summary>
+        /// Updates the BSS call numbers.
+        /// </summary>
+        /// <param name="json">The json.</param>
+        /// <param name="userID">The user identifier.</param>
+        /// <param name="callLogId">The call log identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> UpdateBSSCallNumbers(string json, string userID, int callLogId)
         {
             try
@@ -1763,6 +1930,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Rolls the back order.
+        /// </summary>
+        /// <param name="orderId">The order identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> RollBackOrder(int orderId)
         {
             try
@@ -1797,6 +1969,14 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the BSS API request identifier and subscriber session.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="apiName">Name of the API.</param>
+        /// <param name="customerId">The customer identifier.</param>
+        /// <param name="mobileNumber">The mobile number.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetBssApiRequestIdAndSubscriberSession(string source, string apiName, int customerId,  string mobileNumber)
         {
             try
@@ -1854,6 +2034,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the order nric details.
+        /// </summary>
+        /// <param name="OrderID">The order identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetOrderNRICDetails(int OrderID)
         {
             try
@@ -1908,6 +2093,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Updates the order personal identifier details.
+        /// </summary>
+        /// <param name="personalDetails">The personal details.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> UpdateOrderPersonalIdDetails(UpdateOrderPersonalDetails personalDetails)
         {
             try
@@ -1949,6 +2139,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the change card checkout request details.
+        /// </summary>
+        /// <param name="checkOutRequest">The check out request.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetChangeCardCheckoutRequestDetails(CheckOutRequestDBUpdateModel checkOutRequest)
         {
             try
@@ -2015,6 +2210,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the source type by MPGSS order identifier.
+        /// </summary>
+        /// <param name="MPGSOrderID">The MPGS order identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetSourceTypeByMPGSSOrderId(string MPGSOrderID)
         {
             try
@@ -2064,6 +2264,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the customer order count.
+        /// </summary>
+        /// <param name="CustomerID">The customer identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetCustomerOrderCount(int CustomerID)
         {
             try
@@ -2113,6 +2318,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Updates the MPGS create token session details.
+        /// </summary>
+        /// <param name="tokenResponse">The token response.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> UpdateMPGSCreateTokenSessionDetails(CreateTokenResponse tokenResponse)
         {
             try
@@ -2181,6 +2391,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Updates the subscriber details.
+        /// </summary>
+        /// <param name="subscriberBasicDetails">The subscriber basic details.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> UpdateSubscriberDetails(UpdateSubscriberBasicDetails subscriberBasicDetails)
         {
             try
@@ -2222,6 +2437,10 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the reschedule available slots.
+        /// </summary>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetRescheduleAvailableSlots()
         {
             try
@@ -2279,6 +2498,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Removes the loa details.
+        /// </summary>
+        /// <param name="OrderID">The order identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> RemoveLOADetails(int OrderID)
         {
             try
@@ -2315,6 +2539,12 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the port type from order identifier.
+        /// </summary>
+        /// <param name="OrderID">The order identifier.</param>
+        /// <param name="MobileNumber">The mobile number.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetPortTypeFromOrderId(int OrderID, string MobileNumber)
         {
             try
@@ -2362,6 +2592,12 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Cancels the order.
+        /// </summary>
+        /// <param name="customerId">The customer identifier.</param>
+        /// <param name="orderId">The order identifier.</param>
+        /// <returns></returns>
         public async Task<int> CancelOrder(int customerId, int orderId)
         {
             try
@@ -2392,6 +2628,14 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Creates the payment method.
+        /// </summary>
+        /// <param name="tokenResponse">The token response.</param>
+        /// <param name="customerID">The customer identifier.</param>
+        /// <param name="MPGSOrderID">The MPGS order identifier.</param>
+        /// <param name="SourceMethodName">Name of the source method.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> CreatePaymentMethod(TokenResponse tokenResponse, int customerID, string MPGSOrderID = "", string SourceMethodName = "")
         {
             try
@@ -2527,6 +2771,13 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Updates the payment method details.
+        /// </summary>
+        /// <param name="transactionModel">The transaction model.</param>
+        /// <param name="customerID">The customer identifier.</param>
+        /// <param name="token">The token.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> UpdatePaymentMethodDetails(TransactionResponseModel transactionModel, int customerID, string token)
         {
             try
@@ -2570,6 +2821,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the payment method token.
+        /// </summary>
+        /// <param name="customerID">The customer identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetPaymentMethodToken(int customerID)
         {
             try
@@ -2630,6 +2886,12 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the payment method token by identifier.
+        /// </summary>
+        /// <param name="customerID">The customer identifier.</param>
+        /// <param name="paymentMethodID">The payment method identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetPaymentMethodTokenById(int customerID, int paymentMethodID)
         {
             try
@@ -2692,6 +2954,12 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+        /// <summary>
+        /// Removes the payment method.
+        /// </summary>
+        /// <param name="customerID">The customer identifier.</param>
+        /// <param name="paymentMethodID">The payment method identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> RemovePaymentMethod(int customerID, int paymentMethodID)
         {
             try
@@ -2729,6 +2997,12 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+        /// <summary>
+        /// Reschedules the delivery.
+        /// </summary>
+        /// <param name="customerID">The customer identifier.</param>
+        /// <param name="detailsrequest">The detailsrequest.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> RescheduleDelivery(int customerID, OrderRescheduleDeliveryRequest detailsrequest)
         {
             try
@@ -2818,6 +3092,11 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Processes the reschedule delivery.
+        /// </summary>
+        /// <param name="accountInvoiceID">The account invoice identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> ProcessRescheduleDelivery(int accountInvoiceID)
         {
             try
@@ -2856,6 +3135,11 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+        /// <summary>
+        /// Orders the buddy check.
+        /// </summary>
+        /// <param name="orderID">The order identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> OrderBuddyCheck(int orderID)
         {
             try
@@ -2913,6 +3197,11 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+        /// <summary>
+        /// Checks the payment is processed.
+        /// </summary>
+        /// <param name="MPGSOrderID">The MPGS order identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> CheckPaymentIsProcessed(string MPGSOrderID)
         {
             try
@@ -2948,6 +3237,11 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+        /// <summary>
+        /// Processes the buddy plan.
+        /// </summary>
+        /// <param name="updateRequest">The update request.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> ProcessBuddyPlan(BuddyNumberUpdate updateRequest)
         {
             try
@@ -2981,6 +3275,11 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+        /// <summary>
+        /// Creates the pending buddy list.
+        /// </summary>
+        /// <param name="updateRequest">The update request.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> CreatePendingBuddyList(BuddyCheckList updateRequest)
         {
             try
@@ -3016,6 +3315,11 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+        /// <summary>
+        /// Gets the account identifier from customer identifier.
+        /// </summary>
+        /// <param name="customerId">The customer identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetAccountIdFromCustomerId(int customerId)
         {
             try
@@ -3075,6 +3379,11 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+        /// <summary>
+        /// Creates the account invoice.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> CreateAccountInvoice(AccountInvoice request)
         {
             try
@@ -3143,6 +3452,12 @@ namespace OrderService.DataAccess
         }
 
 
+        /// <summary>
+        /// Gets the customer detail by order.
+        /// </summary>
+        /// <param name="customerID">The customer identifier.</param>
+        /// <param name="orderID">The order identifier.</param>
+        /// <returns></returns>
         public async Task<CustomerDetails> GetCustomerDetailByOrder(int customerID, int orderID)
         {
             try
@@ -3231,6 +3546,11 @@ namespace OrderService.DataAccess
         //    }
         //}
 
+        /// <summary>
+        /// Removes the reschedule loa details.
+        /// </summary>
+        /// <param name="RescheduleDeliveryInformationID">The reschedule delivery information identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> RemoveRescheduleLOADetails(int RescheduleDeliveryInformationID)
         {
             try
@@ -3267,6 +3587,12 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+        /// <summary>
+        /// Numbers the is ported.
+        /// </summary>
+        /// <param name="OrderID">The order identifier.</param>
+        /// <param name="MobileNumber">The mobile number.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> NumberIsPorted(int OrderID, string MobileNumber)
         {
             try
@@ -3316,6 +3642,6 @@ namespace OrderService.DataAccess
             {
                 _DataHelper.Dispose();
             }
-        }
+        }        
     }
 }

@@ -15,12 +15,18 @@ namespace OrderService.DataAccess
         /// <summary>
         /// Removes the vas service
         /// </summary>
-        /// <param name="customerId"></param>
-        /// <param name="mobileNumber"></param>
-        /// <param name="subscriptionID"></param>        
+        /// <param name="customerId">The customer identifier.</param>
+        /// <param name="mobileNumber">The mobile number.</param>
+        /// <param name="subscriptionID">The subscription identifier.</param>
         /// <returns></returns>
         Task<DatabaseResponse> RemoveVasService(int customerId, string mobileNumber, int subscriptionID);
 
+        /// <summary>
+        /// Removes the shared vas service.
+        /// </summary>
+        /// <param name="customerId">The customer identifier.</param>
+        /// <param name="accountSubscriptionId">The account subscription identifier.</param>
+        /// <returns></returns>
         Task<DatabaseResponse> RemoveSharedVasService(int customerId, int accountSubscriptionId);
         /// <summary>
         /// Buys the vas service.
@@ -61,11 +67,38 @@ namespace OrderService.DataAccess
         /// <returns></returns>
         Task<DatabaseResponse> UpdateCRShippingDetails(UpdateCRShippingDetailsRequest shippingDetails);
 
+        /// <summary>
+        /// Buys the shared service.
+        /// </summary>
+        /// <param name="customerId">The customer identifier.</param>
+        /// <param name="bundleId">The bundle identifier.</param>
+        /// <returns></returns>
         Task<DatabaseResponse> BuySharedService(int customerId, int bundleId);
 
+        /// <summary>
+        /// Changes the plan service.
+        /// </summary>
+        /// <param name="customerId">The customer identifier.</param>
+        /// <param name="mobileNumber">The mobile number.</param>
+        /// <param name="bundleId">The bundle identifier.</param>
+        /// <returns></returns>
         Task<DatabaseResponse> ChangePlanService(int customerId, string mobileNumber, int bundleId);
 
+        /// <summary>
+        /// Gets the buddy details.
+        /// </summary>
+        /// <param name="customerID">The customer identifier.</param>
+        /// <param name="mobileNumber">The mobile number.</param>
+        /// <returns></returns>
         Task<BuddyResponse> GetBuddyDetails(int customerID, string mobileNumber);
+
+        /// <summary>
+        /// Gets the cr details with delivery information.
+        /// </summary>
+        /// <param name="customerID">The customer identifier.</param>
+        /// <param name="changeRequestID">The change request identifier.</param>
+        /// <returns></returns>
+        Task<DatabaseResponse> GetCRDetailsWithDeliveryInfo(int customerID, int changeRequestID);
 
     }
 }
