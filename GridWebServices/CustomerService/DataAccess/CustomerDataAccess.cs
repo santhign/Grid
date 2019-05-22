@@ -172,7 +172,7 @@ namespace CustomerService.DataAccess
         /// <summary>
         /// Updates the customer profile.
         /// </summary>
-        /// <param name="CustomerID"></param>
+        /// <param name="CustomerID">The customer identifier.</param>
         /// <param name="customer">The customer.</param>
         /// <returns></returns>
         public async Task<DatabaseResponse> UpdateCustomerProfile(int CustomerID, CustomerProfile customer)
@@ -540,6 +540,7 @@ namespace CustomerService.DataAccess
                                           LinkedDisplayName = model.Field<string>("LinkedDisplayName"),
                                           State = model.Field<string>("State"),
                                           SuspensionRaised = model.Field<int>("SuspensionRaised"),
+                                          UnsuspensionRaised = model.Field<int>("UnsuspensionRaised"),
                                           TerminationRaised = model.Field<int>("TerminationRaised"),
                                           PlanChangeRaised = model.Field<int>("PlanChangeRaised"),
                                           PlanChangeAllowed = model.Field<int>("PlanChangeAllowed"),
@@ -700,8 +701,13 @@ namespace CustomerService.DataAccess
             {
                 _DataHelper.Dispose();
             }
-        }      
+        }
 
+        /// <summary>
+        /// Gets the payment method.
+        /// </summary>
+        /// <param name="CustomerID">The customer identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetPaymentMethod(int CustomerID)
         {
             try
@@ -767,6 +773,12 @@ namespace CustomerService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Updates the email subscription details.
+        /// </summary>
+        /// <param name="CustomerID">The customer identifier.</param>
+        /// <param name="EmailSubscription">The email subscription.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> UpdateEmailSubscriptionDetails(int CustomerID, int EmailSubscription)
 
         {
@@ -813,6 +825,11 @@ namespace CustomerService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the customer orders.
+        /// </summary>
+        /// <param name="CustomerID">The customer identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetCustomerOrders(int CustomerID)
         {
             try
@@ -1006,6 +1023,11 @@ namespace CustomerService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the reward summary.
+        /// </summary>
+        /// <param name="CustomerID">The customer identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetRewardSummary(int CustomerID)
         {
             try
@@ -1051,6 +1073,13 @@ namespace CustomerService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the reward details.
+        /// </summary>
+        /// <param name="CustomerID">The customer identifier.</param>
+        /// <param name="FromDate">From date.</param>
+        /// <param name="ToDate">To date.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetRewardDetails(int CustomerID, DateTime FromDate, DateTime ToDate)
         {
             try
@@ -1096,6 +1125,12 @@ namespace CustomerService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Updates the billing details.
+        /// </summary>
+        /// <param name="CustomerID">The customer identifier.</param>
+        /// <param name="_billing">The billing.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> UpdateBillingDetails(int CustomerID, customerBilling _billing)
 
         {
@@ -1154,6 +1189,12 @@ namespace CustomerService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the base plan.
+        /// </summary>
+        /// <param name="CustomerID">The customer identifier.</param>
+        /// <param name="MobileNumber">The mobile number.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetBasePlan(int CustomerID, string MobileNumber)
         {
             try
@@ -1222,6 +1263,12 @@ namespace CustomerService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Updates the display name.
+        /// </summary>
+        /// <param name="CustomerID">The customer identifier.</param>
+        /// <param name="details">The details.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> UpdateDisplayName(int CustomerID, DisplayDetails details)
         {
             try
@@ -1269,6 +1316,13 @@ namespace CustomerService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Updates the SMS subscription details.
+        /// </summary>
+        /// <param name="CustomerID">The customer identifier.</param>
+        /// <param name="MobileNumber">The mobile number.</param>
+        /// <param name="SMSSubscription">The SMS subscription.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> UpdateSMSSubscriptionDetails(int CustomerID, string MobileNumber, int SMSSubscription)
 
         {
@@ -1317,6 +1371,13 @@ namespace CustomerService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Updates the voice subscription details.
+        /// </summary>
+        /// <param name="CustomerID">The customer identifier.</param>
+        /// <param name="MobileNumber">The mobile number.</param>
+        /// <param name="VoiceSubscription">The voice subscription.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> UpdateVoiceSubscriptionDetails(int CustomerID, string MobileNumber, int VoiceSubscription)
 
         {
@@ -1364,7 +1425,12 @@ namespace CustomerService.DataAccess
                 _DataHelper.Dispose();
             }
         }
-        
+
+        /// <summary>
+        /// Gets the customer shipping details.
+        /// </summary>
+        /// <param name="CustomerID">The customer identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetCustomerShippingDetails(int CustomerID)
         {
             try
@@ -1429,6 +1495,11 @@ namespace CustomerService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Validates the password.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> ValidatePassword(LoginDto request)
         {
             try
@@ -1463,6 +1534,11 @@ namespace CustomerService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the customer change requests.
+        /// </summary>
+        /// <param name="customerID">The customer identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetCustomerChangeRequests(int customerID)
         {
             try

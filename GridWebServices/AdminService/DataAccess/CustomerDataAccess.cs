@@ -15,6 +15,9 @@ using Swashbuckle.AspNetCore.Swagger;
 
 namespace AdminService.DataAccess
 {
+    /// <summary>
+    /// Customer Data Access class
+    /// </summary>
     public class CustomerDataAccess
     {
         /// <summary>
@@ -88,7 +91,7 @@ namespace AdminService.DataAccess
                 _DataHelper.Dispose();
             }
         }
-        
+
         /// <summary>
         /// Gets the customer.
         /// </summary>
@@ -205,6 +208,11 @@ namespace AdminService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the customer orders.
+        /// </summary>
+        /// <param name="CustomerID">The customer identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetCustomerOrders(int CustomerID)
         {
             try
@@ -362,6 +370,12 @@ namespace AdminService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the customer access token.
+        /// </summary>
+        /// <param name="AdminUserID">The admin user identifier.</param>
+        /// <param name="CustomerID">The customer identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetCustomerAccessToken(int AdminUserID, int CustomerID)
         {
             try
@@ -404,6 +418,11 @@ namespace AdminService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Gets the customer change requests.
+        /// </summary>
+        /// <param name="CustomerID">The customer identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetCustomerChangeRequests(int CustomerID)
         {
             try
@@ -510,6 +529,12 @@ namespace AdminService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Orders the offset voucher.
+        /// </summary>
+        /// <param name="OrderID">The order identifier.</param>
+        /// <param name="AdminUserID">The admin user identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> OrderOffsetVoucher(int OrderID, int AdminUserID)
         {
             try
@@ -558,6 +583,12 @@ namespace AdminService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Changes the request offset voucher.
+        /// </summary>
+        /// <param name="SubscriberID">The subscriber identifier.</param>
+        /// <param name="AdminUserID">The admin user identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> ChangeRequestOffsetVoucher(int SubscriberID, int AdminUserID)
         {
             try
@@ -672,6 +703,11 @@ namespace AdminService.DataAccess
 
 
 
+        /// <summary>
+        /// Gets the customer shared change requests.
+        /// </summary>
+        /// <param name="CustomerID">The customer identifier.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> GetCustomerSharedChangeRequests(int CustomerID)
         {
             try
@@ -776,6 +812,13 @@ namespace AdminService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Updates the customer account accessibility.
+        /// </summary>
+        /// <param name="Token">The token.</param>
+        /// <param name="CustomerID">The customer identifier.</param>
+        /// <param name="Status">The status.</param>
+        /// <returns></returns>
         public async Task<DatabaseResponse> UpdateCustomerAccountAccessibility(string Token, int CustomerID, int Status)
         {
             try
