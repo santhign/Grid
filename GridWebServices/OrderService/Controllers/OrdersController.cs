@@ -2783,6 +2783,16 @@ namespace OrderService.Controllers
 
                                     checkoutDetails.ReceiptNumber = ((Checkout)checkOutAmountResponse.Results).ReceiptNumber;
 
+                                    checkoutDetails.MerchantName = gatewayConfig.GridMerchantName;
+
+                                    checkoutDetails.MerchantLogo = gatewayConfig.GridMerchantLogo;
+
+                                    checkoutDetails.MerchantEmail = gatewayConfig.GridMerchantEmail;
+
+                                    checkoutDetails.MerchantAddressLine1 = gatewayConfig.GridMerchantAddress1;
+
+                                    checkoutDetails.MerchantAddressLine2 = gatewayConfig.GridMerchantAddress2;
+
                                     return Ok(new OperationResponse
                                     {
                                         HasSucceeded = true,
@@ -5356,6 +5366,16 @@ namespace OrderService.Controllers
                             if (checkOutAmountResponse.ResponseCode == (int)DbReturnValue.RecordExists)
                             {
                                 checkoutDetails.Amount = ((Checkout)checkOutAmountResponse.Results).Amount;
+
+                                checkoutDetails.MerchantName = gatewayConfig.GridMerchantName;
+
+                                checkoutDetails.MerchantLogo = gatewayConfig.GridMerchantLogo;
+
+                                checkoutDetails.MerchantEmail = gatewayConfig.GridMerchantEmail;
+
+                                checkoutDetails.MerchantAddressLine1 = gatewayConfig.GridMerchantAddress1;
+
+                                checkoutDetails.MerchantAddressLine2 = gatewayConfig.GridMerchantAddress2;
 
                                 return Ok(new OperationResponse
                                 {

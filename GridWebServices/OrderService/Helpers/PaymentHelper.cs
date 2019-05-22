@@ -317,6 +317,8 @@ namespace OrderService.Helpers
             config.Password = configDict.Single(x => x["key"] == "GatewayGridPassword")["value"];
             config.Currency = configDict.Single(x => x["key"] == "GatewayGridCurrency")["value"];
             config.GridMerchantName = configDict.Single(x => x["key"] == "GridMerchantName")["value"];
+            config.GridMerchantEmail = configDict.Single(x => x["key"] == "GridMerchantEmail")["value"];
+            config.GridMerchantLogo = configDict.Single(x => x["key"] == "GridMerchantLogo")["value"];
             config.GridMerchantAddress1 = configDict.Single(x => x["key"] == "GridMerchantAddress1")["value"];
             config.GridMerchantAddress2 = configDict.Single(x => x["key"] == "GridMerchantAddress2")["value"];
             config.GridMerchantPostCode = configDict.Single(x => x["key"] == "GridMerchantPostCode")["value"];

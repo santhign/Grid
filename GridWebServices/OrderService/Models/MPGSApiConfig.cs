@@ -15,6 +15,8 @@ namespace OrderService.Models
             Currency =  mPGSConfig.Currency;
             MerchantId =  mPGSConfig.MerchantId;
             GridMerchantName = mPGSConfig.GridMerchantName;
+            GridMerchantEmail= mPGSConfig.GridMerchantEmail;
+            GridMerchantLogo= mPGSConfig.GridMerchantLogo;
             GridMerchantPostCode = mPGSConfig.GridMerchantPostCode;
             GridMerchantContactNumber = mPGSConfig.GridMerchantContactNumber;
             GridMerchantAddress1 = mPGSConfig.GridMerchantAddress1;
@@ -53,7 +55,9 @@ namespace OrderService.Models
             public string CertificatePassword { get; set; }
             public bool AuthenticationByCertificate { get; set; }
             public string WebhooksNotificationSecret { get; set; }
-            public string GridMerchantName { get; set; }        
+            public string GridMerchantName { get; set; }
+            public string GridMerchantEmail { get; set; }
+            public string GridMerchantLogo { get; set; }
             public string GridMerchantPostCode { get; set; }       
             public string GridMerchantAddress1 { get; set; }       
             public string GridMerchantAddress2 { get; set; }       
@@ -86,6 +90,12 @@ namespace OrderService.Models
 
         [DataMember(Name = "GridMerchantName")]
         public string GridMerchantName { get; set; }
+
+        [DataMember(Name = "GridMerchantEmail")]
+        public string GridMerchantEmail { get; set; }
+
+        [DataMember(Name = "GridMerchantLogo")]
+        public string GridMerchantLogo { get; set; }
 
         [DataMember(Name = "GridMerchantPostCode")]
         public string GridMerchantPostCode { get; set; }

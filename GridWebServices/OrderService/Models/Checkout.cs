@@ -32,6 +32,11 @@ namespace OrderService.Models
         public double Amount { get; set; }
         public string Currency { get; set; }
         public string MerchantId { get; set; }
+        public string MerchantName { get; set; }
+        public string MerchantAddressLine1 { get; set; }
+        public string MerchantAddressLine2 { get; set; }
+        public string MerchantEmail { get; set; }
+        public string MerchantLogo { get; set; }
         public CheckoutSessionModel CheckoutSession { get; set; }
         public string TransactionID { get; set; }
         public string ReceiptNumber { get; set; }
