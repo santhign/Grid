@@ -118,7 +118,7 @@ namespace OrderService.Controllers
                     {
                         //Token expired
 
-                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
 
                         return Ok(new OperationResponse
                         {
@@ -132,7 +132,7 @@ namespace OrderService.Controllers
                 else
                 {
                     // token auth failure
-                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+                   LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
 
                     return Ok(new OperationResponse
                     {
@@ -365,7 +365,7 @@ namespace OrderService.Controllers
                     {
                         //Token expired
 
-                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
 
                         return Ok(new OperationResponse
                         {
@@ -381,7 +381,7 @@ namespace OrderService.Controllers
                 else
                 {
                     // token auth failure
-                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+                   LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
 
                     return Ok(new OperationResponse
                     {
@@ -635,7 +635,7 @@ namespace OrderService.Controllers
                     {
                         //Token expired
 
-                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
 
                         return Ok(new OperationResponse
                         {
@@ -651,7 +651,7 @@ namespace OrderService.Controllers
                 else
                 {
                     // token auth failure
-                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+                   LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
 
                     return Ok(new OperationResponse
                     {
@@ -757,6 +757,7 @@ namespace OrderService.Controllers
 
                         else
                         {
+                            LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.FailedToGetUsageHistory));
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = false,
@@ -770,7 +771,7 @@ namespace OrderService.Controllers
                     {
                         //Token expired
 
-                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
 
                         return Ok(new OperationResponse
                         {
@@ -786,7 +787,7 @@ namespace OrderService.Controllers
                 else
                 {
                     // token auth failure
-                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+                   LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
 
                     return Ok(new OperationResponse
                     {
@@ -921,6 +922,8 @@ namespace OrderService.Controllers
 
                                 else
                                 {
+                                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.FailedToGetInvoice));
+
                                     return Ok(new OperationResponse
                                     {
                                         HasSucceeded = true,
@@ -934,6 +937,8 @@ namespace OrderService.Controllers
                             else
                             {
                                 // Account Number is empty
+
+                                LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.BillingAccountNumberEmpty));
                                 return Ok(new OperationResponse
                                 {
                                     HasSucceeded = true,
@@ -948,6 +953,8 @@ namespace OrderService.Controllers
                         else
                         {
                             // No customer records in accounts table
+
+                            LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.FailedToGetCustomer));
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = true,
@@ -962,7 +969,7 @@ namespace OrderService.Controllers
                     {
                         //Token expired
 
-                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
 
                         return Ok(new OperationResponse
                         {
@@ -978,7 +985,7 @@ namespace OrderService.Controllers
                 else
                 {
                     // token auth failure
-                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+                   LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
 
                     return Ok(new OperationResponse
                     {
@@ -1095,6 +1102,7 @@ namespace OrderService.Controllers
 
                                 else
                                 {
+                                    LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.NoRecords));
                                     return Ok(new OperationResponse
                                     {
                                         HasSucceeded = true,
@@ -1108,6 +1116,7 @@ namespace OrderService.Controllers
                             else
                             {
                                 // Account Number is empty
+                                LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.BillingAccountNumberEmpty));
                                 return Ok(new OperationResponse
                                 {
                                     HasSucceeded = true,
@@ -1121,6 +1130,7 @@ namespace OrderService.Controllers
                         else
                         {
                             // No customer records in accounts table
+                            LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.NoRecords));
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = true,
@@ -1135,7 +1145,7 @@ namespace OrderService.Controllers
                     {
                         //Token expired
 
-                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
 
                         return Ok(new OperationResponse
                         {
@@ -1151,7 +1161,7 @@ namespace OrderService.Controllers
                 else
                 {
                     // token auth failure
-                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+                   LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
 
                     return Ok(new OperationResponse
                     {
@@ -1257,6 +1267,9 @@ namespace OrderService.Controllers
 
                                 else
                                 {
+
+                                    LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.NoRecords));
+
                                     return Ok(new OperationResponse
                                     {
                                         HasSucceeded = true,
@@ -1270,7 +1283,7 @@ namespace OrderService.Controllers
                     {
                         //Token expired
 
-                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
 
                         return Ok(new OperationResponse
                         {
@@ -1286,7 +1299,7 @@ namespace OrderService.Controllers
                 else
                 {
                     // token auth failure
-                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+                   LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
 
                     return Ok(new OperationResponse
                     {

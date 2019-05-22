@@ -324,6 +324,14 @@ namespace Core.Enums
         [EnumMember(Value = "OldNumberNotExists")]
         [Description("Old number does not exists")]
         OldNumberNotExists = 75,
-        
+
+        [EnumMember(Value = "FailedToGetInvoice")]
+        [Description("Failed to get invoice from service provider")]
+        FailedToGetInvoice = 76,
+
+        [EnumMember(Value = "BillingAccountNumberEmpty")]
+        [Description("BillingAccountNumber field empty")]
+        BillingAccountNumberEmpty = 77,
+
     }
 }

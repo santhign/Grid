@@ -132,7 +132,7 @@ namespace OrderService.Controllers
             }
             else
             {
-                LogInfo.Information("No webhook notifications files found!");
+                LogInfo.Warning("No webhook notifications files found!");
             }
 
             return Ok(notifications);
@@ -239,14 +239,14 @@ namespace OrderService.Controllers
                     else
                     {
                         // 0
-                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.SourceTypeNotFound) + " " + EnumExtensions.GetDescription(CommonErrors.ProcessingQueFailed));
+                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.SourceTypeNotFound) + " " + EnumExtensions.GetDescription(CommonErrors.ProcessingQueFailed));
                       
                     }
                 }
            
                 else
                 {
-                    LogInfo.Error(EnumExtensions.GetDescription(DbReturnValue.TransactionFailed));
+                    LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TransactionFailed));
                 }
             }
             catch(Exception ex)
