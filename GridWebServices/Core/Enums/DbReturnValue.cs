@@ -166,7 +166,7 @@ namespace Core.Enums
         AllowSubscribers = 140,
 
         [EnumMember(Value = "Not allowed to add more subscribers")]
-        [Description("You hhave reached the maximum limit of numbers. Not allowed to add more lines")]
+        [Description("You have reached the maximum limit of numbers. Not allowed to add more lines")]
         NotAllowSubscribers = 141,
 
         [EnumMember(Value = "Invalid ID detail")]
@@ -182,7 +182,7 @@ namespace Core.Enums
         AccountDeactivated = 144,
 
         [EnumMember(Value = "ExistingCard")]
-        [Description("Payed With Existing Card")]
+        [Description("Payed With Existing Card. Token updated")]
         ExistingCard = 145,
         
         [EnumMember(Value = "Mobile number mismatch")]
