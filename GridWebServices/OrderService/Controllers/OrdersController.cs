@@ -5336,54 +5336,84 @@ namespace OrderService.Controllers
                                 billingAddress = (customerBilling)billingResponse.Results;
                             }
 
-                            checkoutDetails.OrderId = PaymentHelper.GenerateOrderId();
+                           // checkoutDetails.OrderId = PaymentHelper.GenerateOrderId();
 
-                            checkoutDetails.TransactionID = PaymentHelper.GenerateOrderId();                           
+                            checkoutDetails.TransactionID = PaymentHelper.GenerateOrderId();
 
-                            checkoutDetails = gatewayHelper.CreateCheckoutSession(gatewayConfig, billingAddress, checkoutDetails.OrderId, checkoutDetails.TransactionID,"");                           
-
-                            CheckOutRequestDBUpdateModel checkoutUpdateModel = new CheckOutRequestDBUpdateModel
+                            CheckOutRequestDBUpdateModel createcheckOutModel = new CheckOutRequestDBUpdateModel
                             {
                                 Source = CheckOutType.ChangeCard.ToString(),
 
                                 SourceID = 0,
 
-                                CheckOutSessionID = checkoutDetails.CheckoutSession.Id,
-
-                                CheckoutVersion = checkoutDetails.CheckoutSession.Version,
-
-                                SuccessIndicator = checkoutDetails.CheckoutSession.SuccessIndicator,
-
-                                MPGSOrderID = checkoutDetails.OrderId,
+                                //  MPGSOrderID = checkoutDetails.OrderId,
 
                                 TransactionID = checkoutDetails.TransactionID
                             };
 
-                            //Update checkout details and return amount
-
-                            DatabaseResponse checkOutAmountResponse = await _orderAccess.GetChangeCardCheckoutRequestDetails(checkoutUpdateModel);
+                            DatabaseResponse checkOutAmountResponse = await _orderAccess.GetChangeCardCheckoutRequestDetails(createcheckOutModel);
 
                             if (checkOutAmountResponse.ResponseCode == (int)DbReturnValue.RecordExists)
                             {
-                                checkoutDetails.Amount = ((Checkout)checkOutAmountResponse.Results).Amount;
+                                checkoutDetails.OrderId = ((Checkout)checkOutAmountResponse.Results).OrderId;
 
-                                checkoutDetails.MerchantName = gatewayConfig.GridMerchantName;
+                                checkoutDetails.ReceiptNumber = ((Checkout)checkOutAmountResponse.Results).ReceiptNumber;
 
-                                checkoutDetails.MerchantLogo = gatewayConfig.GridMerchantLogo;
+                                checkoutDetails = gatewayHelper.CreateCheckoutSession(gatewayConfig, billingAddress, checkoutDetails.OrderId, checkoutDetails.TransactionID, checkoutDetails.ReceiptNumber);
 
-                                checkoutDetails.MerchantEmail = gatewayConfig.GridMerchantEmail;
-
-                                checkoutDetails.MerchantAddressLine1 = gatewayConfig.GridMerchantAddress1;
-
-                                checkoutDetails.MerchantAddressLine2 = gatewayConfig.GridMerchantAddress2;
-
-                                return Ok(new OperationResponse
+                                CheckOutRequestDBUpdateModel checkoutUpdateModel = new CheckOutRequestDBUpdateModel
                                 {
-                                    HasSucceeded = true,
-                                    Message = EnumExtensions.GetDescription(CommonErrors.CheckoutSessionCreated),
-                                    IsDomainValidationErrors = false,
-                                    ReturnedObject = checkoutDetails
-                                });
+                                    Source = CheckOutType.ChangeCard.ToString(),
+
+                                    SourceID = 0,
+
+                                    CheckOutSessionID = checkoutDetails.CheckoutSession.Id,
+
+                                    CheckoutVersion = checkoutDetails.CheckoutSession.Version,
+
+                                    SuccessIndicator = checkoutDetails.CheckoutSession.SuccessIndicator,
+
+                                    MPGSOrderID = checkoutDetails.OrderId,
+
+                                    TransactionID = checkoutDetails.TransactionID
+                                };
+
+                                //Update checkout details and return amount
+
+                                checkOutAmountResponse = await _orderAccess.GetChangeCardCheckoutRequestDetails(checkoutUpdateModel);
+
+                                if (checkOutAmountResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                                {
+                                    checkoutDetails.Amount = ((Checkout)checkOutAmountResponse.Results).Amount;
+
+                                    checkoutDetails.MerchantName = gatewayConfig.GridMerchantName;
+
+                                    checkoutDetails.MerchantLogo = gatewayConfig.GridMerchantLogo;
+
+                                    checkoutDetails.MerchantEmail = gatewayConfig.GridMerchantEmail;
+
+                                    checkoutDetails.MerchantAddressLine1 = gatewayConfig.GridMerchantAddress1;
+
+                                    checkoutDetails.MerchantAddressLine2 = gatewayConfig.GridMerchantAddress2;
+
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = true,
+                                        Message = EnumExtensions.GetDescription(CommonErrors.CheckoutSessionCreated),
+                                        IsDomainValidationErrors = false,
+                                        ReturnedObject = checkoutDetails
+                                    });
+                                }
+                                else
+                                {
+                                    LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.NoRecords));
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = false,
+                                        Message = EnumExtensions.GetDescription(DbReturnValue.NoRecords),
+                                        IsDomainValidationErrors = false
+                                    });
+                                }
                             }
                             else
                             {
@@ -5394,7 +5424,8 @@ namespace OrderService.Controllers
                                     Message = EnumExtensions.GetDescription(DbReturnValue.NoRecords),
                                     IsDomainValidationErrors = false
                                 });
-                            }
+                            } 
+                        
                         }
                         else
                         {
@@ -5522,9 +5553,58 @@ namespace OrderService.Controllers
 
                                     tokenDetailsCreateResponse = await _orderAccess.CreatePaymentMethod(tokenizeResponse, customerID, updateRequest.MPGSOrderID, "UpdateChangePaymentMethodStatus");
 
-                                    if (tokenDetailsCreateResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
+                                    if (tokenDetailsCreateResponse.ResponseCode == (int)DbReturnValue.CreateSuccess|| tokenDetailsCreateResponse.ResponseCode == (int)DbReturnValue.ExistingCard)
                                     {
-                                        if (existingPaymentMethodResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                                        if (tokenDetailsCreateResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
+                                        {
+                                            PaymentMethod paymentMethod = new PaymentMethod();
+
+                                            paymentMethod = (PaymentMethod)existingPaymentMethodResponse.Results;
+
+                                            if(paymentMethod!=null && paymentMethod.Token!=null)
+                                            {
+                                                string response = gatewayHelper.RemoveToken(gatewayConfig, paymentMethod.Token);
+
+                                                if (response == MPGSAPIResponse.SUCCESS.ToString())
+                                                {
+                                                    DatabaseResponse databaseResponse = await _orderAccess.RemovePaymentMethod(customerID, paymentMethod.PaymentMethodID);
+
+                                                    if (databaseResponse.ResponseCode == (int)DbReturnValue.DeleteSuccess)
+                                                    {
+                                                        return Ok(new OperationResponse
+                                                        {
+                                                            HasSucceeded = true,
+                                                            Message = EnumExtensions.GetDescription(CommonErrors.PaymentMethodSuccessfullyChanged),
+                                                            IsDomainValidationErrors = false
+                                                        });
+                                                    }
+
+                                                    else
+                                                    {
+                                                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentMethodSuccessfullyRemoved) + ". " + EnumExtensions.GetDescription(CommonErrors.FailedToRemovePaymentMethodDb));
+                                                        return Ok(new OperationResponse
+                                                        {
+                                                            HasSucceeded = true,
+                                                            Message = EnumExtensions.GetDescription(CommonErrors.PaymentMethodSuccessfullyChanged),
+                                                            IsDomainValidationErrors = false
+                                                        });
+                                                    }
+                                                }
+
+                                                else
+                                                {
+                                                    // failed to remove payment details from gateway
+                                                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.FailedToRemovePaymentMethod));
+                                                    return Ok(new OperationResponse
+                                                    {
+                                                        HasSucceeded = false,
+                                                        Message = EnumExtensions.GetDescription(CommonErrors.PaymentMethodSuccessfullyChanged),
+                                                        IsDomainValidationErrors = false
+                                                    });
+                                                }
+                                            }  
+                                        }
+                                        if (tokenDetailsCreateResponse.ResponseCode == (int)DbReturnValue.ExistingCard)
                                         {
                                             PaymentMethod paymentMethod = new PaymentMethod();
 
@@ -5533,28 +5613,13 @@ namespace OrderService.Controllers
                                             string response = gatewayHelper.RemoveToken(gatewayConfig, paymentMethod.Token);
 
                                             if (response == MPGSAPIResponse.SUCCESS.ToString())
-                                            {
-                                                DatabaseResponse databaseResponse = await _orderAccess.RemovePaymentMethod(customerID, paymentMethod.PaymentMethodID);
-
-                                                if (databaseResponse.ResponseCode == (int)DbReturnValue.DeleteSuccess)
-                                                {
+                                            {  
                                                     return Ok(new OperationResponse
                                                     {
                                                         HasSucceeded = true,
                                                         Message = EnumExtensions.GetDescription(CommonErrors.PaymentMethodSuccessfullyChanged),
                                                         IsDomainValidationErrors = false
-                                                    });
-                                                }
-
-                                                else
-                                                {
-                                                    return Ok(new OperationResponse
-                                                    {
-                                                        HasSucceeded = true,
-                                                        Message = EnumExtensions.GetDescription(CommonErrors.PaymentMethodSuccessfullyRemoved) + ". " + EnumExtensions.GetDescription(CommonErrors.FailedToRemovePaymentMethodDb),
-                                                        IsDomainValidationErrors = false
-                                                    });
-                                                }
+                                                    });                                               
                                             }
 
                                             else
@@ -5570,7 +5635,6 @@ namespace OrderService.Controllers
                                             }
 
                                         }
-
                                         else
                                         {
                                             //failed to get existing payment method

@@ -2183,7 +2183,9 @@ namespace OrderService.DataAccess
                         checkOut = (from model in dt.AsEnumerable()
                                     select new Checkout()
                                     {
-                                        Amount = model.Field<double>("Amount")
+                                        Amount = model.Field<double>("Amount"),
+                                        ReceiptNumber = model.Field<string>("RecieptNumber"),
+                                        OrderId = model.Field<string>("MPGSOrderID"),
                                     }).FirstOrDefault();
 
                     }

@@ -182,7 +182,7 @@ namespace Core.Enums
         AccountDeactivated = 144,
 
         [EnumMember(Value = "ExistingCard")]
-        [Description("Payed With Existing Card")]
+        [Description("Payed With Existing Card. Token updated")]
         ExistingCard = 145,
         
         [EnumMember(Value = "Mobile number mismatch")]
