@@ -116,7 +116,7 @@ namespace AdminService.Controllers
 
 
         [HttpGet("GetConfigByType/{ConfigType}")]
-        public async Task<IActionResult> GetConfigByType([FromHeader] string Token, [FromRoute] string ConfigType)
+        public async Task<IActionResult> GetConfigByType([FromRoute] string ConfigType)
         {
             try
             {
