@@ -166,7 +166,7 @@ namespace Core.Enums
         AllowSubscribers = 140,
 
         [EnumMember(Value = "Not allowed to add more subscribers")]
-        [Description("You hhave reached the maximum limit of numbers. Not allowed to add more lines")]
+        [Description("You have reached the maximum limit of numbers. Not allowed to add more lines")]
         NotAllowSubscribers = 141,
 
         [EnumMember(Value = "Invalid ID detail")]
