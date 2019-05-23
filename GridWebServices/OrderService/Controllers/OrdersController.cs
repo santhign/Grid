@@ -5508,6 +5508,7 @@ namespace OrderService.Controllers
                     if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
                     {
                         int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+
                         if (!ModelState.IsValid)
                         {
                             return Ok(new OperationResponse
@@ -5553,10 +5554,8 @@ namespace OrderService.Controllers
 
                                     tokenDetailsCreateResponse = await _orderAccess.CreatePaymentMethod(tokenizeResponse, customerID, updateRequest.MPGSOrderID, "UpdateChangePaymentMethodStatus");
 
-                                    if (tokenDetailsCreateResponse.ResponseCode == (int)DbReturnValue.CreateSuccess|| tokenDetailsCreateResponse.ResponseCode == (int)DbReturnValue.ExistingCard)
-                                    {
-                                        if (tokenDetailsCreateResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
-                                        {
+                                    if (tokenDetailsCreateResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
+                                    {                                       
                                             PaymentMethod paymentMethod = new PaymentMethod();
 
                                             paymentMethod = (PaymentMethod)existingPaymentMethodResponse.Results;
@@ -5581,6 +5580,7 @@ namespace OrderService.Controllers
 
                                                     else
                                                     {
+                                                    // remove from db failed
                                                         LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentMethodSuccessfullyRemoved) + ". " + EnumExtensions.GetDescription(CommonErrors.FailedToRemovePaymentMethodDb));
                                                         return Ok(new OperationResponse
                                                         {
@@ -5593,76 +5593,68 @@ namespace OrderService.Controllers
 
                                                 else
                                                 {
-                                                    // failed to remove payment details from gateway
-                                                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.FailedToRemovePaymentMethod));
-                                                    return Ok(new OperationResponse
-                                                    {
-                                                        HasSucceeded = false,
-                                                        Message = EnumExtensions.GetDescription(CommonErrors.PaymentMethodSuccessfullyChanged),
-                                                        IsDomainValidationErrors = false
-                                                    });
+                                                    // remove from gateway failed, but not 
+                                                   
+                                                        return Ok(new OperationResponse
+                                                        {
+                                                            HasSucceeded = true,
+                                                            Message = EnumExtensions.GetDescription(CommonErrors.PaymentMethodSuccessfullyChanged),
+                                                            IsDomainValidationErrors = false
+                                                        });                                                    
                                                 }
-                                            }  
-                                        }
-                                        if (tokenDetailsCreateResponse.ResponseCode == (int)DbReturnValue.ExistingCard)
-                                        {
-                                            PaymentMethod paymentMethod = new PaymentMethod();
-
-                                            paymentMethod = (PaymentMethod)existingPaymentMethodResponse.Results;
-
-                                            string response = gatewayHelper.RemoveToken(gatewayConfig, paymentMethod.Token);
-
-                                            if (response == MPGSAPIResponse.SUCCESS.ToString())
-                                            {  
-                                                    return Ok(new OperationResponse
-                                                    {
-                                                        HasSucceeded = true,
-                                                        Message = EnumExtensions.GetDescription(CommonErrors.PaymentMethodSuccessfullyChanged),
-                                                        IsDomainValidationErrors = false
-                                                    });                                               
                                             }
-
-                                            else
-                                            {
-                                                // failed to remove payment details from gateway
-                                                LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.FailedToRemovePaymentMethod));
-                                                return Ok(new OperationResponse
-                                                {
-                                                    HasSucceeded = false,
-                                                    Message = EnumExtensions.GetDescription(CommonErrors.FailedToRemovePaymentMethod),
-                                                    IsDomainValidationErrors = false
-                                                });
-                                            }
-
-                                        }
                                         else
                                         {
-                                            //failed to get existing payment method
-
-                                            LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentMethodNotExists));
+                                            //no existng method to remove
                                             return Ok(new OperationResponse
                                             {
-                                                HasSucceeded = false,
-                                                Message = EnumExtensions.GetDescription(CommonErrors.PaymentMethodNotExists),
+                                                HasSucceeded = true,
+                                                Message = EnumExtensions.GetDescription(CommonErrors.PaymentMethodSuccessfullyChanged),
+                                                IsDomainValidationErrors = false
+                                            });
+                                        }   
+                                    }
+
+                                    else if (tokenDetailsCreateResponse.ResponseCode == (int)DbReturnValue.ExistingCard)
+                                    {
+                                        PaymentMethod paymentMethod = new PaymentMethod();
+
+                                        paymentMethod = (PaymentMethod)existingPaymentMethodResponse.Results;
+
+                                        string response = gatewayHelper.RemoveToken(gatewayConfig, paymentMethod.Token);
+
+                                        if (response == MPGSAPIResponse.SUCCESS.ToString())
+                                        {
+                                            return Ok(new OperationResponse
+                                            {
+                                                HasSucceeded = true,
+                                                Message = EnumExtensions.GetDescription(CommonErrors.PaymentMethodSuccessfullyChanged),
                                                 IsDomainValidationErrors = false
                                             });
                                         }
+
+                                        else
+                                        {
+
+                                            return Ok(new OperationResponse
+                                            {
+                                                HasSucceeded = true,
+                                                Message = EnumExtensions.GetDescription(CommonErrors.PaymentMethodSuccessfullyChanged),
+                                                IsDomainValidationErrors = false
+                                            });
+                                        }
+
                                     }
 
                                     else 
                                     {
-                                        // token details update failed
-
-                                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.FailedToCreatePaymentMethod)+ ". " + EnumExtensions.GetDescription(CommonErrors.CardAlreadyExists));
-
                                         return Ok(new OperationResponse
                                         {
-                                            HasSucceeded = false,
-                                            Message = EnumExtensions.GetDescription(CommonErrors.FailedToCreatePaymentMethod) + ". " + EnumExtensions.GetDescription(CommonErrors.CardAlreadyExists),
+                                            HasSucceeded = true,
+                                            Message = EnumExtensions.GetDescription(CommonErrors.PaymentMethodSuccessfullyChanged),
                                             IsDomainValidationErrors = false
                                         });
                                     }
-
                                     
 
                                 }
