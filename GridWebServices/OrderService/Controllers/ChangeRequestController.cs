@@ -2358,5 +2358,222 @@ namespace OrderService.Controllers
 
             }
         }
+
+
+        [HttpPost]
+        [Route("CR_RemoveLOADetails/{ChangeRequestID}")]
+        public async Task<IActionResult> CR_RemoveLOADetails([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int ChangeRequestID)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+                AuthHelper helper = new AuthHelper(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    {
+                        int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+
+                        if (!ModelState.IsValid)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = string.Join("; ", ModelState.Values
+                                                           .SelectMany(x => x.Errors)
+                                                           .Select(x => x.ErrorMessage))
+                            });
+                        }
+
+                        
+
+                        DatabaseResponse LOAResponse = await _changeRequestDataAccess.CR_RemoveLOADetails(ChangeRequestID);
+
+                        if (LOAResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
+                        {
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = true,
+                                Message = EnumExtensions.GetDescription(CommonErrors.LOARemoved),
+                                Result = LOAResponse.Results
+
+                            });
+                        }
+
+                        else if (LOAResponse.ResponseCode == (int)DbReturnValue.UpdationFailed)
+                        {
+                            LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.FailedUpdateLOADetails) + " token:" + token + ", changeRequestID:" + ChangeRequestID);
+
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(CommonErrors.FailedToRemoveLoa)
+                            });
+
+                        }
+
+                        else
+                        {
+                            LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.DeliveryInfoNotExists) + " token:" + token + ", changeRequestID:" + ChangeRequestID);
+
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(CommonErrors.DeliveryInfoNotExists)
+                            });
+                        }
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+            }
+        }
+
+        [Route("CR_UpdateLOADetails")]
+        [HttpPost]
+        public async Task<IActionResult> CR_UpdateLOADetails([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] UpdateCRLOADetailsRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+                AuthHelper helper = new AuthHelper(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.CR_loa_update);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    {
+                        int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+                        if (!ModelState.IsValid)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = string.Join("; ", ModelState.Values
+                                                           .SelectMany(x => x.Errors)
+                                                           .Select(x => x.ErrorMessage))
+                            });
+                        }
+
+                        DatabaseResponse updatePersoanDetailsResponse = await _changeRequestDataAccess.UpdateCRLOADetails(request);
+
+                        if (updatePersoanDetailsResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = true,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                        else
+                        {
+                            LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.FailedUpdateLOADetails));
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.UpdationFailed),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
     }
 }

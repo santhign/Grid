@@ -100,5 +100,18 @@ namespace OrderService.DataAccess
         /// <returns></returns>
         Task<DatabaseResponse> GetCRDetailsWithDeliveryInfo(int customerID, int changeRequestID);
 
+        /// <summary>
+        /// Crs the remove loa details.
+        /// </summary>
+        /// <param name="ChangeRequestID">The change request identifier.</param>
+        /// <returns></returns>
+        Task<DatabaseResponse> CR_RemoveLOADetails(int ChangeRequestID);
+        /// <summary>
+        /// Updates the crloa details.
+        /// </summary>
+        /// <param name="loaDetails">The loa details.</param>
+        /// <returns></returns>
+        Task<DatabaseResponse> UpdateCRLOADetails(UpdateCRLOADetailsRequest loaDetails);
+
     }
 }
