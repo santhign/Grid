@@ -114,9 +114,13 @@ namespace AdminService.Controllers
             }
         }
 
-
+        /// <summary>
+        /// Get config validation details
+        /// </summary>
+        /// <param name="ConfigType"></param>
+        /// <returns>config value list</returns> 
         [HttpGet("GetConfigByType/{ConfigType}")]
-        public async Task<IActionResult> GetConfigByType([FromHeader] string Token, [FromRoute] string ConfigType)
+        public async Task<IActionResult> GetConfigByType([FromRoute] string ConfigType)
         {
             try
             {
@@ -132,7 +136,7 @@ namespace AdminService.Controllers
                 }
 
 
-                DatabaseResponse configResponse =  ConfigHelper.GetValue(ConfigType, _iconfiguration);
+                DatabaseResponse configResponse =  await ConfigHelper.GetPubicValue(ConfigType, _iconfiguration);
 
                 List<Dictionary<string, string>> configList = new List<Dictionary<string, string>>();
 

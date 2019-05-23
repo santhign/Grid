@@ -217,5 +217,59 @@ namespace Core.Helpers
                 _DataHelper.Dispose();
             }
         }
+
+        public static async Task<DatabaseResponse> GetPubicValue(string serviceCode, IConfiguration _configuration)
+        {
+            DataAccessHelper _DataHelper = null;
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@ConfigType",  SqlDbType.NVarChar )
+
+                };
+
+                parameters[0].Value = serviceCode;
+
+                _DataHelper = new DataAccessHelper("Admin_GetPublicConfigurations", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt); // 102 /105
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 105)
+                {
+
+                    List<Dictionary<string, string>> configDictionary = new List<Dictionary<string, string>>();
+
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+
+                        configDictionary = LinqExtensions.GetDictionary(dt);
+
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = configDictionary };
+
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
     }
 }
