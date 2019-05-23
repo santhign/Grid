@@ -2492,7 +2492,7 @@ namespace OrderService.Controllers
                 });
                 AuthHelper helper = new AuthHelper(_iconfiguration);
 
-                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_loa_update);
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.CR_loa_update);
 
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
