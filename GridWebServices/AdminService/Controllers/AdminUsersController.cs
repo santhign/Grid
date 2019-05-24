@@ -105,13 +105,22 @@ namespace AdminService.Controllers
 
                     var key = Encoding.ASCII.GetBytes("stratagile grid adminuser signin jwt hashing secret");
 
+                    DatabaseResponse configResponse = ConfigHelper.GetValueByKey(ConfigKeys.CustomerTokenExpiryInDays.ToString(), _iconfiguration);
+
+                        int expiryDay = 0;
+                        
+                        if (configResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                        {
+                            expiryDay = int.Parse(configResponse.Results.ToString());
+                        }
+
                     var tokenDescriptor = new SecurityTokenDescriptor
                     {
                         Subject = new ClaimsIdentity(new Claim[]
                         {
                              new Claim(ClaimTypes.Name, adminuser.AdminUserID.ToString())
                         }),
-                        Expires = DateTime.UtcNow.AddDays(7), //  need to check with business needs
+                        Expires = DateTime.UtcNow.AddDays(expiryDay), //  need to check with business needs
                         SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
                     };
 
