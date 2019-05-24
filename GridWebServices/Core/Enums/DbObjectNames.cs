@@ -137,6 +137,16 @@ namespace Core.Enums
         /// The orders cr get cr details
         /// </summary>
         public const string Orders_CR_GetCRDetails = "Orders_CR_GetCRDetails";
+        
+        /// <summary>
+        /// The cr remove loa details
+        /// </summary>
+        public const string CR_RemoveLOADetails = "CR_RemoveLOADetails";
+
+        /// <summary>
+        /// The orders update CR LOA  details
+        /// </summary>
+        public const string Orders_UpdateCRLOADetails = "Orders_UpdateCRLOADetails";
     }
 
 }

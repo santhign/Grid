@@ -61,6 +61,7 @@ namespace Core.Enums
         public const string Dashboard_Rewards = "Dashboard_Rewards";
         public const string Orders_cancel_order = "Orders_cancel_order";
         public const string Orders_RescheduleDelivery = "Orders_RescheduleDelivery";
-        
+        public const string CR_loa_update = "CR_loa_update";
+
     }
 }

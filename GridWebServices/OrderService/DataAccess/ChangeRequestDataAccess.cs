@@ -920,5 +920,92 @@ namespace OrderService.DataAccess
             }
         }
 
+        /// <summary>
+        /// Crs the remove loa details.
+        /// </summary>
+        /// <param name="ChangeRequestID">The change request identifier.</param>
+        /// <returns></returns>
+        public async Task<DatabaseResponse> CR_RemoveLOADetails(int ChangeRequestID)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                 {
+                     new SqlParameter( "@ChangeRequestID",  SqlDbType.Int ),
+                };
+
+                parameters[0].Value = ChangeRequestID;
+
+                _DataHelper = new DataAccessHelper(DbObjectNames.CR_RemoveLOADetails, parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt); //101/ 106 /102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                response = new DatabaseResponse { ResponseCode = result };
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// Updates the crloa details.
+        /// </summary>
+        /// <param name="loaDetails">The loa details.</param>
+        /// <returns></returns>
+        public async Task<DatabaseResponse> UpdateCRLOADetails(UpdateCRLOADetailsRequest loaDetails)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@ChangeRequestID",  SqlDbType.Int ),
+                    new SqlParameter( "@RecipientName",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@IDType",  SqlDbType.NVarChar),
+                    new SqlParameter( "@IDNumber",  SqlDbType.NVarChar),
+                    new SqlParameter( "@ContactNumber",  SqlDbType.NVarChar),
+                    new SqlParameter( "@EmailAdddress",  SqlDbType.NVarChar)
+                };
+
+                parameters[0].Value = loaDetails.ChangeRequestID;
+                parameters[1].Value = loaDetails.RecipientName;
+                parameters[2].Value = loaDetails.IDType;
+                parameters[3].Value = loaDetails.IDNumber;
+                parameters[4].Value = loaDetails.ContactNumber;
+                parameters[5].Value = loaDetails.EmailAdddress;
+
+                _DataHelper = new DataAccessHelper(DbObjectNames.Orders_UpdateCRLOADetails, parameters, _configuration);
+
+                int result = await _DataHelper.RunAsync();    // 101 / 109 
+
+                return new DatabaseResponse { ResponseCode = result };
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+
     }
 }

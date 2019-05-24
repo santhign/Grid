@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -534,5 +535,67 @@ namespace OrderService.Models
         public string LinkedDisplayName { get; set; }
     }
 
+    public class UpdateCRLOADetailsRequest
+    {
+        /// <summary>
+        /// Gets or sets the order identifier.
+        /// </summary>
+        /// <value>
+        /// The order identifier.
+        /// </value>
+        [Required(ErrorMessage = "ChangeRequestID is required")]
+        public int ChangeRequestID { get; set; }
 
+        /// <summary>
+        /// Gets or sets the name of the recipient.
+        /// </summary>
+        /// <value>
+        /// The name of the recipient.
+        /// </value>
+        [Required(ErrorMessage = "RecipientName is required")]
+        public string RecipientName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the identifier.
+        /// </summary>
+        /// <value>
+        /// The type of the identifier.
+        /// </value>
+        [Required(ErrorMessage = "IDType is required")]
+        public string IDType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the identifier number.
+        /// </summary>
+        /// <value>
+        /// The identifier number.
+        /// </value>
+        [Required(ErrorMessage = "IDNumber is required")]
+        public string IDNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets the contact number.
+        /// </summary>
+        /// <value>
+        /// The contact number.
+        /// </value>
+        /// 
+        [RegularExpression(@"^([0-9]{8})$", ErrorMessage = "Invalid Mobile Number")]
+        [MaxLength(8, ErrorMessage = "Maximum 8 digits allowed")]
+        [MinLength(8, ErrorMessage = "Minimum 8 digits Required")]
+        [Required(ErrorMessage = "ContactNumber is required")]
+        public string ContactNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets the email adddress.
+        /// </summary>
+        /// <value>
+        /// The email adddress.
+        /// </value>
+
+        [EmailAddress(ErrorMessage = "Enter Valid Email Address")]
+        [Required(ErrorMessage = "EmailAdddress is required")]
+        public string EmailAdddress { get; set; }
+
+    }
 }
