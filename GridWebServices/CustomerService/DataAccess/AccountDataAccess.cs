@@ -202,13 +202,22 @@ namespace CustomerService.DataAccess
 
                     var key = Encoding.ASCII.GetBytes("stratagile grid customer signin jwt hashing secret");
 
+                    DatabaseResponse configResponse = ConfigHelper.GetValueByKey(ConfigKeys.CustomerTokenExpiryInDays.ToString(), _configuration);
+
+                    int expiry = 0;
+
+                    if (configResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                    {
+                        expiry = int.Parse(configResponse.Results.ToString());
+                    }
+
                     var tokenDescriptor = new SecurityTokenDescriptor
                     {
                         Subject = new ClaimsIdentity(new Claim[]
                         {
                              new Claim(ClaimTypes.Name, dt.Rows[0][0].ToString().Trim())
                         }),
-                        Expires = DateTime.UtcNow.AddDays(7), //  need to check with business needs
+                        Expires = DateTime.UtcNow.AddDays(expiry), //  need to check with business needs
                         SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
                     };
 

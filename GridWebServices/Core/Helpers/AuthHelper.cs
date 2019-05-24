@@ -63,10 +63,16 @@ namespace Core.Helpers
                     }
 
 
-                    if (tokenResponse.CreatedOn < DateTime.UtcNow.AddDays(-7))
+                    DatabaseResponse configResponse = ConfigHelper.GetValueByKey(ConfigKeys.CustomerTokenExpiryInDays.ToString(), _configuration);
+
+                  
+                    if(configResponse.ResponseCode==(int)DbReturnValue.RecordExists)
                     {
-                        tokenResponse.IsExpired = true;
-                    }
+                        if (tokenResponse.CreatedOn < DateTime.UtcNow.AddDays(- int.Parse(configResponse.Results.ToString())))
+                        {
+                            tokenResponse.IsExpired = true;
+                        }
+                    }                   
 
                     response = new DatabaseResponse { ResponseCode = result, Results = tokenResponse };
 
@@ -131,10 +137,14 @@ namespace Core.Helpers
                                          }).FirstOrDefault();
                     }
 
+                    DatabaseResponse configResponse = ConfigHelper.GetValueByKey(ConfigKeys.CustomerTokenExpiryInDays.ToString(), _configuration);
 
-                    if (tokenResponse.CreatedOn < DateTime.UtcNow.AddDays(-7))
+                    if (configResponse.ResponseCode == (int)DbReturnValue.RecordExists)
                     {
-                        tokenResponse.IsExpired = true;
+                        if (tokenResponse.CreatedOn < DateTime.UtcNow.AddDays(- int.Parse(configResponse.Results.ToString())))
+                        {
+                            tokenResponse.IsExpired = true;
+                        }
                     }
 
                     response = new DatabaseResponse { ResponseCode = result, Results = tokenResponse };

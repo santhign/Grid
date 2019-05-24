@@ -48,8 +48,11 @@ namespace Core.Enums
 
         [EnumMember(Value = "BSSInvoiceDownloadLink")]
         [Description("BSSInvoiceDownloadLink")]
-        BSSInvoiceDownloadLink = 4,      
+        BSSInvoiceDownloadLink = 4,
 
+        [EnumMember(Value = "CustomerTokenExpiryInDays")]
+        [Description("CustomerTokenExpiryInDays")]
+        CustomerTokenExpiryInDays = 5,
 
     }
 
