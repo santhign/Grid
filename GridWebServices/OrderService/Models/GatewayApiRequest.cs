@@ -290,9 +290,10 @@ namespace OrderService.Models
 
             if (ApiOperation == MPGSAPIOperation.CREATE_CHECKOUT_SESSION.ToString())
             {
-
-
-
+                if (!String.IsNullOrEmpty(OrderId))
+                {
+                    nvc.Add("order.reference", OrderId);
+                }
                 //payer name
                 //if (!String.IsNullOrEmpty(CustomerName))
                 //{
@@ -429,8 +430,7 @@ namespace OrderService.Models
                 if (!String.IsNullOrEmpty(OrderId))
                 {
                     nvc.Add("order.id", OrderId);
-                }
-
+                }              
 
                 //masterpass
                 if (String.IsNullOrEmpty(ApiOperation) || "CREATE_CHECKOUT_SESSION" != ApiOperation)
