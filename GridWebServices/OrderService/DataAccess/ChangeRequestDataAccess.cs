@@ -442,9 +442,72 @@ namespace OrderService.DataAccess
 
                 _DataHelper = new DataAccessHelper(DbObjectNames.Orders_CR_UpdateCRShippingDetails, parameters, _configuration);
 
-                int result = await _DataHelper.RunAsync();    // 101 / 109 
+                DataSet ds = new DataSet();
+                var result = await _DataHelper.RunAsync(ds);
 
-                return new DatabaseResponse { ResponseCode = result };
+                if (result != (int)Core.Enums.DbReturnValue.UpdateSuccess)
+                    return new DatabaseResponse { ResponseCode = result };
+
+                var TorSresponse = new ChangeSimResponse();
+
+                if (ds.Tables.Count > 0)
+                {
+                    TorSresponse = (from model in ds.Tables[0].AsEnumerable()
+                                    select new ChangeSimResponse()
+                                    {
+                                        ChangeRequestId = model.Field<int>("ChangeRequestID"),
+                                        OrderNumber = model.Field<string>("OrderNumber"),
+                                        RequestOn = model.Field<DateTime>("RequestOn"),
+                                        RequestTypeDescription = model.Field<string>("RequestTypeDescription"),
+                                        BillingUnit = model.Field<string>("BillingUnit"),
+                                        BillingFloor = model.Field<string>("BillingFloor"),
+                                        BillingBuildingName = model.Field<string>("BillingBuildingName"),
+                                        BillingBuildingNumber = model.Field<string>("BillingBuildingNumber"),
+                                        BillingStreetName = model.Field<string>("BillingStreetName"),
+                                        BillingPostCode = model.Field<string>("BillingPostCode"),
+                                        BillingContactNumber = model.Field<string>("BillingContactNumber"),
+                                        Name = model.Field<string>("Name"),
+                                        Email = model.Field<string>("Email"),
+                                        IdentityCardNumber = model.Field<string>("IdentityCardNumber"),
+                                        IdentityCardType = model.Field<string>("IdentityCardType"),
+                                        IsSameAsBilling = model.Field<int>("IsSameAsBilling"),
+                                        ShippingUnit = model.Field<string>("ShippingUnit"),
+                                        ShippingFloor = model.Field<string>("ShippingFloor"),
+                                        ShippingBuildingName = model.Field<string>("ShippingBuildingName"),
+                                        ShippingBuildingNumber = model.Field<string>("ShippingBuildingNumber"),
+                                        ShippingStreetName = model.Field<string>("ShippingStreetName"),
+                                        ShippingPostCode = model.Field<string>("ShippingPostCode"),
+                                        ShippingContactNumber = model.Field<string>("ShippingContactNumber"),
+                                        AlternateRecipientName = model.Field<string>("AlternateRecipientName"),
+                                        AlternateRecipientEmail = model.Field<string>("AlternateRecipientEmail"),
+                                        AlternateRecipientContact = model.Field<string>("AlternateRecipientContact"),
+                                        AlternateRecipientIDNumber = model.Field<string>("AlternateRecipientIDNumber"),
+                                        AlternateRecipientIDType = model.Field<string>("AlternateRecipientIDType"),
+                                        PortalSlotID = model.Field<string>("PortalSlotID"),
+                                        ScheduledDate = model.Field<DateTime?>("ScheduledDate"),
+                                        DeliveryVendor = model.Field<string>("DeliveryVendor"),
+                                        DeliveryOn = model.Field<DateTime?>("DeliveryOn"),
+                                        DeliveryTime = model.Field<DateTime?>("DeliveryTime"),
+                                        VendorTrackingCode = model.Field<string>("VendorTrackingCode"),
+                                        VendorTrackingUrl = model.Field<string>("VendorTrackingUrl"),
+                                        DeliveryFee = model.Field<double?>("DeliveryFee"),
+                                        PayableAmount = model.Field<double?>("PayableAmount")
+
+                                    }).FirstOrDefault();
+
+                    if (TorSresponse != null)
+                        TorSresponse.ChangeRequestChargesList = (from model in ds.Tables[1].AsEnumerable()
+                                                                 select new ChangeRequestCharges()
+                                                                 {
+                                                                     PortalServiceName = model.Field<string>("PortalServiceName"),
+                                                                     ServiceFee = model.Field<double?>("ServiceFee"),
+                                                                     IsRecurring = model.Field<int?>("IsRecurring"),
+                                                                     IsGstIncluded = model.Field<int?>("IsGSTIncluded")
+                                                                 }).ToList();
+                }
+
+                var response = new DatabaseResponse { ResponseCode = result, Results = TorSresponse };
+                return response;
             }
 
             catch (Exception ex)
