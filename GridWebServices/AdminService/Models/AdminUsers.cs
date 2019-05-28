@@ -13,6 +13,7 @@ namespace AdminService.Models
         public string Email { get; set; }
         public string Password { get; set; }         
         public string Role { get; set; }
+        public int Status { get; set; }
 
     }
     public class Roles

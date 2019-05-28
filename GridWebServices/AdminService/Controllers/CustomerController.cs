@@ -915,7 +915,7 @@ namespace AdminService.Controllers
         /// <returns>
         /// OperationResponse
         /// </returns>
-        [HttpGet("Subscribers")]
+        [HttpGet("Subscribers/{CustomerID}")]
         public async Task<IActionResult> Subscribers([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int CustomerID)
         {
             try

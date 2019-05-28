@@ -264,7 +264,8 @@ namespace AdminService.DataAccess
                                         Name = model.Field<string>("Name"),
                                         Email = model.Field<string>("Email"),
                                         Password = model.Field<string>("Password"),
-                                        Role = model.Field<string>("Role")
+                                        Role = model.Field<string>("Role"),
+                                        Status = model.Field<int>("Status")
                                     }).ToList();
                 }
 

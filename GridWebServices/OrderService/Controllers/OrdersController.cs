@@ -1577,8 +1577,7 @@ namespace OrderService.Controllers
         /// }
         /// </param>
         /// <returns>OperationResponse</returns>
-        [Route("updateorderpersonaldetails")]
-        [HttpPost, DisableRequestSizeLimit]       
+        [Route("updateorderpersonaldetails")]           
         public async Task<IActionResult> UpdateOrderPersonalDetails([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] UpdateOrderPersonalDetailsRequest request)
         {
             try
@@ -4476,6 +4475,8 @@ namespace OrderService.Controllers
                                         DatabaseResponse tokenDetailsUpdateResponse = new DatabaseResponse();
 
                                         DatabaseResponse paymentProcessingRespose = new DatabaseResponse();
+
+                                        transactionResponse.TrasactionResponse.Token = tokenSession.Token;
 
                                         paymentProcessingRespose = await _orderAccess.UpdateCheckOutReceipt(transactionResponse.TrasactionResponse);
 
