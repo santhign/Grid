@@ -5172,7 +5172,7 @@ namespace OrderService.Controllers
                             {
                                 HasSucceeded = true,
                                 Message = StatusMessages.SuccessMessage,
-                                Result = confirmOrder
+                                Result = statusResponse
                             });
                         }
                         else

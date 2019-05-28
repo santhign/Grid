@@ -132,11 +132,11 @@ namespace InfrastructureService
             {
                 responseBody = $"(Truncated to {limit} chars) {responseBody.Substring(0, limit)}";
             }
-            if (path.ToLower().StartsWith("/api/Customers"))
+            if (path.ToLower().StartsWith("/api/account/resetpassword"))
             {
                 requestBody = "(Request logging disabled for /api/Customers)";
             }
-            if (path.ToLower().StartsWith("/api/Account/authenticate"))
+            if (path.ToLower().StartsWith("/api/account/authenticate"))
             {
                 requestBody = "(Request logging disabled for /api/Account/authenticate)";
             }
