@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Routing;
 using System.Linq;
 using InfrastructureService;
 using Microsoft.AspNetCore.Http.Internal;
+using Core.Helpers;
 
 namespace AdminService
 {
@@ -44,9 +45,10 @@ namespace AdminService
         /// 
         public void ConfigureServices(IServiceCollection services)
         {
+            string[] corsArray = ConfigHelper.GetValueByKey("CORSWhitelist", Configuration).Results.ToString().Split(';');
             services.AddCors(o => o.AddPolicy("StratagileAdminPolicy", builder =>
             {
-                builder.AllowAnyOrigin()
+                builder.WithOrigins(corsArray)
                        .AllowAnyMethod()
                        .AllowAnyHeader();
             }));

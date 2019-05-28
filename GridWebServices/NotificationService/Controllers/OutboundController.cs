@@ -58,7 +58,7 @@ namespace NotificationService.Controllers
         ///        "Param10": ""
         ///    }]
         ///    }
-        [HttpPost]
+        [NonAction]
         [Route("SendEmail")]
         public async Task<IActionResult> PushEmail([FromBody]NotificationMessage emailSubscribers)
         {
@@ -126,7 +126,7 @@ namespace NotificationService.Controllers
         ///{
         ///  "PhoneNumber":"1234","SMSText":"Ok","ToPhoneNumber":"34567","PostData":"xyz"
         /// }
-        [HttpPost]
+        [NonAction]
         [Route("SendSMS")]
         public async Task<IActionResult> SendSMS([FromBody]Sms _smsdata)
         {

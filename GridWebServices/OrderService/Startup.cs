@@ -14,6 +14,7 @@ using System.Globalization;
 using System.Linq;
 using InfrastructureService;
 using Microsoft.AspNetCore.Http.Internal;
+using Core.Helpers;
 
 namespace OrderService
 {
@@ -32,9 +33,10 @@ namespace OrderService
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            string[] corsArray = ConfigHelper.GetValueByKey("CORSWhitelist", Configuration).Results.ToString().Split(';');
             services.AddCors(o => o.AddPolicy("GridOrderPolicy", builder =>
             {
-                builder.AllowAnyOrigin()
+                builder.WithOrigins(corsArray)
                        .AllowAnyMethod()
                        .AllowAnyHeader();
             }));
