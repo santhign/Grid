@@ -198,6 +198,7 @@ namespace AdminService.Models
         public int SubscriberID { get; set; }
         public string MobileNumber { get; set; }
         public string DisplayName { get; set; }
+        public string State { get; set; }
 
     }
 }

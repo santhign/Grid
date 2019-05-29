@@ -678,6 +678,7 @@ namespace AdminService.DataAccess
                                           SubscriberID = model.Field<int>("SubscriberID"),
                                           MobileNumber = model.Field<string>("MobileNumber"),
                                           DisplayName = model.Field<string>("DisplayName"),
+                                          State = model.Field<string>("State"),
                                       }).ToList();
                     }
 
