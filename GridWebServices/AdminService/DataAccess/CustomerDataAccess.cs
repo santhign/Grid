@@ -548,6 +548,7 @@ namespace AdminService.DataAccess
                 };
 
                 parameters[0].Value = OrderID;
+                parameters[1].Value = AdminUserID;
 
                 _DataHelper = new DataAccessHelper("Admin_AssignOrderOffsetVoucher", parameters, _configuration);
 
@@ -562,7 +563,10 @@ namespace AdminService.DataAccess
                     response = new DatabaseResponse { ResponseCode = result, Results = "voucher has been assigned for selected order" };
 
                 }
-
+                else if(result == 147 || result == 148)
+                {
+                    response = new DatabaseResponse { ResponseCode = result, Results = null }; 
+                }
                 else
                 {
                     response = null;
