@@ -251,7 +251,7 @@ namespace NotificationService.Controllers
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
             }
 
-            LogInfo.Information("Last Step for sending SMS");
+            
 
         }
 
