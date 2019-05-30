@@ -1,0 +1,11 @@
+version: '3'
+services:
+  
+  catelogserviceapi:
+    image: gridportal/catelogserviceapi:latest
+    build: CatelogService      
+    ports:
+      - "5124"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production     
+  
