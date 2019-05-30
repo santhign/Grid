@@ -147,6 +147,11 @@ namespace Core.Enums
         /// The orders update CR LOA  details
         /// </summary>
         public const string Orders_UpdateCRLOADetails = "Orders_UpdateCRLOADetails";
+
+        /// <summary>
+        /// The admin assign change request offset voucher
+        /// </summary>
+        public const string Admin_AssignChangeRequestOffsetVoucher = "Admin_AssignChangeRequestOffsetVoucher";
     }
 
 }

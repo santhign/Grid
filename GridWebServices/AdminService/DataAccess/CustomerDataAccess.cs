@@ -603,20 +603,25 @@ namespace AdminService.DataAccess
                 parameters[0].Value = SubscriberID;
                 parameters[1].Value = AdminUserID;
 
-                _DataHelper = new DataAccessHelper("Admin_AssignChangeRequestOffsetVoucher", parameters, _configuration);
-
-                DataSet ds = new DataSet();
-
-                int result = await _DataHelper.RunAsync(ds); // 105 /102
+                _DataHelper = new DataAccessHelper(DbObjectNames.Admin_AssignChangeRequestOffsetVoucher, parameters, _configuration);
+                
+                int result = await _DataHelper.RunAsync(); // 105 /102
 
                 DatabaseResponse response = new DatabaseResponse();
 
-                if (result == 105)
+                if (result == (int)DbReturnValue.RecordExists)
                 {
                     response = new DatabaseResponse { ResponseCode = result, Results = "voucher has been assigned for selected subscriber" };
 
                 }
-
+                else if (result == (int)DbReturnValue.VoucherNotApplicable_CR)
+                {
+                    response = new DatabaseResponse { ResponseCode = result, Results = DbReturnValue.VoucherNotApplicable_CR.GetDescription() };
+                }
+                else if (result == (int)DbReturnValue.ExistingVoucher)
+                {
+                    response = new DatabaseResponse { ResponseCode = result, Results = DbReturnValue.ExistingVoucher.GetDescription() };
+                }
                 else
                 {
                     response = null;

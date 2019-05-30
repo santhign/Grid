@@ -851,13 +851,26 @@ namespace AdminService.Controllers
                         }
                         else
                         {
-                            return Ok(new ServerResponse
+                            if (_response.ResponseCode == (int)DbReturnValue.RecordExists)
                             {
-                                HasSucceeded = true,
-                                Message = StatusMessages.SuccessMessage,
-                                Result = _response
+                                return Ok(new ServerResponse
+                                {
+                                    HasSucceeded = true,
+                                    Message = StatusMessages.SuccessMessage,
+                                    Result = _response
 
-                            });
+                                });
+                            }
+                            else
+                            {
+                                return Ok(new ServerResponse
+                                {
+                                    HasSucceeded = true,
+                                    Message = (_response.ResponseCode == (int)DbReturnValue.VoucherNotApplicable_CR ? EnumExtensions.GetDescription(DbReturnValue.VoucherNotApplicable_CR) : EnumExtensions.GetDescription(DbReturnValue.ExistingVoucher)),
+                                    Result = null
+
+                                });
+                            }
                         }
 
                     }
