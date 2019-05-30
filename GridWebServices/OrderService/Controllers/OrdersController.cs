@@ -1577,7 +1577,8 @@ namespace OrderService.Controllers
         /// }
         /// </param>
         /// <returns>OperationResponse</returns>
-        [Route("updateorderpersonaldetails")]           
+        [Route("updateorderpersonaldetails")]    
+        [HttpPost]
         public async Task<IActionResult> UpdateOrderPersonalDetails([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] UpdateOrderPersonalDetailsRequest request)
         {
             try

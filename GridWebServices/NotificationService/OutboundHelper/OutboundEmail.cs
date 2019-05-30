@@ -85,7 +85,7 @@ namespace NotificationService.OutboundHelper
                     mergevar.Name = "NAME";
                     mergevar.Content = param.name;
                     mergeVars.Add(mergevar);
-                    eMsg.Html=eMsg.Html.Replace("[NAME]", param.name);
+                    //eMsg.Html=eMsg.Html.Replace("[NAME]", param.name);
                    
                     if (param.param1 != null)
                     {
@@ -94,7 +94,7 @@ namespace NotificationService.OutboundHelper
                         mergevar.Content = param.param1;
                         mergeVars.Add(mergevar);
 
-                        eMsg.Html= eMsg.Html.Replace("[PARAM1]", param.param1);
+                        //eMsg.Html= eMsg.Html.Replace("[PARAM1]", param.param1);
                     }
 
                     if (param.param2 != null)
@@ -104,7 +104,7 @@ namespace NotificationService.OutboundHelper
                         mergevar.Content = param.param2;
                         mergeVars.Add(mergevar);
 
-                        eMsg.Html= eMsg.Html.Replace("[PARAM2]", param.param2);
+                        //eMsg.Html= eMsg.Html.Replace("[PARAM2]", param.param2);
                     }
 
                     if (param.param3 != null)
@@ -114,7 +114,7 @@ namespace NotificationService.OutboundHelper
                         mergevar.Content = param.param3;
                         mergeVars.Add(mergevar);
 
-                        eMsg.Html=eMsg.Html.Replace("[PARAM3]", param.param3);
+                        //eMsg.Html=eMsg.Html.Replace("[PARAM3]", param.param3);
                     }
 
                     if (param.param4 != null)
@@ -123,7 +123,7 @@ namespace NotificationService.OutboundHelper
                         mergevar.Name = "PARAM4";
                         mergevar.Content = param.param4;
                         mergeVars.Add(mergevar);
-                        eMsg.Html= eMsg.Html.Replace("[PARAM4]", param.param4);
+                        //eMsg.Html= eMsg.Html.Replace("[PARAM4]", param.param4);
                     }
                     if (param.param5 != null)
                     {
@@ -132,7 +132,7 @@ namespace NotificationService.OutboundHelper
                         mergevar.Content = param.param5;
                         mergeVars.Add(mergevar);
 
-                        eMsg.Html= eMsg.Html.Replace("[PARAM5]", param.param5);
+                        //eMsg.Html= eMsg.Html.Replace("[PARAM5]", param.param5);
                     }
                     if (param.param7 != null)
                     {
@@ -140,7 +140,7 @@ namespace NotificationService.OutboundHelper
                         mergevar.Name = "PARAM7";
                         mergevar.Content = param.param7;
                         mergeVars.Add(mergevar);
-                        eMsg.Html= eMsg.Html.Replace("[PARAM6]", param.param6);
+                        //eMsg.Html= eMsg.Html.Replace("[PARAM6]", param.param6);
                     }
 
 
@@ -150,7 +150,7 @@ namespace NotificationService.OutboundHelper
                         mergevar.Name = "PARAM7";
                         mergevar.Content = param.param7;
                         mergeVars.Add(mergevar);
-                        eMsg.Html= eMsg.Html.Replace("[PARAM7]", param.param7);
+                        //eMsg.Html= eMsg.Html.Replace("[PARAM7]", param.param7);
 
                     }
 
@@ -160,7 +160,7 @@ namespace NotificationService.OutboundHelper
                         mergevar.Name = "PARAM8";
                         mergevar.Content = param.param8;
                         mergeVars.Add(mergevar);
-                        eMsg.Html= eMsg.Html.Replace("[PARAM8]", param.param8);
+                        //eMsg.Html= eMsg.Html.Replace("[PARAM8]", param.param8);
                     }
 
                     if (param.param9 != null)
@@ -169,7 +169,7 @@ namespace NotificationService.OutboundHelper
                         mergevar.Name = "PARAM9";
                         mergevar.Content = param.param9;
                         mergeVars.Add(mergevar);
-                        eMsg.Html= eMsg.Html.Replace("[PARAM9]", param.param9);
+                        //eMsg.Html= eMsg.Html.Replace("[PARAM9]", param.param9);
                     }
 
                     if (param.param10 != null)
@@ -178,7 +178,7 @@ namespace NotificationService.OutboundHelper
                         mergevar.Name = "PARAM10";
                         mergevar.Content = param.param10;
                         mergeVars.Add(mergevar);
-                        eMsg.Html= eMsg.Html.Replace("[PARAM10]", param.param10);
+                        //eMsg.Html= eMsg.Html.Replace("[PARAM10]", param.param10);
                     }
 
                     if (param.mobilenumber != null)
@@ -188,7 +188,7 @@ namespace NotificationService.OutboundHelper
                         mergevar.Content = param.mobilenumber;
                         mergeVars.Add(mergevar);
 
-                        eMsg.Html= eMsg.Html.Replace("[UNIQUEID]", param.mobilenumber);
+                        //eMsg.Html= eMsg.Html.Replace("[UNIQUEID]", param.mobilenumber);
                     }
                    
                     Mandrill.Model.MandrillRcptMergeVar rcptMergeVar = new Mandrill.Model.MandrillRcptMergeVar();

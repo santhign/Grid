@@ -188,6 +188,14 @@ namespace Core.Enums
         [EnumMember(Value = "Mobile number mismatch")]
         [Description("Mobile number does not exist in specified order")]
         MobileNumberMismatch = 146,
+
+        [EnumMember(Value = "Voucher is applicable only for delivery failed orders")]
+        [Description("Voucher is applicable only for delivery failed orders")]
+        VoucherNotApplicable = 147,
+
+        [EnumMember(Value = "Voucher already exists for selected item")]
+        [Description("Voucher already exists for selected item")]
+        ExistingVoucher = 148,
     }
 }
 
