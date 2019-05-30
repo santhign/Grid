@@ -26,4 +26,23 @@ namespace Core.Models
         public string ExceptionStackTrace { get; set; }
         
     }
+
+    public class UILog
+    {      
+
+        public string LogType { get; set; } 
+     
+        public string LogMessage { get; set; }
+
+        public string LogSourceFileName { get; set; }
+
+        public string LogSourcenMethodName { get; set; }
+
+        public string LogSourcenUrl { get; set; }
+
+        public string Message { get; set; }
+
+
+
+    }
 }
