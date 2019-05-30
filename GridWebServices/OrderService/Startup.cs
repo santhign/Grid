@@ -40,12 +40,6 @@ namespace OrderService
                        .AllowAnyMethod()
                        .AllowAnyHeader();
             }));
-            services.Configure<RequestLocalizationOptions>(options =>
-            {
-                options.DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture("en-SG");               
-            });
-
-
 
             services.AddMvc();
             //to access configuration from controller
