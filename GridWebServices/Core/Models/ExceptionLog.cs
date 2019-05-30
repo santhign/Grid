@@ -40,9 +40,5 @@ namespace Core.Models
 
         public string LogSourcenUrl { get; set; }
 
-        public string Message { get; set; }
-
-
-
     }
 }
