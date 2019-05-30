@@ -207,34 +207,39 @@ namespace NotificationService.Controllers
                     ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
 
                     DatabaseResponse emailTemplate = await _configAccess.GetSMSNotificationTemplate(NotMessage.Message.messagetemplate.ToString());
-                    SMSTemplates template = (SMSTemplates)emailTemplate.Results;                    
-                    smsData.PhoneNumber = NotMessage.Message.parameters.Select(x => x.mobilenumber).FirstOrDefault();
+                    SMSTemplates template = (SMSTemplates)emailTemplate.Results;
 
-                    smsData.SMSText = template.SMSTemplate.Replace("[NAME]", NotMessage.MessageName)
-                        .Replace("[PARAM1]", NotMessage.Message.parameters.Select(x => x.param1).FirstOrDefault())
-                        .Replace("[PARAM2]", NotMessage.Message.parameters.Select(x => x.param2).FirstOrDefault())
-                        .Replace("[PARAM3]", NotMessage.Message.parameters.Select(x => x.param3).FirstOrDefault())
-                        .Replace("[PARAM4]", NotMessage.Message.parameters.Select(x => x.param4).FirstOrDefault())
-                        .Replace("[PARAM5]", NotMessage.Message.parameters.Select(x => x.param5).FirstOrDefault())
-                        .Replace("[PARAM6]", NotMessage.Message.parameters.Select(x => x.param6).FirstOrDefault())
-                        .Replace("[PARAM7]", NotMessage.Message.parameters.Select(x => x.param7).FirstOrDefault())
-                        .Replace("[PARAM8]", NotMessage.Message.parameters.Select(x => x.param8).FirstOrDefault())
-                        .Replace("[PARAM9]", NotMessage.Message.parameters.Select(x => x.param9).FirstOrDefault())
-                        .Replace("[PARAM10]", NotMessage.Message.parameters.Select(x => x.param10).FirstOrDefault());
-                    //LogInfo.Information("10 - SendSMS is  { "+ smsData+ "}");
-                    string response = await _SMS.SendSMSNotification(smsData, _iconfiguration);
-                   
-                    await _configAccess.CreateSMSNotificationLog(new SMSNotificationLog()
+                    foreach (var item in NotMessage.Message.parameters)
                     {
-                        Email = NotMessage.Message.parameters.Select(x => x.emailaddress).FirstOrDefault(),
-                        Mobile = smsData.PhoneNumber,
-                        SMSTemplateID = template.SMSTemplateID,
-                        SMSText = smsData.SMSText,
-                        Status = response != "failure" ? 1 : 0,
-                        ScheduledOn = subscription.Timestamp,                        
-                        SendOn = DateTime.UtcNow
+                        smsData.PhoneNumber = item.mobilenumber;
 
-                    });
+                        smsData.SMSText = template.SMSTemplate.Replace("[NAME]", NotMessage.MessageName)
+                            .Replace("[PARAM1]", item.param1)
+                            .Replace("[PARAM2]", item.param2)
+                            .Replace("[PARAM3]", item.param3)
+                            .Replace("[PARAM4]", item.param4)
+                            .Replace("[PARAM5]", item.param5)
+                            .Replace("[PARAM6]", item.param6)
+                            .Replace("[PARAM7]", item.param7)
+                            .Replace("[PARAM8]", item.param8)
+                            .Replace("[PARAM9]", item.param9)
+                            .Replace("[PARAM10]", item.param10);
+                        //LogInfo.Information("10 - SendSMS is  { "+ smsData+ "}");
+                        string response = await _SMS.SendSMSNotification(smsData, _iconfiguration);
+
+                        await _configAccess.CreateSMSNotificationLog(new SMSNotificationLog()
+                        {
+                            Email = NotMessage.Message.parameters.Select(x => x.emailaddress).FirstOrDefault(),
+                            Mobile = smsData.PhoneNumber,
+                            SMSTemplateID = template.SMSTemplateID,
+                            SMSText = smsData.SMSText,
+                            Status = response != "failure" ? 1 : 0,
+                            ScheduledOn = subscription.Timestamp,
+                            SendOn = DateTime.UtcNow
+
+                        });
+                    }
+                   
                     //LogInfo.Information("10 - SendSMSLog is  { " + NotMessage.Message.parameters.Select(x => x.emailaddress).FirstOrDefault() + " " + smsData.PhoneNumber + " "+ response + "}");
                 }
                 
