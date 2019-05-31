@@ -899,18 +899,22 @@ namespace OrderService.Controllers
 
                                 }                                
                                                              
-                                if (invoiceResponse.Response.result_code == "0")
+                                if (invoiceResponse!=null && invoiceResponse.Response!=null &&  invoiceResponse.Response.result_code == "0")
                                 {
                                     // Get download link prefix from config
                                     DatabaseResponse downloadLinkResponse = ConfigHelper.GetValueByKey(ConfigKeys.BSSInvoiceDownloadLink.ToString(), _iconfiguration);
 
                                     string downloadLinkPrefix = (string)downloadLinkResponse.Results;
 
-                                    foreach (Recordset recordset in invoiceResponse.Response.invoice_details.recordset)
+                                    if(invoiceResponse.Response.invoice_details!=null && invoiceResponse.Response.invoice_details.recordcnt>0)
                                     {
-                                        recordset.download_url = downloadLinkPrefix + recordset.bill_id;
+                                        foreach (Recordset recordset in invoiceResponse.Response.invoice_details.recordset)
+                                        {
+                                            recordset.download_url = downloadLinkPrefix + recordset.bill_id;
 
+                                        }
                                     }
+                                   
                                     return Ok(new OperationResponse
                                     {
                                         HasSucceeded = true,
