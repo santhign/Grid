@@ -149,6 +149,7 @@ namespace CustomerService.DataAccess
                                     Status = model.Field<string>("Status"),
                                     JoinedOn = model.Field<DateTime>("JoinedOn"),
                                     OrderCount = model.Field<int>("OrderCount"),
+                                    BillingAccountNumber = model.Field<string>("BillingAccountNumber"),
                                     PendingAllowedSubscribers = model.Field<int>("PendingAllowedSubscribers")
                                 }).FirstOrDefault();
                 }

@@ -3517,10 +3517,21 @@ namespace OrderService.Controllers
 
                                     AmazonS3 s3Helper = new AmazonS3(awsConfig);
 
-                                    DownloadResponse FrontImageDownloadResponse = await s3Helper.DownloadFile(((OrderNRICDetails)nRICresponse.Results).DocumentURL.Remove(0, awsConfig.AWSEndPoint.Length));
 
-                                    DownloadResponse BackImageDownloadResponse = await s3Helper.DownloadFile(((OrderNRICDetails)nRICresponse.Results).DocumentBackURL.Remove(0, awsConfig.AWSEndPoint.Length));
+                                    DownloadResponse FrontImageDownloadResponse = new DownloadResponse();
 
+                                    DownloadResponse BackImageDownloadResponse = new DownloadResponse();
+
+                                    if (!string.IsNullOrEmpty(((OrderNRICDetails)nRICresponse.Results).DocumentURL))
+                                    {
+                                        FrontImageDownloadResponse = await s3Helper.DownloadFile(((OrderNRICDetails)nRICresponse.Results).DocumentURL.Remove(0, awsConfig.AWSEndPoint.Length));
+                                    }
+
+                                    if (!string.IsNullOrEmpty(((OrderNRICDetails)nRICresponse.Results).DocumentURL))
+                                    {
+                                        BackImageDownloadResponse =  await s3Helper.DownloadFile(((OrderNRICDetails)nRICresponse.Results).DocumentBackURL.Remove(0, awsConfig.AWSEndPoint.Length));
+                                    }
+                                   
                                     DownloadNRIC nRICDownloadObject = new DownloadNRIC { OrderID = OrderID, FrontImage = FrontImageDownloadResponse.FileObject != null ? configHelper.GetBase64StringFromByteArray(FrontImageDownloadResponse.FileObject, ((OrderNRICDetails)nRICresponse.Results).DocumentURL.Remove(0, awsConfig.AWSEndPoint.Length)) : null, BackImage = BackImageDownloadResponse.FileObject != null ? configHelper.GetBase64StringFromByteArray(BackImageDownloadResponse.FileObject, ((OrderNRICDetails)nRICresponse.Results).DocumentBackURL.Remove(0, awsConfig.AWSEndPoint.Length)) : null, IdentityCardNumber = ((OrderNRICDetails)nRICresponse.Results).IdentityCardNumber, IdentityCardType = ((OrderNRICDetails)nRICresponse.Results).IdentityCardType, Nationality = ((OrderNRICDetails)nRICresponse.Results).Nationality };
 
                                     return Ok(new OperationResponse
