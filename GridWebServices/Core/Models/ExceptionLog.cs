@@ -29,7 +29,7 @@ namespace Core.Models
 
     public class UILog
     {  
-        public string logMessage { get; set; }
-
+        public string Level { get; set; }
+        public string Message { get; set; }
     }
 }
