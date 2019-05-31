@@ -9,3 +9,40 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production     
   
+  customerserviceapi:
+    image: gridportal/customerserviceapi:latest
+    build: CustomerService      
+    ports:
+      - "5125"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production     
+  
+  adminserviceapi:
+    image: gridportal/adminserviceapi:latest
+    build: AdminService      
+    ports:
+      - "5126"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production     
+  
+  orderserviceapi:
+    image: gridportal/orderserviceapi:latest
+    build: OrderService      
+    ports:
+      - "5127"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production     
+  
+  apigateway:
+    image: gridportal/apigateway:latest
+    build: APIGateway
+    container_name: apigateway
+    depends_on:
+      - catelogserviceapi
+      - customerserviceapi
+      - adminserviceapi
+      - orderserviceapi
+    ports:
+      - "10000:10000"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production      
