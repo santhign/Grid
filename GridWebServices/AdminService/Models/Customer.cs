@@ -94,6 +94,8 @@ namespace AdminService.Models
         /// The joined on.
         /// </value>
         public DateTime JoinedOn { get; set; }
+        public string BillingAccountNumber { get; set; }
+
     }
     /// <summary>
     /// CustomerSearch class
@@ -191,6 +193,8 @@ namespace AdminService.Models
         /// The DOB.
         /// </value>
         public DateTime? DOB { get; set; }
+
+        public string BillingAccountNumber { get; set; }
     }
 
     public class Subscriber
