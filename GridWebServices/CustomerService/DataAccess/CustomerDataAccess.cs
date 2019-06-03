@@ -1647,5 +1647,134 @@ namespace CustomerService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+
+        public async Task<List<CustomerPlans>> GetCustomerNonRemoveablePlans(int customerId, string mobileNumber)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+                    new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar ),
+                    
+                };
+
+                parameters[0].Value = customerId;
+                if (!string.IsNullOrEmpty(mobileNumber))
+                    parameters[1].Value = mobileNumber;
+                else
+                    parameters[1].Value = DBNull.Value;
+                
+
+                _DataHelper = new DataAccessHelper("Customers_GetNonRemoveablePlans", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+
+                await _DataHelper.RunAsync(dt);
+
+                var customerPlans = new List<CustomerPlans>();
+
+                if (dt.Rows.Count > 0)
+                {
+                    customerPlans = (from model in dt.AsEnumerable()
+                                     select new CustomerPlans()
+                                     {
+                                         SubscriptionID = model.Field<int>("SubscriptionID"),
+                                         CustomerID = model.Field<int>("CustomerID"),
+                                         PlanId = model.Field<int>("PlanID"),
+                                         PlanMarketingName = model.Field<string>("PlanMarketingName"),
+                                         PortalSummaryDescription = model.Field<string>("PortalSummaryDescription"),
+                                         PortalDescription = model.Field<string>("PortalDescription"),
+                                         SubscriptionType = model.Field<string>("SubscriptionType"),
+                                         IsRecurring = model.Field<int>("IsRecurring"),
+                                         MobileNumber = model.Field<string>("MobileNumber"),
+                                         ExpiryDate = model.Field<DateTime?>("ExpiryDate"),
+                                         PlanStatus = model.Field<string>("PlanStatus"),
+                                         Removable = model.Field<int>("Removable"),
+                                         SubscriptionDate = model.Field<DateTime?>("SubscriptionDate"),
+                                         SubscriptionFee = model.Field<double?>("SubscriptionFee"),
+                                     }).ToList();
+                }
+
+                return customerPlans;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw ex;
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+
+        public async Task<List<CustomerPlans>> GetCustomerRemoveablePlans(int customerId, string mobileNumber)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+                    new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar ),
+
+                };
+
+                parameters[0].Value = customerId;
+                if (!string.IsNullOrEmpty(mobileNumber))
+                    parameters[1].Value = mobileNumber;
+                else
+                    parameters[1].Value = DBNull.Value;
+
+
+                _DataHelper = new DataAccessHelper("Customers_GetRemoveablePlans", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+
+                await _DataHelper.RunAsync(dt);
+
+                var customerPlans = new List<CustomerPlans>();
+
+                if (dt.Rows.Count > 0)
+                {
+                    customerPlans = (from model in dt.AsEnumerable()
+                                     select new CustomerPlans()
+                                     {
+                                         SubscriptionID = model.Field<int>("SubscriptionID"),
+                                         CustomerID = model.Field<int>("CustomerID"),
+                                         PlanId = model.Field<int>("PlanID"),
+                                         PlanMarketingName = model.Field<string>("PlanMarketingName"),
+                                         PortalSummaryDescription = model.Field<string>("PortalSummaryDescription"),
+                                         PortalDescription = model.Field<string>("PortalDescription"),
+                                         SubscriptionType = model.Field<string>("SubscriptionType"),
+                                         IsRecurring = model.Field<int>("IsRecurring"),
+                                         MobileNumber = model.Field<string>("MobileNumber"),
+                                         ExpiryDate = model.Field<DateTime?>("ExpiryDate"),
+                                         PlanStatus = model.Field<string>("PlanStatus"),
+                                         Removable = model.Field<int>("Removable"),
+                                         SubscriptionDate = model.Field<DateTime?>("SubscriptionDate"),
+                                         SubscriptionFee = model.Field<double?>("SubscriptionFee"),
+                                     }).ToList();
+                }
+
+                return customerPlans;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw ex;
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
     }
 }

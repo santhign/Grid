@@ -2902,5 +2902,214 @@ namespace CustomerService.Controllers
 
             }
         }
+
+
+        [HttpGet("GetCustomerRemovablePlans")]
+        public async Task<IActionResult> GetCustomerRemovablePlans([FromHeader(Name = "Grid-Authorization-Token")] string token, string mobileNumber)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+
+                AuthHelper helper = new AuthHelper(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    {
+                        if (!ModelState.IsValid)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = string.Join("; ", ModelState.Values
+                                    .SelectMany(x => x.Errors)
+                                    .Select(x => x.ErrorMessage))
+                            });
+                        }
+
+                        var customerAccess = new CustomerDataAccess(_iconfiguration);
+
+                        var customerPlans = await customerAccess.GetCustomerRemoveablePlans(((AuthTokenResponse)tokenAuthResponse.Results).CustomerID, mobileNumber);
+
+                        if (customerPlans == null)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                // I am marking HasSucceeded as true assuming that Customer can have 0 plan so its not an error.
+                                HasSucceeded = true,
+                                Message = DbReturnValue.NoRecords.GetDescription(),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                        else
+                        {
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = true,
+                                Message = StatusMessages.SuccessMessage,
+                                Result = customerPlans
+                            });
+                        }
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+
+                }
+
+                else
+                {
+                    // token auth failure
+                    LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
+
+        [HttpGet("GetCustomerNonRemovablePlans")]
+        public async Task<IActionResult> GetCustomerNonRemovablePlans([FromHeader(Name = "Grid-Authorization-Token")] string token, string mobileNumber)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+
+                AuthHelper helper = new AuthHelper(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    {
+                        if (!ModelState.IsValid)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = string.Join("; ", ModelState.Values
+                                    .SelectMany(x => x.Errors)
+                                    .Select(x => x.ErrorMessage))
+                            });
+                        }
+
+                        var customerAccess = new CustomerDataAccess(_iconfiguration);
+
+                        var customerPlans = await customerAccess.GetCustomerNonRemoveablePlans(((AuthTokenResponse)tokenAuthResponse.Results).CustomerID, mobileNumber);
+
+                        if (customerPlans == null)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                // I am marking HasSucceeded as true assuming that Customer can have 0 plan so its not an error.
+                                HasSucceeded = true,
+                                Message = DbReturnValue.NoRecords.GetDescription(),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                        else
+                        {
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = true,
+                                Message = StatusMessages.SuccessMessage,
+                                Result = customerPlans
+                            });
+                        }
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+
+                }
+
+                else
+                {
+                    // token auth failure
+                    LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
     }
 }

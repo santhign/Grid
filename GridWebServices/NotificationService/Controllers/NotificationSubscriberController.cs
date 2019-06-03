@@ -213,7 +213,7 @@ namespace NotificationService.Controllers
                     {
                         smsData.PhoneNumber = item.mobilenumber;
 
-                        smsData.SMSText = template.SMSTemplate.Replace("*|NAME|*", NotMessage.MessageName)
+                        smsData.SMSText = template.SMSTemplate.Replace("*|NAME|*", item.name)
                              .Replace("*|PARAM1|*",  item.param1)
                              .Replace("*|PARAM2|*",  item.param2)
                              .Replace("*|PARAM3|*",  item.param3)
