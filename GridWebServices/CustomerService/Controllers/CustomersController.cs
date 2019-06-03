@@ -2904,8 +2904,8 @@ namespace CustomerService.Controllers
         }
 
 
-        [HttpGet("GetCustomerRemovablePlans")]
-        public async Task<IActionResult> GetCustomerRemovablePlans([FromHeader(Name = "Grid-Authorization-Token")] string token, string mobileNumber)
+        [HttpGet("GetCustomerPurchasedVASes")]
+        public async Task<IActionResult> GetCustomerPurchasedVASes([FromHeader(Name = "Grid-Authorization-Token")] string token, string mobileNumber)
         {
             try
             {
@@ -2940,7 +2940,7 @@ namespace CustomerService.Controllers
 
                         var customerAccess = new CustomerDataAccess(_iconfiguration);
 
-                        var customerPlans = await customerAccess.GetCustomerRemoveablePlans(((AuthTokenResponse)tokenAuthResponse.Results).CustomerID, mobileNumber);
+                        var customerPlans = await customerAccess.GetCustomerPurchasedVASes(((AuthTokenResponse)tokenAuthResponse.Results).CustomerID, mobileNumber);
 
                         if (customerPlans == null)
                         {
@@ -3008,8 +3008,8 @@ namespace CustomerService.Controllers
             }
         }
 
-        [HttpGet("GetCustomerNonRemovablePlans")]
-        public async Task<IActionResult> GetCustomerNonRemovablePlans([FromHeader(Name = "Grid-Authorization-Token")] string token, string mobileNumber)
+        [HttpGet("GetBundledVASes")]
+        public async Task<IActionResult> GetBundledVASes([FromHeader(Name = "Grid-Authorization-Token")] string token, string mobileNumber)
         {
             try
             {
@@ -3044,7 +3044,7 @@ namespace CustomerService.Controllers
 
                         var customerAccess = new CustomerDataAccess(_iconfiguration);
 
-                        var customerPlans = await customerAccess.GetCustomerNonRemoveablePlans(((AuthTokenResponse)tokenAuthResponse.Results).CustomerID, mobileNumber);
+                        var customerPlans = await customerAccess.GetBundledVASes(((AuthTokenResponse)tokenAuthResponse.Results).CustomerID, mobileNumber);
 
                         if (customerPlans == null)
                         {
