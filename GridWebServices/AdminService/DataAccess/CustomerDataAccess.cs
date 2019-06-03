@@ -73,7 +73,8 @@ namespace AdminService.DataAccess
                                         SMSSubscription = model.Field<string>("SMSSubscription"),
                                         EmailSubscription = model.Field<string>("EmailSubscription"),
                                         Status = model.Field<string>("Status"),
-                                        JoinedOn = model.Field<DateTime>("JoinedOn")
+                                        JoinedOn = model.Field<DateTime>("JoinedOn"),
+                                        BillingAccountNumber = model.Field<string>("BillingAccountNumber")
                                     }).ToList();
                 }
 
@@ -127,7 +128,8 @@ namespace AdminService.DataAccess
                                     SMSSubscription = model.Field<string>("SMSSubscription"),
                                     EmailSubscription = model.Field<string>("EmailSubscription"),
                                     Status = model.Field<string>("Status"),
-                                    JoinedOn = model.Field<DateTime>("JoinedOn")
+                                    JoinedOn = model.Field<DateTime>("JoinedOn"),
+                                    BillingAccountNumber = model.Field<string>("BillingAccountNumber"),
                                 }).Where(c => c.CustomerID == customerId).FirstOrDefault();
                 }
 
@@ -189,7 +191,8 @@ namespace AdminService.DataAccess
                                         DOB = model.Field<DateTime?>("DOB"),
                                         EmailSubscription = model.Field<string>("EmailSubscription"),
                                         ReferralCode = model.Field<string>("ReferralCode"),
-                                        Status = model.Field<string>("Status")
+                                        Status = model.Field<string>("Status"),
+                                        BillingAccountNumber = model.Field<string>("BillingAccountNumber"),
                                     }).ToList();
                 }
 

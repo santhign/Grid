@@ -128,6 +128,8 @@ namespace CustomerService.Models
         /// The pending allowed subscribers.
         /// </value>
         public int PendingAllowedSubscribers { get; set; }
+
+        public string BillingAccountNumber { get; set; }
     }
 
     /// <summary>
