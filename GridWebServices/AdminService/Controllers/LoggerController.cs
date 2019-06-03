@@ -19,7 +19,7 @@ namespace AdminService.Controllers
         {
             try
             {
-                if (logRequest==null || string.IsNullOrEmpty( logRequest.logMessage))
+                if (logRequest==null || string.IsNullOrEmpty( logRequest.Message))
                 {
                     return Ok(new OperationResponse
                     {
