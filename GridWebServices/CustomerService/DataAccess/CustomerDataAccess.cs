@@ -1648,7 +1648,7 @@ namespace CustomerService.DataAccess
             }
         }
 
-        public async Task<List<CustomerPlans>> GetCustomerNonRemoveablePlans(int customerId, string mobileNumber)
+        public async Task<List<CustomerPlans>> GetBundledVASes(int customerId, string mobileNumber)
         {
             try
             {
@@ -1666,7 +1666,7 @@ namespace CustomerService.DataAccess
                     parameters[1].Value = DBNull.Value;
                 
 
-                _DataHelper = new DataAccessHelper("Customers_GetNonRemoveablePlans", parameters, _configuration);
+                _DataHelper = new DataAccessHelper("Customers_GetBundledVASes", parameters, _configuration);
 
                 DataTable dt = new DataTable();
 
@@ -1713,7 +1713,7 @@ namespace CustomerService.DataAccess
         }
 
 
-        public async Task<List<CustomerPlans>> GetCustomerRemoveablePlans(int customerId, string mobileNumber)
+        public async Task<List<CustomerPlans>> GetCustomerPurchasedVASes(int customerId, string mobileNumber)
         {
             try
             {
@@ -1731,7 +1731,7 @@ namespace CustomerService.DataAccess
                     parameters[1].Value = DBNull.Value;
 
 
-                _DataHelper = new DataAccessHelper("Customers_GetRemoveablePlans", parameters, _configuration);
+                _DataHelper = new DataAccessHelper("Customer_GetCustomerPurchasedVASes", parameters, _configuration);
 
                 DataTable dt = new DataTable();
 
