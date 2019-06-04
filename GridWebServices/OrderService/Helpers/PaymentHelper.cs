@@ -80,7 +80,7 @@ namespace OrderService.Helpers
         }
 
         
-        public Checkout CreateCheckoutSession(GridMPGSConfig mpgsConfig, customerBilling customerBillingDetails, string MpgsOrderID, string transactionID, string receiptNumber)
+        public Checkout CreateCheckoutSession(GridMPGSConfig mpgsConfig, customerBilling customerBillingDetails, string MpgsOrderID, string transactionID, string receiptNumber, string orderNumber)
         {
             try
             {
@@ -88,7 +88,7 @@ namespace OrderService.Helpers
 
                 GatewayApiConfig config = new GatewayApiConfig(mpgsConfig);
 
-                GatewayApiRequest gatewayApiRequest = new GatewayApiRequest(config, customerBillingDetails, receiptNumber);
+                GatewayApiRequest gatewayApiRequest = new GatewayApiRequest(config, customerBillingDetails, receiptNumber, orderNumber);
 
                 gatewayApiRequest.ApiOperation = MPGSAPIOperation.CREATE_CHECKOUT_SESSION.ToString();
 
@@ -482,9 +482,9 @@ namespace OrderService.Helpers
 
             GatewayApiConfig config = new GatewayApiConfig(mpgsConfig);
 
-            GatewayApiRequest gatewayApiRequest = new GatewayApiRequest(config)
+            GatewayApiRequest gatewayApiRequest = new GatewayApiRequest(config, checkOutDetails.ReceiptNumber,checkOutDetails.OrderNumber)
             {
-              //  SessionId = checkOutDetails.CheckoutSession.Id,
+               SessionId = checkOutDetails.CheckoutSession.Id,
                 OrderId = checkOutDetails.OrderId,
                 TransactionId = checkOutDetails.TransactionID,
                 ApiOperation = MPGSAPIOperation.AUTHORIZE.ToString(),

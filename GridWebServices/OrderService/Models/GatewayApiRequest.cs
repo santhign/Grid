@@ -91,7 +91,7 @@ namespace OrderService.Models
 
         private String MerchantContactNumber { get; set; }
         private String ReceiptNumber { get; set; }
-
+        private String OrderNumber { get; set; }
 
         public GatewayApiRequest()
         {
@@ -102,7 +102,21 @@ namespace OrderService.Models
             GatewayApiConfig = gatewayApiConfig;
         }
 
-        public GatewayApiRequest(GatewayApiConfig gatewayApiConfig, customerBilling billingAddress, string receiptNumber)
+        public GatewayApiRequest(GatewayApiConfig gatewayApiConfig, string receiptNumber, string orderNumber)
+        {
+            GatewayApiConfig = gatewayApiConfig;
+
+            if (!string.IsNullOrEmpty(receiptNumber))
+            {
+                ReceiptNumber = receiptNumber;
+            }
+
+            if (!string.IsNullOrEmpty(orderNumber))
+            {
+                OrderNumber = orderNumber;
+            }
+        }
+        public GatewayApiRequest(GatewayApiConfig gatewayApiConfig, customerBilling billingAddress, string receiptNumber, string orderNumber)
         {
             GatewayApiConfig = gatewayApiConfig;
 
@@ -144,6 +158,11 @@ namespace OrderService.Models
             if (!string.IsNullOrEmpty(receiptNumber))
             {
                 ReceiptNumber = receiptNumber;
+            }
+
+            if (!string.IsNullOrEmpty(orderNumber))
+            {
+                OrderNumber = orderNumber;
             }
         }
         public GatewayApiConfig GatewayApiConfig
@@ -396,10 +415,10 @@ namespace OrderService.Models
                     nvc.Add("order.statementDescriptor.name", gatewayApiConfig.GridMerchantName.ToLower() + " " + ReceiptNumber);
                 }
 
-                else
-                {
-                    nvc.Add("order.statementDescriptor.name",  gatewayApiConfig.GridMerchantName);
-                }
+                //else
+                //{
+                //    nvc.Add("order.statementDescriptor.name",  gatewayApiConfig.GridMerchantName);
+                //}
                 //pass 
                 nvc.Add("order.statementDescriptor.address.company", gatewayApiConfig.GridMerchantName);
                 nvc.Add("order.statementDescriptor.address.street", gatewayApiConfig.GridMerchantAddress1);
@@ -426,10 +445,13 @@ namespace OrderService.Models
                 // Its presence in the body will cause an error for the other operations.
                 if (!String.IsNullOrEmpty(OrderId))
                 {
-                    nvc.Add("order.id", OrderId);
-                    nvc.Add("order.reference", OrderId);
+                    nvc.Add("order.id", OrderId);                  
                 }
 
+                if (!String.IsNullOrEmpty(OrderNumber))
+                {                  
+                    nvc.Add("order.reference", OrderNumber);
+                }
                 //masterpass
                 if (String.IsNullOrEmpty(ApiOperation) || "CREATE_CHECKOUT_SESSION" != ApiOperation)
                 {
@@ -466,9 +488,9 @@ namespace OrderService.Models
 
             if (ApiOperation == MPGSAPIOperation.AUTHORIZE.ToString())
             {
-                if (!String.IsNullOrEmpty(OrderId))
+                if (!String.IsNullOrEmpty(OrderNumber))
                 {                   
-                    nvc.Add("order.reference", OrderId);
+                    nvc.Add("order.reference", OrderNumber);
                 }
 
             }

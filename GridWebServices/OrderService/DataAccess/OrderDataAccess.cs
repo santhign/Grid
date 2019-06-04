@@ -1545,7 +1545,7 @@ namespace OrderService.DataAccess
                 parameters[5].Value = checkOutRequest.CheckoutVersion;
                 parameters[6].Value = checkOutRequest.TransactionID;
 
-                _DataHelper = new DataAccessHelper("Orders_GetCheckoutRequestDetails", parameters, _configuration);
+                _DataHelper = new DataAccessHelper("Orders_GetCheckoutRequestDetails_NEW", parameters, _configuration);
 
                 DataTable dt = new DataTable();
 
@@ -1564,6 +1564,7 @@ namespace OrderService.DataAccess
                                         Amount = model.Field<double>("Amount"),
                                         ReceiptNumber= model.Field<string>("RecieptNumber"),
                                         OrderId = model.Field<string>("MPGSOrderID"),
+                                        OrderNumber = model.Field<string>("OrderNumber"),
                                     }).FirstOrDefault();
 
                     }
