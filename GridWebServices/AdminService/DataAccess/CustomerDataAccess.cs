@@ -251,7 +251,7 @@ namespace AdminService.DataAccess
                             orderDetails.ListingStatus = dr["ListingStatus"].ToString();
                             orderDetails.OrderNumber = dr["OrderNumber"].ToString();
                             orderDetails.OrderDate = Convert.ToDateTime(dr["OrderDate"]);
-                            orderDetails.OrderStatus = dr["OrderStatus"].ToString();
+                            orderDetails.OrderStatus = dr["OrderStatus"].ToString();                           
                             orderDetails.IdentityCardType = dr["IdentityCardType"].ToString();
                             orderDetails.IdentityCardNumber = dr["IdentityCardNumber"].ToString();
                             orderDetails.BillingUnit = dr["BillingUnit"].ToString();
@@ -290,6 +290,8 @@ namespace AdminService.DataAccess
                             catch { }
                             try { orderDetails.ServiceFee = Convert.ToDouble(dr["ServiceFee"]); }
                             catch { }
+                            try{ orderDetails.AllowDeliveryOffset = Convert.ToInt32(dr["AllowDeliveryOffset"]);}
+                            catch { orderDetails.AllowDeliveryOffset = null; }
 
                             List<Bundle> orderBundles = new List<Bundle>();
 
