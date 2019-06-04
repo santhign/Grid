@@ -2754,7 +2754,7 @@ namespace OrderService.Controllers
                             {
                                 checkoutDetails.OrderId = ((Checkout)checkOutAmountResponse.Results).OrderId;
 
-                                checkoutDetails = gatewayHelper.CreateCheckoutSession(gatewayConfig, billingAddress, checkoutDetails.OrderId, checkoutDetails.TransactionID, ((Checkout)checkOutAmountResponse.Results).ReceiptNumber);
+                                checkoutDetails = gatewayHelper.CreateCheckoutSession(gatewayConfig, billingAddress, checkoutDetails.OrderId, checkoutDetails.TransactionID, ((Checkout)checkOutAmountResponse.Results).ReceiptNumber, ((Checkout)checkOutAmountResponse.Results).OrderNumber);
 
                                 CheckOutRequestDBUpdateModel checkoutUpdateModel = new CheckOutRequestDBUpdateModel
                                 {
@@ -2782,6 +2782,8 @@ namespace OrderService.Controllers
                                     checkoutDetails.Amount = ((Checkout)checkOutAmountResponse.Results).Amount;
 
                                     checkoutDetails.ReceiptNumber = ((Checkout)checkOutAmountResponse.Results).ReceiptNumber;
+
+                                    checkoutDetails.OrderNumber= ((Checkout)checkOutAmountResponse.Results).OrderNumber;
 
                                     checkoutDetails.MerchantName = gatewayConfig.GridMerchantName;
 
@@ -4915,7 +4917,7 @@ namespace OrderService.Controllers
                                 {
                                     checkoutDetails.OrderId = ((Checkout)checkOutAmountResponse.Results).OrderId;
 
-                                    checkoutDetails = gatewayHelper.CreateCheckoutSession(gatewayConfig, billingAddress, checkoutDetails.OrderId, checkoutDetails.TransactionID, ((Checkout)checkOutAmountResponse.Results).ReceiptNumber);
+                                    checkoutDetails = gatewayHelper.CreateCheckoutSession(gatewayConfig, billingAddress, checkoutDetails.OrderId, checkoutDetails.TransactionID, ((Checkout)checkOutAmountResponse.Results).ReceiptNumber, ((Checkout)checkOutAmountResponse.Results).OrderNumber);
 
                                     // Call MPGS to create a checkout session and retuen details
                                     CheckOutRequestDBUpdateModel checkoutUpdateModel = new CheckOutRequestDBUpdateModel
@@ -4944,6 +4946,8 @@ namespace OrderService.Controllers
                                         checkoutDetails.Amount = ((Checkout)checkOutAmountResponse.Results).Amount;
 
                                         checkoutDetails.ReceiptNumber = ((Checkout)checkOutAmountResponse.Results).ReceiptNumber;
+
+                                        checkoutDetails.OrderNumber= ((Checkout)checkOutAmountResponse.Results).OrderNumber;
 
                                         string authorizeResponse = gatewayHelper.Authorize(gatewayConfig, checkoutDetails, paymentMethod);
 
@@ -5372,7 +5376,7 @@ namespace OrderService.Controllers
 
                                 checkoutDetails.ReceiptNumber = ((Checkout)checkOutAmountResponse.Results).ReceiptNumber;
 
-                                checkoutDetails = gatewayHelper.CreateCheckoutSession(gatewayConfig, billingAddress, checkoutDetails.OrderId, checkoutDetails.TransactionID, checkoutDetails.ReceiptNumber);
+                                checkoutDetails = gatewayHelper.CreateCheckoutSession(gatewayConfig, billingAddress, checkoutDetails.OrderId, checkoutDetails.TransactionID, checkoutDetails.ReceiptNumber, ((Checkout)checkOutAmountResponse.Results).OrderNumber);
 
                                 CheckOutRequestDBUpdateModel checkoutUpdateModel = new CheckOutRequestDBUpdateModel
                                 {

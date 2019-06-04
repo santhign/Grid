@@ -40,7 +40,7 @@ namespace OrderService.Models
         public CheckoutSessionModel CheckoutSession { get; set; }
         public string TransactionID { get; set; }
         public string ReceiptNumber { get; set; }
-
+        public string OrderNumber { get; set; }      
 
     }
 
