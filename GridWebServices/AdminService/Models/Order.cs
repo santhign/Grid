@@ -47,6 +47,8 @@ namespace AdminService.Models
         public double? ServiceFee { get; set; }
         public List<Bundle> Bundles { get; set; }
         public List<ServiceCharge> ServiceCharges { get; set; }
+
+        public int? AllowDeliveryOffset { get; set; }
     }
 
     public class ServiceCharge
