@@ -506,7 +506,10 @@ namespace AdminService.DataAccess
                             try { orderDetails.ScheduledDate = Convert.ToDateTime(dr["ScheduledDate"]); }
                             catch { }
                             try { orderDetails.ServiceFee = Convert.ToDouble(dr["ServiceFee"]); }
-                            catch { }                            
+                            catch { }
+                            try { orderDetails.AllowDeliveryOffset = Convert.ToInt32(dr["AllowDeliveryOffset"]); }
+                            catch { orderDetails.AllowDeliveryOffset = null; }
+
                         }
                         orders.Add(orderDetails);
                     }

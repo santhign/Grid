@@ -1174,7 +1174,7 @@ namespace CustomerService.Controllers
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = false,
-                                Message = "Only letters and Digits are allowed",
+                                Message = "Only letters and digits are allowed",
                                 IsDomainValidationErrors = false
                             });
                         }
