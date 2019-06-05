@@ -591,10 +591,7 @@ namespace OrderService.Models
         /// </summary>
         /// <value>
         /// The email adddress.
-        /// </value>
-
-        [EmailAddress(ErrorMessage = "Enter Valid Email Address")]
-        [Required(ErrorMessage = "EmailAdddress is required")]
+        /// </value>  
         public string EmailAdddress { get; set; }
 
     }

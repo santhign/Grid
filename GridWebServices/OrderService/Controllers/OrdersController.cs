@@ -18,6 +18,7 @@ using OrderService.Enums;
 using Newtonsoft.Json;
 using Core.DataAccess;
 using InfrastructureService.MessageQueue;
+using System.Net.Mail;
 
 namespace OrderService.Controllers
 {
@@ -2033,6 +2034,28 @@ namespace OrderService.Controllers
                                                            .SelectMany(x => x.Errors)
                                                            .Select(x => x.ErrorMessage))
                             });
+                        }
+
+
+                        if (!string.IsNullOrEmpty(request.EmailAdddress))
+                        {
+                            try
+
+                            {
+                                MailAddress m = new MailAddress(request.EmailAdddress);
+                            }
+                            catch
+                            {
+                                LogInfo.Error(StatusMessages.DomainValidationError);
+
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = false,
+                                    IsDomainValidationErrors = true,
+                                    Message = EnumExtensions.GetDescription(CommonErrors.InvalidEmail),
+                                });
+
+                            }
                         }
 
                         OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
