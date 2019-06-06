@@ -1169,15 +1169,15 @@ namespace CustomerService.Controllers
                         }
 
 
-                        if (!customerReferralCode.ReferralCode.All(char.IsLetterOrDigit))
-                        {
-                            return Ok(new OperationResponse
-                            {
-                                HasSucceeded = false,
-                                Message = "Only letters and digits are allowed",
-                                IsDomainValidationErrors = false
-                            });
-                        }
+                        //if (!customerReferralCode.ReferralCode.All(char.IsLetterOrDigit))
+                        //{
+                        //    return Ok(new OperationResponse
+                        //    {
+                        //        HasSucceeded = false,
+                        //        Message = "Only letters and digits are allowed",
+                        //        IsDomainValidationErrors = false
+                        //    });
+                        //}
 
                         CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
 

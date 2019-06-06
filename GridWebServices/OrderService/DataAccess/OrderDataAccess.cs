@@ -753,7 +753,8 @@ namespace OrderService.DataAccess
                                             SlotFromTime = model.Field<TimeSpan?>("SlotFromTime"),
                                             SlotToTime = model.Field<TimeSpan?>("SlotToTime"),
                                             ScheduledDate = model.Field<DateTime?>("ScheduledDate"),
-                                            ServiceFee = model.Field<double?>("ServiceFee")
+                                            ServiceFee = model.Field<double?>("ServiceFee"),
+                                            RecieptNumber = model.Field<string>("RecieptNumber"),
                                         }).FirstOrDefault();
 
                         List<Bundle> orderBundles = new List<Bundle>();
