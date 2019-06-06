@@ -683,6 +683,12 @@ namespace CustomerService.Models
         /// <value>
         /// The status.
         /// </value>
+
+
+        [RegularExpression(@"[a-zA-Z0-9_\s]+", ErrorMessage = "Only letters and digits are allowed")]
+        [MaxLength(20, ErrorMessage = "Maximum 20 characters allowed")]
+        [MinLength(6, ErrorMessage = "Minimum 6 characters required")]
+        [Required(ErrorMessage = "ReferralCode is required")]
         public string ReferralCode { get; set; }
     }
 

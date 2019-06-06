@@ -1169,15 +1169,15 @@ namespace CustomerService.Controllers
                         }
 
 
-                        if (!customerReferralCode.ReferralCode.All(char.IsLetterOrDigit))
-                        {
-                            return Ok(new OperationResponse
-                            {
-                                HasSucceeded = false,
-                                Message = "Only letters and digits are allowed",
-                                IsDomainValidationErrors = false
-                            });
-                        }
+                        //if (!customerReferralCode.ReferralCode.All(char.IsLetterOrDigit))
+                        //{
+                        //    return Ok(new OperationResponse
+                        //    {
+                        //        HasSucceeded = false,
+                        //        Message = "Only letters and digits are allowed",
+                        //        IsDomainValidationErrors = false
+                        //    });
+                        //}
 
                         CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
 
@@ -1749,7 +1749,23 @@ namespace CustomerService.Controllers
 
                         CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
 
-                        DatabaseResponse rewardsummaryResponse = await _customerAccess.GetRewardSummary(customerID);
+                        DatabaseResponse rewardsummaryResponse = new DatabaseResponse();
+
+                        try
+                        {
+                            rewardsummaryResponse = await _customerAccess.GetRewardSummary(customerID);
+                        }
+                        catch(Exception ex)
+                        {
+                            LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(CommonErrors.RewardServerError),
+                                IsDomainValidationErrors = false
+                            });
+                        }
 
                         if (rewardsummaryResponse.Results == null)
                         {
