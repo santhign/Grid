@@ -124,7 +124,6 @@ namespace AdminService.Models
         public TimeSpan? SlotFromTime { get; set; }
         public TimeSpan? SlotToTime { get; set; }
         public DateTime? ScheduledDate { get; set; }
-        public double? ServiceFee { get; set; }
-        public int? AllowDeliveryOffset { get; set; }
+        public double? ServiceFee { get; set; }       
     }
 }
