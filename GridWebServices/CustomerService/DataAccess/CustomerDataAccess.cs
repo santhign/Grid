@@ -1238,6 +1238,10 @@ namespace CustomerService.DataAccess
                                          TotalVoice = model.Field<double>("TotalVoice"),
                                          ActualSubscriptionFee = model.Field<double>("ActualSubscriptionFee"),
                                          ApplicableSubscriptionFee = model.Field<double>("ApplicableSubscriptionFee"),
+                                         StartDate = model.Field<DateTime?>("StartDate"),
+                                         ExpiryDate = model.Field<DateTime?>("ExpiryDate"),
+                                         SubscriptionDate = model.Field<DateTime?>("SubscriptionDate"),
+
                                      }).ToList();
                     }
 
@@ -1648,7 +1652,7 @@ namespace CustomerService.DataAccess
             }
         }
 
-        public async Task<List<CustomerPlans>> GetBundledVASes(int customerId, string mobileNumber)
+        public async Task<List<CustomerPurchasedVASes>> GetBundledVASes(int customerId, string mobileNumber)
         {
             try
             {
@@ -1673,12 +1677,12 @@ namespace CustomerService.DataAccess
 
                 await _DataHelper.RunAsync(dt);
 
-                var customerPlans = new List<CustomerPlans>();
+                var customerPlans = new List<CustomerPurchasedVASes>();
 
                 if (dt.Rows.Count > 0)
                 {
                     customerPlans = (from model in dt.AsEnumerable()
-                                     select new CustomerPlans()
+                                     select new CustomerPurchasedVASes()
                                      {
                                          SubscriptionID = model.Field<int>("SubscriptionID"),
                                          CustomerID = model.Field<int>("CustomerID"),
@@ -1689,6 +1693,7 @@ namespace CustomerService.DataAccess
                                          SubscriptionType = model.Field<string>("SubscriptionType"),
                                          IsRecurring = model.Field<int>("IsRecurring"),
                                          MobileNumber = model.Field<string>("MobileNumber"),
+                                         StartDate = model.Field<DateTime?>("StartDate"),
                                          ExpiryDate = model.Field<DateTime?>("ExpiryDate"),
                                          PlanStatus = model.Field<string>("PlanStatus"),
                                          Removable = model.Field<int>("Removable"),
@@ -1713,7 +1718,7 @@ namespace CustomerService.DataAccess
         }
 
 
-        public async Task<List<CustomerPlans>> GetCustomerPurchasedVASes(int customerId, string mobileNumber)
+        public async Task<List<CustomerPurchasedVASes>> GetCustomerPurchasedVASes(int customerId, string mobileNumber)
         {
             try
             {
@@ -1738,12 +1743,12 @@ namespace CustomerService.DataAccess
 
                 await _DataHelper.RunAsync(dt);
 
-                var customerPlans = new List<CustomerPlans>();
+                var customerPlans = new List<CustomerPurchasedVASes>();
 
                 if (dt.Rows.Count > 0)
                 {
                     customerPlans = (from model in dt.AsEnumerable()
-                                     select new CustomerPlans()
+                                     select new CustomerPurchasedVASes()
                                      {
                                          SubscriptionID = model.Field<int>("SubscriptionID"),
                                          CustomerID = model.Field<int>("CustomerID"),
@@ -1754,6 +1759,7 @@ namespace CustomerService.DataAccess
                                          SubscriptionType = model.Field<string>("SubscriptionType"),
                                          IsRecurring = model.Field<int>("IsRecurring"),
                                          MobileNumber = model.Field<string>("MobileNumber"),
+                                         StartDate = model.Field<DateTime?>("StartDate"),
                                          ExpiryDate = model.Field<DateTime?>("ExpiryDate"),
                                          PlanStatus = model.Field<string>("PlanStatus"),
                                          Removable = model.Field<int>("Removable"),
