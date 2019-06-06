@@ -314,11 +314,11 @@ namespace Core.Enums
         AccountDeactivated = 72,
 
         [EnumMember(Value = "InvalidStatus")]
-        [Description("Invalid Account Status")]
+        [Description("Invalid account status")]
         InvalidStatus = 73,
 
         [EnumMember(Value = "FailedToRemoveRescheduleLoa")]
-        [Description("Failed To Remove Reschedule LOA")]
+        [Description("Failed to remove reschedule LOA")]
         FailedToRemoveRescheduleLoa = 74,
 
         [EnumMember(Value = "OldNumberNotExists")]
@@ -332,6 +332,10 @@ namespace Core.Enums
         [EnumMember(Value = "BillingAccountNumberEmpty")]
         [Description("BillingAccountNumber field empty")]
         BillingAccountNumberEmpty = 77,
+
+        [EnumMember(Value = "RewardServerError")]
+        [Description("Unable to get rewards details. Server error")]
+        RewardServerError = 78,
 
     }
 }

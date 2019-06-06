@@ -896,6 +896,7 @@ namespace CustomerService.DataAccess
                             orderDetails.AlternateRecipientName = dr["AlternateRecipientName"].ToString();
                             orderDetails.AlternateRecipientEmail = dr["AlternateRecipientEmail"].ToString();
                             orderDetails.PortalSlotID = dr["PortalSlotID"].ToString();
+                            orderDetails.RecieptNumber = dr["RecieptNumber"].ToString();
                             orderDetails.SlotDate = (dr["SlotDate"] == DBNull.Value) ? (DateTime?)null : ((DateTime)dr["SlotDate"]);
                             //dr["SlotDate"] != null  Convert.ToDateTime(dr["SlotDate"]);
                             TimeSpan val;
@@ -956,6 +957,7 @@ namespace CustomerService.DataAccess
                                                         ServiceName = model.Field<string>("ServiceName"),
                                                         ActualServiceFee = model.Field<double?>("ActualServiceFee"),
                                                         ApplicableServiceFee = model.Field<double?>("ApplicableServiceFee"),
+                                                       
                                                     }).Where(c => c.OrderSubscriberID == _subscriber.OrderSubscriberID).ToList();
 
                                     _subscriber.Bundles = orderBundles;

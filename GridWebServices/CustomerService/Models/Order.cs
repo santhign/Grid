@@ -55,6 +55,8 @@ namespace CustomerService.Models
         public List<Subscribers> Subscribers { get; set; }
         public List<ServiceCharge> ServiceCharges { get; set; }
         public List<OrderStatuses> OrderStatuses { get; set; }
+
+        public string RecieptNumber { get; set; }
     }
     public class OrderStatuses
     {
