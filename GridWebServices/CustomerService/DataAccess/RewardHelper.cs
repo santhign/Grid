@@ -55,7 +55,7 @@ namespace CustomerService.DataAccess
 
                 RequestObject req = new RequestObject();
                 string html = string.Empty;
-                string url = requestUrl + $"{AccountID}?sartDate={FromDate.ToString("yyyyMMdd")}&endDate={ToDate.ToString("yyyyMMdd")}";
+                string url = requestUrl + $"{AccountID}?startDate={FromDate.ToString("yyyyMMdd")}&endDate={ToDate.ToString("yyyyMMdd")}";
 
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
                 request.AutomaticDecompression = DecompressionMethods.GZip;

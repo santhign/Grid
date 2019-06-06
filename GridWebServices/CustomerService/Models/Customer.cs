@@ -830,6 +830,12 @@ namespace CustomerService.Models
         /// The applicable subscription fee.
         /// </value>
         public double ApplicableSubscriptionFee { get; set; }
+
+        public DateTime? StartDate { get; set; }
+
+        public DateTime? ExpiryDate { get; set; }
+
+        public DateTime? SubscriptionDate { get; set; }
     }
 
     /// <summary>
@@ -1178,5 +1184,16 @@ namespace CustomerService.Models
         /// The allow rescheduling.
         /// </value>
         public int AllowRescheduling { get; set; }
+    }
+
+    public class CustomerPurchasedVASes : CustomerPlans
+    {
+        /// <summary>
+        /// Gets or sets the start date.
+        /// </summary>
+        /// <value>
+        /// The start date.
+        /// </value>
+        public DateTime? StartDate { get; set; }
     }
 }
