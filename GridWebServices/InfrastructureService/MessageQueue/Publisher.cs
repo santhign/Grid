@@ -106,8 +106,10 @@ namespace InfrastructureService.MessageQueue
         {
             if (!_initialised)
                 await Initialise();
+            string msg = JsonConvert.SerializeObject(message);
 
             PublishResponse response = await _snsClient.PublishAsync(_topicArn, JsonConvert.SerializeObject(message));
+
             return response.HttpStatusCode.ToString();
         }
 

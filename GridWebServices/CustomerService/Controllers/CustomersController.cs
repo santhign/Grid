@@ -1749,7 +1749,23 @@ namespace CustomerService.Controllers
 
                         CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
 
-                        DatabaseResponse rewardsummaryResponse = await _customerAccess.GetRewardSummary(customerID);
+                        DatabaseResponse rewardsummaryResponse = new DatabaseResponse();
+
+                        try
+                        {
+                            rewardsummaryResponse = await _customerAccess.GetRewardSummary(customerID);
+                        }
+                        catch(Exception ex)
+                        {
+                            LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(CommonErrors.RewardServerError),
+                                IsDomainValidationErrors = false
+                            });
+                        }
 
                         if (rewardsummaryResponse.Results == null)
                         {
