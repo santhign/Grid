@@ -2494,7 +2494,7 @@ namespace OrderService.Controllers
                 AuthHelper helper = new AuthHelper(_iconfiguration);
 
                 DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.CR_loa_update);
-
+                
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
                     if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
@@ -2531,6 +2531,21 @@ namespace OrderService.Controllers
 
                             }
                         }
+                        OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+                        var customerResponse = await _orderAccess.GetCustomerIdFromChangeRequestId(request.ChangeRequestID);
+                        var customerObject = (OrderCustomer)customerResponse.Results;
+                        if (customerObject.CustomerId != customerID)
+                        {
+                            // failed to locate customer
+                            LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.TokenNotMatching));
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(CommonErrors.TokenNotMatching),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+
                         DatabaseResponse updatePersoanDetailsResponse = await _changeRequestDataAccess.UpdateCRLOADetails(request);
 
                         if (updatePersoanDetailsResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
