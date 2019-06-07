@@ -35,7 +35,7 @@ namespace Core.Helpers
 
                 request.request_id = assetRequest.request_id;
 
-                request.request_timestamp = DateTime.Now.ToString("ddmmyyyyhhmmss");
+                request.request_timestamp = DateTime.Now.ToString("ddMMyyyyhhmmss");
 
                 request.action = BSSApis.GetAssets.ToString();
 
@@ -175,7 +175,7 @@ namespace Core.Helpers
 
                 request.request_id = assetReq.request_id;
 
-                request.request_timestamp = DateTime.Now.ToString("ddmmyyyyhhmmss");
+                request.request_timestamp = DateTime.Now.ToString("ddMMyyyyhhmmss");
 
                 request.action = BSSApis.UpdateAssetStatus.ToString();
 
@@ -294,7 +294,7 @@ namespace Core.Helpers
 
                 request.request_id = assetRequest.request_id;
 
-                request.request_timestamp = DateTime.Now.ToString("ddmmyyyyhhmmss");
+                request.request_timestamp = DateTime.Now.ToString("ddMMyyyyhhmmss");
 
                 request.action = BSSApis.GetAssets.ToString();
 
@@ -425,7 +425,7 @@ namespace Core.Helpers
 
                 request.request_id = requestId;
 
-                request.request_timestamp = DateTime.Now.ToString("ddmmyyyyhhmmss");
+                request.request_timestamp = DateTime.Now.ToString("ddMMyyyyhhmmss");
 
                 request.action = BSSApis.QueryPlan.ToString();
 
@@ -533,7 +533,7 @@ namespace Core.Helpers
 
                 request.request_id = requestId;
 
-                request.request_timestamp = DateTime.Now.ToString("ddmmyyyyhhmmss");
+                request.request_timestamp = DateTime.Now.ToString("ddMMyyyyhhmmss");
 
                 request.action = BSSApis.GetInvoiceDetails.ToString();
 
@@ -632,7 +632,7 @@ namespace Core.Helpers
 
                 request.request_id = requestId;
 
-                request.request_timestamp = DateTime.Now.ToString("ddmmyyyyhhmmss");
+                request.request_timestamp = DateTime.Now.ToString("ddMMyyyyhhmmss");
 
                 request.action = BSSApis.QuerySubscriber.ToString();
 

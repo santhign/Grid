@@ -1546,7 +1546,7 @@ namespace OrderService.DataAccess
                 parameters[5].Value = checkOutRequest.CheckoutVersion;
                 parameters[6].Value = checkOutRequest.TransactionID;
 
-                _DataHelper = new DataAccessHelper("Orders_GetCheckoutRequestDetails_NEW", parameters, _configuration);
+                _DataHelper = new DataAccessHelper("Orders_GetCheckoutRequestDetails", parameters, _configuration);
 
                 DataTable dt = new DataTable();
 
