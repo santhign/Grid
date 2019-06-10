@@ -12,7 +12,7 @@ namespace Core.Models
         public int OrderSubscriberID { get; set; }
         public string MobileNumber { get; set; }
         public bool IsProcessed { get; set; }
-        public string DateCreated { get; set; }
+        public DateTime DateCreated { get; set; }
     }
 
     public class PendingBuddyOrders

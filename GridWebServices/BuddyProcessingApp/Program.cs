@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Core.DataAccess;
 
+
 namespace BuddyProcessingApp
 {
     class Program
@@ -19,16 +20,18 @@ namespace BuddyProcessingApp
         private static string _connectionString;
 
         private static int _timeInterval;
-
+        public static IConfiguration Configuration { get; } = new ConfigurationBuilder()
+             .SetBasePath(Directory.GetCurrentDirectory())
+             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+             .Build();
         static void Main(string[] args)
-        {
-            var builder = new ConfigurationBuilder()
-       .SetBasePath(Directory.GetCurrentDirectory())
-       .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+        {          
 
-            IConfigurationRoot configuration = builder.Build();
+            LogInfo.Initialize(Configuration);      
 
-            _connectionString = configuration.GetConnectionString("DefaultConnection");
+            LogInfo.Information("Buddy Console App is Started");
+
+            _connectionString = Configuration.GetConnectionString("DefaultConnection");
 
             _timeInterval =  GetIntervel();
 
@@ -46,6 +49,8 @@ namespace BuddyProcessingApp
             try
             {
                 Console.WriteLine("Start timer: " + DateTime.UtcNow);
+
+                LogInfo.Information("BuddyConsole Start timer: " + DateTime.UtcNow);
 
                 BuddyDataAccess buddyDataAccess = new BuddyDataAccess();
 
@@ -75,6 +80,8 @@ namespace BuddyProcessingApp
 
                                 int customerID;
 
+                                customerIDResponse = await buddyDataAccess.GetCustomerIdFromOrderId(buddy.OrderID, _connectionString);
+
                                 if (customerIDResponse != null && customerIDResponse.Results != null)
                                 {
                                     customerID = (int)customerIDResponse.Results;
@@ -86,7 +93,7 @@ namespace BuddyProcessingApp
                                     buddy.IsProcessed = afterProcessing.IsProcessed;
                                 }
 
-                            }
+                             }
 
                             List<PendingBuddy> unProcessedBuddies = buddyListToProcess.Where(b => b.IsProcessed == false).ToList();
                                          
@@ -101,6 +108,15 @@ namespace BuddyProcessingApp
                             }
                             else
                             {
+                                List<PendingBuddy> processedBuddies = buddyListToProcess.Where(b => b.IsProcessed == true).ToList();
+
+                                foreach (PendingBuddy upBuddy in processedBuddies)
+                                {
+                                    DatabaseResponse upBuddyCreateResponse = await buddyDataAccess.UpdatePendingBuddyList(_connectionString, upBuddy);
+                                }
+
+                                DatabaseResponse removeProcessedResponse = await buddyDataAccess.RemoveProcessedBuddyList(_connectionString, buddyListToProcess[0].OrderID);
+                               
                                 int processed = await buddyHelper.ProcessOrderQueueMessage(buddyListToProcess[0].OrderID);
 
                             }
@@ -110,7 +126,9 @@ namespace BuddyProcessingApp
                 }
               
                 Console.WriteLine("End Timer: " + DateTime.UtcNow);
-              
+
+                LogInfo.Information("BuddyConsole End timer: " + DateTime.UtcNow);
+
                 GC.Collect();
             }
             catch (Exception ex)

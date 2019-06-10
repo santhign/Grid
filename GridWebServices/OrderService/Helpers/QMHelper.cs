@@ -144,10 +144,7 @@ namespace OrderService.Helpers
 
                         //  Action buddyProcessing = FinalBuddyProcessing;
 
-                            int processed=  await   FinalBuddyProcessing();
-
-                        
-
+                            int processed=  await   FinalBuddyProcessing();   
                     }
 
                     else
