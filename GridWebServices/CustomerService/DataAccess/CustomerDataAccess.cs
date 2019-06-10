@@ -548,7 +548,11 @@ namespace CustomerService.DataAccess
                                           PlanChangeMessage = model.Field<string>("PlanChangeMessage"),
                                           SMSSubscription = model.Field<int>("SMSSubscription"),
                                           VoiceSubscription = model.Field<int>("VoiceSubscription"),
-                                          SIMReplacementRaised = model.Field<int>("SIMReplacementRaised")
+                                          SIMReplacementRaised = model.Field<int>("SIMReplacementRaised"),
+                                          SuspensionAllowed = model.Field<int>("SuspensionAllowed"),
+                                          UnsuspensionAllowed = model.Field<int>("UnsuspensionAllowed"),
+                                          TerminationAllowed = model.Field<int>("TerminationAllowed"),
+                                          SIMReplacementAllowed = model.Field<int>("SIMReplacementAllowed")
                                       }).ToList();
                     }
 

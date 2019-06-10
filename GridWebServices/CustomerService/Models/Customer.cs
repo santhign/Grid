@@ -504,6 +504,10 @@ namespace CustomerService.Models
         /// The voice subscription.
         /// </value>
         public int VoiceSubscription { get; set; }
+        public int SuspensionAllowed { get; set; }
+        public int UnsuspensionAllowed { get; set; }
+        public int TerminationAllowed { get; set; }
+        public int SIMReplacementAllowed { get; set; }
     }
 
     /// <summary>
