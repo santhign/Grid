@@ -4485,30 +4485,29 @@ namespace OrderService.Controllers
 
                                 if (tokenizeResponse != null && !string.IsNullOrEmpty(tokenizeResponse.Token))
                                 {
-                                    // insert token response to payment methods table
+                                   // insert token response to payment methods table
 
-                                    DatabaseResponse tokenDetailsCreateResponse = new DatabaseResponse();
+                                     DatabaseResponse tokenDetailsCreateResponse = new DatabaseResponse();
 
                                     LogInfo.Information(JsonConvert.SerializeObject(tokenizeResponse));
 
                                     tokenDetailsCreateResponse = await _orderAccess.CreatePaymentMethod(tokenizeResponse, customerID, updateRequest.MPGSOrderID, "UpdateTokenizeCheckOutResponse");
 
-                                    if (tokenDetailsCreateResponse.ResponseCode == (int)DbReturnValue.CreateSuccess || tokenDetailsCreateResponse.ResponseCode==(int) DbReturnValue.ExistingCard)
-                                    {                                        
+                                    if (tokenDetailsCreateResponse.ResponseCode == (int)DbReturnValue.CreateSuccess || tokenDetailsCreateResponse.ResponseCode == (int)DbReturnValue.ExistingCard)
+                                    {
                                         tokenSession.SourceOfFundType = tokenizeResponse.Type;
 
                                         tokenSession.Token = tokenizeResponse.Token;
 
-                                        string captureResponse = gatewayHelper.Capture(gatewayConfig, tokenSession);                                     
+                                        string captureResponse = gatewayHelper.Capture(gatewayConfig, tokenSession);
 
-                                        // get the session details and transaction details
+                                      //  get the session details and transaction details
 
-                                        TransactionRetrieveResponseOperation transactionResponse = new TransactionRetrieveResponseOperation();
+                                       TransactionRetrieveResponseOperation transactionResponse = new TransactionRetrieveResponseOperation();
 
                                         transactionResponse = gatewayHelper.RetrieveCheckOutTransaction(gatewayConfig, updateRequest);
 
-                                        // deside on the fields to update to database for payment processing and call SP to update
-                                        
+                                                                               
                                         DatabaseResponse tokenDetailsUpdateResponse = new DatabaseResponse();
 
                                         DatabaseResponse paymentProcessingRespose = new DatabaseResponse();
@@ -4517,7 +4516,7 @@ namespace OrderService.Controllers
 
                                         paymentProcessingRespose = await _orderAccess.UpdateCheckOutReceipt(transactionResponse.TrasactionResponse);
 
-                                        tokenDetailsUpdateResponse = await _orderAccess.UpdatePaymentMethodDetails(transactionResponse.TrasactionResponse, customerID, tokenSession.Token);
+                                      //  tokenDetailsUpdateResponse = await _orderAccess.UpdatePaymentMethodDetails(transactionResponse.TrasactionResponse, customerID, tokenSession.Token);
                                                                                
                                         //Get Order Type
                                         var sourceTyeResponse = await _orderAccess.GetSourceTypeByMPGSSOrderId(updateRequest.MPGSOrderID);
@@ -4601,7 +4600,7 @@ namespace OrderService.Controllers
                                 {
                                     //failed to create payment token
 
-                                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.TokenGenerationFailed)+ " for customer:"+ customerID);
+                                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.TokenGenerationFailed) + " for customer:" + customerID);
                                     return Ok(new OperationResponse
                                     {
                                         HasSucceeded = false,
@@ -4609,7 +4608,6 @@ namespace OrderService.Controllers
                                         IsDomainValidationErrors = false
                                     });
                                 }
-
 
                             }
 

@@ -78,7 +78,7 @@ namespace BuddyProcessingApp
 
                         DatabaseResponse buddyProcessResponse = await _buddyAccess.ProcessBuddyPlan(buddyToProcess, _connectionString);
 
-                        if (buddyProcessResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
+                        if (buddyProcessResponse.ResponseCode == (int)DbReturnValue.CreateSuccess || buddyProcessResponse.ResponseCode == (int)DbReturnValue.BuddyAlreadyExists)
                         {
                             // update process status
 
@@ -135,7 +135,7 @@ namespace BuddyProcessingApp
 
                 OrderQM orderDetails = new OrderQM();
 
-                string topicName = string.Empty;
+                string topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _connectionString).Results.ToString().Trim();
 
                 string pushResult = string.Empty;
 
