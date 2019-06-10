@@ -207,7 +207,10 @@ namespace OrderService.Helpers
                         Dictionary<string, string> attribute = new Dictionary<string, string>();
 
                         topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration).Results.ToString().Trim();
-
+                        if (string.IsNullOrWhiteSpace(topicName))
+                        {
+                            throw new NullReferenceException("topicName is null for Order (" + orderID + ") for RemoveVAS Request Service API");
+                        }
 
                         attribute.Add(EventTypeString.EventType, ((OrderCount)OrderCountResponse.Results).SuccessfulOrders == 1 ? Core.Enums.RequestType.NewCustomer.GetDescription() : Core.Enums.RequestType.NewService.GetDescription());
 
@@ -251,7 +254,7 @@ namespace OrderService.Helpers
                     {
                         LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
-                        MessageQueueRequest queueRequest = new MessageQueueRequest
+                        MessageQueueRequestException queueRequest = new MessageQueueRequestException
                         {
                             Source = CheckOutType.Orders.ToString(),
                             NumberOfRetries = 1,
@@ -263,7 +266,7 @@ namespace OrderService.Helpers
                             MessageBody = JsonConvert.SerializeObject(orderDetails),
                             Status = 0
                         };
-                        await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                        await _messageQueueDataAccess.InsertMessageInMessageQueueRequestException(queueRequest);
                     }
                 }
             }
