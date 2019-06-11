@@ -547,14 +547,15 @@ namespace CustomerService.Controllers
         }
 
 
-        // POST: api/Customers
+        // POST: api/Customers       
         /// <summary>
-        /// Creates the specified customer.
-        /// </summary>     
+        /// Creates the specified token.
+        /// </summary>
+        /// <param name="Token">The token.</param>
         /// <param name="customer">The customer.</param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] RegisterCustomer customer)
+        public async Task<IActionResult> Create([FromHeader(Name = "Grid-General-Token")] string Token, [FromBody] RegisterCustomer customer)
         {
             try
             {
@@ -567,6 +568,17 @@ namespace CustomerService.Controllers
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
+                    });
+                }
+
+                var token = ConfigHelper.GetValueByKey(Core.Enums.ConfigKey.GenericToken.GetDescription(), _iconfiguration).Results.ToString().Trim();
+                if (Token != token)
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = true
                     });
                 }
 

@@ -24,13 +24,13 @@ namespace AdminService.Controllers
         }
 
         /// <summary>
-        /// Get config details
+        /// Gets the generic configuration value.
         /// </summary>
-        /// <param name="ConfigKey"></param>
-        /// <returns>config value</returns> 
-        /// 
+        /// <param name="Token">The token.</param>
+        /// <param name="ConfigKey">The configuration key.</param>
+        /// <returns></returns>
         [HttpGet("{ConfigKey}")]
-        public async Task<IActionResult> GetGenericConfigValue([FromRoute] string ConfigKey)
+        public async Task<IActionResult> GetGenericConfigValue([FromHeader(Name = "Grid-General-Token")] string Token, [FromRoute] string ConfigKey)
         {
             try
             {
@@ -43,6 +43,16 @@ namespace AdminService.Controllers
                         IsDomainValidationErrors = true
                     });
 
+                }
+                var token = ConfigHelper.GetValueByKey(Core.Enums.ConfigKey.GenericToken.GetDescription(), _iconfiguration).Results.ToString().Trim();
+                if (Token != token)
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = true
+                    });
                 }
 
                 ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
