@@ -57,9 +57,8 @@ namespace CustomerService.Controllers
                                             .Select(x => x.ErrorMessage))
                     };
                 }
-
-                var token = ConfigHelper.GetValueByKey(Core.Enums.ConfigKey.GenericToken.GetDescription(), _iconfiguration).Results.ToString().Trim();
-                if (Token != token)
+                TokenValidationHelper tokenValidationHelper = new TokenValidationHelper();
+                if (!tokenValidationHelper.ValidateGenericToken(Token, _iconfiguration))
                 {
                     return Ok(new OperationResponse
                     {
