@@ -41,7 +41,7 @@ namespace CustomerService.Controllers
         /// <returns>validation result</returns> 
         [HttpGet]
         [Route("EmailValidation/{emailid}")]
-        public IActionResult EmailValidation([FromRoute] string emailid)
+        public IActionResult EmailValidation([FromHeader(Name = "Grid-General-Token")] string Token, [FromRoute] string emailid)
         {
             try
             {
@@ -57,7 +57,16 @@ namespace CustomerService.Controllers
                                             .Select(x => x.ErrorMessage))
                     };
                 }
-
+                TokenValidationHelper tokenValidationHelper = new TokenValidationHelper();
+                if (!tokenValidationHelper.ValidateGenericToken(Token, _iconfiguration))
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = true
+                    });
+                }
                 DatabaseResponse configResponseEmail = ConfigHelper.GetValue("EmailValidate", _iconfiguration);
 
                 List<Dictionary<string, string>> _result = ((List<Dictionary<string, string>>)configResponseEmail.Results);

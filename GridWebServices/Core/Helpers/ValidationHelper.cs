@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using System.Data.SqlClient;
 using System.Data;
 using Microsoft.Extensions.Configuration;
+using Core.Extensions;
 
 namespace Core.Helpers
 {
@@ -255,6 +256,23 @@ namespace Core.Helpers
             }
 
             return Series;
+        }
+    }
+
+    /// <summary>
+    /// Token Validation Helper class
+    /// </summary>
+    public class TokenValidationHelper
+    {
+        /// <summary>
+        /// Validates the generic token.
+        /// </summary>
+        /// <param name="Token">The token.</param>
+        /// <returns></returns>
+        public bool ValidateGenericToken(string Token, IConfiguration _configuration)
+        {
+            var token = ConfigHelper.GetValueByKey(Core.Enums.ConfigKey.GenericToken.GetDescription(), _configuration).Results.ToString().Trim();
+            return Token == token;
         }
     }
 }

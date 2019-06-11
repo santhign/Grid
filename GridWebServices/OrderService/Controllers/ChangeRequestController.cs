@@ -104,9 +104,9 @@ namespace OrderService.Controllers
                         string topicName = string.Empty, subject = string.Empty;
                         
                         try
-                        {
+                        {                            
                             msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(removeVASResponse.ChangeRequestID);
-                            if(msgBody == null)
+                            if (msgBody == null || msgBody.ChangeRequestID == 0)
                             {
                                 throw new NullReferenceException("message body is null for ChangeRequest (" + removeVASResponse.ChangeRequestID + ") for RemoveVAS Service API");
                             }
@@ -293,7 +293,7 @@ namespace OrderService.Controllers
                             }
                             msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(buyVASResponse.ChangeRequestID);
 
-                            if (msgBody == null)
+                            if (msgBody == null || msgBody.ChangeRequestID == 0)
                             {
                                 throw new NullReferenceException("message body is null for ChangeRequest (" + buyVASResponse.ChangeRequestID + ") for BuyVAS Service API");
                             }
@@ -461,7 +461,7 @@ namespace OrderService.Controllers
                             try
                             {
                                 msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(buddyResponse.ChangeRequestId);
-                                if (msgBody == null)
+                                if (msgBody == null || msgBody.ChangeRequestID == 0)
                                 {
                                     throw new NullReferenceException("message body is null for ChangeRequest (" + buddyResponse.ChangeRequestId + ") for Termination Request Service API");
                                 }
@@ -576,7 +576,7 @@ namespace OrderService.Controllers
                         try
                         {
                             msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(TorSresponse.ChangeRequestId);
-                            if (msgBody == null)
+                            if (msgBody == null || msgBody.ChangeRequestID == 0)
                             {
                                 throw new NullReferenceException("message body is null for ChangeRequest (" + TorSresponse.ChangeRequestId + ") for Termination Request Service API");
                             }
@@ -781,7 +781,7 @@ namespace OrderService.Controllers
                                     Dictionary<string, string> attribute = new Dictionary<string, string>();
 
                                     msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(details.ChangeRequestID);
-                                    if (msgBody == null)
+                                    if (msgBody == null || msgBody.ChangeRequestID == 0)
                                     {
                                         throw new NullReferenceException("message body is null for ChangeRequest (" + details.ChangeRequestID + ") for ChangeSIM in UpdateCheckout Response Request Service API");
                                     }
@@ -979,7 +979,7 @@ namespace OrderService.Controllers
                         try
                         {
                             msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(TorSresponse.ChangeRequestId);
-                            if (msgBody == null)
+                            if (msgBody == null || msgBody.ChangeRequestID == 0)
                             {
                                 throw new NullReferenceException("message body is null for ChangeRequest (" + TorSresponse.ChangeRequestId + ") for Suspension Request Service API");
                             }
@@ -1347,7 +1347,7 @@ namespace OrderService.Controllers
                         try
                         {
                             msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(TorSresponse.ChangeRequestId);
-                            if (msgBody == null)
+                            if (msgBody == null || msgBody.ChangeRequestID == 0)
                             {
                                 throw new NullReferenceException("message body is null for ChangeRequest (" + TorSresponse.ChangeRequestId + ") for UnSuspension Request Service API");
                             }
@@ -1548,7 +1548,7 @@ namespace OrderService.Controllers
                             }
                             msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(buySharedVASResponse.ChangeRequestID);
 
-                            if (msgBody == null)
+                            if (msgBody == null || msgBody.ChangeRequestID == 0)
                             {
                                 throw new NullReferenceException("message body is null for ChangeRequest (" + buySharedVASResponse.ChangeRequestID + ") for BuyShared VAS Request Service API");
                             }
@@ -1722,7 +1722,7 @@ namespace OrderService.Controllers
                         try
                         {
                             msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(removeVASResponse.ChangeRequestID);
-                            if (msgBody == null)
+                            if (msgBody == null || msgBody.ChangeRequestID == 0)
                             {
                                 throw new NullReferenceException("message body is null for ChangeRequest (" + removeVASResponse.ChangeRequestID + ") for Remove Shared VAS Request Service API");
                             }
@@ -1899,7 +1899,7 @@ namespace OrderService.Controllers
                                 {
 
                                     msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(changePlanResponse.ChangeRequestID);
-                                    if (msgBody == null)
+                                    if (msgBody == null || msgBody.ChangeRequestID == 0)
                                     {
                                         throw new NullReferenceException("message body is null for ChangeRequest (" + changePlanResponse.ChangeRequestID + ") for Change Plan Service Request Service API");
                                     }
