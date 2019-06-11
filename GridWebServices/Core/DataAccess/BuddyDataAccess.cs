@@ -41,7 +41,7 @@ namespace Core.DataAccess
                                           PendingBuddyOrderListID = model.Field<int>("PendingBuddyOrderListID"),
                                           OrderSubscriberID = model.Field<int>("OrderSubscriberID"),
                                           MobileNumber = model.Field<string>("MobileNumber"),
-                                          DateCreated = model.Field<string>("DateCreated"),
+                                          DateCreated = model.Field<DateTime>("DateCreated"),
                                           IsProcessed = model.Field<bool>("IsProcessed")
                                       }).ToList();
 
@@ -79,12 +79,12 @@ namespace Core.DataAccess
 
                     new SqlParameter( "@IsProcessed",  SqlDbType.Bit )                   
                 };
-               
+                 
                 parameters[0].Value = buddy.PendingBuddyOrderListID;
 
                 parameters[1].Value = buddy.IsProcessed;
                
-                _DataHelper = new DataAccessHelper("Orders_UpdatePendingBuddyList", connectionString);              
+                _DataHelper = new DataAccessHelper("Orders_UpdatePendingBuddyList",parameters, connectionString);              
 
                 int result = await _DataHelper.RunAsync(); // 101 /106/102
 
@@ -467,6 +467,44 @@ namespace Core.DataAccess
                 _DataHelper.Dispose();
             }
         }
+
+        public async Task<DatabaseResponse> RemoveProcessedBuddyList(string connectionString, int orderID)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@OrderID",  SqlDbType.Int )                  
+
+                };
+
+                parameters[0].Value = orderID;               
+
+                _DataHelper = new DataAccessHelper("Orders_RemoveProcessedBuddyList", parameters, connectionString);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync();    // 102 /103/ 150
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                response = new DatabaseResponse { ResponseCode = result };
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+
+        }
+        
     }
 
     public class OrderCust

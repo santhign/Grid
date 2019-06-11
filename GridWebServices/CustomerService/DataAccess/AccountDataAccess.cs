@@ -39,10 +39,11 @@ namespace CustomerService.DataAccess
                 {
                     new SqlParameter( "@Email",  SqlDbType.VarChar ),
                     new SqlParameter( "@Password",  SqlDbType.VarChar )
-                };
+                };              
 
                 parameters[0].Value = request.Email;
-                parameters[1].Value = new Sha2().Hash(request.Password);
+               
+                parameters[1].Value = new Sha2().Hash(new Base64Helper().base64Decode(request.Password));
 
                 _DataHelper = new DataAccessHelper("Customer_AuthenticateCustomer", parameters, _configuration);
 
@@ -333,7 +334,7 @@ namespace CustomerService.DataAccess
 
                 parameters[0].Value = resetPassword.ResetToken;
 
-                parameters[1].Value = new Sha2().Hash(resetPassword.NewPassword);
+                parameters[1].Value = new Sha2().Hash(new Base64Helper().base64Decode(resetPassword.NewPassword));
 
                 _DataHelper = new DataAccessHelper("Customer_ResetPassword", parameters, _configuration);
 

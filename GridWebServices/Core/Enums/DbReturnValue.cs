@@ -200,6 +200,10 @@ namespace Core.Enums
         [EnumMember(Value = "Voucher is applicable only for active subscribers")]
         [Description("Voucher is applicable only for active subscribers")]
         VoucherNotApplicable_CR = 149,
+
+        [EnumMember(Value = "Delete Failed")]
+        [Description("Record deletion failed")]
+        DeleteFailed = 150,
     }
 }
 
