@@ -55,9 +55,9 @@ namespace CustomerService.DataAccess
                     new SqlParameter( "@Password",  SqlDbType.NVarChar ),
                     new SqlParameter( "@ReferralCode",  SqlDbType.NVarChar)
                 };
-
+               
                 parameters[0].Value = customer.Email;
-                parameters[1].Value = new Sha2().Hash(customer.Password);
+                parameters[1].Value = new Sha2().Hash(new Base64Helper().base64Decode(customer.Password));
                 parameters[2].Value = new RandomSG().GetString().ToUpper();
 
                 _DataHelper = new DataAccessHelper("Customer_CreateCustomer", parameters, _configuration);
@@ -192,7 +192,7 @@ namespace CustomerService.DataAccess
                 if (customer.Password == null || customer.Password == "")
                 { parameters[1].Value = DBNull.Value; }
                 else
-                { parameters[1].Value = new Sha2().Hash(customer.Password); }
+                { parameters[1].Value = new Sha2().Hash(new Base64Helper().base64Decode(customer.Password)); }
                 parameters[2].Value = customer.MobileNumber;
                 parameters[3].Value = customer.Email;
 
@@ -1522,7 +1522,8 @@ namespace CustomerService.DataAccess
                 };
 
                 parameters[0].Value = request.Email;
-                parameters[1].Value = new Sha2().Hash(request.Password);
+
+                parameters[1].Value = new Sha2().Hash(new Base64Helper().base64Decode(request.Password));
 
                 _DataHelper = new DataAccessHelper("Customer_ValidatePassword", parameters, _configuration);                
 
