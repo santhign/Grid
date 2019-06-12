@@ -1004,7 +1004,7 @@ namespace CustomerService.Controllers
         /// </returns>
         [HttpGet]
         [Route("ForgetPassword/{email}")]
-        public async Task<IActionResult> ForgetPassword([FromRoute] string email)
+        public async Task<IActionResult> ForgetPassword([FromHeader(Name = "Grid-General-Token")] string Token, [FromRoute] string email)
         {
             try
             {
@@ -1019,6 +1019,18 @@ namespace CustomerService.Controllers
                                                    .Select(x => x.ErrorMessage))
                     });
                 }
+
+                TokenValidationHelper tokenValidationHelper = new TokenValidationHelper();
+                if (!tokenValidationHelper.ValidateGenericToken(Token, _iconfiguration))
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = Core.Extensions.EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = true
+                    });
+                }
+
                 try
 
                 {

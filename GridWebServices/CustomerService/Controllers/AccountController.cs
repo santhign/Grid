@@ -34,7 +34,7 @@ namespace CustomerService.Controllers
         /// <param name="loginRequest"></param>
         /// <returns>LoggedInPrinciple</returns>
         [HttpPost("authenticate")]
-        public async Task<IActionResult> Authenticate([FromBody]LoginDto loginRequest)
+        public async Task<IActionResult> Authenticate([FromHeader(Name = "Grid-General-Token")] string Token, [FromBody]LoginDto loginRequest)
         {
             try
             {
@@ -50,7 +50,17 @@ namespace CustomerService.Controllers
                                             .Select(x => x.ErrorMessage))
                     };
                 }
-               
+
+                TokenValidationHelper tokenValidationHelper = new TokenValidationHelper();
+                if (!tokenValidationHelper.ValidateGenericToken(Token, _iconfiguration))
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = Core.Extensions.EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = true
+                    });
+                }
 
                 AccountDataAccess _AccountAccess = new AccountDataAccess(_iconfiguration);
 
@@ -180,7 +190,7 @@ namespace CustomerService.Controllers
         /// <param name="token"></param>
         /// <returns>LoggedInPrinciple</returns>
         [HttpGet("GetTokenDetails/{token}")]
-        public async Task<IActionResult> GetTokenDetails([FromRoute]string token)
+        public async Task<IActionResult> GetTokenDetails([FromHeader(Name = "Grid-General-Token")] string Token, [FromRoute]string token)
         {
             try
             {
@@ -197,6 +207,16 @@ namespace CustomerService.Controllers
                     };
                 }
 
+                TokenValidationHelper tokenValidationHelper = new TokenValidationHelper();
+                if (!tokenValidationHelper.ValidateGenericToken(Token, _iconfiguration))
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = Core.Extensions.EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = true
+                    });
+                }
 
                 AccountDataAccess _AccountAccess = new AccountDataAccess(_iconfiguration);
 
@@ -253,7 +273,7 @@ namespace CustomerService.Controllers
         /// </returns>
 
         [HttpGet("ValidateResetPasswordToken/{passwordtoken}")]
-        public async Task<IActionResult> ValidateResetPasswordToken([FromRoute] string passwordtoken)
+        public async Task<IActionResult> ValidateResetPasswordToken([FromHeader(Name = "Grid-General-Token")] string Token, [FromRoute] string passwordtoken)
         {
             try
             {
@@ -268,6 +288,17 @@ namespace CustomerService.Controllers
                                             .SelectMany(x => x.Errors)
                                             .Select(x => x.ErrorMessage))
                     };
+                }
+
+                TokenValidationHelper tokenValidationHelper = new TokenValidationHelper();
+                if (!tokenValidationHelper.ValidateGenericToken(Token, _iconfiguration))
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = Core.Extensions.EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = true
+                    });
                 }
 
                 AccountDataAccess _AccountAccess = new AccountDataAccess(_iconfiguration);
@@ -330,7 +361,7 @@ namespace CustomerService.Controllers
         /// </param>
         /// <returns>OperationsResponse</returns>
         [HttpPost("ResetPassword")]
-        public async Task<IActionResult> ResetPassword([FromBody] ResetPassword passwordResetRequest)
+        public async Task<IActionResult> ResetPassword([FromHeader(Name = "Grid-General-Token")] string Token, [FromBody] ResetPassword passwordResetRequest)
         {
             try
             {
@@ -343,6 +374,17 @@ namespace CustomerService.Controllers
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
+                    });
+                }
+
+                TokenValidationHelper tokenValidationHelper = new TokenValidationHelper();
+                if (!tokenValidationHelper.ValidateGenericToken(Token, _iconfiguration))
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = Core.Extensions.EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = true
                     });
                 }
 

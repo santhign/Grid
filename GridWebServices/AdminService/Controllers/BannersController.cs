@@ -8,6 +8,7 @@ using Core.Models;
 using Core.Enums;
 using Core.Helpers;
 using InfrastructureService;
+using Core.Extensions;
 
 namespace CatelogService.Controllers
 { 
@@ -31,7 +32,7 @@ namespace CatelogService.Controllers
         /// 
         [HttpPost]
         [Route("BannerDetails")]
-        public async Task<IActionResult> BannerDetails([FromBody] BannerDetailsRequest request)
+        public async Task<IActionResult> BannerDetails([FromHeader(Name = "Grid-General-Token")] string Token, [FromBody] BannerDetailsRequest request)
         {
             try
             {
@@ -44,7 +45,18 @@ namespace CatelogService.Controllers
                         IsDomainValidationErrors = true
                     });
                 }
-              
+
+                TokenValidationHelper tokenValidationHelper = new TokenValidationHelper();
+                if (!tokenValidationHelper.ValidateGenericToken(Token, _iconfiguration))
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = true
+                    });
+                }
+
                 BannerDataAccess _bannerAccess = new BannerDataAccess(_iconfiguration);
 
                 return Ok(new ServerResponse

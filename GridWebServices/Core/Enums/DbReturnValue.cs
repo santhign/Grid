@@ -204,6 +204,18 @@ namespace Core.Enums
         [EnumMember(Value = "Delete Failed")]
         [Description("Record deletion failed")]
         DeleteFailed = 150,
+
+        [EnumMember(Value = "Termination Failed")]
+        [Description("Invalid termination request raised")]
+        TerminationFailed = 151,
+
+        [EnumMember(Value = "Suspension Failed")]
+        [Description("Invalid suspension request raised")]
+        SuspensionFailed = 152,
+
+        [EnumMember(Value = "Unsuspension Failed")]
+        [Description("Invalid Unsuspension request raised")]
+        UnsuspensionFailed = 153,
     }
 }
 

@@ -130,7 +130,7 @@ namespace AdminService.Controllers
         /// <param name="ConfigType"></param>
         /// <returns>config value list</returns> 
         [HttpGet("GetConfigByType/{ConfigType}")]
-        public async Task<IActionResult> GetConfigByType([FromRoute] string ConfigType)
+        public async Task<IActionResult> GetConfigByType([FromHeader(Name = "Grid-General-Token")] string Token, [FromRoute] string ConfigType)
         {
             try
             {
@@ -145,6 +145,16 @@ namespace AdminService.Controllers
 
                 }
 
+                TokenValidationHelper tokenValidationHelper = new TokenValidationHelper();
+                if (!tokenValidationHelper.ValidateGenericToken(Token, _iconfiguration))
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = true
+                    });
+                }
 
                 DatabaseResponse configResponse =  await ConfigHelper.GetPubicValue(ConfigType, _iconfiguration);
 

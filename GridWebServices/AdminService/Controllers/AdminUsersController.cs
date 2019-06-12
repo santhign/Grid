@@ -44,7 +44,7 @@ namespace AdminService.Controllers
         ///}
         [HttpPost]
         [Route("GetAdminLoginAuthentication")]
-        public async Task<IActionResult> GetAdminLoginAuthentication([FromBody]AdminUserLoginRequest userdetails)
+        public async Task<IActionResult> GetAdminLoginAuthentication([FromHeader(Name = "Grid-General-Token")] string Token, [FromBody]AdminUserLoginRequest userdetails)
         {
             try
             {
@@ -56,6 +56,17 @@ namespace AdminService.Controllers
                     {
                         HasSucceeded = false,
                         Message = StatusMessages.MissingRequiredFields,
+                        IsDomainValidationErrors = true
+                    });
+                }
+
+                TokenValidationHelper tokenValidationHelper = new TokenValidationHelper();
+                if (!tokenValidationHelper.ValidateGenericToken(Token, _iconfiguration))
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
                         IsDomainValidationErrors = true
                     });
                 }

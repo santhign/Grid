@@ -229,12 +229,23 @@ namespace CustomerService.Controllers
         /// POST: api/NRICValidation/S1234567D 
         [HttpPost]
         [Route("NRICValidation/{NRIC}")]
-        public IActionResult NRICValidation([FromRoute] string NRIC)
+        public IActionResult NRICValidation([FromHeader(Name = "Grid-General-Token")] string Token, [FromRoute] string NRIC)
         {
 
             string _warningmsg = "";
             try
             {
+                TokenValidationHelper tokenValidationHelper = new TokenValidationHelper();
+                if (!tokenValidationHelper.ValidateGenericToken(Token, _iconfiguration))
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = Core.Extensions.EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = true
+                    });
+                }
+
                 EmailValidationHelper _helper = new EmailValidationHelper();
                 if (_helper.NRICValidation(null, NRIC, out _warningmsg))
                 {
@@ -279,11 +290,23 @@ namespace CustomerService.Controllers
         /// POST: api/NRICValidation/S1234567D 
         [HttpPost]
         [Route("NRICTypeValidation/{IDType}/{NRIC}")]
-        public IActionResult NRICTypeValidation([FromRoute] string IDType, [FromRoute] string NRIC)
+        public IActionResult NRICTypeValidation([FromHeader(Name = "Grid-General-Token")] string Token, [FromRoute] string IDType, [FromRoute] string NRIC)
         {
-            string _warningmsg = "";
+            string _warningmsg = "";           
+
             try
             {
+                TokenValidationHelper tokenValidationHelper = new TokenValidationHelper();
+                if (!tokenValidationHelper.ValidateGenericToken(Token, _iconfiguration))
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = Core.Extensions.EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = true
+                    });
+                }
+
                 EmailValidationHelper _helper = new EmailValidationHelper();
                 if (_helper.NRICValidation(IDType, NRIC, out _warningmsg))
                 {
