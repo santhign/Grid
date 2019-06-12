@@ -70,6 +70,7 @@ namespace MessageQueueConsoleAppService
                                        Source = model.Field<string>("Source")
 
                                    }).FirstOrDefault();
+                        LogInfo.Information("Started processing  MessageQueueRequestID =  " + message.MessageQueueRequestID);
 
                         return message;
 
@@ -298,6 +299,7 @@ namespace MessageQueueConsoleAppService
                         messageQueueRequest.Status = 1;
 
                         await UpdateMessageQueueObjectToTable(messageQueueRequest);
+                        LogInfo.Information("Ended successfully processing of  MessageQueueRequestID =  " + responseData.MessageQueueRequestID);
                     }
                     else
                     {
@@ -309,6 +311,7 @@ namespace MessageQueueConsoleAppService
                         messageQueueRequest.Status = 0;
 
                         await UpdateMessageQueueObjectToTable(messageQueueRequest);
+                        LogInfo.Information("Ended Unsuccessfully processing of  MessageQueueRequestID =  " + responseData.MessageQueueRequestID);
                     }
                 }
             }
