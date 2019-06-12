@@ -35,54 +35,76 @@ namespace OrderService.Helpers
         
         public async Task<int> ProcessSuccessTransaction(CheckOutResponseUpdate updateRequest)
         {
-            OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
-
-            DatabaseResponse sourceTyeResponse = new DatabaseResponse();            
-
-            sourceTyeResponse = await _orderAccess.GetSourceTypeByMPGSSOrderId(updateRequest.MPGSOrderID);
-
-            if (sourceTyeResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+            try
             {
-                if (((OrderSource)sourceTyeResponse.Results).SourceType == CheckOutType.ChangeRequest.ToString())
+
+                OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+
+                DatabaseResponse sourceTyeResponse = new DatabaseResponse();
+
+                sourceTyeResponse = await _orderAccess.GetSourceTypeByMPGSSOrderId(updateRequest.MPGSOrderID);
+
+                if (sourceTyeResponse.ResponseCode == (int)DbReturnValue.RecordExists)
                 {
-                    var details = await _messageQueueDataAccess.GetMessageDetails(updateRequest.MPGSOrderID);
-
-                    if (details != null)
+                    if (((OrderSource)sourceTyeResponse.Results).SourceType == CheckOutType.ChangeRequest.ToString())
                     {
-                        MessageBodyForCR msgBody = new MessageBodyForCR();
+                        var details = await _messageQueueDataAccess.GetMessageDetails(updateRequest.MPGSOrderID);
 
-                        string topicName = string.Empty, pushResult = string.Empty;
-
-                        try
+                        if (details != null)
                         {
-                            Dictionary<string, string> attribute = new Dictionary<string, string>();
+                            MessageBodyForCR msgBody = new MessageBodyForCR();
 
-                            msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(details.ChangeRequestID);
+                            string topicName = string.Empty, pushResult = string.Empty;
 
-                            if (details.RequestTypeID == (int)Core.Enums.RequestType.ReplaceSIM)
+                            try
                             {
-                                topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration).Results.ToString().Trim();
-                                attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.ReplaceSIM.GetDescription());
-                                pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
-                            }
-                            if (pushResult.Trim().ToUpper() == "OK")
-                            {
-                                MessageQueueRequest queueRequest = new MessageQueueRequest
+                                Dictionary<string, string> attribute = new Dictionary<string, string>();
+
+                                msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(details.ChangeRequestID);
+
+                                if (details.RequestTypeID == (int)Core.Enums.RequestType.ReplaceSIM)
                                 {
-                                    Source = Source.ChangeRequest,
-                                    NumberOfRetries = 1,
-                                    SNSTopic = topicName,
-                                    CreatedOn = DateTime.Now,
-                                    LastTriedOn = DateTime.Now,
-                                    PublishedOn = DateTime.Now,
-                                    MessageAttribute = Core.Enums.RequestType.ReplaceSIM.GetDescription(),
-                                    MessageBody = JsonConvert.SerializeObject(msgBody),
-                                    Status = 1
-                                };
-                                await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                                    topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration).Results.ToString().Trim();
+                                    attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.ReplaceSIM.GetDescription());
+                                    pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
+                                }
+                                if (pushResult.Trim().ToUpper() == "OK")
+                                {
+                                    MessageQueueRequest queueRequest = new MessageQueueRequest
+                                    {
+                                        Source = Source.ChangeRequest,
+                                        NumberOfRetries = 1,
+                                        SNSTopic = topicName,
+                                        CreatedOn = DateTime.Now,
+                                        LastTriedOn = DateTime.Now,
+                                        PublishedOn = DateTime.Now,
+                                        MessageAttribute = Core.Enums.RequestType.ReplaceSIM.GetDescription(),
+                                        MessageBody = JsonConvert.SerializeObject(msgBody),
+                                        Status = 1
+                                    };
+                                    await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                                }
+                                else
+                                {
+                                    MessageQueueRequest queueRequest = new MessageQueueRequest
+                                    {
+                                        Source = Source.ChangeRequest,
+                                        NumberOfRetries = 1,
+                                        SNSTopic = topicName,
+                                        CreatedOn = DateTime.Now,
+                                        LastTriedOn = DateTime.Now,
+                                        PublishedOn = DateTime.Now,
+                                        MessageAttribute = Core.Enums.RequestType.ReplaceSIM.GetDescription(),
+                                        MessageBody = JsonConvert.SerializeObject(msgBody),
+                                        Status = 0
+                                    };
+                                    await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                                }
+
                             }
-                            else
+                            catch (Exception ex)
                             {
+                                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
                                 MessageQueueRequest queueRequest = new MessageQueueRequest
                                 {
                                     Source = Source.ChangeRequest,
@@ -95,85 +117,61 @@ namespace OrderService.Helpers
                                     MessageBody = JsonConvert.SerializeObject(msgBody),
                                     Status = 0
                                 };
+
                                 await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
                             }
 
                         }
-                        catch (Exception ex)
-                        {
-                            LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-                            MessageQueueRequest queueRequest = new MessageQueueRequest
-                            {
-                                Source = Source.ChangeRequest,
-                                NumberOfRetries = 1,
-                                SNSTopic = topicName,
-                                CreatedOn = DateTime.Now,
-                                LastTriedOn = DateTime.Now,
-                                PublishedOn = DateTime.Now,
-                                MessageAttribute = Core.Enums.RequestType.ReplaceSIM.GetDescription(),
-                                MessageBody = JsonConvert.SerializeObject(msgBody),
-                                Status = 0
-                            };
+                    }
 
-                            await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                    else if (((OrderSource)sourceTyeResponse.Results).SourceType == CheckOutType.Orders.ToString())
+                    {
+                        DatabaseResponse buddyCheckResponse = new DatabaseResponse();
+
+                        buddyCheckResponse = await _orderAccess.OrderBuddyCheck(((OrderSource)sourceTyeResponse.Results).SourceID);
+
+                        if (buddyCheckResponse.ResponseCode == (int)DbReturnValue.RecordExists && ((List<BuddyCheckList>)buddyCheckResponse.Results).Count > 0)
+                        {                          
+
+                            buddyActionList = (List<BuddyCheckList>)buddyCheckResponse.Results;                          
+
+                            //  Action buddyProcessing = FinalBuddyProcessing;
+
+                            int processed = await FinalBuddyProcessing();
+                        }
+
+                        else
+                        {
+                            //send queue message
+
+                            ProcessOrderQueueMessage(((OrderSource)sourceTyeResponse.Results).SourceID);
                         }
 
                     }
-                }
 
-                else if (((OrderSource)sourceTyeResponse.Results).SourceType == CheckOutType.Orders.ToString())
-                {
-                    DatabaseResponse buddyCheckResponse = new DatabaseResponse();
-
-                    buddyCheckResponse = await _orderAccess.OrderBuddyCheck(((OrderSource)sourceTyeResponse.Results).SourceID);
-
-                    if (buddyCheckResponse.ResponseCode == (int)DbReturnValue.RecordExists && ((List<BuddyCheckList>)buddyCheckResponse.Results).Count > 0)
+                    else if (((OrderSource)sourceTyeResponse.Results).SourceType == CheckOutType.AccountInvoices.ToString())
                     {
-                        // need buddy processing so delay messaging    
+                        //send invoice queue message
 
-                        buddyActionList = (List<BuddyCheckList>)buddyCheckResponse.Results;
+                        ProcessAccountInvoiceQueueMessage(((OrderSource)sourceTyeResponse.Results).SourceID);
 
-                        //var parent = Task.Factory.StartNew(() =>
-                        //{
-                        //    Action buddyProcessing = FinalBuddyProcessing;
-
-                        //    Task.Factory.StartNew(buddyProcessing, TaskCreationOptions.DenyChildAttach);
-
-                        //});
-
-
-                        //  Action buddyProcessing = FinalBuddyProcessing;
-
-                            int processed=  await   FinalBuddyProcessing();   
                     }
 
-                    else
-                    {
-                        //send queue message
 
-                        ProcessOrderQueueMessage(((OrderSource)sourceTyeResponse.Results).SourceID);
-                    }                   
-
+                    return 1;
                 }
 
-                else if (((OrderSource)sourceTyeResponse.Results).SourceType == CheckOutType.AccountInvoices.ToString())
+                else
                 {
-                    //send invoice queue message
+                    // unable to get sourcetype form db
 
-                    ProcessAccountInvoiceQueueMessage(((OrderSource)sourceTyeResponse.Results).SourceID);                 
+                    return 0;
 
                 }
-
-
-                return 1;
             }
-
-            else
+            catch(Exception ex)
             {
-                // unable to get sourcetype form db
-
-                return 0;
-
+                throw ex;
             }
         }
 
@@ -415,7 +413,7 @@ namespace OrderService.Helpers
             catch (Exception ex)
             {
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-                return 0;
+                throw ex;
             }
             
         }
@@ -431,12 +429,26 @@ namespace OrderService.Helpers
 
                 DatabaseResponse requestIdRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.GetAssets.ToString(), buddy.CustomerID, (int)BSSCalls.NewSession, "");
 
-                ResponseObject res = await bsshelper.GetAssetInventory(config, serviceCode, (BSSAssetRequest)requestIdRes.Results);
+                ResponseObject res = new ResponseObject();
 
-                string AssetToSubscribe = bsshelper.GetAssetId(res);
+                try
+                {
+                    res = await bsshelper.GetAssetInventory(config, serviceCode, (BSSAssetRequest)requestIdRes.Results);
+                }
+
+                catch (Exception ex)
+                {
+                    LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+
+                    buddy.IsProcessed = false;
+                }
+
+                string AssetToSubscribe = string.Empty;
 
                 if (res != null)
                 {
+                    AssetToSubscribe = bsshelper.GetAssetId(res);
+
                     BSSNumbers numbers = new BSSNumbers();
 
                     numbers.FreeNumbers = bsshelper.GetFreeNumbers(res);
@@ -502,6 +514,7 @@ namespace OrderService.Helpers
             catch (Exception ex)
             {
                 buddy.IsProcessed = false;
+
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 return 0;
@@ -567,8 +580,7 @@ namespace OrderService.Helpers
             }
 
             else
-            {
-                // move message to enum
+            {                
                 LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.FailedToGetBillingAccount));
                 return new List<Recordset>();
             }
