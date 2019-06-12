@@ -1,7 +1,7 @@
-﻿{
+{
   "iisSettings": {
-    "windowsAuthentication": false, 
-    "anonymousAuthentication": true, 
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
     "iisExpress": {
       "applicationUrl": "http://localhost:49991",
       "sslPort": 0
@@ -18,10 +18,10 @@
     "CustomerService": {
       "commandName": "Project",
       "launchBrowser": true,
-      "applicationUrl": "http://*:5125",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Production"
-      }
+      },
+      "applicationUrl": "http://localhost:5125"
     }
   }
 }

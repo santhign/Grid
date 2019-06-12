@@ -24,13 +24,13 @@ namespace AdminService.Controllers
         }
 
         /// <summary>
-        /// Get config details
+        /// Gets the generic configuration value.
         /// </summary>
-        /// <param name="ConfigKey"></param>
-        /// <returns>config value</returns> 
-        /// 
+        /// <param name="Token">The token.</param>
+        /// <param name="ConfigKey">The configuration key.</param>
+        /// <returns></returns>
         [HttpGet("{ConfigKey}")]
-        public async Task<IActionResult> GetGenericConfigValue([FromRoute] string ConfigKey)
+        public async Task<IActionResult> GetGenericConfigValue([FromHeader(Name = "Grid-General-Token")] string Token, [FromRoute] string ConfigKey)
         {
             try
             {
@@ -43,6 +43,16 @@ namespace AdminService.Controllers
                         IsDomainValidationErrors = true
                     });
 
+                }
+                TokenValidationHelper tokenValidationHelper = new TokenValidationHelper();
+                if (!tokenValidationHelper.ValidateGenericToken(Token, _iconfiguration))
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = true
+                    });
                 }
 
                 ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
@@ -120,7 +130,7 @@ namespace AdminService.Controllers
         /// <param name="ConfigType"></param>
         /// <returns>config value list</returns> 
         [HttpGet("GetConfigByType/{ConfigType}")]
-        public async Task<IActionResult> GetConfigByType([FromRoute] string ConfigType)
+        public async Task<IActionResult> GetConfigByType([FromHeader(Name = "Grid-General-Token")] string Token, [FromRoute] string ConfigType)
         {
             try
             {
@@ -135,6 +145,16 @@ namespace AdminService.Controllers
 
                 }
 
+                TokenValidationHelper tokenValidationHelper = new TokenValidationHelper();
+                if (!tokenValidationHelper.ValidateGenericToken(Token, _iconfiguration))
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = true
+                    });
+                }
 
                 DatabaseResponse configResponse =  await ConfigHelper.GetPubicValue(ConfigType, _iconfiguration);
 

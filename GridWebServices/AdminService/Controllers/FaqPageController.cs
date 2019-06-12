@@ -32,7 +32,7 @@ namespace AdminService.Controllers
         /// <returns>LoggedInPrinciple</returns>  
         // GET: api/GetPageFAQ/page1
         [HttpGet("GetPageFAQ/{Pagename}")]
-        public async Task<IActionResult> GetPageFAQ([FromRoute] string Pagename)
+        public async Task<IActionResult> GetPageFAQ([FromHeader(Name = "Grid-General-Token")] string Token, [FromRoute] string Pagename)
         {
             try
             {
@@ -45,6 +45,17 @@ namespace AdminService.Controllers
                         IsDomainValidationErrors = true
                     });
 
+                }
+
+                TokenValidationHelper tokenValidationHelper = new TokenValidationHelper();
+                if (!tokenValidationHelper.ValidateGenericToken(Token, _iconfiguration))
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = Core.Extensions.EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = true
+                    });
                 }
 
                 FaqPageDataAccess _FaqPageDataAccess = new FaqPageDataAccess(_iconfiguration);

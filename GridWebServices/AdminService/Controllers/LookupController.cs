@@ -32,7 +32,7 @@ namespace AdminService.Controllers
         /// <returns>Lookup details</returns> 
         /// 
         [HttpGet("{lookupType}")]
-        public async Task<IActionResult> GetLookup([FromRoute] string lookupType)
+        public async Task<IActionResult> GetLookup([FromHeader(Name = "Grid-General-Token")] string Token, [FromRoute] string lookupType)
         {
             try
             {
@@ -46,7 +46,16 @@ namespace AdminService.Controllers
                         });
                     
                 }
-
+                TokenValidationHelper tokenValidationHelper = new TokenValidationHelper();
+                if (!tokenValidationHelper.ValidateGenericToken(Token, _iconfiguration))
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = Core.Extensions.EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = true
+                    });
+                }
                 LookupDataAccess _lookupAccess = new LookupDataAccess(_iconfiguration);
 
                 return Ok(new ServerResponse

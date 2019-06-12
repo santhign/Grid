@@ -34,10 +34,21 @@ namespace CatelogService.Controllers
         /// <returns>Bundles</returns>
         // GET: api/Bundles
         [HttpGet]
-        public async Task<IActionResult> GetBundles()
+        public async Task<IActionResult> GetBundles([FromHeader(Name = "Grid-General-Token")] string Token)
         {
             try
             {
+                TokenValidationHelper tokenValidationHelper = new TokenValidationHelper();
+                if (!tokenValidationHelper.ValidateGenericToken(Token, _iconfiguration))
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = Core.Extensions.EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = true
+                    });
+                }
+
                 BundleDataAccess _bundleAccess = new BundleDataAccess(_iconfiguration);
                 List<Bundle> returnObj = await _bundleAccess.GetBundleList();
                 if (returnObj.Count > 0)
@@ -79,7 +90,7 @@ namespace CatelogService.Controllers
         /// <returns>Bundle</returns>
         // GET: api/Bundles/5
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetBundle([FromRoute] int id)
+        public async Task<IActionResult> GetBundle([FromHeader(Name = "Grid-General-Token")] string Token, [FromRoute] int id)
         {           
             try
             {
@@ -89,6 +100,17 @@ namespace CatelogService.Controllers
                     {
                         HasSucceeded = false,
                         Message = StatusMessages.DomainValidationError,
+                        IsDomainValidationErrors = true
+                    });
+                }
+
+                TokenValidationHelper tokenValidationHelper = new TokenValidationHelper();
+                if (!tokenValidationHelper.ValidateGenericToken(Token, _iconfiguration))
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = Core.Extensions.EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
                         IsDomainValidationErrors = true
                     });
                 }
@@ -138,7 +160,7 @@ namespace CatelogService.Controllers
         /// <returns>Bundle</returns>
         // GET: api/Bundles/5
         [HttpGet("{id}/{promocode}")]
-        public async Task<IActionResult> GetBundle([FromRoute] int id, string promocode)
+        public async Task<IActionResult> GetBundle([FromHeader(Name = "Grid-General-Token")] string Token, [FromRoute] int id, string promocode)
         {
             try
             {
@@ -148,6 +170,17 @@ namespace CatelogService.Controllers
                     {
                         HasSucceeded = false,
                         Message = StatusMessages.DomainValidationError,
+                        IsDomainValidationErrors = true
+                    });
+                }
+
+                TokenValidationHelper tokenValidationHelper = new TokenValidationHelper();
+                if (!tokenValidationHelper.ValidateGenericToken(Token, _iconfiguration))
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = Core.Extensions.EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
                         IsDomainValidationErrors = true
                     });
                 }

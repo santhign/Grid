@@ -547,14 +547,15 @@ namespace CustomerService.Controllers
         }
 
 
-        // POST: api/Customers
+        // POST: api/Customers       
         /// <summary>
-        /// Creates the specified customer.
-        /// </summary>     
+        /// Creates the specified token.
+        /// </summary>
+        /// <param name="Token">The token.</param>
         /// <param name="customer">The customer.</param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] RegisterCustomer customer)
+        public async Task<IActionResult> Create([FromHeader(Name = "Grid-General-Token")] string Token, [FromBody] RegisterCustomer customer)
         {
             try
             {
@@ -567,6 +568,17 @@ namespace CustomerService.Controllers
                         Message = string.Join("; ", ModelState.Values
                                                  .SelectMany(x => x.Errors)
                                                  .Select(x => x.ErrorMessage))
+                    });
+                }
+
+                TokenValidationHelper tokenValidationHelper = new TokenValidationHelper();
+                if (!tokenValidationHelper.ValidateGenericToken(Token, _iconfiguration))
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = true
                     });
                 }
 
@@ -992,7 +1004,7 @@ namespace CustomerService.Controllers
         /// </returns>
         [HttpGet]
         [Route("ForgetPassword/{email}")]
-        public async Task<IActionResult> ForgetPassword([FromRoute] string email)
+        public async Task<IActionResult> ForgetPassword([FromHeader(Name = "Grid-General-Token")] string Token, [FromRoute] string email)
         {
             try
             {
@@ -1007,6 +1019,18 @@ namespace CustomerService.Controllers
                                                    .Select(x => x.ErrorMessage))
                     });
                 }
+
+                TokenValidationHelper tokenValidationHelper = new TokenValidationHelper();
+                if (!tokenValidationHelper.ValidateGenericToken(Token, _iconfiguration))
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = Core.Extensions.EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = true
+                    });
+                }
+
                 try
 
                 {

@@ -90,7 +90,10 @@ namespace Core.Enums
         SNS_Topic_CreateCustomer,
         [EnumMember(Value = "SNS_Topic_ProfileUpdate")]
         [Description("SNS_Topic_ProfileUpdate")]
-        SNS_Topic_ProfileUpdate
+        SNS_Topic_ProfileUpdate,
+        [EnumMember(Value = "GenericToken")]
+        [Description("GenericToken")]
+        GenericToken
     }
 
     public enum SubscriberCheckType
