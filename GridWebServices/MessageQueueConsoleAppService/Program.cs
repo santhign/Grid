@@ -40,10 +40,15 @@ namespace MessageQueueConsoleAppService
             LogInfo.Initialize(Configuration);
             
             _connectionString = Configuration.GetConnectionString("DefaultConnection");
-            _timeInterval = Configuration.GetSection("TimeInterval").GetValue<int>("Default");
-            Timer t = new Timer(TimerCallback, null, 0, _timeInterval);
+            _timeInterval = Configuration.GetSection("TimeInterval").GetValue<int>("Default");            
             // Wait for the user to hit <Enter>
-            Console.ReadLine();
+            if (_timeInterval > 0)
+            {
+                Timer t = new Timer(TimerCallback, null, 0, _timeInterval);
+
+                // Wait for the user to press enter key to start timer
+                Console.ReadLine();
+            }
         }
 
         /// <summary>
@@ -68,6 +73,7 @@ namespace MessageQueueConsoleAppService
             {
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
             }
-        }
+        }       
+     
     }
 }
