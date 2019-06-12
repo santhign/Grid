@@ -6,6 +6,7 @@ using InfrastructureService;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.IO;
+using System.Runtime.Loader;
 using System.Threading;
 
 
@@ -47,8 +48,25 @@ namespace MessageQueueConsoleAppService
                 Timer t = new Timer(TimerCallback, null, 0, _timeInterval);
 
                 // Wait for the user to press enter key to start timer
-                Console.ReadLine();
+                //Console.ReadLine();
+                
             }
+
+            var _quitEvent = new ManualResetEvent(false);
+            AssemblyLoadContext.Default.Unloading += ctx =>
+            {
+                System.Console.WriteLine("Unloding fired");
+                LogInfo.Information("Unloding fired");
+                _quitEvent.Set();
+            };
+            System.Console.WriteLine("Waiting for signals");
+            LogInfo.Information("Waiting for signals");
+            _quitEvent.WaitOne();
+            System.Console.WriteLine("Received signal gracefully shutting down");
+            LogInfo.Information("Received signal gracefully shutting down");
+
+
+            //Console.WriteLine("Hello World!");
         }
 
         /// <summary>
@@ -60,12 +78,12 @@ namespace MessageQueueConsoleAppService
             try
             {
                 // Display the date/time when this method got called.
-                Console.WriteLine("Start TimerCallback: " + DateTime.Now);
-                LogInfo.Information("Start TimerCallback: " + DateTime.Now);
+                Console.WriteLine("Start TimerCallback: " + DateTime.UtcNow);
+                LogInfo.Information("Start TimerCallback: " + DateTime.UtcNow);
                 PublishMessageToQueueDataAccess publishMessageTo = new PublishMessageToQueueDataAccess(_connectionString);
                 await publishMessageTo.PushMessagesFromMessageQueueTable();
-                Console.WriteLine("End TimerCallback: " + DateTime.Now);
-                LogInfo.Information("End TimerCallback: " + DateTime.Now);
+                Console.WriteLine("End TimerCallback: " + DateTime.UtcNow);
+                LogInfo.Information("End TimerCallback: " + DateTime.UtcNow);
                 // Force a garbage collection to occur for this demo.
                 GC.Collect();
             }

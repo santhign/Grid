@@ -190,7 +190,7 @@ namespace CustomerService.Controllers
         /// <param name="token"></param>
         /// <returns>LoggedInPrinciple</returns>
         [HttpGet("GetTokenDetails/{token}")]
-        public async Task<IActionResult> GetTokenDetails([FromHeader(Name = "Grid-General-Token")] string Token, [FromRoute]string token)
+        public async Task<IActionResult> GetTokenDetails([FromHeader(Name = "Grid-General-Token")] string General_Token, [FromRoute]string token)
         {
             try
             {
@@ -208,7 +208,7 @@ namespace CustomerService.Controllers
                 }
 
                 TokenValidationHelper tokenValidationHelper = new TokenValidationHelper();
-                if (!tokenValidationHelper.ValidateGenericToken(Token, _iconfiguration))
+                if (!tokenValidationHelper.ValidateGenericToken(General_Token, _iconfiguration))
                 {
                     return Ok(new OperationResponse
                     {
