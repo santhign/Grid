@@ -25,32 +25,45 @@ namespace BuddyProcessingApp
              .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
              .Build();
         static void Main(string[] args)
-        {          
-
-            LogInfo.Initialize(Configuration);      
-
-            LogInfo.Information("Buddy Console App is Started");
-
-            _connectionString = Configuration.GetConnectionString("DefaultConnection");
-
-            _timeInterval =  GetIntervel();
-
-            if (_timeInterval > 0)
+        {
+            while (true)
             {
-                Timer t = new Timer(TimerCallback, null, 0, _timeInterval);
+                LogInfo.Initialize(Configuration);
 
-                // Wait for the user to press enter key to start timer
-                Console.ReadLine();
+                LogInfo.Information("Buddy Console App is Started");
+
+                _connectionString = Configuration.GetConnectionString("DefaultConnection");
+
+                ConsoleKeyInfo cki;               
+
+                // Prevent example from ending if CTL+C is pressed.
+                Console.TreatControlCAsInput = true;
+
+                _timeInterval = GetIntervel();
+
+                if (_timeInterval > 0)
+                {
+
+                    Timer t = new Timer(TimerCallback, null, 0, _timeInterval);
+
+                    // Wait for the user to press enter key to start timer  
+                }
+
+                cki = Console.ReadKey(true);
+                if (cki.Key == ConsoleKey.X) break;
+                
             }
+
+            LogInfo.Information("Buddy Console App Stopped");
         }
 
         private static async void TimerCallback(Object o)
         {
             try
             {
-                Console.WriteLine("Start timer: " + DateTime.UtcNow);
+                Console.WriteLine("Start timer action: " + DateTime.UtcNow);
 
-                LogInfo.Information("BuddyConsole Start timer: " + DateTime.UtcNow);
+                LogInfo.Information("Start timer action: " + DateTime.UtcNow);
 
                 BuddyDataAccess buddyDataAccess = new BuddyDataAccess();
 
@@ -125,11 +138,9 @@ namespace BuddyProcessingApp
 
                 }
               
-                Console.WriteLine("End Timer: " + DateTime.UtcNow);
+                Console.WriteLine("End timer action: " + DateTime.UtcNow);
 
-                LogInfo.Information("BuddyConsole End timer: " + DateTime.UtcNow);
-
-                GC.Collect();
+                LogInfo.Information("End timer action: " + DateTime.UtcNow);                
             }
             catch (Exception ex)
             {
@@ -154,8 +165,6 @@ namespace BuddyProcessingApp
             {
                 return 0;
             }
-
         }
-
     }
 }
