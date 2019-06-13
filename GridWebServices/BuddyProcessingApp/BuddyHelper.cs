@@ -46,17 +46,34 @@ namespace BuddyProcessingApp
 
                 GridBSSConfi config = bsshelper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
 
+                LogInfo.Information(JsonConvert.SerializeObject(config));
+
                 DatabaseResponse serviceCAF = await _buddyAccess.GetBSSServiceCategoryAndFee(ServiceTypes.Free.ToString(), _connectionString);
 
                 DatabaseResponse requestIdRes = await _buddyAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.GetAssets.ToString(), buddy.CustomerID, (int)BSSCalls.NewSession, "", _connectionString);
 
-                ResponseObject res = await bsshelper.GetAssetInventory(config, (((List<ServiceFees>)serviceCAF.Results)).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdRes.Results);
+                ResponseObject res = new ResponseObject();
 
-                string AssetToSubscribe = bsshelper.GetAssetId(res);
+                try
+                {
+                    res = await bsshelper.GetAssetInventory(config, (((List<ServiceFees>)serviceCAF.Results)).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdRes.Results);
 
+                    LogInfo.Information(JsonConvert.SerializeObject(res));
+                }                
+
+                catch (Exception ex)
+                {
+                    LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+                    buddy.IsProcessed = false;
+                    return buddy;
+                }
+
+                string AssetToSubscribe = string.Empty;
 
                 if (res != null && (int.Parse(res.Response.asset_details.total_record_count) > 0))
                 {
+                     AssetToSubscribe = bsshelper.GetAssetId(res);
+
                     BSSNumbers numbers = new BSSNumbers();
 
                     numbers.FreeNumbers = bsshelper.GetFreeNumbers(res);
@@ -68,15 +85,32 @@ namespace BuddyProcessingApp
                     //Block number                                    _connectionString
                     DatabaseResponse requestIdToUpdateRes = await _buddyAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), buddy.CustomerID, (int)BSSCalls.ExistingSession, AssetToSubscribe, _connectionString);
 
-                    BSSUpdateResponseObject bssUpdateResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateRes.Results, AssetToSubscribe, false);
+                    BSSUpdateResponseObject bssUpdateResponse = new BSSUpdateResponseObject();
 
-                    if (bsshelper.GetResponseCode(bssUpdateResponse) == "0")
+                    try
+                    {
+                        bssUpdateResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateRes.Results, AssetToSubscribe, false);
+                    }
+
+                    catch (Exception ex)
+                    {
+                        LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+                        buddy.IsProcessed = false;
+                        return buddy;
+                    }
+
+
+                    if (bssUpdateResponse!=null &&  bsshelper.GetResponseCode(bssUpdateResponse) == "0")
                     {
                         // update buddy process
 
                         BuddyNumberUpdate buddyToProcess = new BuddyNumberUpdate { OrderSubscriberID = buddy.OrderSubscriberID, UserId = ((BSSAssetRequest)requestIdRes.Results).userid, NewMobileNumber = AssetToSubscribe };
 
+                        LogInfo.Information(JsonConvert.SerializeObject(buddyToProcess));
+
                         DatabaseResponse buddyProcessResponse = await _buddyAccess.ProcessBuddyPlan(buddyToProcess, _connectionString);
+
+                        LogInfo.Information(JsonConvert.SerializeObject(buddyProcessResponse));
 
                         if (buddyProcessResponse.ResponseCode == (int)DbReturnValue.CreateSuccess || buddyProcessResponse.ResponseCode == (int)DbReturnValue.BuddyAlreadyExists)
                         {
@@ -84,12 +118,16 @@ namespace BuddyProcessingApp
 
                             buddy.IsProcessed = true;
 
+                            return buddy;
+
                         }
 
                         else
                         {
                             // buddy process failed
                             buddy.IsProcessed = false;
+
+                            return buddy;
                         }
 
 
@@ -99,6 +137,7 @@ namespace BuddyProcessingApp
                         // buddy block failed
                         buddy.IsProcessed = false;
 
+                        return buddy;
 
                     }
 
@@ -107,14 +146,15 @@ namespace BuddyProcessingApp
                 {
                     // no assets returned                                   
                     buddy.IsProcessed = false;
-
+                    return buddy;
                 }
-                return buddy;
+               
 
             }
             catch (Exception ex)
             {
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
                 buddy.IsProcessed = false;
 
                 return buddy;
