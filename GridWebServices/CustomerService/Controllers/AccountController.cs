@@ -190,7 +190,7 @@ namespace CustomerService.Controllers
         /// <param name="token"></param>
         /// <returns>LoggedInPrinciple</returns>
         [HttpGet("GetTokenDetails/{token}")]
-        public async Task<IActionResult> GetTokenDetails([FromHeader(Name = "Grid-General-Token")] string General_Token, [FromRoute]string token)
+        public async Task<IActionResult> GetTokenDetails([FromRoute]string token)
         {
             try
             {
@@ -205,18 +205,7 @@ namespace CustomerService.Controllers
                                             .SelectMany(x => x.Errors)
                                             .Select(x => x.ErrorMessage))
                     };
-                }
-
-                TokenValidationHelper tokenValidationHelper = new TokenValidationHelper();
-                if (!tokenValidationHelper.ValidateGenericToken(General_Token, _iconfiguration))
-                {
-                    return Ok(new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        Message = Core.Extensions.EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
-                        IsDomainValidationErrors = true
-                    });
-                }
+                }              
 
                 AccountDataAccess _AccountAccess = new AccountDataAccess(_iconfiguration);
 

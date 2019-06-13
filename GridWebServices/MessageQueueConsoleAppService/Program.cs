@@ -78,12 +78,12 @@ namespace MessageQueueConsoleAppService
             try
             {
                 // Display the date/time when this method got called.
-                Console.WriteLine("Start TimerCallback: " + DateTime.UtcNow);
-                LogInfo.Information("Start TimerCallback: " + DateTime.UtcNow);
+                Console.WriteLine("Start TimerCallback: " + DateTime.Now);
+                LogInfo.Information("Start TimerCallback: " + DateTime.Now);
                 PublishMessageToQueueDataAccess publishMessageTo = new PublishMessageToQueueDataAccess(_connectionString);
                 await publishMessageTo.PushMessagesFromMessageQueueTable();
-                Console.WriteLine("End TimerCallback: " + DateTime.UtcNow);
-                LogInfo.Information("End TimerCallback: " + DateTime.UtcNow);
+                Console.WriteLine("End TimerCallback: " + DateTime.Now);
+                LogInfo.Information("End TimerCallback: " + DateTime.Now);
                 // Force a garbage collection to occur for this demo.
                 GC.Collect();
             }
