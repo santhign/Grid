@@ -31,6 +31,7 @@ namespace CustomerService.Controllers
         /// Authenticate customer against Email and Password given.
         /// Returns logged in Principle with success status, auth token and logged customer details
         /// </summary>
+        /// <param name="Token"></param>
         /// <param name="loginRequest"></param>
         /// <returns>LoggedInPrinciple</returns>
         [HttpPost("authenticate")]
@@ -190,7 +191,7 @@ namespace CustomerService.Controllers
         /// <param name="token"></param>
         /// <returns>LoggedInPrinciple</returns>
         [HttpGet("GetTokenDetails/{token}")]
-        public async Task<IActionResult> GetTokenDetails([FromHeader(Name = "Grid-General-Token")] string Token, [FromRoute]string token)
+        public async Task<IActionResult> GetTokenDetails([FromRoute]string token)
         {
             try
             {
@@ -205,18 +206,7 @@ namespace CustomerService.Controllers
                                             .SelectMany(x => x.Errors)
                                             .Select(x => x.ErrorMessage))
                     };
-                }
-
-                TokenValidationHelper tokenValidationHelper = new TokenValidationHelper();
-                if (!tokenValidationHelper.ValidateGenericToken(Token, _iconfiguration))
-                {
-                    return Ok(new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        Message = Core.Extensions.EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
-                        IsDomainValidationErrors = true
-                    });
-                }
+                }              
 
                 AccountDataAccess _AccountAccess = new AccountDataAccess(_iconfiguration);
 
@@ -273,7 +263,7 @@ namespace CustomerService.Controllers
         /// </returns>
 
         [HttpGet("ValidateResetPasswordToken/{passwordtoken}")]
-        public async Task<IActionResult> ValidateResetPasswordToken([FromHeader(Name = "Grid-General-Token")] string Token, [FromRoute] string passwordtoken)
+        public async Task<IActionResult> ValidateResetPasswordToken([FromRoute] string passwordtoken)
         {
             try
             {
@@ -289,18 +279,7 @@ namespace CustomerService.Controllers
                                             .Select(x => x.ErrorMessage))
                     };
                 }
-
-                TokenValidationHelper tokenValidationHelper = new TokenValidationHelper();
-                if (!tokenValidationHelper.ValidateGenericToken(Token, _iconfiguration))
-                {
-                    return Ok(new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        Message = Core.Extensions.EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
-                        IsDomainValidationErrors = true
-                    });
-                }
-
+                
                 AccountDataAccess _AccountAccess = new AccountDataAccess(_iconfiguration);
 
                 DatabaseResponse response = await _AccountAccess.ValidateResetPasswordToken(passwordtoken);
@@ -353,6 +332,7 @@ namespace CustomerService.Controllers
         /// <summary>
         /// Reset customer password
         /// </summary>
+        /// <param name="Token"></param>
         /// <param name="passwordResetRequest">
         /// body{
         /// "NewPassword" :"",

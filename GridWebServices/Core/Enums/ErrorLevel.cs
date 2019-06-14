@@ -15,7 +15,7 @@ namespace Core.Enums
 
         [EnumMember(Value = "Low")]
         [Description("Low")]
-        Low = 3,       
+        Low = 3,
     }
 
 
@@ -67,7 +67,7 @@ namespace Core.Enums
 
         [EnumMember(Value = "Failed To Locate Created Subscription")]
         [Description("Failed ToLocate Created Subscription")]
-        FailedToLocateCreatedSubscription =12,
+        FailedToLocateCreatedSubscription = 12,
 
         [EnumMember(Value = "No Delivery Slot Exists")]
         [Description("No Delivery Slot Exists")]
@@ -239,7 +239,7 @@ namespace Core.Enums
 
         [EnumMember(Value = "ProcessingQueFailed")]
         [Description("Processing Queue Message Failed")]
-        ProcessingQueFailed = 55,       
+        ProcessingQueFailed = 55,
 
         [EnumMember(Value = "FailedToGetBillingAccount")]
         [Description("Failed To Get Billing Account")]
@@ -254,7 +254,7 @@ namespace Core.Enums
         FailedToRemoveLoa = 58,
 
         [EnumMember(Value = "LOARemoved")]
-        [Description("LOA Removed Successfully")]
+        [Description("LOA removed successfully")]
         LOARemoved = 59,
 
         [EnumMember(Value = "TokenNotMatching")]
@@ -262,55 +262,51 @@ namespace Core.Enums
         TokenNotMatching = 60,
 
         [EnumMember(Value = "PendingBuddyOrderProcessed")]
-        [Description("Pending Buddy Order Processed and Order Queue Message Published")]
+        [Description("Pending Buddy Order processed and order queue message published")]
         PendingBuddyOrderProcessed = 61,
 
         [EnumMember(Value = "PendingBuddyMQBodyFailed")]
-        [Description("Pending Buddy Order Processed Failed to get Message Body")]
+        [Description("Pending buddy order processed. Failed to get message body")]
         PendingBuddyMQBodyFailed = 62,
 
         [EnumMember(Value = "AccountNotExists")]
-        [Description("Account Not Exists")]
+        [Description("Account not exists")]
         AccountNotExists = 63,
 
         [EnumMember(Value = "CardAlreadyExists")]
-        [Description("Card Already Exists")]
+        [Description("Card already exists")]
         CardAlreadyExists = 64,
 
         [EnumMember(Value = "DeliveryInfoNotExists")]
-        [Description("Delivery Info Not Exists")]
+        [Description("Delivery info not exists")]
         DeliveryInfoNotExists = 65,
 
         [EnumMember(Value = "AlreadyProcessedOrder")]
-        [Description("Already Processed Order")]
+        [Description("Already processed order")]
         AlreadyProcessedOrder = 66,
 
         [EnumMember(Value = "UnfishedOrderExists")]
         [Description("Order not created, proceed with unfinished existing order")]
         UnfishedOrderExists = 67,
-        
+
         [EnumMember(Value = "BSSConnectionFailed")]
-        [Description("BSSConnectionFailed")]
+        [Description("BSSConnection failed")]
         BSSConnectionFailed = 68,
 
         [EnumMember(Value = "PaymentProcessed")]
-        [Description("Payment Successfully processed")]
+        [Description("Payment successfully processed")]
         PaymentProcessed = 69,
 
-        [EnumMember(Value = "UserNotExists")]
-        [Description("UserNotExists")]
-        UserNotExists = 69,
-
         [EnumMember(Value = "FailedToUpdateAccessibility")]
-        [Description("FailedToUpdateAccessibility")]
+        [Description("Failed to update accessibility")]
         FailedToUpdateAccessibility = 70,
 
         [EnumMember(Value = "AccountActivated")]
-        [Description("Account Activated")]
+        [Description("Account activated")]
         AccountActivated = 71,
 
         [EnumMember(Value = "AccountDeactivated")]
-        [Description("Account Deactivated")]
+        [Description("Account aeactivated")]
         AccountDeactivated = 72,
 
         [EnumMember(Value = "InvalidStatus")]
@@ -336,6 +332,10 @@ namespace Core.Enums
         [EnumMember(Value = "RewardServerError")]
         [Description("Unable to get rewards details. Server error")]
         RewardServerError = 78,
+
+        [EnumMember(Value = "UserNotExists")]
+        [Description("User not exists")]
+        UserNotExists = 79,
 
     }
 }
