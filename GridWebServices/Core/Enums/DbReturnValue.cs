@@ -216,6 +216,10 @@ namespace Core.Enums
         [EnumMember(Value = "Unsuspension Failed")]
         [Description("Invalid Unsuspension request raised")]
         UnsuspensionFailed = 153,
+
+        [EnumMember(Value = "Duplicate NRIC Present")]
+        [Description("Duplicate NRIC details are present for another customer")]
+        DuplicateNRICNotAllowed = 154,
     }
 }
 
