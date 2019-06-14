@@ -364,6 +364,43 @@ namespace AdminService.DataAccess
             }
         }
 
+
+        public async Task<DatabaseResponse> UpdateAdminProfile(int AdminUserID, AdminProfile adminuser)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                     new SqlParameter("@AdminID", SqlDbType.Int),
+                    new SqlParameter( "@Name",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@NewPassword",  SqlDbType.NVarChar ) 
+                };
+
+                parameters[0].Value = AdminUserID;
+                parameters[1].Value = adminuser.Name;
+                parameters[3].Value = new Sha2().Hash(adminuser.NewPassword);
+
+                _DataHelper = new DataAccessHelper("Admin_UpdateProfile", parameters, _configuration);
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt);
+
+                return new DatabaseResponse { ResponseCode = result, Results = adminuser };
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
         public async Task<DatabaseResponse> AuthenticateAdminUserToken(string token)
         {
             try
