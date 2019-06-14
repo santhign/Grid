@@ -624,7 +624,7 @@ namespace AdminService.Controllers
         /// 
         [HttpPost]
         [Route("UpdateAdminUser")]
-        public async Task<IActionResult> UpdateAdminUser([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] AdminProfile adminuser)
+        public async Task<IActionResult> UpdateAdminUser([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] AdminUserProfile adminuser)
         {
             try
             {
