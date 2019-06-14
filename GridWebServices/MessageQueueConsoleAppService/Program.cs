@@ -37,36 +37,32 @@ namespace MessageQueueConsoleAppService
         /// <param name="args">The arguments.</param>
         static void Main(string[] args)
         {
-            
+
             LogInfo.Initialize(Configuration);
-            
-            _connectionString = Configuration.GetConnectionString("DefaultConnection");
-            _timeInterval = Configuration.GetSection("TimeInterval").GetValue<int>("Default");            
-            // Wait for the user to hit <Enter>
-            if (_timeInterval > 0)
-            {
-                Timer t = new Timer(TimerCallback, null, 0, _timeInterval);
 
-                // Wait for the user to press enter key to start timer
-                //Console.ReadLine();
-                
-            }
+            //while (true)
+            //{
+            //    ConsoleKeyInfo cki;
+                _connectionString = Configuration.GetConnectionString("DefaultConnection");
+                _timeInterval = Configuration.GetSection("TimeInterval").GetValue<int>("Default");
+                // Wait for the user to hit <Enter>
+                if (_timeInterval > 0)
+                {
+                    //TimerCallback(null);
+                    Timer t = new Timer(TimerCallback, null, 0, _timeInterval);
+                    Thread.Sleep(Timeout.Infinite);
+                    // Wait for the user to press enter key to start timer
+                    //Console.ReadLine();
+                   
 
-            var _quitEvent = new ManualResetEvent(false);
-            AssemblyLoadContext.Default.Unloading += ctx =>
-            {
-                System.Console.WriteLine("Unloding fired");
-                LogInfo.Information("Unloding fired");
-                _quitEvent.Set();
-            };
-            System.Console.WriteLine("Waiting for signals");
-            LogInfo.Information("Waiting for signals");
-            _quitEvent.WaitOne();
-            System.Console.WriteLine("Received signal gracefully shutting down");
-            LogInfo.Information("Received signal gracefully shutting down");
+                }
+
+                //cki = Console.ReadKey(true);
+                //if (cki.Key == ConsoleKey.X) break;
 
 
-            //Console.WriteLine("Hello World!");
+                //Console.WriteLine("Hello World!");
+            //}
         }
 
         /// <summary>
@@ -85,7 +81,7 @@ namespace MessageQueueConsoleAppService
                 Console.WriteLine("End TimerCallback: " + DateTime.Now);
                 LogInfo.Information("End TimerCallback: " + DateTime.Now);
                 // Force a garbage collection to occur for this demo.
-                GC.Collect();
+                //GC.Collect();
             }
             catch (Exception ex)
             {
