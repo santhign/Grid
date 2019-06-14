@@ -29,6 +29,7 @@ namespace AdminService.Models
 
     public class RegisterAdminUser
     {
+        public string FullName { get; set; }
         [Required(ErrorMessage = "Email address required")]
         [EmailAddress(ErrorMessage = "Enter valid email address")]
         public string Email { get; set; }
@@ -41,10 +42,19 @@ namespace AdminService.Models
 
     public class AdminProfile
     {
-        public int AdminUserID { get; set; }
-        public string  ExistingPassword { get; set; }
+        public string  Name { get; set; }
         public string  NewPassword { get; set; }
     }
+
+    public class AdminUserProfile
+    {
+        public int AdminUserID { get; set; }
+        public string Name { get; set; }
+        public string Email { get; set; }
+        public string NewPassword { get; set; }
+        public int RoleID { get; set; }
+    }
+
     public class LoggedInPrinciple
     {
         /// <summary>
