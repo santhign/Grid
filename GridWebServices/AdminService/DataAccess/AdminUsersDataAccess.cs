@@ -145,13 +145,14 @@ namespace AdminService.DataAccess
 
                 SqlParameter[] parameters =
                {
+                    new SqlParameter( "@FullName",  SqlDbType.NVarChar ),
                     new SqlParameter( "@Email",  SqlDbType.NVarChar ),
                     new SqlParameter( "@Password",  SqlDbType.NVarChar ),
                     new SqlParameter( "@RoleID", SqlDbType.Int),
                     new SqlParameter( "@CreatedBy", SqlDbType.Int)
                 };
 
-                parameters[0].Value = adminuser.Email;
+                parameters[0].Value = adminuser.FullName;
                 parameters[1].Value = new Sha2().Hash(adminuser.Password);
                 parameters[2].Value = adminuser.RoleID;
                 parameters[3].Value = AdminUserID;
@@ -323,7 +324,7 @@ namespace AdminService.DataAccess
         }
 
 
-        public async Task<DatabaseResponse> UpdateAdminUser(AdminProfile adminuser)
+        public async Task<DatabaseResponse> UpdateAdminUser(AdminUserProfile adminuser)
         {
             try
             {
@@ -331,15 +332,19 @@ namespace AdminService.DataAccess
                 SqlParameter[] parameters =
                {
                      new SqlParameter("@AdminID", SqlDbType.Int),
-                    new SqlParameter( "@ExistingPassword",  SqlDbType.NVarChar ),
-                    new SqlParameter( "@NewPassword",  SqlDbType.NVarChar ) 
+                    new SqlParameter( "@Name",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@Email",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@NewPassword",  SqlDbType.NVarChar ) ,
+                    new SqlParameter( "@RoleID",  SqlDbType.Int )
                 };
   
                 parameters[0].Value = adminuser.AdminUserID;
-                parameters[1].Value = new Sha2().Hash(adminuser.ExistingPassword);
-                parameters[2].Value = new Sha2().Hash(adminuser.NewPassword); 
+                parameters[1].Value = adminuser.Name;
+                parameters[2].Value = adminuser.Email;
+                parameters[3].Value = new Sha2().Hash(adminuser.NewPassword);
+                parameters[4].Value = adminuser.RoleID; 
 
-                _DataHelper = new DataAccessHelper("Admin_UpdateProfile", parameters, _configuration);
+                _DataHelper = new DataAccessHelper("Admin_UpdateUserProfile", parameters, _configuration);
                 DataTable dt = new DataTable();
 
                 int result = await _DataHelper.RunAsync(dt); 
