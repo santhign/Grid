@@ -3794,6 +3794,16 @@ namespace OrderService.Controllers
                                     IsDomainValidationErrors = false
                                 });
                             }
+                            else if (updatePersoanDetailsResponse.ResponseCode == (int)DbReturnValue.DuplicateNRICNotAllowed)
+                            {
+                                LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.DuplicateNRICNotAllowed) + "for " + request.OrderID + "Order");
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = false,
+                                    Message = EnumExtensions.GetDescription(DbReturnValue.DuplicateNRICNotAllowed),
+                                    IsDomainValidationErrors = false
+                                });
+                            }
                             else
                             {
                                 LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.FailedUpdatePersonalDetails));
