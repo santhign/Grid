@@ -33,7 +33,7 @@ if [ $# -gt 0 ]; then
         cd ..
       fi
     done
-    echo "========================== RUNNING in LOOP =========================="
+    echo "========================== FINISHED =========================="
   else
     echo "invalid argument. please enter -start or -stop"
   fi
