@@ -17,7 +17,6 @@ if [ $# -gt 0 ]; then
 
     fi  
   elif [[ "$1" = "-start" ]]; then
-   while true; do 
     echo "=================== START CHECKING SERVICES ==================="
     ## now loop through the above array
     for s in "${arr[@]}"
@@ -34,12 +33,11 @@ if [ $# -gt 0 ]; then
         cd ..
       fi
     done
-    echo "========================== RUNNING in LOOP =========================="
-    sleep $interval
-   done
+    echo "========================== FINISHED =========================="
   else
     echo "invalid argument. please enter -start or -stop"
   fi
 else
   echo "please enter -start or -stop as parameter"
 fi
+
