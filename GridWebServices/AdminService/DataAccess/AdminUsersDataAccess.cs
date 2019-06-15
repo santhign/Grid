@@ -379,7 +379,7 @@ namespace AdminService.DataAccess
 
                 parameters[0].Value = AdminUserID;
                 parameters[1].Value = adminuser.Name;
-                parameters[3].Value = new Sha2().Hash(adminuser.NewPassword);
+                parameters[2].Value = new Sha2().Hash(adminuser.NewPassword);
 
                 _DataHelper = new DataAccessHelper("Admin_UpdateProfile", parameters, _configuration);
                 DataTable dt = new DataTable();
