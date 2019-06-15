@@ -40,36 +40,34 @@ namespace MessageQueueConsoleAppService
 
             LogInfo.Initialize(Configuration);
 
-            //while (true)
-            //{
-            //    ConsoleKeyInfo cki;
-                _connectionString = Configuration.GetConnectionString("DefaultConnection");
-                _timeInterval = Configuration.GetSection("TimeInterval").GetValue<int>("Default");
-                // Wait for the user to hit <Enter>
-                if (_timeInterval > 0)
-                {
-                    //TimerCallback(null);
-                    Timer t = new Timer(TimerCallback, null, 0, _timeInterval);
-                    Thread.Sleep(Timeout.Infinite);
-                    // Wait for the user to press enter key to start timer
-                    //Console.ReadLine();
-                   
+            _connectionString = Configuration.GetConnectionString("DefaultConnection");
+            _timeInterval = Configuration.GetSection("TimeInterval").GetValue<int>("Default");
 
+            bool complete = false;
+            var t = new Thread(() =>
+            {
+                bool toggle = false;
+                while (!complete)
+                {
+                    toggle = !toggle;
+
+                    TimerCallback();
+                    Thread.Sleep(_timeInterval);
                 }
 
-                //cki = Console.ReadKey(true);
-                //if (cki.Key == ConsoleKey.X) break;
+            });
+            t.Start();
+            complete = false;
+            t.Join();
 
 
-                //Console.WriteLine("Hello World!");
-            //}
         }
 
         /// <summary>
         /// Timers the callback.
         /// </summary>
         /// <param name="o">The o.</param>
-        private static async void TimerCallback(Object o)
+        private static async void TimerCallback()
         {
             try
             {
