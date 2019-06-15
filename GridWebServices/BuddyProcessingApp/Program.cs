@@ -26,38 +26,41 @@ namespace BuddyProcessingApp
              .Build();
         static void Main(string[] args)
         {
-            while (true)
+            try
             {
                 LogInfo.Initialize(Configuration);
 
                 LogInfo.Information("Buddy Console App is Started");
 
                 _connectionString = Configuration.GetConnectionString("DefaultConnection");
+              
+                _timeInterval = GetIntervel();             
 
-                ConsoleKeyInfo cki;               
-
-                // Prevent example from ending if CTL+C is pressed.
-                Console.TreatControlCAsInput = true;
-
-                _timeInterval = GetIntervel();
-
-                if (_timeInterval > 0)
+                bool complete = false;
+                var t = new Thread(() =>
                 {
+                    bool toggle = false;
+                    while (!complete)
+                    {
+                        toggle = !toggle;
 
-                    Timer t = new Timer(TimerCallback, null, 0, _timeInterval);
+                        TimerCallback();
+                        Thread.Sleep(_timeInterval);
+                    }
+                    
+                });
+                t.Start();              
+                complete = false;
+                t.Join();
 
-                    // Wait for the user to press enter key to start timer  
-                }
-
-                cki = Console.ReadKey(true);
-                if (cki.Key == ConsoleKey.X) break;
-                
             }
-
-            LogInfo.Information("Buddy Console App Stopped");
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+            }
         }
 
-        private static async void TimerCallback(Object o)
+        private static async void TimerCallback()
         {
             try
             {
@@ -135,7 +138,6 @@ namespace BuddyProcessingApp
                             }
                         }
                     }
-
                 }
               
                 Console.WriteLine("End timer action: " + DateTime.UtcNow);
@@ -150,19 +152,29 @@ namespace BuddyProcessingApp
 
         private  static int GetIntervel()
         {
-            DatabaseResponse intervelConfigResponse = new DatabaseResponse();
-
-            intervelConfigResponse =  ConfigHelper.GetValueByKey(ConfigKeys.BuddyTrialIntervel.ToString(), _connectionString);
-
-            if (intervelConfigResponse != null && intervelConfigResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+            try
             {
-                string configValue = (string)intervelConfigResponse.Results;
 
-                return int.Parse(configValue);
+                DatabaseResponse intervelConfigResponse = new DatabaseResponse();
+
+                intervelConfigResponse = ConfigHelper.GetValueByKey(ConfigKeys.BuddyTrialIntervel.ToString(), _connectionString);
+
+                if (intervelConfigResponse != null && intervelConfigResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                {
+                    string configValue = (string)intervelConfigResponse.Results;
+
+                    return int.Parse(configValue);
+                }
+
+                else
+                {
+                    return 0;
+                }
             }
-
-            else
+            catch (Exception ex)
             {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
                 return 0;
             }
         }
