@@ -2,6 +2,7 @@
 using Core.Enums;
 using Core.Extensions;
 using Core.Helpers;
+using Core.Models;
 using InfrastructureService;
 using Microsoft.Extensions.Configuration;
 using System;
@@ -41,7 +42,7 @@ namespace MessageQueueConsoleAppService
             LogInfo.Initialize(Configuration);
 
             _connectionString = Configuration.GetConnectionString("DefaultConnection");
-            _timeInterval = Configuration.GetSection("TimeInterval").GetValue<int>("Default");
+            _timeInterval = GetIntervel();
 
             bool complete = false;
             var t = new Thread(() =>
@@ -85,7 +86,26 @@ namespace MessageQueueConsoleAppService
             {
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
             }
-        }       
-     
+        }
+
+        private static int GetIntervel()
+        {
+            DatabaseResponse intervelConfigResponse = new DatabaseResponse();
+
+            intervelConfigResponse = ConfigHelper.GetValueByKey(ConfigKeys.MQConsoleInterval.ToString(), _connectionString);
+
+            if (intervelConfigResponse != null && intervelConfigResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+            {
+                string configValue = (string)intervelConfigResponse.Results;
+
+                return int.Parse(configValue);
+            }
+
+            else
+            {
+                return 0;
+            }
+        }
+
     }
 }
