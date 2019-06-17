@@ -73,6 +73,66 @@ namespace Core.Models
 
         [DataMember(Name = "param10")]
         public string param10 { get; set; }
+
+        [DataMember(Name = "param11")]
+        public string param11 { get; set; }
+
+        [DataMember(Name = "param12")]
+        public string param12 { get; set; }
+
+        [DataMember(Name = "param13")]
+        public string param13 { get; set; }
+
+        [DataMember(Name = "param14")]
+        public string param14 { get; set; }
+
+        [DataMember(Name = "param15")]
+        public string param15 { get; set; }
+
+        [DataMember(Name = "param16")]
+        public string param16 { get; set; }
+
+        [DataMember(Name = "param17")]
+        public string param17 { get; set; }
+
+        [DataMember(Name = "param18")]
+        public string param18 { get; set; }
+
+        [DataMember(Name = "param19")]
+        public string param19 { get; set; }
+
+        [DataMember(Name = "param20")]
+        public string param20 { get; set; }
+
+        [DataMember(Name = "param21")]
+        public string param21 { get; set; }
+
+        [DataMember(Name = "param22")]
+        public string param22 { get; set; }
+
+        [DataMember(Name = "param23")]
+        public string param23 { get; set; }
+
+        [DataMember(Name = "param24")]
+        public string param24 { get; set; }
+
+        [DataMember(Name = "param25")]
+        public string param25 { get; set; }
+
+        [DataMember(Name = "param26")]
+        public string param26 { get; set; }
+
+        [DataMember(Name = "param27")]
+        public string param27 { get; set; }
+
+        [DataMember(Name = "param28")]
+        public string param28 { get; set; }
+
+        [DataMember(Name = "param29")]
+        public string param29 { get; set; }
+
+        [DataMember(Name = "param30")]
+        public string param30 { get; set; }
     }
 
     public class NotificationLog
