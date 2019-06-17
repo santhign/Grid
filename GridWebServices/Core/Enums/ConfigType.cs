@@ -54,6 +54,10 @@ namespace Core.Enums
         [Description("CustomerTokenExpiryInDays")]
         CustomerTokenExpiryInDays = 5,
 
+        [EnumMember(Value = "MQConsoleInterval")]
+        [Description("MQConsoleInterval")]
+        MQConsoleInterval = 6,
+
     }
 
     public enum OrderStatus

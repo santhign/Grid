@@ -192,7 +192,7 @@ namespace NotificationService.Controllers
                             {
                                 DatabaseResponse notificationLogResponse = await _configAccess.CreateEMailNotificationLog(new NotificationLog {
                                     Status = response.Status.ToString() == "Sent" ? 1 : 0, Email = response.Email,
-                                    EmailTemplateID = template.EmailTemplateID, EmailBody = _email.GetMergedTemplate(param, template),
+                                    EmailTemplateID = template.EmailTemplateID, EmailBody = template.EmailBody,
                                     EmailSubject = template.EmailSubject, ScheduledOn = subscription.Timestamp, SendOn = DateTime.UtcNow });
                             }
                         }
