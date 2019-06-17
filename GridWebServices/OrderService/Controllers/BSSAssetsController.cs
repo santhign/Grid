@@ -279,7 +279,7 @@ namespace OrderService.Controllers
                                         //get code and call premum 
                                         //  fee.PortalServiceName
 
-                                        DatabaseResponse requestIdResForPremium = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.GetAssets.ToString(), customerID, (int)BSSCalls.NewSession, numbers.FreeNumbers.FirstOrDefault().MobileNumber);
+                                        DatabaseResponse requestIdResForPremium = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.GetAssets.ToString(), customerID, (int)BSSCalls.NewSession, "");
 
                                         ResponseObject premumResponse = new ResponseObject();
 
