@@ -153,9 +153,10 @@ namespace AdminService.DataAccess
                 };
 
                 parameters[0].Value = adminuser.FullName;
-                parameters[1].Value = new Sha2().Hash(adminuser.Password);
-                parameters[2].Value = adminuser.RoleID;
-                parameters[3].Value = AdminUserID;
+                parameters[1].Value = adminuser.Email;
+                parameters[2].Value = new Sha2().Hash(adminuser.Password);
+                parameters[3].Value = adminuser.RoleID;
+                parameters[4].Value = AdminUserID;
 
                 _DataHelper = new DataAccessHelper("Admin_CreateAdminUser", parameters, _configuration);
 
