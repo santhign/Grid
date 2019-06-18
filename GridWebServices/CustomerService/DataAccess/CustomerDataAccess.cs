@@ -1247,6 +1247,7 @@ namespace CustomerService.DataAccess
                                          StartDate = model.Field<DateTime?>("StartDate"),
                                          ExpiryDate = model.Field<DateTime?>("ExpiryDate"),
                                          SubscriptionDate = model.Field<DateTime?>("SubscriptionDate"),
+                                         PricingDescription = model.Field<string>("PricingDescription")
 
                                      }).ToList();
                     }
