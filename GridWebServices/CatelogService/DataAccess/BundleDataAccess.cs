@@ -240,6 +240,7 @@ namespace CatelogService.DataAccess
                                      TotalVoice = model.Field<double>("TotalVoice"),
                                      ActualSubscriptionFee = model.Field<double>("ActualSubscriptionFee"),
                                      ApplicableSubscriptionFee = model.Field<double>("ApplicableSubscriptionFee"),
+                                     PricingDescription = model.Field<string>("PricingDescription"),
                                  }).ToList();
                     }
 
