@@ -152,6 +152,11 @@ namespace Core.Enums
         /// The admin assign change request offset voucher
         /// </summary>
         public const string Admin_AssignChangeRequestOffsetVoucher = "Admin_AssignChangeRequestOffsetVoucher";
+
+        /// <summary>
+        /// The admin get order list
+        /// </summary>
+        public const string Admin_GetOrderList = "Admin_GetOrderList";
     }
 
 }

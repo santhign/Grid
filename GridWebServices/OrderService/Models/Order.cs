@@ -71,6 +71,8 @@ namespace OrderService.Models
         public string PlanMarketingName { get; set; }
         public string PortalDescription { get; set; }
         public string PortalSummaryDescription { get; set; }
+        public string PricingDescription { get; set; }
+
         public double? TotalData { get; set; }
         public double? TotalSMS { get; set; }
         public double? TotalVoice { get; set; }

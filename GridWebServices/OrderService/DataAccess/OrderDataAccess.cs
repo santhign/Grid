@@ -784,6 +784,8 @@ namespace OrderService.DataAccess
                             OrderBundle.PortedNumberTransferForm = dr["PortedNumberTransferForm"].ToString();
                             OrderBundle.PortedNumberOwnedBy = dr["PortedNumberOwnedBy"].ToString();
                             OrderBundle.PortedNumberOwnerRegistrationID = dr["PortedNumberOwnerRegistrationID"].ToString();
+                            OrderBundle.PricingDescription = Convert.ToString(dr["PricingDescription"]);
+
                             List<ServiceCharge> subscriberServiceCharges = new List<ServiceCharge>();
 
                             if (ds.Tables[3] != null && ds.Tables[3].Rows.Count > 0)
