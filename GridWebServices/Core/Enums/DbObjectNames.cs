@@ -157,6 +157,11 @@ namespace Core.Enums
         /// The admin get order list
         /// </summary>
         public const string Admin_GetOrderList = "Admin_GetOrderList";
+
+        /// <summary>
+        /// The admin get order details
+        /// </summary>
+        public const string Admin_GetOrderDetails = "Admin_GetOrderDetails";
     }
 
 }
