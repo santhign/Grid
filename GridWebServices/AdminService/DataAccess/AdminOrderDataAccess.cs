@@ -38,7 +38,7 @@ namespace AdminService.DataAccess
             try
             {
 
-                _DataHelper = new DataAccessHelper("Admin_GetOrderList", _configuration);
+                _DataHelper = new DataAccessHelper(DbObjectNames.Admin_GetOrderList, _configuration);
 
                 DataTable dt = new DataTable();
 
