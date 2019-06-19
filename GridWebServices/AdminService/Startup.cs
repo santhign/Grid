@@ -58,6 +58,8 @@ namespace AdminService
             //to access configuration from controller
             services.AddSingleton(Configuration);
 
+            services.AddScoped<DataAccess.Interfaces.IAdminOrderDataAccess, DataAccess.AdminOrderDataAccess>();
+
             services.Configure<MvcOptions>(options =>
             {
                 options.Filters.Add(new CorsAuthorizationFilterFactory("StratagileAdminPolicy"));
@@ -125,6 +127,7 @@ namespace AdminService
                 );
                 
             });
+
 
             app.Run(async (context) =>
             {
