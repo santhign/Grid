@@ -48,7 +48,6 @@ namespace AdminService.DataAccess
 
                 if (dt.Rows.Count > 0)
                 {
-
                     customerList = (from model in dt.AsEnumerable()
                                     select new OrderList()
                                     {
