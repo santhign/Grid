@@ -61,7 +61,9 @@ namespace AdminService.DataAccess
                                         RejectionCount = model.Field<int?>("RejectionCount"),
                                         Name = model.Field<string>("Name"),
                                         OrderDate = model.Field<DateTime?>("OrderDate"),
-                                        DeliveryDateTime = model.Field<DateTime?>("DeliveryDateTime")
+                                        DeliveryDate = model.Field<DateTime?>("DeliveryDate"),
+                                        DeliveryFromTime = model.Field<DateTime?>("DeliveryFromTime"),
+                                        DeliveryToTime = model.Field<DateTime?>("DeliveryToTime")
                                     }).ToList();
                 }
 

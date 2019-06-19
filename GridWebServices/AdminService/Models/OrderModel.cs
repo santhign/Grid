@@ -20,7 +20,10 @@ namespace AdminService.Models
         public string Name { get; set; }
         public DateTime ? OrderDate { get; set; }
 
-        public DateTime ? DeliveryDateTime { get; set; }
+        public DateTime ? DeliveryDate { get; set; }
+        public DateTime? DeliveryFromTime { get; set; }
+        public DateTime? DeliveryToTime { get; set; }
+
     }
 
 }
