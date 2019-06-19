@@ -62,7 +62,8 @@ namespace CatelogService.DataAccess
                                       TotalData = model.Field<double>("TotalData"),
                                       TotalSMS = model.Field<double>("TotalSMS"),
                                       TotalVoice = model.Field<double>("TotalVoice"),
-                                      PromotionText = model.Field<string>("PromotionText")
+                                      PromotionText = model.Field<string>("PromotionText"),
+                                      PricingDescription = model.Field<string>("PricingDescription")
 
                                   }).ToList();
                 }
@@ -120,7 +121,8 @@ namespace CatelogService.DataAccess
                                       TotalData = model.Field<double>("TotalData"),
                                       TotalSMS = model.Field<double>("TotalSMS"),
                                       TotalVoice = model.Field<double>("TotalVoice"),
-                                      PromotionText = model.Field<string>("PromotionText")
+                                      PromotionText = model.Field<string>("PromotionText"),
+                                      PricingDescription = model.Field<string>("PricingDescription")
 
                                   }).ToList();
                 }
@@ -240,6 +242,7 @@ namespace CatelogService.DataAccess
                                      TotalVoice = model.Field<double>("TotalVoice"),
                                      ActualSubscriptionFee = model.Field<double>("ActualSubscriptionFee"),
                                      ApplicableSubscriptionFee = model.Field<double>("ApplicableSubscriptionFee"),
+                                     PricingDescription = model.Field<string>("PricingDescription"),
                                  }).ToList();
                     }
 
