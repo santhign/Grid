@@ -4534,12 +4534,7 @@ namespace OrderService.Controllers
                                         PaymentSuccessResponse paymentResponse = new PaymentSuccessResponse { Source = ((OrderSource)sourceTyeResponse.Results).SourceType, MPGSOrderID = updateRequest.MPGSOrderID, Amount = tokenSession.Amount, Currency = gatewayConfig.Currency };
 
                                         if (paymentProcessingRespose.ResponseCode == (int)DbReturnValue.TransactionSuccess)
-                                        { 
-                                            if (((OrderSource)sourceTyeResponse.Results).SourceType == CheckOutType.Orders.ToString())
-                                            {
-                                                await SendEmailNotification(updateRequest.MPGSOrderID, customerID, ((OrderSource)sourceTyeResponse.Results).SourceID);
-                                            }
-
+                                        {
                                             LogInfo.Information(EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess));
 
                                             QMHelper qMHelper = new QMHelper(_iconfiguration, _messageQueueDataAccess);
@@ -5009,12 +5004,7 @@ namespace OrderService.Controllers
                                                     LogInfo.Information(EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess));
 
                                                     //Get Order Type
-                                                    var sourceTyeResponse = await _orderAccess.GetSourceTypeByMPGSSOrderId(updateRequest.MPGSOrderID);
-
-                                                    if (((OrderSource)sourceTyeResponse.Results).SourceType == CheckOutType.Orders.ToString())
-                                                    {
-                                                        await SendEmailNotification(updateRequest.MPGSOrderID, customerID, ((OrderSource)sourceTyeResponse.Results).SourceID);
-                                                    }
+                                                    var sourceTyeResponse = await _orderAccess.GetSourceTypeByMPGSSOrderId(updateRequest.MPGSOrderID);                                                  
 
                                                     QMHelper qMHelper = new QMHelper(_iconfiguration, _messageQueueDataAccess);
 
@@ -5952,42 +5942,7 @@ namespace OrderService.Controllers
 
             }
         }
-                      
-        private async Task SendEmailNotification(string MPGSOrderID, int customerID, int orderID)
-        {
-            OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
-            ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
-            DatabaseResponse registrationResponse = await _configAccess.GetEmailNotificationTemplate(NotificationEvent.OrderSuccess.ToString());
-            //var details = await _messageQueueDataAccess.GetMessageDetails(MPGSOrderID);
-
-            // Get Customer Data from CustomerID for email and Name
-            var customer = await _orderAccess.GetCustomerDetailByOrder(customerID, orderID);
-            var notificationMessage = MessageHelper.GetMessage(customer.ToEmailList, customer.Name, NotificationEvent.OrderSuccess.ToString(),
-           ((EmailTemplate)registrationResponse.Results).TemplateName,
-       _iconfiguration);
-            DatabaseResponse notificationResponse = await _configAccess.GetConfiguration(ConfiType.Notification.ToString());
-
-            MiscHelper parser = new MiscHelper();
-            var notificationConfig = parser.GetNotificationConfig((List<Dictionary<string, string>>)notificationResponse.Results);
-
-            Publisher registrationNotificationPublisher = new Publisher(_iconfiguration, notificationConfig.SNSTopic);
-            await registrationNotificationPublisher.PublishAsync(notificationMessage);
-            try
-            {
-                DatabaseResponse notificationLogResponse = await _configAccess.CreateEMailNotificationLogForDevPurpose(
-                            new NotificationLogForDevPurpose
-                            {
-                                EventType = NotificationEvent.ForgetPassword.ToString(),
-                                Message = JsonConvert.SerializeObject(notificationMessage)
-
-                            });
-            }
-            catch (Exception ex)
-            {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + "MPGS OrderID:" + MPGSOrderID);
-            }
-        }
-
+        
         /// <summary>
         /// This will remove the LOA details from rescheduled delivery information
         /// </summary>
@@ -6112,5 +6067,7 @@ namespace OrderService.Controllers
                 });
             }
         }
+
+
     }
 }
