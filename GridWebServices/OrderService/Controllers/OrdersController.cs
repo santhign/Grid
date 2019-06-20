@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Mvc;
 using OrderService.Models;
+using OrderService.Models.Transaction;
 using OrderService.DataAccess;
 using OrderService.Helpers;
 using Core.Models;
@@ -4513,11 +4514,12 @@ namespace OrderService.Controllers
 
                                       //  get the session details and transaction details
 
-                                       TransactionRetrieveResponseOperation transactionResponse = new TransactionRetrieveResponseOperation();
+                                       TransactionRetrieveResponseOperation transactionResponse = new TransactionRetrieveResponseOperation();                                       
 
-                                        transactionResponse = gatewayHelper.RetrieveCheckOutTransaction(gatewayConfig, updateRequest);
+                                        string receipt = gatewayHelper.RetrieveCheckOutTransaction(gatewayConfig, updateRequest);
 
-                                                                               
+                                        transactionResponse = gatewayHelper.GetCapturedTransaction(receipt);
+
                                         DatabaseResponse tokenDetailsUpdateResponse = new DatabaseResponse();
 
                                         DatabaseResponse paymentProcessingRespose = new DatabaseResponse();
@@ -4526,7 +4528,9 @@ namespace OrderService.Controllers
 
                                         paymentProcessingRespose = await _orderAccess.UpdateCheckOutReceipt(transactionResponse.TrasactionResponse);
 
-                                      //  tokenDetailsUpdateResponse = await _orderAccess.UpdatePaymentMethodDetails(transactionResponse.TrasactionResponse, customerID, tokenSession.Token);
+                                        DatabaseResponse updatePaymentResponse = await _orderAccess.UpdatePaymentResponse(updateRequest.MPGSOrderID, receipt);
+
+                                        tokenDetailsUpdateResponse = await _orderAccess.UpdatePaymentMethodDetails(transactionResponse.TrasactionResponse, customerID, tokenSession.Token);
                                                                                
                                         //Get Order Type
                                         var sourceTyeResponse = await _orderAccess.GetSourceTypeByMPGSSOrderId(updateRequest.MPGSOrderID);
@@ -4986,8 +4990,10 @@ namespace OrderService.Controllers
                                                 TransactionRetrieveResponseOperation transactionResponse = new TransactionRetrieveResponseOperation();
 
                                                 CheckOutResponseUpdate updateRequest = new CheckOutResponseUpdate { MPGSOrderID = checkoutDetails.OrderId, Result = captureResponse };
+                                                    
+                                                string receipt = gatewayHelper.RetrieveCheckOutTransaction(gatewayConfig, updateRequest);
 
-                                                transactionResponse = gatewayHelper.RetrieveCheckOutTransaction(gatewayConfig, updateRequest);
+                                                transactionResponse = gatewayHelper.GetCapturedTransaction(receipt);                                                
 
                                                 transactionResponse.TrasactionResponse.CardType = paymentMethod.CardType;
 
@@ -4998,6 +5004,8 @@ namespace OrderService.Controllers
                                                 DatabaseResponse paymentProcessingRespose = new DatabaseResponse();
 
                                                 paymentProcessingRespose = await _orderAccess.UpdateCheckOutReceipt(transactionResponse.TrasactionResponse);
+
+                                                DatabaseResponse updatePaymentResponse = await _orderAccess.UpdatePaymentResponse(updateRequest.MPGSOrderID, receipt);
 
                                                 if (paymentProcessingRespose.ResponseCode == (int)DbReturnValue.TransactionSuccess)
                                                 {
@@ -6068,6 +6076,7 @@ namespace OrderService.Controllers
             }
         }
 
-
+       
     }
+
 }

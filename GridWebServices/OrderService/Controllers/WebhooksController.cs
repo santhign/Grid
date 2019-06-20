@@ -19,6 +19,7 @@ using OrderService.Helpers;
 using OrderService.DataAccess;
 using InfrastructureService.MessageQueue;
 using InfrastructureService.Handlers;
+using OrderService.Models.Transaction;
 using OrderService.Enums;
 
 
@@ -196,15 +197,15 @@ namespace OrderService.Controllers
 
                 DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.MPGS.ToString());
 
-                PaymentHelper gatewayHelper = new PaymentHelper();
-
-           
+                PaymentHelper gatewayHelper = new PaymentHelper();           
 
                 GridMPGSConfig gatewayConfig = gatewayHelper.GetGridMPGSConfig((List<Dictionary<string, string>>)configResponse.Results);
 
                 TransactionRetrieveResponseOperation transactionResponse = new TransactionRetrieveResponseOperation();
-              
-                transactionResponse = gatewayHelper.RetrieveCheckOutTransaction(gatewayConfig, updateRequest);
+
+                string receipt =  gatewayHelper.RetrieveCheckOutTransaction(gatewayConfig, updateRequest);
+
+                transactionResponse = gatewayHelper.GetCapturedTransaction(receipt);
 
                 if (webhookLogUpdatedatabaseResponse != null && webhookLogUpdatedatabaseResponse.Results != null)
                 {
@@ -224,7 +225,9 @@ namespace OrderService.Controllers
                 DatabaseResponse paymentProcessingRespose = new DatabaseResponse();
 
                 paymentProcessingRespose = await _orderAccess.UpdateCheckOutReceipt(transactionResponse.TrasactionResponse);
-                               
+
+                DatabaseResponse updatePaymentResponse = await _orderAccess.UpdatePaymentResponse(updateRequest.MPGSOrderID, receipt);
+
                 if (paymentProcessingRespose.ResponseCode == (int)DbReturnValue.TransactionSuccess)
                 {  
                     LogInfo.Information(EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess));
@@ -237,8 +240,7 @@ namespace OrderService.Controllers
                     }
 
                     else
-                    {
-                        // 0
+                    {                       
                         LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.SourceTypeNotFound) + " " + EnumExtensions.GetDescription(CommonErrors.ProcessingQueFailed));
                       
                     }
