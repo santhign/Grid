@@ -143,6 +143,8 @@ namespace CustomerService.Models
         /// <value>
         /// The password.
         /// </value>
+        /// 
+        [RegularExpression(@"(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}")]
         public string Password { get; set; }
 
         /// <summary>
