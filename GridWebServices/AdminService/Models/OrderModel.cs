@@ -21,9 +21,21 @@ namespace AdminService.Models
         public DateTime ? OrderDate { get; set; }
 
         public DateTime ? DeliveryDate { get; set; }
-        public DateTime? DeliveryFromTime { get; set; }
-        public DateTime? DeliveryToTime { get; set; }
+        public TimeSpan? DeliveryFromTime { get; set; }
+        public TimeSpan? DeliveryToTime { get; set; }
 
+    }
+
+    public class OrderDetails : OrderList
+    {
+        public string IdentityCardNumber { get; set; }
+        public string IdentityCardType { get; set; }
+        public DateTime? ExpiryDate { get; set; }
+        public DateTime? DOB { get; set; }
+        public string Nationality { get; set; }
+        public string DocumentURL { get; set; }
+        public string DocumentBackURL { get; set; }
+        
     }
 
 }

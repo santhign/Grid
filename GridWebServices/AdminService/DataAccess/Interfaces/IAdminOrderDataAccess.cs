@@ -9,5 +9,7 @@ namespace AdminService.DataAccess.Interfaces
     public interface IAdminOrderDataAccess
     {
         Task<List<AdminService.Models.OrderList>> GetOrdersList(int? deliveryStatus, DateTime? fromDate, DateTime? toDate);
+
+        Task<AdminService.Models.OrderDetails> GetOrderDetails(int orderID);
     }
 }
