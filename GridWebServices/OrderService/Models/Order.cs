@@ -159,4 +159,35 @@ namespace OrderService.Models
         public double Amount { get; set; }
         public string Currency { get; set; }
     }
+
+    public class OrderRescheduleDeliveryRequest
+    {
+        public int OrderID { get; set; }
+        /// <summary>
+        /// 1=Orders; 2=ChangeRequests  
+        /// </summary>
+        public int OrderType { get; set; }
+        public string ShippingContactNumber { get; set; }
+        public string ShippingFloor { get; set; }
+        public string ShippingUnit { get; set; }
+        public string ShippingBuildingName { get; set; }
+        public string ShippingBuildingNumber { get; set; }
+        public string ShippingStreetName { get; set; }
+
+        public string ShippingPostCode { get; set; }
+        public string AlternateRecipientName { get; set; }
+        public string AlternateRecipientEmail { get; set; }
+        public string AlternateRecipientContact { get; set; }
+        public string AlternateRecioientIDNumber { get; set; }
+        public string AlternateRecioientIDType { get; set; }
+        public string PortalSlotID { get; set; }
+        //public DateTime? ScheduledDate { get; set; }
+
+    }
+
+    public class Order_RescheduleDeliveryResponse
+    {
+        public int AccountInvoiceID { get; set; }
+        public double? PayableAmount { get; set; }
+    }
 }

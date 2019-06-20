@@ -609,9 +609,7 @@ namespace OrderService.Helpers
             customerResponse = await _orderAccess.GetCustomerIdFromOrderId(orderID);          
 
             // Get Customer Data from CustomerID for email and Name
-            var customer = await _orderAccess.GetCustomerDetailByOrder(((OrderCustomer)customerResponse.Results).CustomerId, orderID);          
-
-            string[] emails = customer.ToEmailList.Split(',');
+            var customer = await _orderAccess.GetCustomerDetailByOrder(((OrderCustomer)customerResponse.Results).CustomerId, orderID);  
 
             StringBuilder orderedNumbersSb = new StringBuilder();
 
@@ -698,7 +696,7 @@ namespace OrderService.Helpers
                 
                                                 NotificationEvent.OrderSuccess.ToString(),
                                                     
-                                             ((EmailTemplate)templateResponse.Results).TemplateName, _iconfiguration,emails[0],customer.OrderNumber, orderedNumbersSb.ToString(),deliveryAddressSb.ToString(), customer.alternateRecipientName == null ? customer.Name : customer.alternateRecipientName, customer.alternateRecipientContact == null ? customer.shippingContactNumber : customer.alternateRecipientContact, customer.alternateRecipientEmail == null ? customer.ToEmailList[0].ToString() : customer.alternateRecipientEmail, deliveryDate,customer.ReferralCode);
+                                             ((EmailTemplate)templateResponse.Results).TemplateName, _iconfiguration,customer.DeliveryEmail,customer.OrderNumber, orderedNumbersSb.ToString(),deliveryAddressSb.ToString(), customer.alternateRecipientName == null ? customer.Name : customer.alternateRecipientName, customer.alternateRecipientContact == null ? customer.shippingContactNumber : customer.alternateRecipientContact, customer.alternateRecipientEmail == null ? customer.ToEmailList[0].ToString() : customer.alternateRecipientEmail, deliveryDate,customer.ReferralCode);
 
             DatabaseResponse notificationResponse = await _configAccess.GetConfiguration(ConfiType.Notification.ToString());
 

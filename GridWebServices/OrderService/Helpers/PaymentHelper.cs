@@ -13,6 +13,8 @@ using Newtonsoft.Json;
 using Core.Models;
 using Microsoft.Extensions.Configuration;
 using OrderService.DataAccess;
+using OrderService.Models.Transaction;
+
 
 namespace OrderService.Helpers
 {
@@ -242,7 +244,7 @@ namespace OrderService.Helpers
 
         }
 
-        public TransactionRetrieveResponseOperation RetrieveCheckOutTransaction(GridMPGSConfig mpgsConfig,CheckOutResponseUpdate responseUpdate)
+        public string RetrieveCheckOutTransaction(GridMPGSConfig mpgsConfig,CheckOutResponseUpdate responseUpdate)
         {
             try
             {
@@ -270,34 +272,15 @@ namespace OrderService.Helpers
                     LogInfo.Information($" {EnumExtensions.GetDescription(MPGSAPIResponse.HostedCheckoutRetrieveReceipt) + " " + response}");
 
                     //parse response
-                    TransactionResponseModel transactionResponseModel = null;                  
 
-                    try
-                    {
-                        transactionResponseModel = TransactionResponseModel.toTransactionResponseModel(response);
-
-                    }
-                    catch (Exception ex)
-                    {
-                        LogInfo.Error($" : { EnumExtensions.GetDescription(MPGSAPIResponse.HostedCheckoutReceiptError) + " " + JsonConvert.SerializeObject(ex)}");
-
-                        throw ex;
-                    }
-                    
-
-                    return new TransactionRetrieveResponseOperation { TrasactionResponse= transactionResponseModel }; 
+                    return response;
 
                 }
                 else
                 {
                     LogInfo.Error($"  {MPGSAPIResponse.Unsuccessful.ToString()+ ".  " + responseUpdate.Result}");
 
-                    return new TransactionRetrieveResponseOperation
-                    {                       
-                        Cause = EnumExtensions.GetDescription(MPGSAPIResponse.Unsuccessful),
-
-                        Message = EnumExtensions.GetDescription(MPGSAPIResponse.ProblemCompletingTransaction),
-                    };
+                    return string.Empty;
                 }
 
             }
@@ -671,5 +654,24 @@ namespace OrderService.Helpers
             return TokenResponse.GetResponseResult(response);
         }
 
+        public TransactionRetrieveResponseOperation GetCapturedTransaction(string receiptResponse)
+        {
+            TransactionResponseModel transactionResponseModel = null;
+
+            try
+            {
+                transactionResponseModel = TransactionResponseModel.toTransactionResponseModel(receiptResponse);
+
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error($" : { EnumExtensions.GetDescription(MPGSAPIResponse.HostedCheckoutReceiptError) + " " + JsonConvert.SerializeObject(ex)}");
+
+                throw ex;
+            }
+
+            return new TransactionRetrieveResponseOperation { TrasactionResponse = transactionResponseModel };
+
+        }
     }
 }

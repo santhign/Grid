@@ -89,7 +89,8 @@ namespace OrderService.Models
 
     public class CustomerDetails
     {
-        public string Name{ get; set; }       
+        public string Name{ get; set; }  
+        public string DeliveryEmail { get; set; }
         public string ToEmailList { get; set; }
         public string OrderNumber { get; set; }
         public string ReferralCode { get; set; }
