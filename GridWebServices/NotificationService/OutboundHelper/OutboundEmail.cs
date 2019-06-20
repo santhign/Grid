@@ -52,8 +52,8 @@ namespace NotificationService.OutboundHelper
         private static Mandrill.Model.MandrillMessage GenerateMandrillMessage(NotificationMessage notificationMessage, MandrilConfig config, EmailTemplate template,  bool useTemplate = true)
         {
            try
-            {               
-
+            {
+                string customer = "Customer";
                 Mandrill.Model.MandrillMessage eMsg = new Mandrill.Model.MandrillMessage();
                 eMsg.Html = HttpUtility.HtmlDecode(template.EmailBody); 
                 eMsg.Subject = template.EmailSubject;
@@ -72,7 +72,7 @@ namespace NotificationService.OutboundHelper
                 List<Mandrill.Model.MandrillRcptMergeVar> recepientMergeVarList = new List<Mandrill.Model.MandrillRcptMergeVar>();
                // Mandrill.NameContentList<string> content = new Mandrill.NameContentList<string>();
 
-                recipients = (from param in notificationMessage.Message.parameters select new Mandrill.Model.MandrillMailAddress { Email = param.emailaddress, Name = param.name }).ToList();
+                recipients = (from param in notificationMessage.Message.parameters select new Mandrill.Model.MandrillMailAddress { Email = param.emailaddress, Name = (param.name == "" || param.name == null ? customer : param.name) }).ToList();
 
                 foreach(NotificationParams param in notificationMessage.Message.parameters)
                 {                   
@@ -83,7 +83,7 @@ namespace NotificationService.OutboundHelper
                     mergeVars.Add(mergevar);
                     mergevar = new Mandrill.Model.MandrillMergeVar();
                     mergevar.Name = "NAME";
-                    mergevar.Content = param.name;
+                    mergevar.Content = (param.name == "" || param.name == null ? customer : param.name);
                     mergeVars.Add(mergevar);
                   
                    
