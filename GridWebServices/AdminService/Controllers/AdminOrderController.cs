@@ -167,7 +167,7 @@ namespace AdminService.Controllers
         /// <param name="token">The token.</param>
         /// <param name="orderID">The order identifier.</param>
         /// <returns></returns>
-        [HttpGet("GetOrderDetailsForNRIC")]
+        [HttpGet("GetOrderDetailsForNRIC/{orderID}")]
         public async Task<IActionResult> GetOrderDetails([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int orderID)
         {
             try
