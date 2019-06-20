@@ -13,6 +13,7 @@ using Core.Models;
 using Core.Extensions;
 using OrderService.Enums;
 using Newtonsoft.Json;
+using OrderService.Models.Transaction;
 
 namespace OrderService.DataAccess
 {
@@ -3495,6 +3496,7 @@ namespace OrderService.DataAccess
                                       select new CustomerDetails()
                                       {
                                           Name = model.Field<string>("Name"),
+                                          DeliveryEmail = model.Field<string>("DeliveryEmail"),
                                           ToEmailList = model.Field<string>("ToEmailList"),
                                           ReferralCode = model.Field<string>("ReferralCode"),
                                           shippingUnit = model.Field<string>("shippingUnit"),
@@ -3687,6 +3689,45 @@ namespace OrderService.DataAccess
             {
                 _DataHelper.Dispose();
             }
-        }        
+        }
+
+        public async Task<DatabaseResponse> UpdatePaymentResponse(string MPGSOrderID, string PaymentResponse)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                 {
+                     new SqlParameter( "@MPGSOrderID",  SqlDbType.NVarChar ),
+                     new SqlParameter( "@TransactionResponse",  SqlDbType.NVarChar )                    
+
+                };
+
+                parameters[0].Value = MPGSOrderID;
+
+                parameters[1].Value = PaymentResponse;
+
+                _DataHelper = new DataAccessHelper("Orders_UpdatePaymentTransactionResponse", parameters, _configuration);
+                 
+                int result = await _DataHelper.RunAsync(); // 101
+
+                DatabaseResponse response = new DatabaseResponse();
+
+
+                return response = new DatabaseResponse { ResponseCode = result };  
+                
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+        
     }
 }
