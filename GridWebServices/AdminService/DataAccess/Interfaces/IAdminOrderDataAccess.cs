@@ -1,4 +1,5 @@
-﻿using Core.Models;
+﻿using AdminService.Models;
+using Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,5 +12,7 @@ namespace AdminService.DataAccess.Interfaces
         Task<List<AdminService.Models.OrderList>> GetOrdersList(int? deliveryStatus, DateTime? fromDate, DateTime? toDate);
 
         Task<AdminService.Models.OrderDetails> GetOrderDetails(int orderID);
+
+        Task<int> UpdateNRICDetails(int adminUserId, int verificationStatus, NRICDetailsRequest request);
     }
 }

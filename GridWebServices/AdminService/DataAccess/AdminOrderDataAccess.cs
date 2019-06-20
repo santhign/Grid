@@ -60,21 +60,23 @@ namespace AdminService.DataAccess
                 if (dt.Rows.Count > 0)
                 {
                     orderLists = (from model in dt.AsEnumerable()
-                                    select new OrderList()
-                                    {
-                                        OrderID = model.Field<int>("OrderID"),
-                                        OrderNumber = model.Field<string>("OrderNumber"),
-                                        IDVerificationStatus = model.Field<string>("IDVerificationStatus"),
-                                        IDVerificationStatusNumber = model.Field<int?>("IDVerificationStatusNumber"),
-                                        OrderStatus = model.Field<string>("OrderStatus"),
-                                        OrderStatusNumber = model.Field<int?>("OrderStatusNumber"),
-                                        RejectionCount = model.Field<int?>("RejectionCount"),
-                                        Name = model.Field<string>("Name"),
-                                        OrderDate = model.Field<DateTime?>("OrderDate"),
-                                        DeliveryDate = model.Field<DateTime?>("DeliveryDate"),
-                                        DeliveryFromTime = model.Field<TimeSpan?>("DeliveryFromTime"),
-                                        DeliveryToTime = model.Field<TimeSpan?>("DeliveryToTime")
-                                    }).ToList();
+                                  select new OrderList()
+                                  {
+                                      OrderID = model.Field<int>("OrderID"),
+                                      OrderNumber = model.Field<string>("OrderNumber"),
+                                      IDVerificationStatus = model.Field<string>("IDVerificationStatus"),
+                                      IDVerificationStatusNumber = model.Field<int?>("IDVerificationStatusNumber"),
+                                      OrderStatus = model.Field<string>("OrderStatus"),
+                                      OrderStatusNumber = model.Field<int?>("OrderStatusNumber"),
+                                      RejectionCount = model.Field<int?>("RejectionCount"),
+                                      Name = model.Field<string>("Name"),
+                                      OrderDate = model.Field<DateTime?>("OrderDate"),
+                                      DeliveryDate = model.Field<DateTime?>("DeliveryDate"),
+                                      DeliveryFromTime = model.Field<TimeSpan?>("DeliveryFromTime"),
+                                      DeliveryToTime = model.Field<TimeSpan?>("DeliveryToTime"),
+                                      IdentityCardNumber = model.Field<string>("IdentityCardNumber"),
+                                      IdentityCardType = model.Field<string>("IdentityCardType")
+                                  }).ToList();
                 }
 
                 return orderLists;
@@ -165,6 +167,58 @@ namespace AdminService.DataAccess
                 }
 
                 return details;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<int> UpdateNRICDetails(int adminUserId, int verificationStatus, NRICDetailsRequest request)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+              {
+                    new SqlParameter( "@OrderID",  SqlDbType.Int ),
+                    new SqlParameter( "@VerificationStatus",  SqlDbType.Int ),
+                    new SqlParameter( "@IDNumber",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@IDType",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@Nationality",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@NameInNRIC",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@DOB",  SqlDbType.Date ),
+                    new SqlParameter( "@Expiry",  SqlDbType.Date ),
+                    new SqlParameter( "@BackImage",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@FrontImage",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@Remarks",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@AdminUserID",  SqlDbType.Int )
+
+
+                };
+
+                parameters[0].Value = request.OrderID;
+                parameters[1].Value = verificationStatus;
+                parameters[2].Value = request.IdentityCardNumber;
+                parameters[3].Value = request.IdentityCardType;
+                parameters[4].Value = request.Nationality;
+                parameters[5].Value = request.NameInNRIC;
+                parameters[6].Value = request.DOB;
+                parameters[7].Value = request.Expiry;
+                parameters[8].Value = request.BackImage;
+                parameters[9].Value = request.FrontImage;
+                parameters[10].Value = request.Remarks;
+                parameters[11].Value = adminUserId;
+
+                _DataHelper = new DataAccessHelper(DbObjectNames.Orders_IDVerificationCapture, parameters, _configuration);
+
+                return await _DataHelper.RunAsync();                
             }
 
             catch (Exception ex)

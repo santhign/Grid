@@ -162,6 +162,10 @@ namespace Core.Enums
         /// The admin get order details
         /// </summary>
         public const string Admin_GetOrderDetailsForNRIC = "Admin_GetOrderDetailsForNRIC";
+        /// <summary>
+        /// The orders identifier verification capture
+        /// </summary>
+        public const string Orders_IDVerificationCapture = "Orders_IDVerificationCapture";
     }
 
 }

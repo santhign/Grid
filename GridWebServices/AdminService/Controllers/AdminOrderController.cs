@@ -270,5 +270,137 @@ namespace AdminService.Controllers
 
         }
 
+        [HttpGet("UpdateNRICDetails")]
+        public async Task<IActionResult> UpdateNRICDetails([FromHeader(Name = "Grid-Authorization-Token")] string token, NRICDetailsRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+                AdminUsersDataAccess _adminUsersDataAccess = new AdminUsersDataAccess(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await _adminUsersDataAccess.AuthenticateAdminUserToken(token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    {
+                        if (!ModelState.IsValid)
+                        {
+                            return StatusCode((int)HttpStatusCode.OK,
+                                new OperationResponse
+                                {
+                                    HasSucceeded = false,
+                                    IsDomainValidationErrors = true,
+                                    Message = string.Join("; ", ModelState.Values
+                                                    .SelectMany(x => x.Errors)
+                                                    .Select(x => x.ErrorMessage))
+                                });
+                        }
+
+                        int deliveryStatusNumber = 0;
+                        if (!string.IsNullOrWhiteSpace(request.IDVerificationStatus))
+                        {
+                            if (request.IDVerificationStatus.Trim().ToLower() == IDVerificationStatus.PendingVerification.GetDescription().Trim().ToLower())
+                                deliveryStatusNumber = 0;
+                            else if (request.IDVerificationStatus.Trim().ToLower() == IDVerificationStatus.AcceptedVerification.GetDescription().Trim().ToLower())
+                                deliveryStatusNumber = 1;
+                            else if (request.IDVerificationStatus.Trim().ToLower() == IDVerificationStatus.RejectedVerification.GetDescription().Trim().ToLower())
+                                deliveryStatusNumber = 2;
+                            else
+                            {
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = false,
+                                    Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                                    IsDomainValidationErrors = true
+                                });
+                            }
+
+                        }
+                        else
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                                IsDomainValidationErrors = true
+                            });
+                        }
+
+                        var authToken = (AuthTokenResponse)tokenAuthResponse.Results;
+                        var orderList = await _adminOrderDataAccess.UpdateNRICDetails(authToken.CustomerID, deliveryStatusNumber,request);
+
+                        if (orderList == 0)
+                        {
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = true,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists)
+
+                            });
+                        }
+                        else
+                        {
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = true,
+                                Message = StatusMessages.SuccessMessage,
+                                Result = orderList
+
+                            });
+                        }
+
+                    }
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+
+                }
+
+                else
+                {
+                    // token auth failure
+                    LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+
+        }
+
     }
 }

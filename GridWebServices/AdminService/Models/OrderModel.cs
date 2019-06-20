@@ -9,27 +9,23 @@ namespace AdminService.Models
     public class OrderList
     {
         public int OrderID { get; set; }
-        public string OrderNumber { get; set; }
-        public int ? AccountID { get; set; }
+        public string OrderNumber { get; set; }      
         public int ? OrderStatusNumber { get; set; }
-
         public string OrderStatus { get; set; }
         public string IDVerificationStatus { get; set; }
         public int ? IDVerificationStatusNumber { get; set; }
         public int ? RejectionCount { get; set; }
         public string Name { get; set; }
         public DateTime ? OrderDate { get; set; }
-
         public DateTime ? DeliveryDate { get; set; }
         public TimeSpan? DeliveryFromTime { get; set; }
         public TimeSpan? DeliveryToTime { get; set; }
-
+        public string IdentityCardNumber { get; set; }
+        public string IdentityCardType { get; set; }
     }
 
     public class OrderDetails : OrderList
-    {
-        public string IdentityCardNumber { get; set; }
-        public string IdentityCardType { get; set; }
+    {        
         public DateTime? ExpiryDate { get; set; }
         public DateTime? DOB { get; set; }
         public string Nationality { get; set; }
@@ -50,6 +46,23 @@ namespace AdminService.Models
         public string Remarks { get; set; }
         public DateTime? UpdatedOn { get; set; }
         public int? UpdatedBy { get; set; }
+    }
+
+    public class NRICDetailsRequest
+    {
+        public int OrderID { get; set; }
+        public string IDVerificationStatus { get; set; }
+        public string IdentityCardNumber { get; set; }
+        public string IdentityCardType { get; set; }
+        public string Nationality { get; set; }
+        public string NameInNRIC { get; set; }
+        public DateTime DOB { get; set; }
+        public DateTime Expiry { get; set; }
+        public string BackImage { get; set; }
+        public string FrontImage { get; set; }
+        public string Remarks { get; set; }
+        public int? AdminUserID { get; set; }
+        
     }
 
 
