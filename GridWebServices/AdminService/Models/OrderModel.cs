@@ -35,7 +35,22 @@ namespace AdminService.Models
         public string Nationality { get; set; }
         public string DocumentURL { get; set; }
         public string DocumentBackURL { get; set; }
+        public List<IDVerificaionHistory> VerificaionHistories { get; set; }
         
     }
+
+    public class IDVerificaionHistory
+    {
+        public int VerificationLogID { get; set; }
+        public int  OrderID { get; set; }
+        public int IDVerificationStatusNumber { get; set; }
+        public string IDVerificationStatus { get; set; }
+        public string ChangeLog { get; set; }
+
+        public string Remarks { get; set; }
+        public DateTime? UpdatedOn { get; set; }
+        public int? UpdatedBy { get; set; }
+    }
+
 
 }
