@@ -249,6 +249,7 @@ namespace CustomerService.Models
         /// The password.
         /// </value>
         [Required(ErrorMessage = "Password required")]
+        [RegularExpression(@"(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}")]
         public string Password { get; set; }       
     }
 

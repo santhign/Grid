@@ -34,6 +34,7 @@ namespace AdminService.Models
         [EmailAddress(ErrorMessage = "Enter valid email address")]
         public string Email { get; set; }
 
+        [RegularExpression(@"(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}")]
         [Required(ErrorMessage = "Password required")]
         public string Password { get; set; }
         [Required(ErrorMessage = "RoleID required")]
@@ -43,6 +44,8 @@ namespace AdminService.Models
     public class AdminProfile
     {
         public string  Name { get; set; }
+
+        [RegularExpression(@"(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}")]
         public string  NewPassword { get; set; }
     }
 
@@ -51,6 +54,7 @@ namespace AdminService.Models
         public int AdminUserID { get; set; }
         public string Name { get; set; }
         public string Email { get; set; }
+        [RegularExpression(@"(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}")]
         public string NewPassword { get; set; }
         public int RoleID { get; set; }
     }
