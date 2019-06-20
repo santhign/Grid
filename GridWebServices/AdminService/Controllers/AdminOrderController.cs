@@ -50,7 +50,7 @@ namespace AdminService.Controllers
         /// <param name="toDate">To date.</param>
         /// <returns></returns>
         [HttpGet("GetOrdersListForNRIC")]
-        public async Task<IActionResult> GetOrdersList([FromHeader(Name = "Grid-Authorization-Token")] string token, string deliveryStatus, DateTime? fromDate, DateTime? toDate)
+        public async Task<IActionResult> GetOrdersList([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] string deliveryStatus, [FromRoute] DateTime? fromDate, [FromRoute] DateTime? toDate)
         {
             try
             {
@@ -168,7 +168,7 @@ namespace AdminService.Controllers
         /// <param name="orderID">The order identifier.</param>
         /// <returns></returns>
         [HttpGet("GetOrderDetailsForNRIC")]
-        public async Task<IActionResult> GetOrderDetails([FromHeader(Name = "Grid-Authorization-Token")] string token, int orderID)
+        public async Task<IActionResult> GetOrderDetails([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int orderID)
         {
             try
             {
