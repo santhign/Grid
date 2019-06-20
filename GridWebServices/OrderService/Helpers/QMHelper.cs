@@ -595,130 +595,141 @@ namespace OrderService.Helpers
 
         public async Task SendEmailNotification(string MPGSOrderID, int orderID)
         {
-            OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
-
-            ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
-
-            DatabaseResponse templateResponse = await _configAccess.GetEmailNotificationTemplate(NotificationEvent.OrderSuccess.ToString());
-
-            //var details = await _messageQueueDataAccess.GetMessageDetails(MPGSOrderID);
-
-            // customerID,
-            DatabaseResponse 
-           
-            customerResponse = await _orderAccess.GetCustomerIdFromOrderId(orderID);          
-
-            // Get Customer Data from CustomerID for email and Name
-            var customer = await _orderAccess.GetCustomerDetailByOrder(((OrderCustomer)customerResponse.Results).CustomerId, orderID);  
-
-            StringBuilder orderedNumbersSb = new StringBuilder();
-
-            StringBuilder deliveryAddressSb = new StringBuilder();
-
-            orderedNumbersSb.Append("<table width='100%'>");
-
-            int counter = 0;
-
-            foreach(OrderNumber number in customer.OrderedNumbers)
-            {
-                if(counter>0)
-                {
-                    orderedNumbersSb.Append("<tr><td width='100%' colspan='3'> </td></tr>");
-                }
-                orderedNumbersSb.Append("<tr><td width='25%'>MobileNumber :<td width='20%'>");
-                orderedNumbersSb.Append(number.mobileNumber);
-                orderedNumbersSb.Append("</td><td width ='55%'></td></tr>");
-                orderedNumbersSb.Append("<tr><td width='25%'>Plan :<td width='20%'>");
-                orderedNumbersSb.Append(number.planMarketingName);
-                orderedNumbersSb.Append("</td><td width ='55%'>");
-                orderedNumbersSb.Append(number.PricingDescription);
-                orderedNumbersSb.Append("</td></tr> ");
-                counter++;
-            }
-
-            orderedNumbersSb.Append("</table>");
-
-            if(!string.IsNullOrEmpty(customer.shippingBuildingNumber))
-            {
-                deliveryAddressSb.Append(customer.shippingBuildingNumber);
-            }
-
-            if(!string.IsNullOrEmpty(customer.shippingStreetName))
-            {
-                if (deliveryAddressSb.ToString() != "")
-                {
-                    deliveryAddressSb.Append(" ");
-                }
-
-                    deliveryAddressSb.Append(customer.shippingStreetName);
-            }           
-
-            deliveryAddressSb.Append("<br />");
-
-            StringBuilder shippingAddr2 = new StringBuilder();
-
-            if (!string.IsNullOrEmpty(customer.shippingFloor))
-            {
-                shippingAddr2.Append(customer.shippingFloor);
-            }
-
-            if (!string.IsNullOrEmpty(customer.shippingUnit))
-            {
-                if(shippingAddr2.ToString()!="")
-                {
-                    shippingAddr2.Append(" ");
-                }
-                shippingAddr2.Append(customer.shippingUnit);
-            }
-
-            if (!string.IsNullOrEmpty(customer.shippingBuildingName))
-            {
-                if (shippingAddr2.ToString() != "")
-                {
-                    shippingAddr2.Append(" ");
-                }
-
-                shippingAddr2.Append(customer.shippingBuildingName);
-            }
-
-            deliveryAddressSb.Append(shippingAddr2.ToString());
-
-            deliveryAddressSb.Append("<br />");
-
-            if(! string.IsNullOrEmpty(customer.shippingPostCode))
-            {
-                deliveryAddressSb.Append(customer.shippingPostCode);
-            }
-
-            string deliveryDate = customer.SlotDate.ToString("dd MMM yyyy")+ " " + new DateTime(customer.SlotFromTime.Ticks).ToString("hh mm tt") + " to " + new DateTime(customer.SlotToTime.Ticks).ToString("hh mm tt");
-
-            var notificationMessage = MessageHelper.GetMessage(customer.ToEmailList, customer.Name,
-                
-                                                NotificationEvent.OrderSuccess.ToString(),
-                                                    
-                                             ((EmailTemplate)templateResponse.Results).TemplateName, _iconfiguration,customer.DeliveryEmail,customer.OrderNumber, orderedNumbersSb.ToString(),deliveryAddressSb.ToString(), customer.alternateRecipientName == null ? customer.Name : customer.alternateRecipientName, customer.alternateRecipientContact == null ? customer.shippingContactNumber : customer.alternateRecipientContact, customer.alternateRecipientEmail == null ? customer.ToEmailList[0].ToString() : customer.alternateRecipientEmail, deliveryDate,customer.ReferralCode);
-
-            DatabaseResponse notificationResponse = await _configAccess.GetConfiguration(ConfiType.Notification.ToString());
-
-            MiscHelper parser = new MiscHelper();
-
-            var notificationConfig = parser.GetNotificationConfig((List<Dictionary<string, string>>)notificationResponse.Results);
-
-            Publisher orderSuccessNotificationPublisher = new Publisher(_iconfiguration, notificationConfig.SNSTopic);
-
-            await orderSuccessNotificationPublisher.PublishAsync(notificationMessage);
-
             try
             {
-                DatabaseResponse notificationLogResponse = await _configAccess.CreateEMailNotificationLogForDevPurpose(
-                            new NotificationLogForDevPurpose
-                            {
-                                EventType = NotificationEvent.OrderSuccess.ToString(),
-                                Message = JsonConvert.SerializeObject(notificationMessage)
+                OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
 
-                            });
+                ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
+
+                DatabaseResponse templateResponse = await _configAccess.GetEmailNotificationTemplate(NotificationEvent.OrderSuccess.ToString());
+
+                //var details = await _messageQueueDataAccess.GetMessageDetails(MPGSOrderID);
+
+                // customerID,
+                DatabaseResponse
+
+                customerResponse = await _orderAccess.GetCustomerIdFromOrderId(orderID);
+
+                // Get Customer Data from CustomerID for email and Name
+                var customer = await _orderAccess.GetCustomerDetailByOrder(((OrderCustomer)customerResponse.Results).CustomerId, orderID);
+
+                if (customer != null && !string.IsNullOrEmpty(customer.DeliveryEmail))
+                {
+
+                    StringBuilder orderedNumbersSb = new StringBuilder();
+
+                    StringBuilder deliveryAddressSb = new StringBuilder();
+
+                    orderedNumbersSb.Append("<table width='100%'>");
+
+                    int counter = 0;
+
+                    foreach (OrderNumber number in customer.OrderedNumbers)
+                    {
+                        if (counter > 0)
+                        {
+                            orderedNumbersSb.Append("<tr><td width='100%' colspan='3'> </td></tr>");
+                        }
+                        orderedNumbersSb.Append("<tr><td width='25%'>MobileNumber :<td width='20%'>");
+                        orderedNumbersSb.Append(number.mobileNumber);
+                        orderedNumbersSb.Append("</td><td width ='55%'></td></tr>");
+                        orderedNumbersSb.Append("<tr><td width='25%'>Plan :<td width='20%'>");
+                        orderedNumbersSb.Append(number.planMarketingName);
+                        orderedNumbersSb.Append("</td><td width ='55%'>");
+                        orderedNumbersSb.Append(number.PricingDescription);
+                        orderedNumbersSb.Append("</td></tr> ");
+                        counter++;
+                    }
+
+                    orderedNumbersSb.Append("</table>");
+
+                    if (!string.IsNullOrEmpty(customer.shippingBuildingNumber))
+                    {
+                        deliveryAddressSb.Append(customer.shippingBuildingNumber);
+                    }
+
+                    if (!string.IsNullOrEmpty(customer.shippingStreetName))
+                    {
+                        if (deliveryAddressSb.ToString() != "")
+                        {
+                            deliveryAddressSb.Append(" ");
+                        }
+
+                        deliveryAddressSb.Append(customer.shippingStreetName);
+                    }
+
+                    deliveryAddressSb.Append("<br />");
+
+                    StringBuilder shippingAddr2 = new StringBuilder();
+
+                    if (!string.IsNullOrEmpty(customer.shippingFloor))
+                    {
+                        shippingAddr2.Append(customer.shippingFloor);
+                    }
+
+                    if (!string.IsNullOrEmpty(customer.shippingUnit))
+                    {
+                        if (shippingAddr2.ToString() != "")
+                        {
+                            shippingAddr2.Append(" ");
+                        }
+                        shippingAddr2.Append(customer.shippingUnit);
+                    }
+
+                    if (!string.IsNullOrEmpty(customer.shippingBuildingName))
+                    {
+                        if (shippingAddr2.ToString() != "")
+                        {
+                            shippingAddr2.Append(" ");
+                        }
+
+                        shippingAddr2.Append(customer.shippingBuildingName);
+                    }
+
+                    deliveryAddressSb.Append(shippingAddr2.ToString());
+
+                    deliveryAddressSb.Append("<br />");
+
+                    if (!string.IsNullOrEmpty(customer.shippingPostCode))
+                    {
+                        deliveryAddressSb.Append(customer.shippingPostCode);
+                    }
+
+                    string deliveryDate = customer.SlotDate.ToString("dd MMM yyyy") + " " + new DateTime(customer.SlotFromTime.Ticks).ToString("hh mm tt") + " to " + new DateTime(customer.SlotToTime.Ticks).ToString("hh mm tt");
+
+                    var notificationMessage = MessageHelper.GetMessage(customer.ToEmailList, customer.Name,
+
+                                                        NotificationEvent.OrderSuccess.ToString(),
+
+                                                     ((EmailTemplate)templateResponse.Results).TemplateName, _iconfiguration, customer.DeliveryEmail, customer.OrderNumber, orderedNumbersSb.ToString(), deliveryAddressSb.ToString(), customer.alternateRecipientName == null ? customer.Name : customer.alternateRecipientName, customer.alternateRecipientContact == null ? customer.shippingContactNumber : customer.alternateRecipientContact, customer.alternateRecipientEmail == null ? customer.ToEmailList[0].ToString() : customer.alternateRecipientEmail, deliveryDate, customer.ReferralCode);
+
+                    DatabaseResponse notificationResponse = await _configAccess.GetConfiguration(ConfiType.Notification.ToString());
+
+                    MiscHelper parser = new MiscHelper();
+
+                    var notificationConfig = parser.GetNotificationConfig((List<Dictionary<string, string>>)notificationResponse.Results);
+
+                    Publisher orderSuccessNotificationPublisher = new Publisher(_iconfiguration, notificationConfig.SNSTopic);
+
+                    await orderSuccessNotificationPublisher.PublishAsync(notificationMessage);
+
+                    try
+                    {
+                        DatabaseResponse notificationLogResponse = await _configAccess.CreateEMailNotificationLogForDevPurpose(
+                                    new NotificationLogForDevPurpose
+                                    {
+                                        EventType = NotificationEvent.OrderSuccess.ToString(),
+                                        Message = JsonConvert.SerializeObject(notificationMessage)
+
+                                    });
+                    }
+                    catch (Exception ex)
+                    {
+                        LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + "MPGS OrderID:" + MPGSOrderID);
+                    }
+                }
             }
-            catch (Exception ex)
+            catch(Exception ex)
             {
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + "MPGS OrderID:" + MPGSOrderID);
             }
