@@ -76,15 +76,17 @@ namespace CustomerService
         {
             // Enable Cors
             app.UseCors("MyPolicy");
-            app.UseSwagger();
-
-            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.), 
-            // specifying the Swagger JSON endpoint.
-            app.UseSwaggerUI(c =>
+            if (!env.IsProduction())
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "GRID Customer API V1");
-            });
-            
+                app.UseSwagger();
+
+                // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.), 
+                // specifying the Swagger JSON endpoint.
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "GRID Customer API V1");
+                });
+            }
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -99,7 +101,7 @@ namespace CustomerService
             app.UseMvc();
             app.Run(async (context) =>
             {
-                await context.Response.WriteAsync("Customer Service!");
+                await context.Response.WriteAsync("Customer Service!" + env.EnvironmentName);
             });
         }
     }
