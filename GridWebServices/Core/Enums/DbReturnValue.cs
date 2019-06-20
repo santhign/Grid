@@ -220,6 +220,10 @@ namespace Core.Enums
         [EnumMember(Value = "Duplicate NRIC Present")]
         [Description("Duplicate NRIC details are present for another customer")]
         DuplicateNRICNotAllowed = 154,
+
+        [EnumMember(Value = "Update Success Send Email")]
+        [Description("Record updated successfully")]
+        UpdateSuccessSendEmail = 155,
     }
 }
 

@@ -13,6 +13,11 @@ namespace AdminService.DataAccess.Interfaces
 
         Task<AdminService.Models.OrderDetails> GetOrderDetails(int orderID);
 
-        Task<int> UpdateNRICDetails(int adminUserId, int verificationStatus, NRICDetailsRequest request);
+        Task<DatabaseResponse> UpdateNRICDetails(int adminUserId, int verificationStatus, NRICDetailsRequest request);
+
+        Task<DatabaseResponse> GetEmailNotificationTemplate(string templateName);
+
+        Task<DatabaseResponse> CreateEMailNotificationLogForDevPurpose(NotificationLogForDevPurpose log);
+        Task<DatabaseResponse> GetConfiguration(string configType);
     }
 }
