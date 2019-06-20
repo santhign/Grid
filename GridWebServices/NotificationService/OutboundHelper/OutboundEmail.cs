@@ -85,16 +85,14 @@ namespace NotificationService.OutboundHelper
                     mergevar.Name = "NAME";
                     mergevar.Content = param.name;
                     mergeVars.Add(mergevar);
-                    //eMsg.Html=eMsg.Html.Replace("[NAME]", param.name);
+                  
                    
                     if (param.param1 != null)
                     {
                         mergevar = new Mandrill.Model.MandrillMergeVar();
                         mergevar.Name = "PARAM1";
                         mergevar.Content = param.param1;
-                        mergeVars.Add(mergevar);
-
-                        //eMsg.Html= eMsg.Html.Replace("[PARAM1]", param.param1);
+                        mergeVars.Add(mergevar);                        
                     }
 
                     if (param.param2 != null)
@@ -102,9 +100,7 @@ namespace NotificationService.OutboundHelper
                         mergevar = new Mandrill.Model.MandrillMergeVar();
                         mergevar.Name = "PARAM2";
                         mergevar.Content = param.param2;
-                        mergeVars.Add(mergevar);
-
-                        //eMsg.Html= eMsg.Html.Replace("[PARAM2]", param.param2);
+                        mergeVars.Add(mergevar);                        
                     }
 
                     if (param.param3 != null)
@@ -112,9 +108,7 @@ namespace NotificationService.OutboundHelper
                         mergevar = new Mandrill.Model.MandrillMergeVar();
                         mergevar.Name = "PARAM3";
                         mergevar.Content = param.param3;
-                        mergeVars.Add(mergevar);
-
-                        //eMsg.Html=eMsg.Html.Replace("[PARAM3]", param.param3);
+                        mergeVars.Add(mergevar);                       
                     }
 
                     if (param.param4 != null)
@@ -122,8 +116,7 @@ namespace NotificationService.OutboundHelper
                         mergevar = new Mandrill.Model.MandrillMergeVar();
                         mergevar.Name = "PARAM4";
                         mergevar.Content = param.param4;
-                        mergeVars.Add(mergevar);
-                        //eMsg.Html= eMsg.Html.Replace("[PARAM4]", param.param4);
+                        mergeVars.Add(mergevar);                       
                     }
                     if (param.param5 != null)
                     {
@@ -131,16 +124,14 @@ namespace NotificationService.OutboundHelper
                         mergevar.Name = "PARAM5";
                         mergevar.Content = param.param5;
                         mergeVars.Add(mergevar);
-
-                        //eMsg.Html= eMsg.Html.Replace("[PARAM5]", param.param5);
+                        
                     }
                     if (param.param6 != null)
                     {
                         mergevar = new Mandrill.Model.MandrillMergeVar();
                         mergevar.Name = "PARAM6";
                         mergevar.Content = param.param6;
-                        mergeVars.Add(mergevar);
-                        //eMsg.Html= eMsg.Html.Replace("[PARAM6]", param.param6);
+                        mergeVars.Add(mergevar);                        
                     }
 
 
@@ -149,8 +140,7 @@ namespace NotificationService.OutboundHelper
                         mergevar = new Mandrill.Model.MandrillMergeVar();
                         mergevar.Name = "PARAM7";
                         mergevar.Content = param.param7;
-                        mergeVars.Add(mergevar);
-                        //eMsg.Html= eMsg.Html.Replace("[PARAM7]", param.param7);
+                        mergeVars.Add(mergevar);                       
 
                     }
 
@@ -159,8 +149,7 @@ namespace NotificationService.OutboundHelper
                         mergevar = new Mandrill.Model.MandrillMergeVar();
                         mergevar.Name = "PARAM8";
                         mergevar.Content = param.param8;
-                        mergeVars.Add(mergevar);
-                        //eMsg.Html= eMsg.Html.Replace("[PARAM8]", param.param8);
+                        mergeVars.Add(mergevar);                       
                     }
 
                     if (param.param9 != null)
@@ -168,8 +157,7 @@ namespace NotificationService.OutboundHelper
                         mergevar = new Mandrill.Model.MandrillMergeVar();
                         mergevar.Name = "PARAM9";
                         mergevar.Content = param.param9;
-                        mergeVars.Add(mergevar);
-                        //eMsg.Html= eMsg.Html.Replace("[PARAM9]", param.param9);
+                        mergeVars.Add(mergevar);                       
                     }
 
                     if (param.param10 != null)
@@ -177,8 +165,7 @@ namespace NotificationService.OutboundHelper
                         mergevar = new Mandrill.Model.MandrillMergeVar();
                         mergevar.Name = "PARAM10";
                         mergevar.Content = param.param10;
-                        mergeVars.Add(mergevar);
-                        //eMsg.Html= eMsg.Html.Replace("[PARAM10]", param.param10);
+                        mergeVars.Add(mergevar);                       
                     }
 
                     if (param.param11 != null)
@@ -186,8 +173,7 @@ namespace NotificationService.OutboundHelper
                         mergevar = new Mandrill.Model.MandrillMergeVar();
                         mergevar.Name = "PARAM11";
                         mergevar.Content = param.param11;
-                        mergeVars.Add(mergevar);
-                        //eMsg.Html= eMsg.Html.Replace("[PARAM10]", param.param10);
+                        mergeVars.Add(mergevar);                        
                     }
 
                     if (param.param12 != null)
@@ -195,8 +181,7 @@ namespace NotificationService.OutboundHelper
                         mergevar = new Mandrill.Model.MandrillMergeVar();
                         mergevar.Name = "PARAM12";
                         mergevar.Content = param.param12;
-                        mergeVars.Add(mergevar);
-                        //eMsg.Html= eMsg.Html.Replace("[PARAM10]", param.param10);
+                        mergeVars.Add(mergevar);                        
                     }
 
                     if (param.param13 != null)
@@ -204,8 +189,7 @@ namespace NotificationService.OutboundHelper
                         mergevar = new Mandrill.Model.MandrillMergeVar();
                         mergevar.Name = "PARAM13";
                         mergevar.Content = param.param13;
-                        mergeVars.Add(mergevar);
-                        //eMsg.Html= eMsg.Html.Replace("[PARAM10]", param.param10);
+                        mergeVars.Add(mergevar);                      
                     }
 
                     if (param.param14 != null)
@@ -213,8 +197,7 @@ namespace NotificationService.OutboundHelper
                         mergevar = new Mandrill.Model.MandrillMergeVar();
                         mergevar.Name = "PARAM14";
                         mergevar.Content = param.param14;
-                        mergeVars.Add(mergevar);
-                        //eMsg.Html= eMsg.Html.Replace("[PARAM10]", param.param10);
+                        mergeVars.Add(mergevar);                      
                     }
 
                     if (param.param15 != null)
@@ -222,8 +205,7 @@ namespace NotificationService.OutboundHelper
                         mergevar = new Mandrill.Model.MandrillMergeVar();
                         mergevar.Name = "PARAM15";
                         mergevar.Content = param.param15;
-                        mergeVars.Add(mergevar);
-                        //eMsg.Html= eMsg.Html.Replace("[PARAM10]", param.param10);
+                        mergeVars.Add(mergevar);                       
                     }
 
                     if (param.param16 != null)
@@ -231,8 +213,7 @@ namespace NotificationService.OutboundHelper
                         mergevar = new Mandrill.Model.MandrillMergeVar();
                         mergevar.Name = "PARAM16";
                         mergevar.Content = param.param16;
-                        mergeVars.Add(mergevar);
-                        //eMsg.Html= eMsg.Html.Replace("[PARAM10]", param.param10);
+                        mergeVars.Add(mergevar);                       
                     }
 
                     if (param.param17 != null)
@@ -240,8 +221,7 @@ namespace NotificationService.OutboundHelper
                         mergevar = new Mandrill.Model.MandrillMergeVar();
                         mergevar.Name = "PARAM17";
                         mergevar.Content = param.param17;
-                        mergeVars.Add(mergevar);
-                        //eMsg.Html= eMsg.Html.Replace("[PARAM10]", param.param10);
+                        mergeVars.Add(mergevar);                       
                     }
 
                     if (param.param18 != null)
@@ -249,8 +229,7 @@ namespace NotificationService.OutboundHelper
                         mergevar = new Mandrill.Model.MandrillMergeVar();
                         mergevar.Name = "PARAM18";
                         mergevar.Content = param.param18;
-                        mergeVars.Add(mergevar);
-                        //eMsg.Html= eMsg.Html.Replace("[PARAM10]", param.param10);
+                        mergeVars.Add(mergevar);                        
                     }
 
                     if (param.param19 != null)
@@ -258,8 +237,7 @@ namespace NotificationService.OutboundHelper
                         mergevar = new Mandrill.Model.MandrillMergeVar();
                         mergevar.Name = "PARAM19";
                         mergevar.Content = param.param19;
-                        mergeVars.Add(mergevar);
-                        //eMsg.Html= eMsg.Html.Replace("[PARAM10]", param.param10);
+                        mergeVars.Add(mergevar);                        
                     }
 
                     if (param.param20 != null)
@@ -267,8 +245,7 @@ namespace NotificationService.OutboundHelper
                         mergevar = new Mandrill.Model.MandrillMergeVar();
                         mergevar.Name = "PARAM20";
                         mergevar.Content = param.param20;
-                        mergeVars.Add(mergevar);
-                        //eMsg.Html= eMsg.Html.Replace("[PARAM10]", param.param10);
+                        mergeVars.Add(mergevar);                       
                     }
 
                     if (param.param21 != null)
@@ -276,8 +253,7 @@ namespace NotificationService.OutboundHelper
                         mergevar = new Mandrill.Model.MandrillMergeVar();
                         mergevar.Name = "PARAM21";
                         mergevar.Content = param.param21;
-                        mergeVars.Add(mergevar);
-                        //eMsg.Html= eMsg.Html.Replace("[PARAM10]", param.param10);
+                        mergeVars.Add(mergevar);                       
                     }
 
                     if (param.param22 != null)
@@ -285,8 +261,7 @@ namespace NotificationService.OutboundHelper
                         mergevar = new Mandrill.Model.MandrillMergeVar();
                         mergevar.Name = "PARAM22";
                         mergevar.Content = param.param22;
-                        mergeVars.Add(mergevar);
-                        //eMsg.Html= eMsg.Html.Replace("[PARAM10]", param.param10);
+                        mergeVars.Add(mergevar);                        
                     }
 
                     if (param.param23 != null)
@@ -294,8 +269,7 @@ namespace NotificationService.OutboundHelper
                         mergevar = new Mandrill.Model.MandrillMergeVar();
                         mergevar.Name = "PARAM23";
                         mergevar.Content = param.param23;
-                        mergeVars.Add(mergevar);
-                        //eMsg.Html= eMsg.Html.Replace("[PARAM10]", param.param10);
+                        mergeVars.Add(mergevar);                        
                     }
 
                     if (param.param24 != null)
@@ -303,8 +277,7 @@ namespace NotificationService.OutboundHelper
                         mergevar = new Mandrill.Model.MandrillMergeVar();
                         mergevar.Name = "PARAM24";
                         mergevar.Content = param.param24;
-                        mergeVars.Add(mergevar);
-                        //eMsg.Html= eMsg.Html.Replace("[PARAM10]", param.param10);
+                        mergeVars.Add(mergevar);                       
                     }
 
                     if (param.param25 != null)
@@ -312,8 +285,7 @@ namespace NotificationService.OutboundHelper
                         mergevar = new Mandrill.Model.MandrillMergeVar();
                         mergevar.Name = "PARAM25";
                         mergevar.Content = param.param25;
-                        mergeVars.Add(mergevar);
-                        //eMsg.Html= eMsg.Html.Replace("[PARAM10]", param.param10);
+                        mergeVars.Add(mergevar);                       
                     }
 
                     if (param.param26 != null)
@@ -321,8 +293,7 @@ namespace NotificationService.OutboundHelper
                         mergevar = new Mandrill.Model.MandrillMergeVar();
                         mergevar.Name = "PARAM26";
                         mergevar.Content = param.param26;
-                        mergeVars.Add(mergevar);
-                        //eMsg.Html= eMsg.Html.Replace("[PARAM10]", param.param10);
+                        mergeVars.Add(mergevar);                        
                     }
 
                     if (param.param27 != null)
@@ -330,8 +301,7 @@ namespace NotificationService.OutboundHelper
                         mergevar = new Mandrill.Model.MandrillMergeVar();
                         mergevar.Name = "PARAM27";
                         mergevar.Content = param.param27;
-                        mergeVars.Add(mergevar);
-                        //eMsg.Html= eMsg.Html.Replace("[PARAM10]", param.param10);
+                        mergeVars.Add(mergevar);                        
                     }
 
                     if (param.param28 != null)
@@ -339,8 +309,7 @@ namespace NotificationService.OutboundHelper
                         mergevar = new Mandrill.Model.MandrillMergeVar();
                         mergevar.Name = "PARAM28";
                         mergevar.Content = param.param28;
-                        mergeVars.Add(mergevar);
-                        //eMsg.Html= eMsg.Html.Replace("[PARAM10]", param.param10);
+                        mergeVars.Add(mergevar);                        
                     }
 
                     if (param.param29 != null)
@@ -349,7 +318,7 @@ namespace NotificationService.OutboundHelper
                         mergevar.Name = "PARAM29";
                         mergevar.Content = param.param29;
                         mergeVars.Add(mergevar);
-                        //eMsg.Html= eMsg.Html.Replace("[PARAM10]", param.param10);
+                       
                     }
 
                     if (param.param30 != null)
@@ -358,7 +327,7 @@ namespace NotificationService.OutboundHelper
                         mergevar.Name = "PARAM30";
                         mergevar.Content = param.param30;
                         mergeVars.Add(mergevar);
-                        //eMsg.Html= eMsg.Html.Replace("[PARAM10]", param.param10);
+                       
                     }
 
                     if (param.mobilenumber != null)
@@ -366,9 +335,7 @@ namespace NotificationService.OutboundHelper
                         mergevar = new Mandrill.Model.MandrillMergeVar();
                         mergevar.Name = "UNIQUEID";
                         mergevar.Content = param.mobilenumber;
-                        mergeVars.Add(mergevar);
-
-                        //eMsg.Html= eMsg.Html.Replace("[UNIQUEID]", param.mobilenumber);
+                        mergeVars.Add(mergevar);                       
                     }
                    
                     Mandrill.Model.MandrillRcptMergeVar rcptMergeVar = new Mandrill.Model.MandrillRcptMergeVar();

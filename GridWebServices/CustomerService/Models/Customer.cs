@@ -842,6 +842,8 @@ namespace CustomerService.Models
         public DateTime? ExpiryDate { get; set; }
 
         public DateTime? SubscriptionDate { get; set; }
+
+        public string PricingDescription { get; set; }
     }
 
     /// <summary>

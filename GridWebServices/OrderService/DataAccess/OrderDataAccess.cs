@@ -784,6 +784,8 @@ namespace OrderService.DataAccess
                             OrderBundle.PortedNumberTransferForm = dr["PortedNumberTransferForm"].ToString();
                             OrderBundle.PortedNumberOwnedBy = dr["PortedNumberOwnedBy"].ToString();
                             OrderBundle.PortedNumberOwnerRegistrationID = dr["PortedNumberOwnerRegistrationID"].ToString();
+                            OrderBundle.PricingDescription = Convert.ToString(dr["PricingDescription"]);
+
                             List<ServiceCharge> subscriberServiceCharges = new List<ServiceCharge>();
 
                             if (ds.Tables[3] != null && ds.Tables[3].Rows.Count > 0)
@@ -3474,31 +3476,70 @@ namespace OrderService.DataAccess
                 };
 
                 parameters[0].Value = orderID;
+
                 parameters[1].Value = customerID;
 
-                _DataHelper = new DataAccessHelper("Orders_GetCustomerDetails", parameters, _configuration);
+                _DataHelper = new DataAccessHelper("Orders_GetCustomerOrderDetails", parameters, _configuration);
 
-                DataTable dt = new DataTable();
+                DataSet ds = new DataSet();
 
-                int result = await _DataHelper.RunAsync(dt);    // 105 / 102
+                int result = await _DataHelper.RunAsync(ds);    // 105 / 102
 
-                //DatabaseResponse response = new DatabaseResponse();
+                DatabaseResponse response = new DatabaseResponse();
 
                 var customer = new CustomerDetails();
 
-                if (dt != null && dt.Rows.Count > 0)
+                if (ds != null && ds.Tables[0]!=null && ds.Tables[0].Rows.Count > 0)
                 {
-                    customer = (from model in dt.AsEnumerable()
+                    customer = (from model in ds.Tables[0].AsEnumerable()
                                       select new CustomerDetails()
                                       {
                                           Name = model.Field<string>("Name"),
                                           ToEmailList = model.Field<string>("ToEmailList"),
-                                          
+                                          ReferralCode = model.Field<string>("ReferralCode"),
+                                          shippingUnit = model.Field<string>("shippingUnit"),
+                                          shippingFloor = model.Field<string>("shippingFloor"),
+                                          shippingBuildingNumber = model.Field<string>("shippingBuildingNumber"),
+                                          shippingBuildingName = model.Field<string>("shippingBuildingName"),
+                                          shippingStreetName = model.Field<string>("shippingStreetName"),
+                                          shippingPostCode = model.Field<string>("shippingPostCode"),
+                                          shippingContactNumber = model.Field<string>("shippingContactNumber"),
+                                          alternateRecipientContact = model.Field<string>("alternateRecipientContact"),
+                                          alternateRecipientName = model.Field<string>("alternateRecipientName"),
+                                          alternateRecipientEmail = model.Field<string>("alternateRecipientEmail"),
+                                          SlotDate  = model.Field<DateTime>("slotDate"),
+                                          SlotFromTime = model.Field<TimeSpan>("slotFromTime"),
+                                          SlotToTime = model.Field<TimeSpan>("slotToTime"),
+                                          OrderNumber = model.Field<string>("OrderNumber")
                                       }).FirstOrDefault();
 
-                    //response = new DatabaseResponse { ResponseCode = result, Results = customer };
+
+
+                    if(ds.Tables[1] != null && ds.Tables[1].Rows.Count > 0)
+                    {
+                        List<OrderNumber> orderNumbers = new List<OrderNumber>();
+
+                        orderNumbers = (from model in ds.Tables[1].AsEnumerable()
+                                    select new OrderNumber()
+                                    {
+                                         mobileNumber = model.Field<string>("mobileNumber"),
+                                         planMarketingName = model.Field<string>("planMarketingName"),
+                                         IsBuddyLine = model.Field<int>("IsBuddyLine"),
+                                         applicableSubscriptionFee = model.Field<double>("applicableSubscriptionFee"),                                         
+                                         PricingDescription = model.Field<string>("PricingDescription")
+                                    }).ToList();
+
+
+                        customer.OrderedNumbers = orderNumbers;
+
+                    }
+
+                  response = new DatabaseResponse { ResponseCode = result, Results = customer };
                 }
-                
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result};
+                }
 
                 return customer;
             }
