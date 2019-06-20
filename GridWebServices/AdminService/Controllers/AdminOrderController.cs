@@ -47,8 +47,8 @@ namespace AdminService.Controllers
         /// <param name="fromDate">From date.</param>
         /// <param name="toDate">To date.</param>
         /// <returns></returns>
-        [HttpGet("GetOrdersList")]
-        public async Task<IActionResult> GetOrdersList([FromHeader(Name = "Grid-Authorization-Token")] string token, int ? deliveryStatus, DateTime ? fromDate, DateTime ? toDate )
+        [HttpGet("GetOrdersListForNRIC")]
+        public async Task<IActionResult> GetOrdersList([FromHeader(Name = "Grid-Authorization-Token")] string token, int? deliveryStatus, DateTime? fromDate, DateTime? toDate)
         {
             try
             {
@@ -80,9 +80,9 @@ namespace AdminService.Controllers
                                 });
                         }
 
-                        
 
-                        var orderList = await _adminOrderDataAccess.GetOrdersList(deliveryStatus,fromDate,toDate);
+
+                        var orderList = await _adminOrderDataAccess.GetOrdersList(deliveryStatus, fromDate, toDate);
 
                         if (orderList == null || orderList.Count == 0)
                         {
@@ -156,7 +156,7 @@ namespace AdminService.Controllers
         /// <param name="token">The token.</param>
         /// <param name="orderID">The order identifier.</param>
         /// <returns></returns>
-        [HttpGet("GetOrderDetails")]
+        [HttpGet("GetOrderDetailsForNRIC")]
         public async Task<IActionResult> GetOrderDetails([FromHeader(Name = "Grid-Authorization-Token")] string token, int orderID)
         {
             try
