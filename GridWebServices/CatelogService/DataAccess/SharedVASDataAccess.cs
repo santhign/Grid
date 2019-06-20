@@ -54,6 +54,7 @@ namespace CatelogService.DataAccess
                                    VASID = model.Field<int>("VASID"),
                                    PortalDescription = model.Field<string>("PortalDescription"),
                                    PlanMarketingName = model.Field<string>("PlanMarketingName"),
+                                   BSSPlanCode = model.Field<string>("BSSPlanCode"),
                                    PortalSummaryDescription = model.Field<string>("PortalSummaryDescription"),
                                    Data = model.Field<double>("Data"),
                                    SMS = model.Field<double>("SMS"),

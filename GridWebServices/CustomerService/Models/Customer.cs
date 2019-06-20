@@ -143,6 +143,7 @@ namespace CustomerService.Models
         /// <value>
         /// The password.
         /// </value>
+        /// 
         public string Password { get; set; }
 
         /// <summary>

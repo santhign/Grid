@@ -43,6 +43,7 @@ namespace AdminService.Models
     public class AdminProfile
     {
         public string  Name { get; set; }
+
         public string  NewPassword { get; set; }
     }
 

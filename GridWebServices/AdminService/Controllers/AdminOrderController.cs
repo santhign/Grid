@@ -47,8 +47,8 @@ namespace AdminService.Controllers
         /// <param name="fromDate">From date.</param>
         /// <param name="toDate">To date.</param>
         /// <returns></returns>
-        [HttpGet("GetOrdersList")]
-        public async Task<IActionResult> GetOrdersList([FromHeader(Name = "Grid-Authorization-Token")] string token, int ? deliveryStatus, DateTime ? fromDate, DateTime ? toDate )
+        [HttpGet("GetOrdersListForNRIC")]
+        public async Task<IActionResult> GetOrdersList([FromHeader(Name = "Grid-Authorization-Token")] string token, int? deliveryStatus, DateTime? fromDate, DateTime? toDate)
         {
             try
             {
@@ -80,11 +80,120 @@ namespace AdminService.Controllers
                                 });
                         }
 
-                        
 
-                        var orderList = await _adminOrderDataAccess.GetOrdersList(deliveryStatus,fromDate,toDate);
+
+                        var orderList = await _adminOrderDataAccess.GetOrdersList(deliveryStatus, fromDate, toDate);
 
                         if (orderList == null || orderList.Count == 0)
+                        {
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = true,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists)
+
+                            });
+                        }
+                        else
+                        {
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = true,
+                                Message = StatusMessages.SuccessMessage,
+                                Result = orderList
+
+                            });
+                        }
+
+                    }
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+
+                }
+
+                else
+                {
+                    // token auth failure
+                    LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+
+        }
+
+        /// <summary>
+        /// Gets the order details.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="orderID">The order identifier.</param>
+        /// <returns></returns>
+        [HttpGet("GetOrderDetailsForNRIC")]
+        public async Task<IActionResult> GetOrderDetails([FromHeader(Name = "Grid-Authorization-Token")] string token, int orderID)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+                AdminUsersDataAccess _adminUsersDataAccess = new AdminUsersDataAccess(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await _adminUsersDataAccess.AuthenticateAdminUserToken(token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    {
+                        if (!ModelState.IsValid)
+                        {
+                            return StatusCode((int)HttpStatusCode.OK,
+                                new OperationResponse
+                                {
+                                    HasSucceeded = false,
+                                    IsDomainValidationErrors = true,
+                                    Message = string.Join("; ", ModelState.Values
+                                                    .SelectMany(x => x.Errors)
+                                                    .Select(x => x.ErrorMessage))
+                                });
+                        }
+
+
+
+                        var orderList = await _adminOrderDataAccess.GetOrderDetails(orderID);
+
+                        if (orderList == null || orderList.OrderID == 0)
                         {
                             return Ok(new ServerResponse
                             {

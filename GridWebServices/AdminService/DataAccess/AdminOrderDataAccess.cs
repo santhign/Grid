@@ -10,6 +10,7 @@ using System.Data;
 using AdminService.Models;
 using InfrastructureService;
 using Core.Enums;
+using System.Data.SqlClient;
 
 namespace AdminService.DataAccess
 {
@@ -37,19 +38,28 @@ namespace AdminService.DataAccess
         {
             try
             {
+                SqlParameter[] parameters =
+              {
+                    new SqlParameter( "@IDVerificationStatus",  SqlDbType.Int ),
+                    new SqlParameter( "@FromDate",  SqlDbType.DateTime ),
+                    new SqlParameter( "@ToDate",  SqlDbType.DateTime )
 
-                _DataHelper = new DataAccessHelper(DbObjectNames.Admin_GetOrderList, _configuration);
+                };
+
+                parameters[0].Value = deliveryStatus;
+                parameters[1].Value = fromDate;
+                parameters[2].Value = toDate;
+                _DataHelper = new DataAccessHelper(DbObjectNames.Admin_GetOrderList, parameters, _configuration);
 
                 DataTable dt = new DataTable();
 
                 await _DataHelper.RunAsync(dt);
 
-                List<OrderList> customerList = new List<OrderList>();
+                List<OrderList> orderLists = new List<OrderList>();
 
                 if (dt.Rows.Count > 0)
                 {
-
-                    customerList = (from model in dt.AsEnumerable()
+                    orderLists = (from model in dt.AsEnumerable()
                                     select new OrderList()
                                     {
                                         OrderID = model.Field<int>("OrderID"),
@@ -62,12 +72,80 @@ namespace AdminService.DataAccess
                                         Name = model.Field<string>("Name"),
                                         OrderDate = model.Field<DateTime?>("OrderDate"),
                                         DeliveryDate = model.Field<DateTime?>("DeliveryDate"),
-                                        DeliveryFromTime = model.Field<DateTime?>("DeliveryFromTime"),
-                                        DeliveryToTime = model.Field<DateTime?>("DeliveryToTime")
+                                        DeliveryFromTime = model.Field<TimeSpan?>("DeliveryFromTime"),
+                                        DeliveryToTime = model.Field<TimeSpan?>("DeliveryToTime")
                                     }).ToList();
                 }
 
-                return customerList;
+                return orderLists;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// Gets the order details.
+        /// </summary>
+        /// <param name="orderID">The order identifier.</param>
+        /// <returns></returns>
+        public async Task<AdminService.Models.OrderDetails> GetOrderDetails(int orderID)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+              {
+                    new SqlParameter( "@OrderID",  SqlDbType.Int ),
+
+                };
+
+                parameters[0].Value = orderID;
+
+
+                _DataHelper = new DataAccessHelper(DbObjectNames.Admin_GetOrderDetails, parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                await _DataHelper.RunAsync(dt);
+
+                OrderDetails details = new OrderDetails();
+
+                if (dt.Rows.Count > 0)
+                {
+                    details = (from model in dt.AsEnumerable()
+                               select new OrderDetails()
+                               {
+                                   OrderID = model.Field<int>("OrderID"),
+                                   OrderNumber = model.Field<string>("OrderNumber"),
+                                   IDVerificationStatus = model.Field<string>("IDVerificationStatus"),
+                                   IDVerificationStatusNumber = model.Field<int?>("IDVerificationStatusNumber"),
+                                   OrderStatus = model.Field<string>("OrderStatus"),
+                                   OrderStatusNumber = model.Field<int?>("OrderStatusNumber"),
+                                   RejectionCount = model.Field<int?>("RejectionCount"),
+                                   Name = model.Field<string>("Name"),
+                                   OrderDate = model.Field<DateTime?>("OrderDate"),
+                                   DeliveryDate = model.Field<DateTime?>("DeliveryDate"),
+                                   DeliveryFromTime = model.Field<TimeSpan?>("DeliveryFromTime"),
+                                   DeliveryToTime = model.Field<TimeSpan?>("DeliveryToTime"),
+                                   IdentityCardNumber = model.Field<string>("IdentityCardNumber"),
+                                   IdentityCardType = model.Field<string>("IdentityCardType"),
+                                   ExpiryDate = model.Field<DateTime?>("ExpiryDate"),
+                                   DOB = model.Field<DateTime?>("DOB"),
+                                   Nationality = model.Field<string>("Nationality"),
+                                   DocumentURL = model.Field<string>("DocumentURL"),
+                                   DocumentBackURL = model.Field<string>("DocumentBackURL"),
+                               }).FirstOrDefault();
+                }
+
+                return details;
             }
 
             catch (Exception ex)
