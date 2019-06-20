@@ -49,7 +49,7 @@ namespace AdminService.DataAccess
                 parameters[0].Value = deliveryStatus;
                 parameters[1].Value = fromDate;
                 parameters[2].Value = toDate;
-                _DataHelper = new DataAccessHelper(DbObjectNames.Admin_GetOrderList, parameters, _configuration);
+                _DataHelper = new DataAccessHelper(DbObjectNames.Admin_GetOrderListForNRIC, parameters, _configuration);
 
                 DataTable dt = new DataTable();
 
@@ -110,7 +110,7 @@ namespace AdminService.DataAccess
                 parameters[0].Value = orderID;
 
 
-                _DataHelper = new DataAccessHelper(DbObjectNames.Admin_GetOrderDetails, parameters, _configuration);
+                _DataHelper = new DataAccessHelper(DbObjectNames.Admin_GetOrderDetailsForNRIC, parameters, _configuration);
 
                 DataTable dt = new DataTable();
 
