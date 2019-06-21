@@ -484,5 +484,55 @@ namespace AdminService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+
+        public async Task<DatabaseResponse> CreateTokenForVerificationRequests(int orderId)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@OrderID",  SqlDbType.Int )
+                };
+
+                parameters[0].Value = orderId;
+
+
+                _DataHelper = new DataAccessHelper(DbObjectNames.Orders_IDVerificationCapture, parameters, _configuration);
+                DataTable dt = new DataTable();
+
+                var result = await _DataHelper.RunAsync(dt);
+
+                if (result != (int)DbReturnValue.UpdateSuccess && result != (int)DbReturnValue.UpdateSuccessSendEmail)
+                    return new DatabaseResponse() { ResponseCode = result };
+
+                DatabaseResponse response = new DatabaseResponse();
+                VerificationRequestResponse requestDetails = new VerificationRequestResponse();
+                response.ResponseCode = result;
+                if (dt.Rows.Count > 0)
+                {
+                    requestDetails = (from model in dt.AsEnumerable()
+                                      select new VerificationRequestResponse()
+                                      {
+                                          VerificationRequestID = model.Field<int>("VerificationRequestID"),
+                                          OrderID = model.Field<int>("OrderID"),
+                                          RequestToken = model.Field<string>("RequestToken"),
+                                          CreatedOn = model.Field<DateTime>("CreatedOn"),
+                                          IsUsed = model.Field<int>("IsUsed")
+                                      }).FirstOrDefault();
+                }
+                response.Results = requestDetails;
+                return response;
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
     }
 }

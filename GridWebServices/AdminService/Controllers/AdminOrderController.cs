@@ -341,13 +341,17 @@ namespace AdminService.Controllers
                         if (returnResponse.ResponseCode == (int)DbReturnValue.UpdateSuccessSendEmail)
                         {
                             var emailDetails = (EmailResponse)returnResponse.Results;
+                            DatabaseResponse configResponse = new DatabaseResponse();
+                            // Fetch the URL
+                            if (emailDetails.VerificationStatus == 2)
+                                configResponse = ConfigHelper.GetValueByKey("Emailurl", _iconfiguration);
                             //Sending message start
                             // Send email to customer email                            ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
                             DatabaseResponse registrationResponse = await _adminOrderDataAccess.GetEmailNotificationTemplate(emailDetails.VerificationStatus == 2 ? NotificationEvent.ICValidationReject.GetDescription() : NotificationEvent.ICValidationChange.GetDescription());
 
                             var notificationMessage = MessageHelper.GetMessage(emailDetails.Email, emailDetails.Name, emailDetails.VerificationStatus == 2 ? NotificationEvent.ICValidationReject.GetDescription() : NotificationEvent.ICValidationChange.GetDescription(),
                            ((EmailTemplate)registrationResponse.Results).TemplateName,
-                       _iconfiguration);
+                       _iconfiguration, configResponse.Results.ToString());
                             var notificationResponse = await _adminOrderDataAccess.GetConfiguration(ConfiType.Notification.ToString());
 
 

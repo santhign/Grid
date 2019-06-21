@@ -73,5 +73,15 @@ namespace AdminService.Models
 
     }
 
+    public class VerificationRequestResponse
+    {
+        public int VerificationRequestID { get; set; }
+        public int OrderID { get; set; }
+        public string RequestToken { get; set; }
+        public DateTime ? CreatedOn { get; set; }
+        public int IsUsed { get; set; }
+
+    }
+
 
 }
