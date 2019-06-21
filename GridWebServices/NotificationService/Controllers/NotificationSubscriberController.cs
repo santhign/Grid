@@ -206,8 +206,8 @@ namespace NotificationService.Controllers
                     Sms smsData = new Sms();
                     ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
 
-                    DatabaseResponse emailTemplate = await _configAccess.GetSMSNotificationTemplate(NotMessage.Message.messagetemplate.ToString());
-                    SMSTemplates template = (SMSTemplates)emailTemplate.Results;
+                    DatabaseResponse smsTemplate = await _configAccess.GetSMSNotificationTemplate(NotMessage.Message.messagetemplate.ToString());
+                    SMSTemplates template = (SMSTemplates)smsTemplate.Results;
 
                     foreach (var item in NotMessage.Message.parameters)
                     {

@@ -458,12 +458,12 @@ namespace OrderService.DataAccess
 
                         if (ds.Tables[3] != null && ds.Tables[3].Rows.Count > 0)
                         {
-
                             serviceCharges = (from model in ds.Tables[3].AsEnumerable()
                                               select new OrderServiceCharge()
                                               {
                                                   OrderID = model.Field<int>("OrderID"),
-                                                  SubscriberID = model.Field<int>("SubscriberID"),
+                                                  SubscriberID = model.Field<int?>("SubscriberID"),
+                                                  AdminServiceID = model.Field<int?>("SubscriberID"),
                                                   portalServiceName = model.Field<string>("portalServiceName"),
                                                   serviceFee = model.Field<double?>("serviceFee"),
                                                   isRecurring = model.Field<int>("isRecurring"),
