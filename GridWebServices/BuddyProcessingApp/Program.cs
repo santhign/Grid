@@ -132,7 +132,11 @@ namespace BuddyProcessingApp
                                 }
 
                                 DatabaseResponse removeProcessedResponse = await buddyDataAccess.RemoveProcessedBuddyList(_connectionString, buddyListToProcess[0].OrderID);
-                               
+                                
+                                DatabaseResponse customerIDResponse = await buddyDataAccess.GetCustomerIdFromOrderId(buddyListToProcess[0].OrderID, _connectionString);
+
+                                string emailStatus = await buddyHelper.SendEmailNotification(((OrderCust)customerIDResponse.Results).CustomerID, buddyListToProcess[0].OrderID, Configuration);
+
                                 int processed = await buddyHelper.ProcessOrderQueueMessage(buddyListToProcess[0].OrderID);
 
                             }

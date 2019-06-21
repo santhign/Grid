@@ -623,15 +623,18 @@ namespace OrderService.Helpers
             {
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
 
+                CommonDataAccess _commonAccess = new CommonDataAccess(_iconfiguration);
+
                 ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
 
                 DatabaseResponse templateResponse = await _configAccess.GetEmailNotificationTemplate(NotificationEvent.OrderSuccess.ToString());
 
                 // customerID,
                 DatabaseResponse customerResponse = await _orderAccess.GetCustomerIdFromOrderId(orderID);
+
                 LogInfo.Information("Email Customer : " + (int)((OrderCustomer)customerResponse.Results).CustomerId);
                 // Get Customer Data from CustomerID for email and Name
-                CustomerDetails customer= await _orderAccess.GetCustomerDetailByOrder(((OrderCustomer)customerResponse.Results).CustomerId, orderID);
+                CustomerDetails customer= await _commonAccess.GetCustomerDetailByOrder(((OrderCustomer)customerResponse.Results).CustomerId, orderID);
 
                 LogInfo.Information("Email Customer data : "  + JsonConvert.SerializeObject(customer));
 

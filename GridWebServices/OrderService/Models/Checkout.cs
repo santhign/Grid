@@ -85,49 +85,4 @@ namespace OrderService.Models
 
     }
 
-    
-
-    public class CustomerDetails
-    {
-        public string Name{ get; set; }  
-        public string DeliveryEmail { get; set; }
-        public string ToEmailList { get; set; }
-        public string OrderNumber { get; set; }
-        public string ReferralCode { get; set; }
-
-        public string ShippingUnit { get; set; }
-
-        public string ShippingFloor { get; set; }
-
-        public string ShippingBuildingNumber { get; set; }
-
-        public string ShippingBuildingName { get; set; }
-
-        public string ShippingStreetName { get; set; }
-
-        public string ShippingPostCode { get; set; }
-
-        public string ShippingContactNumber { get; set; }
-
-        public string AlternateRecipientContact { get; set; }
-
-        public string AlternateRecipientName { get; set; }
-
-        public string AlternateRecipientEmail { get; set; }
-        public DateTime SlotDate { get; set; }
-        public TimeSpan SlotFromTime { get; set; }
-        public TimeSpan SlotToTime { get; set; }
-        public List<OrderNumber> OrderedNumbers { get; set; }
-
-    }
-    public class OrderNumber
-    {
-        public string MobileNumber { get; set; }
-        public int IsBuddyLine { get; set; }
-        public string PlanMarketingName { get; set; }
-        public string PricingDescription { get; set; }
-        public double ApplicableSubscriptionFee { get; set; }    
-        
-    }
-    
 }
