@@ -225,9 +225,17 @@ namespace Core.Enums
         [Description("Linked buddy line is not active")]
         BuddyNotActive = 155,
 
+        [EnumMember(Value = "PendingBuddyLocked")]
+        [Description("PendingBuddyLocked")]
+        PendingBuddyLocked = 156,
+
+        [EnumMember(Value = "PendingBuddyUnLocked")]
+        [Description("PendingBuddyUnLocked")]
+        PendingBuddyUnLocked = 157,
+
         [EnumMember(Value = "Update Success Send Email")]
         [Description("Record updated successfully")]
-        UpdateSuccessSendEmail = 156,
+        UpdateSuccessSendEmail = 158,
     }
 }
 
