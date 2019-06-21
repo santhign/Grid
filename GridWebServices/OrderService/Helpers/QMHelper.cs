@@ -148,10 +148,18 @@ namespace OrderService.Helpers
                         {
                             //send queue message
 
-                          
-                            string emailStatus=  await SendEmailNotification(updateRequest.MPGSOrderID, ((OrderSource)sourceTyeResponse.Results).SourceID);
+                            try
+                            {
 
-                            LogInfo.Information("Email Send status for : " + emailStatus);
+                                string emailStatus = await SendEmailNotification(updateRequest.MPGSOrderID, ((OrderSource)sourceTyeResponse.Results).SourceID);
+                                LogInfo.Information("Email Send status for : " + emailStatus);
+                            }
+
+                            catch(Exception ex)
+                            {
+                                LogInfo.Information("Email Send failed ex");
+                            }
+                           
 
                             ProcessOrderQueueMessage(((OrderSource)sourceTyeResponse.Results).SourceID);
                         }
@@ -211,6 +219,7 @@ namespace OrderService.Helpers
                         Dictionary<string, string> attribute = new Dictionary<string, string>();
 
                         topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration).Results.ToString().Trim();
+
                         if (string.IsNullOrWhiteSpace(topicName))
                         {
                             throw new NullReferenceException("topicName is null for Order (" + orderID + ") for RemoveVAS Request Service API");
@@ -598,7 +607,9 @@ namespace OrderService.Helpers
         public async Task<string> SendEmailNotification(string MPGSOrderID, int orderID)
         {
             string status = string.Empty;
+            LogInfo.Information("Email orderID : " + orderID);
 
+            LogInfo.Information("Email MPGSOrderID : " + MPGSOrderID);
             try
             {
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
@@ -607,15 +618,13 @@ namespace OrderService.Helpers
 
                 DatabaseResponse templateResponse = await _configAccess.GetEmailNotificationTemplate(NotificationEvent.OrderSuccess.ToString());
 
-                //var details = await _messageQueueDataAccess.GetMessageDetails(MPGSOrderID);
-
                 // customerID,
-                DatabaseResponse
-
-                customerResponse = await _orderAccess.GetCustomerIdFromOrderId(orderID);
-
+                DatabaseResponse customerResponse = await _orderAccess.GetCustomerIdFromOrderId(orderID);
+                LogInfo.Information("Email Customer : " + (int)((OrderCustomer)customerResponse.Results).CustomerId);
                 // Get Customer Data from CustomerID for email and Name
-                var customer = await _orderAccess.GetCustomerDetailByOrder(((OrderCustomer)customerResponse.Results).CustomerId, orderID);
+                CustomerDetails customer= await _orderAccess.GetCustomerDetailByOrder(((OrderCustomer)customerResponse.Results).CustomerId, orderID);
+
+                LogInfo.Information("Email Customer data : "  + JsonConvert.SerializeObject(customer));
 
                 if (customer != null && !string.IsNullOrEmpty(customer.DeliveryEmail))
                 {
@@ -713,9 +722,20 @@ namespace OrderService.Helpers
 
                     var notificationConfig = parser.GetNotificationConfig((List<Dictionary<string, string>>)notificationResponse.Results);
 
+                    LogInfo.Information("Email Message to send  "+    JsonConvert.SerializeObject(notificationResponse));
+
                     Publisher orderSuccessNotificationPublisher = new Publisher(_iconfiguration, notificationConfig.SNSTopic);
 
-                    status=  await orderSuccessNotificationPublisher.PublishAsync(notificationMessage);
+                    try
+                    {
+
+                        status = await orderSuccessNotificationPublisher.PublishAsync(notificationMessage);
+                    }
+                    catch(Exception ex)
+                    {
+                        LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + "publishing :" + status);
+                        throw ex;
+                    }
 
                     LogInfo.Information("Email send status : " + status + " " + JsonConvert.SerializeObject(notificationMessage));
 
@@ -733,7 +753,8 @@ namespace OrderService.Helpers
                     }
                     catch (Exception ex)
                     {
-                        LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + "MPGS OrderID:" + MPGSOrderID);
+                        LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + "Email send:" + MPGSOrderID);
+                        throw ex;
                     }
                 }
 
@@ -742,6 +763,7 @@ namespace OrderService.Helpers
             catch(Exception ex)
             {
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + "MPGS OrderID:" + MPGSOrderID);
+                throw ex;
             }
 
             return status;
@@ -778,7 +800,7 @@ namespace OrderService.Helpers
             {
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + "SMS failure for OrderNumber:" + customer.OrderNumber);
 
-                return status;
+                throw ex;
             }
         }
     }
