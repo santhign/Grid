@@ -19,6 +19,8 @@ using System.Net;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using System.Net.Mail;
+using Core.DataAccess;
+using InfrastructureService.MessageQueue;
 
 namespace OrderService.Controllers
 {
@@ -762,12 +764,36 @@ namespace OrderService.Controllers
 
                     var statusResponse = await _changeRequestDataAccess.SimReplacementRequest(aTokenResp.CustomerID, mobileNumber);
                     var updateRequest = (ChangeSimResponse)statusResponse.Results;
+
+                    //var changeRequestForSMS = await _changeRequestDataAccess.GetCRDetailsWithDeliveryInfo(aTokenResp.CustomerID, updateRequest.ChangeRequestId)
                     if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                     {
                         var serviceFeeList = updateRequest.ChangeRequestChargesList.Select(x => x.ServiceFee).ToList();
                         //var serviceFeeListWithoutZeroValue = serviceFeeList.Where(x => x != 0);
                         if (serviceFeeList.AsQueryable().Sum() == 0)
                         {
+                            //Start
+                            ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
+
+                            DatabaseResponse smsTemplateResponse = await _configAccess.GetSMSNotificationTemplate(NotificationEvent.RescheduleDelivery.ToString());
+
+                            var notificationMessage = MessageHelper.GetSMSMessage(NotificationEvent.RescheduleDelivery.ToString(),
+                                ((SMSTemplates)smsTemplateResponse.Results).TemplateName, updateRequest.OrderNumber,
+                                 updateRequest.ScheduledDate.Value.ToString("dd MMM yyyy"),
+                                new DateTime(updateRequest.DeliveryTime.Value.Ticks).ToString("hh mm tt"));
+
+                            DatabaseResponse notificationResponse = await _configAccess.GetConfiguration(ConfiType.Notification.ToString());
+
+                            MiscHelper parser = new MiscHelper();
+
+                            var notificationConfig = parser.GetNotificationConfig((List<Dictionary<string, string>>)notificationResponse.Results);
+
+                            Publisher orderSuccessSMSNotificationPublisher = new Publisher(_iconfiguration, notificationConfig.SNSTopic);
+
+                            var status = await orderSuccessSMSNotificationPublisher.PublishAsync(notificationMessage);
+
+                            LogInfo.Information("SMS send status : " + status + " " + JsonConvert.SerializeObject(notificationMessage));
+                            //End
                             var details = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(updateRequest.ChangeRequestId);
 
                             if (details != null)

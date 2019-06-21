@@ -37,6 +37,14 @@ namespace Core.Enums
         [Description("ICValidationReject")]
         ICValidationReject = 5,
 
+        [EnumMember(Value = "ReplaceSIM")]
+        [Description("ReplaceSIM")]
+        ReplaceSIM = 6,
+
+        [EnumMember(Value = "RescheduleDelivery")]
+        [Description("RescheduleDelivery")]
+        RescheduleDelivery = 7,
+
     }
 
     public enum SNSNotification

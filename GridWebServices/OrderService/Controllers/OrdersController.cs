@@ -5212,10 +5212,35 @@ namespace OrderService.Controllers
                     {
                         var confirmOrder = await _orderAccess.ProcessRescheduleDelivery(order_Reschedule.AccountInvoiceID);
 
-                        var result = await _orderAccess.CheckRescheduleDeliveryCharges(order_Reschedule.AccountInvoiceID);
+                        var chargesExists = await _orderAccess.CheckRescheduleDeliveryCharges(order_Reschedule.AccountInvoiceID);
+                        var orderDetailsForSMS = await _orderAccess.GetOrderDetails(detailsrequest.OrderID);
+                        var orderObjectForSMS = (Order)orderDetailsForSMS.Results;
                         if (confirmOrder.ResponseCode == (int)DbReturnValue.CreateSuccess)
                         {
-                            if(result.ResponseCode == (int)DbReturnValue.RecordExists)                            
+                            //Send SMS
+                            ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
+
+                            DatabaseResponse smsTemplateResponse = await _configAccess.GetSMSNotificationTemplate(NotificationEvent.RescheduleDelivery.ToString());
+
+                            var notificationMessage = MessageHelper.GetSMSMessage(NotificationEvent.RescheduleDelivery.ToString(),
+                                ((SMSTemplates)smsTemplateResponse.Results).TemplateName, orderObjectForSMS.OrderNumber,
+                                 orderObjectForSMS.SlotDate.Value.ToString("dd MMM yyyy"), 
+                                new DateTime(orderObjectForSMS.SlotFromTime.Value.Ticks).ToString("hh mm tt") + 
+                                " to " + new DateTime(orderObjectForSMS.SlotToTime.Value.Ticks).ToString("hh mm tt"));
+
+                            DatabaseResponse notificationResponse = await _configAccess.GetConfiguration(ConfiType.Notification.ToString());
+
+                            MiscHelper parser = new MiscHelper();
+
+                            var notificationConfig = parser.GetNotificationConfig((List<Dictionary<string, string>>)notificationResponse.Results);
+
+                            Publisher orderSuccessSMSNotificationPublisher = new Publisher(_iconfiguration, notificationConfig.SNSTopic);
+
+                            var status = await orderSuccessSMSNotificationPublisher.PublishAsync(notificationMessage);
+
+                            LogInfo.Information("SMS send status : " + status + " " + JsonConvert.SerializeObject(notificationMessage));
+                            //End
+                            if (chargesExists.ResponseCode == (int)DbReturnValue.RecordExists)                            
                             {
                                 //Start - Send MQ if Successfully Reschedule delivery Order processed with payment.
                                 DatabaseResponse orderMqResponse = new DatabaseResponse();
