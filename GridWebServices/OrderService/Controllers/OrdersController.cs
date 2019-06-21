@@ -4353,7 +4353,7 @@ namespace OrderService.Controllers
                                     LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
                                     MessageQueueRequestException queueRequest = new MessageQueueRequestException
                                     {
-                                        Source = Source.ChangeRequest,
+                                        Source = CheckOutType.Orders.ToString(),
                                         NumberOfRetries = 1,
                                         SNSTopic = string.IsNullOrWhiteSpace(topicName) ? null : topicName,
                                         CreatedOn = DateTime.Now,
@@ -4362,7 +4362,7 @@ namespace OrderService.Controllers
                                         MessageAttribute = Core.Enums.RequestType.CancelOrder.GetDescription().ToString(),
                                         MessageBody = orderDetails != null ? JsonConvert.SerializeObject(orderDetails) : null,
                                         Status = 0,
-                                        Remark = "Error Occured in BuyVASService",
+                                        Remark = "Error Occured in Cancel Order ",
                                         Exception = new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)
 
 
@@ -5213,6 +5213,93 @@ namespace OrderService.Controllers
                         var confirmOrder = await _orderAccess.ProcessRescheduleDelivery(order_Reschedule.AccountInvoiceID);
                         if (confirmOrder.ResponseCode == (int)DbReturnValue.CreateSuccess)
                         {
+                            //Start - Send MQ if Successfully Reschedule delivery Order processed with payment.
+                            {
+                                DatabaseResponse orderMqResponse = new DatabaseResponse();
+
+                                orderMqResponse = await _messageQueueDataAccess.GetOrderMessageQueueBody(detailsrequest.OrderID);
+
+                                OrderQM orderDetails = new OrderQM();
+
+                                string topicName = string.Empty;
+
+                                string pushResult = string.Empty;
+
+                                if (orderMqResponse != null && orderMqResponse.Results != null)
+                                {
+                                    orderDetails = (OrderQM)orderMqResponse.Results;
+
+                                    try
+                                    {
+                                        Dictionary<string, string> attribute = new Dictionary<string, string>();
+
+                                        topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration).Results.ToString().Trim();
+
+
+                                        attribute.Add(EventTypeString.EventType, RequestType.RescheduleDelivery.GetDescription());
+
+                                        pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, orderDetails, attribute);
+
+                                        if (pushResult.Trim().ToUpper() == "OK")
+                                        {
+                                            MessageQueueRequest queueRequest = new MessageQueueRequest
+                                            {
+                                                Source = CheckOutType.Orders.ToString(),
+                                                NumberOfRetries = 1,
+                                                SNSTopic = topicName,
+                                                CreatedOn = DateTime.Now,
+                                                LastTriedOn = DateTime.Now,
+                                                PublishedOn = DateTime.Now,
+                                                MessageAttribute = RequestType.RescheduleDelivery.GetDescription(),
+                                                MessageBody = JsonConvert.SerializeObject(orderDetails),
+                                                Status = 1
+                                            };
+                                            await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                                        }
+                                        else
+                                        {
+                                            MessageQueueRequest queueRequest = new MessageQueueRequest
+                                            {
+                                                Source = CheckOutType.Orders.ToString(),
+                                                NumberOfRetries = 1,
+                                                SNSTopic = topicName,
+                                                CreatedOn = DateTime.Now,
+                                                LastTriedOn = DateTime.Now,
+                                                PublishedOn = DateTime.Now,
+                                                MessageAttribute = RequestType.RescheduleDelivery.GetDescription(),
+                                                MessageBody = JsonConvert.SerializeObject(orderDetails),
+                                                Status = 0
+                                            };
+                                            await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                                        }
+
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                                        MessageQueueRequestException queueRequest = new MessageQueueRequestException
+                                        {
+                                            Source = CheckOutType.Orders.ToString(),
+                                            NumberOfRetries = 1,
+                                            SNSTopic = string.IsNullOrWhiteSpace(topicName) ? null : topicName,
+                                            CreatedOn = DateTime.Now,
+                                            LastTriedOn = DateTime.Now,
+                                            PublishedOn = DateTime.Now,
+                                            MessageAttribute = Core.Enums.RequestType.RescheduleDelivery.GetDescription().ToString(),
+                                            MessageBody = orderDetails != null ? JsonConvert.SerializeObject(orderDetails) : null,
+                                            Status = 0,
+                                            Remark = "Error Occured in Reschedule Delivery",
+                                            Exception = new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)
+
+
+                                        };
+
+                                        await _messageQueueDataAccess.InsertMessageInMessageQueueRequestException(queueRequest);
+                                    }
+                                }
+
+                            }
+                            //End
                             return Ok(new ServerResponse
                             {
                                 HasSucceeded = true,
@@ -5234,6 +5321,7 @@ namespace OrderService.Controllers
                     }
                     else if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                     {
+                       
                         return Ok(new ServerResponse
                         {
                             HasSucceeded = true,

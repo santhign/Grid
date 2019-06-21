@@ -57,7 +57,11 @@ namespace Core.Enums
 
         [EnumMember(Value = "EditDisplayName")]
         [Description("EditDisplayName")]
-        EditDisplayName = 19
+        EditDisplayName = 19,
+
+        [EnumMember(Value = "RescheduleDelivery")]
+        [Description("RescheduleDelivery")]
+        RescheduleDelivery = 20
 
     }
 
