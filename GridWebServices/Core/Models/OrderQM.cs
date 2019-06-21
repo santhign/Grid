@@ -177,8 +177,7 @@ namespace Core.Models
         public List<OrderSubscriber> Subscribers { get; set; }        
 
         [DataMember(Name = "Charges")]
-        public List<OrderServiceCharge> Charges { get; set; }
-       
+        public List<OrderServiceCharge> Charges { get; set; }        
     }
 
     public class OrderSubscriber
@@ -210,7 +209,7 @@ namespace Core.Models
         [DataMember(Name = "donorProvider")]
         public string donorProvider { get; set; }
 
-        [DataMember(Name = "CreatedOn")]
+        [DataMember(Name = "DepositFee")]
         public double? DepositFee { get; set; }
 
         [DataMember(Name = "IsBuddyLine")]
@@ -232,9 +231,10 @@ namespace Core.Models
         public string portedNumberOwnerRegistrationID { get; set; }
 
         [DataMember(Name = "Bundles")]
-        public List<OrderSubscriptionQM> Bundles { get; set; }
-
+        public List<OrderSubscriptionQM> Bundles { get; set; } 
+       
     }
+
 
     public class OrderSubscriptionQM
     {
@@ -269,9 +269,7 @@ namespace Core.Models
         public double? totalVoice { get; set; }
 
         [DataMember(Name = "applicableSubscriptionFee")]
-        public double? applicableSubscriptionFee { get; set; }
-
-
+        public double? applicableSubscriptionFee { get; set; }  
     }
 
     public class OrderServiceCharge
@@ -281,6 +279,9 @@ namespace Core.Models
 
         [DataMember(Name = "SubscriberID")]
         public int? SubscriberID { get; set; }
+
+        [DataMember(Name = "AdminServiceID")]
+        public int? AdminServiceID { get; set; }
 
         [DataMember(Name = "portalServiceName")]
         public string portalServiceName { get; set; }
@@ -292,8 +293,9 @@ namespace Core.Models
         public int? isRecurring { get; set; }
 
         [DataMember(Name = "isGSTIncluded")]
-        public int? isGSTIncluded { get; set; }
+        public int? isGSTIncluded { get; set; }       
     }
+
 
     public class MessageQueueRequest
     {

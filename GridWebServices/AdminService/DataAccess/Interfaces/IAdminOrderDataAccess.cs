@@ -19,5 +19,7 @@ namespace AdminService.DataAccess.Interfaces
 
         Task<DatabaseResponse> CreateEMailNotificationLogForDevPurpose(NotificationLogForDevPurpose log);
         Task<DatabaseResponse> GetConfiguration(string configType);
+
+        Task<DatabaseResponse> CreateTokenForVerificationRequests(int orderId);
     }
 }
