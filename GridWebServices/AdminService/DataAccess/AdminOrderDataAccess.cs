@@ -49,7 +49,7 @@ namespace AdminService.DataAccess
                 parameters[0].Value = deliveryStatus;
                 parameters[1].Value = fromDate;
                 parameters[2].Value = toDate;
-                _DataHelper = new DataAccessHelper(DbObjectNames.Admin_GetOrderList, parameters, _configuration);
+                _DataHelper = new DataAccessHelper(DbObjectNames.Admin_GetOrderListForNRIC, parameters, _configuration);
 
                 DataTable dt = new DataTable();
 
@@ -110,17 +110,17 @@ namespace AdminService.DataAccess
                 parameters[0].Value = orderID;
 
 
-                _DataHelper = new DataAccessHelper(DbObjectNames.Admin_GetOrderDetails, parameters, _configuration);
+                _DataHelper = new DataAccessHelper(DbObjectNames.Admin_GetOrderDetailsForNRIC, parameters, _configuration);
 
-                DataTable dt = new DataTable();
+                DataSet ds = new DataSet();
 
-                await _DataHelper.RunAsync(dt);
+                await _DataHelper.RunAsync(ds);
 
                 OrderDetails details = new OrderDetails();
-
-                if (dt.Rows.Count > 0)
+                details.VerificaionHistories = new List<IDVerificaionHistory>();
+                if (ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
                 {
-                    details = (from model in dt.AsEnumerable()
+                    details = (from model in ds.Tables[0].AsEnumerable()
                                select new OrderDetails()
                                {
                                    OrderID = model.Field<int>("OrderID"),
@@ -143,6 +143,25 @@ namespace AdminService.DataAccess
                                    DocumentURL = model.Field<string>("DocumentURL"),
                                    DocumentBackURL = model.Field<string>("DocumentBackURL"),
                                }).FirstOrDefault();
+                    if (ds.Tables.Count > 1 && ds.Tables[1].Rows.Count > 0)
+                    {
+                        details.VerificaionHistories = (from model in ds.Tables[1].AsEnumerable()
+                                                        select new IDVerificaionHistory()
+                                                        {
+                                                            VerificationLogID = model.Field<int>("VerificationLogID"),
+                                                            OrderID = model.Field<int>("OrderID"),
+                                                            IDVerificationStatusNumber = model.Field<int>("IDVerificationStatusNumber"),
+                                                            IDVerificationStatus = model.Field<string>("IDVerificationStatus"),
+                                                            ChangeLog = model.Field<string>("ChangeLog"),
+                                                            Remarks = model.Field<string>("Remarks"),
+                                                            UpdatedOn = model.Field<DateTime?>("UpdatedOn"),
+                                                            UpdatedBy = model.Field<int?>("UpdatedBy")
+                                                        }).ToList();
+                    }
+                    else
+                    {
+                        details.VerificaionHistories = null;
+                    }
                 }
 
                 return details;

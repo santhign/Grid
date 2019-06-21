@@ -108,8 +108,25 @@ namespace OrderService.DataAccess
                                    ScheduledDate = model.Field<DateTime?>("ScheduledDate"),
                                    OldMobileNumber = model.Field<string>("OldMobileNumber"),
                                    NewMobileNumber = model.Field<string>("NewMobileNumber"),
-                                   OldSIM = model.Field<string>("OldSIM")
-
+                                   OldSIM = model.Field<string>("OldSIM"),
+                                   ServiceFee = model.Field<double?>("ServiceFee"),
+                                   AmountPaid = model.Field<double?>("AmountPaid"),
+                                   PaymentMode = model.Field<string>("PaymentMode"),
+                                   MPGSOrderID = model.Field<string>("MPGSOrderID"),
+                                   MaskedCardNumber = model.Field<string>("MaskedCardNumber"),
+                                   Token = model.Field<string>("Token"),
+                                   CardType = model.Field<string>("CardType"),
+                                   CardHolderName = model.Field<string>("CardHolderName"),
+                                   ExpiryMonth = model.Field<int?>("ExpiryMonth"),
+                                   ExpiryYear = model.Field<int?>("ExpiryYear"),
+                                   CardFundMethod = model.Field<string>("CardFundMethod"),
+                                   CardBrand = model.Field<string>("CardBrand"),
+                                   CardIssuer = model.Field<string>("CardIssuer"),
+                                   DateofBirth = model.Field<DateTime?>("DateofBirth"),
+                                   ReferralCode = model.Field<string>("ReferralCode"),
+                                   InvoiceUrl = model.Field<string>("InvoiceUrl"),
+                                   ProcessedOn = model.Field<DateTime?>("ProcessedOn"),
+                                   InvoiceNumber = model.Field<string>("InvoiceNumber"),
                                }).FirstOrDefault();
 
                     if (ds.Tables.Count > 1 && ds.Tables[1].Rows.Count != 0)

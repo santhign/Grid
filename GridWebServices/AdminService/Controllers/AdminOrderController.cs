@@ -16,6 +16,8 @@ using AdminService.DataAccess.Interfaces;
 
 namespace AdminService.Controllers
 {
+    [Route("api/[controller]")]
+    [ApiController]
     public class AdminOrderController : Controller
     {
         /// <summary>
@@ -48,7 +50,7 @@ namespace AdminService.Controllers
         /// <param name="toDate">To date.</param>
         /// <returns></returns>
         [HttpGet("GetOrdersListForNRIC")]
-        public async Task<IActionResult> GetOrdersList([FromHeader(Name = "Grid-Authorization-Token")] string token, int? deliveryStatus, DateTime? fromDate, DateTime? toDate)
+        public async Task<IActionResult> GetOrdersList([FromHeader(Name = "Grid-Authorization-Token")] string token, string deliveryStatus, DateTime? fromDate, DateTime? toDate)
         {
             try
             {
@@ -79,10 +81,19 @@ namespace AdminService.Controllers
                                                     .Select(x => x.ErrorMessage))
                                 });
                         }
+                        int? deliveryStatusNumber = null;
+                        if(!string.IsNullOrWhiteSpace(deliveryStatus))
+                        {
+                            if(deliveryStatus.Trim().ToLower() == IDVerificationStatus.PendingVerification.GetDescription().Trim().ToLower())                            
+                                deliveryStatusNumber = 0;
+                            else if (deliveryStatus.Trim().ToLower() == IDVerificationStatus.AcceptedVerification.GetDescription().Trim().ToLower())
+                                deliveryStatusNumber = 1;
+                            else if (deliveryStatus.Trim().ToLower() == IDVerificationStatus.RejectedVerification.GetDescription().Trim().ToLower())
+                                deliveryStatusNumber = 2;
 
-
-
-                        var orderList = await _adminOrderDataAccess.GetOrdersList(deliveryStatus, fromDate, toDate);
+                        }
+                        
+                        var orderList = await _adminOrderDataAccess.GetOrdersList(deliveryStatusNumber, fromDate, toDate);
 
                         if (orderList == null || orderList.Count == 0)
                         {

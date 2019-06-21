@@ -108,6 +108,44 @@ namespace OrderService.Models
         [DataMember]
         public string OldSIM { get; set; }
 
+        [DataMember]
+        public double ? ServiceFee { get; set; }
+
+        [DataMember]
+        public double? AmountPaid { get; set; }
+        [DataMember]
+        public string PaymentMode { get; set; }
+        [DataMember]
+        public string MPGSOrderID { get; set; }
+        [DataMember]
+        public string MaskedCardNumber { get; set; }
+        [DataMember]
+        public string Token { get; set; }
+        [DataMember]
+        public string CardType { get; set; }
+        [DataMember]
+        public string CardHolderName { get; set; }
+        [DataMember]
+        public int? ExpiryMonth { get; set; }
+        [DataMember]
+        public int? ExpiryYear { get; set; }
+        [DataMember]
+        public string CardFundMethod { get; set; }
+        [DataMember]
+        public string CardBrand { get; set; }
+        [DataMember]
+        public string CardIssuer { get; set; }
+        [DataMember]
+        public DateTime? DateofBirth { get; set; }
+        [DataMember]
+        public string ReferralCode { get; set; }
+        [DataMember]
+        public DateTime? ProcessedOn { get; set; }
+        [DataMember]
+        public string InvoiceNumber { get; set; }
+        [DataMember]
+        public string InvoiceUrl { get; set; }
+
         [DataMember(Name = "Bundles")]
         public List<BundleDetails> Bundles { get; set; }
 

@@ -105,4 +105,17 @@ namespace Core.Enums
         [Description("OrderLevel")]
         OrderLevel = 1
     }
+
+    public enum IDVerificationStatus
+    {
+        [EnumMember(Value = "PendingVerification")]
+        [Description("Pending Verification")]
+        PendingVerification = 0,
+        [EnumMember(Value = "AcceptedVerification")]
+        [Description("Accepted Verification")]
+        AcceptedVerification = 1,
+        [EnumMember(Value = "RejectedVerification")]
+        [Description("Rejected Verification")]
+        RejectedVerification = 2
+    }
 }
