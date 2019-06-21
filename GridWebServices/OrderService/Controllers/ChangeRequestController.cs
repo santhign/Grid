@@ -538,7 +538,7 @@ namespace OrderService.Controllers
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = false,
-                                Message = DbReturnValue.ActionIsInvalid.GetDescription(),
+                                Message = DbReturnValue.BuddyNotActive.GetDescription(),
                                 IsDomainValidationErrors = false
                             });
                         }
