@@ -5211,10 +5211,13 @@ namespace OrderService.Controllers
                     if (order_Reschedule != null && order_Reschedule.PayableAmount == 0)
                     {
                         var confirmOrder = await _orderAccess.ProcessRescheduleDelivery(order_Reschedule.AccountInvoiceID);
+
+                        var result = await _orderAccess.CheckRescheduleDeliveryCharges(order_Reschedule.AccountInvoiceID);
                         if (confirmOrder.ResponseCode == (int)DbReturnValue.CreateSuccess)
                         {
-                            //Start - Send MQ if Successfully Reschedule delivery Order processed with payment.
+                            if(result.ResponseCode == (int)DbReturnValue.RecordExists)                            
                             {
+                                //Start - Send MQ if Successfully Reschedule delivery Order processed with payment.
                                 DatabaseResponse orderMqResponse = new DatabaseResponse();
 
                                 orderMqResponse = await _messageQueueDataAccess.GetOrderMessageQueueBody(detailsrequest.OrderID);

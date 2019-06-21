@@ -3728,6 +3728,44 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
-        
+
+        public async Task<DatabaseResponse> CheckRescheduleDeliveryCharges(int AccountInvoiceID)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                 {                     
+                     new SqlParameter( "@AccountInvoiceID",  SqlDbType.Int )
+
+                };
+
+                parameters[0].Value = AccountInvoiceID;
+                
+
+                _DataHelper = new DataAccessHelper("Orders_CheckRescheduleDeliveryCharges", parameters, _configuration);
+
+                //DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(); // 105 /102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                response.ResponseCode = result;
+
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
     }
 }
