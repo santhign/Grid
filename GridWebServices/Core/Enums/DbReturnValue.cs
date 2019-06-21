@@ -221,9 +221,13 @@ namespace Core.Enums
         [Description("Duplicate NRIC details are present for another customer")]
         DuplicateNRICNotAllowed = 154,
 
+        [EnumMember(Value = "Linked buddy line is not active")]
+        [Description("Linked buddy line is not active")]
+        BuddyNotActive = 155,
+
         [EnumMember(Value = "Update Success Send Email")]
         [Description("Record updated successfully")]
-        UpdateSuccessSendEmail = 155,
+        UpdateSuccessSendEmail = 156,
     }
 }
 

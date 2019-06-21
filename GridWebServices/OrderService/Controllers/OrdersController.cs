@@ -6076,7 +6076,14 @@ namespace OrderService.Controllers
             }
         }
 
-       
+        //[HttpGet("sendemailtest")]
+        //public async Task<string> sendemailtest([FromRoute] string mpgs, int OrderID)
+        //{
+        //    QMHelper helper = new QMHelper(_iconfiguration, _messageQueueDataAccess);
+        //    string status= await helper.SendEmailNotification(mpgs, OrderID);
+
+        //    return status;
+        //}
     }
 
 }
