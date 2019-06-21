@@ -142,6 +142,14 @@ namespace OrderService.Helpers
                             //  Action buddyProcessing = FinalBuddyProcessing;
 
                             int processed = await FinalBuddyProcessing();
+
+                            if(processed==1)
+                            {
+                                LogInfo.Information("Calling SendEmailNotification");
+                                string emailStatus = await SendEmailNotification(updateRequest.MPGSOrderID, ((OrderSource)sourceTyeResponse.Results).SourceID);
+                                LogInfo.Information("Email Send status for : " + emailStatus);
+
+                            }                          
                         }
 
                         else
@@ -150,14 +158,15 @@ namespace OrderService.Helpers
 
                             try
                             {
-
+                                LogInfo.Information("Calling SendEmailNotification");
                                 string emailStatus = await SendEmailNotification(updateRequest.MPGSOrderID, ((OrderSource)sourceTyeResponse.Results).SourceID);
                                 LogInfo.Information("Email Send status for : " + emailStatus);
                             }
 
                             catch(Exception ex)
                             {
-                                LogInfo.Information("Email Send failed ex");
+                                LogInfo.Information("Email Send failed");
+                                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
                             }
                            
 
@@ -614,15 +623,18 @@ namespace OrderService.Helpers
             {
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
 
+                CommonDataAccess _commonAccess = new CommonDataAccess(_iconfiguration);
+
                 ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
 
                 DatabaseResponse templateResponse = await _configAccess.GetEmailNotificationTemplate(NotificationEvent.OrderSuccess.ToString());
 
                 // customerID,
                 DatabaseResponse customerResponse = await _orderAccess.GetCustomerIdFromOrderId(orderID);
+
                 LogInfo.Information("Email Customer : " + (int)((OrderCustomer)customerResponse.Results).CustomerId);
                 // Get Customer Data from CustomerID for email and Name
-                CustomerDetails customer= await _orderAccess.GetCustomerDetailByOrder(((OrderCustomer)customerResponse.Results).CustomerId, orderID);
+                CustomerDetails customer= await _commonAccess.GetCustomerDetailByOrder(((OrderCustomer)customerResponse.Results).CustomerId, orderID);
 
                 LogInfo.Information("Email Customer data : "  + JsonConvert.SerializeObject(customer));
 
@@ -644,10 +656,10 @@ namespace OrderService.Helpers
                             orderedNumbersSb.Append("<tr><td width='100%' colspan='3'> </td></tr>");
                         }
                         orderedNumbersSb.Append("<tr><td width='25%'>MobileNumber :<td width='20%'>");
-                        orderedNumbersSb.Append(number.mobileNumber);
+                        orderedNumbersSb.Append(number.MobileNumber);
                         orderedNumbersSb.Append("</td><td width ='55%'></td></tr>");
                         orderedNumbersSb.Append("<tr><td width='25%'>Plan :<td width='20%'>");
-                        orderedNumbersSb.Append(number.planMarketingName);
+                        orderedNumbersSb.Append(number.PlanMarketingName);
                         orderedNumbersSb.Append("</td><td width ='55%'>");
                         orderedNumbersSb.Append(number.PricingDescription);
                         orderedNumbersSb.Append("</td></tr> ");
@@ -656,56 +668,56 @@ namespace OrderService.Helpers
 
                     orderedNumbersSb.Append("</table>");
 
-                    if (!string.IsNullOrEmpty(customer.shippingBuildingNumber))
+                    if (!string.IsNullOrEmpty(customer.ShippingBuildingName))
                     {
-                        deliveryAddressSb.Append(customer.shippingBuildingNumber);
+                        deliveryAddressSb.Append(customer.ShippingBuildingNumber);
                     }
 
-                    if (!string.IsNullOrEmpty(customer.shippingStreetName))
+                    if (!string.IsNullOrEmpty(customer.ShippingStreetName))
                     {
                         if (deliveryAddressSb.ToString() != "")
                         {
                             deliveryAddressSb.Append(" ");
                         }
 
-                        deliveryAddressSb.Append(customer.shippingStreetName);
+                        deliveryAddressSb.Append(customer.ShippingStreetName);
                     }
 
                     deliveryAddressSb.Append("<br />");
 
                     StringBuilder shippingAddr2 = new StringBuilder();
 
-                    if (!string.IsNullOrEmpty(customer.shippingFloor))
+                    if (!string.IsNullOrEmpty(customer.ShippingFloor))
                     {
-                        shippingAddr2.Append(customer.shippingFloor);
+                        shippingAddr2.Append(customer.ShippingFloor);
                     }
 
-                    if (!string.IsNullOrEmpty(customer.shippingUnit))
+                    if (!string.IsNullOrEmpty(customer.ShippingUnit))
                     {
                         if (shippingAddr2.ToString() != "")
                         {
                             shippingAddr2.Append(" ");
                         }
-                        shippingAddr2.Append(customer.shippingUnit);
+                        shippingAddr2.Append(customer.ShippingUnit);
                     }
 
-                    if (!string.IsNullOrEmpty(customer.shippingBuildingName))
+                    if (!string.IsNullOrEmpty(customer.ShippingBuildingName))
                     {
                         if (shippingAddr2.ToString() != "")
                         {
                             shippingAddr2.Append(" ");
                         }
 
-                        shippingAddr2.Append(customer.shippingBuildingName);
+                        shippingAddr2.Append(customer.ShippingBuildingName);
                     }
 
                     deliveryAddressSb.Append(shippingAddr2.ToString());
 
                     deliveryAddressSb.Append("<br />");
 
-                    if (!string.IsNullOrEmpty(customer.shippingPostCode))
+                    if (!string.IsNullOrEmpty(customer.ShippingPostCode))
                     {
-                        deliveryAddressSb.Append(customer.shippingPostCode);
+                        deliveryAddressSb.Append(customer.ShippingPostCode);
                     }
 
                     string deliveryDate = customer.SlotDate.ToString("dd MMM yyyy") + " " + new DateTime(customer.SlotFromTime.Ticks).ToString("hh mm tt") + " to " + new DateTime(customer.SlotToTime.Ticks).ToString("hh mm tt");
@@ -714,7 +726,7 @@ namespace OrderService.Helpers
 
                                                         NotificationEvent.OrderSuccess.ToString(),
 
-                                                     ((EmailTemplate)templateResponse.Results).TemplateName, _iconfiguration, customer.DeliveryEmail, customer.OrderNumber, orderedNumbersSb.ToString(), deliveryAddressSb.ToString(), customer.alternateRecipientName == null ? customer.Name : customer.alternateRecipientName, customer.alternateRecipientContact == null ? customer.shippingContactNumber : customer.alternateRecipientContact, string.IsNullOrEmpty( customer.alternateRecipientEmail) ? customer.DeliveryEmail : customer.alternateRecipientEmail, deliveryDate, customer.ReferralCode);
+                                                     ((EmailTemplate)templateResponse.Results).TemplateName, _iconfiguration, customer.DeliveryEmail, customer.OrderNumber, orderedNumbersSb.ToString(), deliveryAddressSb.ToString(), customer.AlternateRecipientName == null ? customer.Name : customer.AlternateRecipientName, customer.AlternateRecipientContact == null ? customer.ShippingContactNumber : customer.AlternateRecipientContact, string.IsNullOrEmpty( customer.AlternateRecipientEmail) ? customer.DeliveryEmail : customer.AlternateRecipientEmail, deliveryDate, customer.ReferralCode);
 
                     DatabaseResponse notificationResponse = await _configAccess.GetConfiguration(ConfiType.Notification.ToString());
 
@@ -780,7 +792,7 @@ namespace OrderService.Helpers
 
                 DatabaseResponse smsTemplateResponse = await _configAccess.GetSMSNotificationTemplate(NotificationEvent.OrderSuccess.ToString());               
 
-                var notificationMessage = MessageHelper.GetSMSMessage(NotificationEvent.OrderSuccess.ToString(), ((SMSTemplates)smsTemplateResponse.Results).TemplateName,customer.Name,customer.DeliveryEmail,customer.shippingContactNumber, customer.OrderNumber, customer.SlotDate.ToString("dd MMM yyyy"), new DateTime(customer.SlotFromTime.Ticks).ToString("hh mm tt") + " to " + new DateTime(customer.SlotToTime.Ticks).ToString("hh mm tt"));
+                var notificationMessage = MessageHelper.GetSMSMessage(NotificationEvent.OrderSuccess.ToString(), ((SMSTemplates)smsTemplateResponse.Results).TemplateName,customer.Name,customer.DeliveryEmail,customer.ShippingContactNumber, customer.OrderNumber, customer.SlotDate.ToString("dd MMM yyyy"), new DateTime(customer.SlotFromTime.Ticks).ToString("hh mm tt") + " to " + new DateTime(customer.SlotToTime.Ticks).ToString("hh mm tt"));
 
                 DatabaseResponse notificationResponse = await _configAccess.GetConfiguration(ConfiType.Notification.ToString());
 

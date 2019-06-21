@@ -92,5 +92,105 @@ namespace Core.DataAccess
                 _DataHelper.Dispose();
             }
         }
+
+
+        /// <summary>
+        /// Gets the customer detail by order.
+        /// </summary>
+        /// <param name="customerID">The customer identifier.</param>
+        /// <param name="orderID">The order identifier.</param>
+        /// <returns></returns>
+        public async Task<CustomerDetails> GetCustomerDetailByOrder(int customerID, int orderID)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                     new SqlParameter( "@OrderID",  SqlDbType.Int ),
+                     new SqlParameter( "@CustomerID",  SqlDbType.Int )
+
+                };
+
+                parameters[0].Value = orderID;
+
+                parameters[1].Value = customerID;
+
+                _DataHelper = new DataAccessHelper("Orders_GetCustomerOrderDetails", parameters, _configuration);
+
+                DataSet ds = new DataSet();
+
+                int result = await _DataHelper.RunAsync(ds);    // 105 / 102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                var customer = new CustomerDetails();
+
+                if (ds != null && ds.Tables[0] != null && ds.Tables[0].Rows.Count > 0)
+                {
+                    customer = (from model in ds.Tables[0].AsEnumerable()
+                                select new CustomerDetails()
+                                {
+                                    Name = model.Field<string>("Name"),
+                                    DeliveryEmail = model.Field<string>("DeliveryEmail"),
+                                    ToEmailList = model.Field<string>("ToEmailList"),
+                                    ReferralCode = model.Field<string>("ReferralCode"),
+                                    ShippingUnit = model.Field<string>("ShippingUnit"),
+                                    ShippingFloor = model.Field<string>("ShippingFloor"),
+                                    ShippingBuildingNumber = model.Field<string>("ShippingBuildingNumber"),
+                                    ShippingBuildingName = model.Field<string>("ShippingBuildingName"),
+                                    ShippingStreetName = model.Field<string>("ShippingStreetName"),
+                                    ShippingPostCode = model.Field<string>("ShippingPostCode"),
+                                    ShippingContactNumber = model.Field<string>("ShippingContactNumber"),
+                                    AlternateRecipientContact = model.Field<string>("AlternateRecipientContact"),
+                                    AlternateRecipientName = model.Field<string>("AlternateRecipientName"),
+                                    AlternateRecipientEmail = model.Field<string>("AlternateRecipientEmail"),
+                                    SlotDate = model.Field<DateTime>("SlotDate"),
+                                    SlotFromTime = model.Field<TimeSpan>("SlotFromTime"),
+                                    SlotToTime = model.Field<TimeSpan>("SlotToTime"),
+                                    OrderNumber = model.Field<string>("OrderNumber")
+                                }).FirstOrDefault();
+
+
+
+                    if (ds.Tables[1] != null && ds.Tables[1].Rows.Count > 0)
+                    {
+                        List<OrderNumber> orderNumbers = new List<OrderNumber>();
+
+                        orderNumbers = (from model in ds.Tables[1].AsEnumerable()
+                                        select new OrderNumber()
+                                        {
+                                            MobileNumber = model.Field<string>("MobileNumber"),
+                                            PlanMarketingName = model.Field<string>("PlanMarketingName"),
+                                            IsBuddyLine = model.Field<int>("IsBuddyLine"),
+                                            ApplicableSubscriptionFee = model.Field<double>("ApplicableSubscriptionFee"),
+                                            PricingDescription = model.Field<string>("PricingDescription")
+                                        }).ToList();
+
+
+                        customer.OrderedNumbers = orderNumbers;
+
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = customer };
+                }
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return customer;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
     }
 }

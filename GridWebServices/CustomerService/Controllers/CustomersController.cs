@@ -3162,5 +3162,80 @@ namespace CustomerService.Controllers
 
             }
         }
+
+        [HttpGet("LogOut")]
+        public async Task<IActionResult> LogOut([FromHeader(Name = "Grid-Authorization-Token")] string token)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+
+                AuthHelper helper = new AuthHelper(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
+
+                    int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+
+                   DatabaseResponse logOutResponse = await  _customerAccess.LogOut(customerID);
+
+                    if(logOutResponse.ResponseCode== (int)DbReturnValue.DeleteSuccess)
+                    {                       
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = true,
+                            Message = EnumExtensions.GetDescription(CommonErrors.SuccessfullyLoggedOut),
+                            IsDomainValidationErrors = false
+                        });
+                    }
+
+                   else
+                    {
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(CommonErrors.TokenNotExists),
+                            IsDomainValidationErrors = false
+                        });
+                    }
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
     }
 }
