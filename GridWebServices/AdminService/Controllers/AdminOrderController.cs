@@ -342,16 +342,23 @@ namespace AdminService.Controllers
                         {
                             var emailDetails = (EmailResponse)returnResponse.Results;
                             DatabaseResponse configResponse = new DatabaseResponse();
+                            DatabaseResponse tokenCreationResponse = new DatabaseResponse();
+                            string finalURL = string.Empty;
                             // Fetch the URL
                             if (emailDetails.VerificationStatus == 2)
-                                configResponse = ConfigHelper.GetValueByKey("Emailurl", _iconfiguration);
+                            {
+                                configResponse = await _adminOrderDataAccess.GetConfiguration("Emailurl");
+                                tokenCreationResponse = await _adminOrderDataAccess.CreateTokenForVerificationRequests(request.OrderID);
+                                var tokenCreation = (VerificationRequestResponse)tokenCreationResponse.Results;
+                                finalURL = configResponse.Results.ToString() + tokenCreation.RequestToken;
+                            }
                             //Sending message start
                             // Send email to customer email                            ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
                             DatabaseResponse registrationResponse = await _adminOrderDataAccess.GetEmailNotificationTemplate(emailDetails.VerificationStatus == 2 ? NotificationEvent.ICValidationReject.GetDescription() : NotificationEvent.ICValidationChange.GetDescription());
 
                             var notificationMessage = MessageHelper.GetMessage(emailDetails.Email, emailDetails.Name, emailDetails.VerificationStatus == 2 ? NotificationEvent.ICValidationReject.GetDescription() : NotificationEvent.ICValidationChange.GetDescription(),
                            ((EmailTemplate)registrationResponse.Results).TemplateName,
-                       _iconfiguration, configResponse.Results.ToString());
+                       _iconfiguration, finalURL);
                             var notificationResponse = await _adminOrderDataAccess.GetConfiguration(ConfiType.Notification.ToString());
 
 
