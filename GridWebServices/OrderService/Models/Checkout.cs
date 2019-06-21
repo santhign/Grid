@@ -95,25 +95,25 @@ namespace OrderService.Models
         public string OrderNumber { get; set; }
         public string ReferralCode { get; set; }
 
-        public string shippingUnit { get; set; }
+        public string ShippingUnit { get; set; }
 
-        public string shippingFloor { get; set; }
+        public string ShippingFloor { get; set; }
 
-        public string shippingBuildingNumber { get; set; }
+        public string ShippingBuildingNumber { get; set; }
 
-        public string shippingBuildingName { get; set; }
+        public string ShippingBuildingName { get; set; }
 
-        public string shippingStreetName { get; set; }
+        public string ShippingStreetName { get; set; }
 
-        public string shippingPostCode { get; set; }
+        public string ShippingPostCode { get; set; }
 
-        public string shippingContactNumber { get; set; }
+        public string ShippingContactNumber { get; set; }
 
-        public string alternateRecipientContact { get; set; }
+        public string AlternateRecipientContact { get; set; }
 
-        public string alternateRecipientName { get; set; }
+        public string AlternateRecipientName { get; set; }
 
-        public string alternateRecipientEmail { get; set; }
+        public string AlternateRecipientEmail { get; set; }
         public DateTime SlotDate { get; set; }
         public TimeSpan SlotFromTime { get; set; }
         public TimeSpan SlotToTime { get; set; }
@@ -122,11 +122,11 @@ namespace OrderService.Models
     }
     public class OrderNumber
     {
-        public string mobileNumber { get; set; }
+        public string MobileNumber { get; set; }
         public int IsBuddyLine { get; set; }
-        public string planMarketingName { get; set; }
+        public string PlanMarketingName { get; set; }
         public string PricingDescription { get; set; }
-        public double applicableSubscriptionFee { get; set; }    
+        public double ApplicableSubscriptionFee { get; set; }    
         
     }
     

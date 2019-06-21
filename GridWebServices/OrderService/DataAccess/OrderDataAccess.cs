@@ -3499,19 +3499,19 @@ namespace OrderService.DataAccess
                                           DeliveryEmail = model.Field<string>("DeliveryEmail"),
                                           ToEmailList = model.Field<string>("ToEmailList"),
                                           ReferralCode = model.Field<string>("ReferralCode"),
-                                          shippingUnit = model.Field<string>("shippingUnit"),
-                                          shippingFloor = model.Field<string>("shippingFloor"),
-                                          shippingBuildingNumber = model.Field<string>("shippingBuildingNumber"),
-                                          shippingBuildingName = model.Field<string>("shippingBuildingName"),
-                                          shippingStreetName = model.Field<string>("shippingStreetName"),
-                                          shippingPostCode = model.Field<string>("shippingPostCode"),
-                                          shippingContactNumber = model.Field<string>("shippingContactNumber"),
-                                          alternateRecipientContact = model.Field<string>("alternateRecipientContact"),
-                                          alternateRecipientName = model.Field<string>("alternateRecipientName"),
-                                          alternateRecipientEmail = model.Field<string>("alternateRecipientEmail"),
-                                          SlotDate  = model.Field<DateTime>("slotDate"),
-                                          SlotFromTime = model.Field<TimeSpan>("slotFromTime"),
-                                          SlotToTime = model.Field<TimeSpan>("slotToTime"),
+                                          ShippingUnit = model.Field<string>("ShippingUnit"),
+                                          ShippingFloor = model.Field<string>("ShippingFloor"),
+                                          ShippingBuildingNumber = model.Field<string>("ShippingBuildingNumber"),
+                                          ShippingBuildingName = model.Field<string>("ShippingBuildingName"),
+                                          ShippingStreetName = model.Field<string>("ShippingStreetName"),
+                                          ShippingPostCode = model.Field<string>("ShippingPostCode"),
+                                          ShippingContactNumber = model.Field<string>("ShippingContactNumber"),
+                                          AlternateRecipientContact = model.Field<string>("AlternateRecipientContact"),
+                                          AlternateRecipientName = model.Field<string>("AlternateRecipientName"),
+                                          AlternateRecipientEmail = model.Field<string>("AlternateRecipientEmail"),
+                                          SlotDate  = model.Field<DateTime>("SlotDate"),
+                                          SlotFromTime = model.Field<TimeSpan>("SlotFromTime"),
+                                          SlotToTime = model.Field<TimeSpan>("SlotToTime"),
                                           OrderNumber = model.Field<string>("OrderNumber")
                                       }).FirstOrDefault();
 
@@ -3524,10 +3524,10 @@ namespace OrderService.DataAccess
                         orderNumbers = (from model in ds.Tables[1].AsEnumerable()
                                     select new OrderNumber()
                                     {
-                                         mobileNumber = model.Field<string>("mobileNumber"),
-                                         planMarketingName = model.Field<string>("planMarketingName"),
+                                         MobileNumber = model.Field<string>("MobileNumber"),
+                                         PlanMarketingName = model.Field<string>("PlanMarketingName"),
                                          IsBuddyLine = model.Field<int>("IsBuddyLine"),
-                                         applicableSubscriptionFee = model.Field<double>("applicableSubscriptionFee"),                                         
+                                         ApplicableSubscriptionFee = model.Field<double>("ApplicableSubscriptionFee"),                                         
                                          PricingDescription = model.Field<string>("PricingDescription")
                                     }).ToList();
 
