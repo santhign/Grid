@@ -1790,5 +1790,37 @@ namespace CustomerService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+
+        public async Task<DatabaseResponse> LogOut(int CustomerID)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@CustomerID",  SqlDbType.NVarChar )
+                   
+                };
+
+                parameters[0].Value = CustomerID;
+
+                _DataHelper = new DataAccessHelper("Customer_DeleteTokenOnLogOut", parameters, _configuration);
+
+                int result = await _DataHelper.RunAsync();
+
+                return new DatabaseResponse { ResponseCode = result };
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
     }
 }

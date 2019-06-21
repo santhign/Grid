@@ -337,5 +337,9 @@ namespace Core.Enums
         [Description("User not exists")]
         UserNotExists = 79,
 
+        [EnumMember(Value = "SuccessfullyLoggedOut")]
+        [Description("Logged out successfully")]
+        SuccessfullyLoggedOut = 80,
+
     }
 }
