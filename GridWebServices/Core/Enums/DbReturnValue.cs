@@ -224,6 +224,14 @@ namespace Core.Enums
         [EnumMember(Value = "Linked buddy line is not active")]
         [Description("Linked buddy line is not active")]
         BuddyNotActive = 155,
+
+        [EnumMember(Value = "PendingBuddyLocked")]
+        [Description("PendingBuddyLocked")]
+        PendingBuddyLocked = 156,
+
+        [EnumMember(Value = "PendingBuddyUnLocked")]
+        [Description("PendingBuddyUnLocked")]
+        PendingBuddyUnLocked = 157,
     }
 }
 

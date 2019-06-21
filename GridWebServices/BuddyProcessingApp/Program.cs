@@ -86,58 +86,70 @@ namespace BuddyProcessingApp
                     {
                         foreach (int orderID in orderList)
                         {
-                            List<PendingBuddy> buddyListToProcess = new List<PendingBuddy>();
+                            DatabaseResponse  lockCheckResponse= await buddyDataAccess.CheckBuddyLocked(orderID, _connectionString);
 
-                            buddyListToProcess = pendingBuddyList.Where(buddy => buddy.OrderID == orderID).ToList();
+                            if(lockCheckResponse.ResponseCode==(int)DbReturnValue.PendingBuddyUnLocked)
+                            {
+                                List<PendingBuddy> buddyListToProcess = new List<PendingBuddy>();
 
-                            foreach (PendingBuddy buddy in buddyListToProcess)
-                            {  
-                                DatabaseResponse customerIDResponse = new DatabaseResponse();
+                                buddyListToProcess = pendingBuddyList.Where(buddy => buddy.OrderID == orderID).ToList();
 
-                                int customerID;
-
-                                customerIDResponse = await buddyDataAccess.GetCustomerIdFromOrderId(buddy.OrderID, _connectionString);
-
-                                if (customerIDResponse != null && customerIDResponse.Results != null)
+                                foreach (PendingBuddy buddy in buddyListToProcess)
                                 {
-                                    customerID = (int)customerIDResponse.Results;
+                                    int buddyToProcessCount = buddyListToProcess.Count;
 
-                                    BuddyCheckList buddyCheck = new BuddyCheckList { CustomerID = customerID, OrderID = buddy.OrderID, OrderSubscriberID = buddy.OrderSubscriberID, IsProcessed = buddy.IsProcessed, MobileNumber = buddy.MobileNumber };
+                                    DatabaseResponse customerIDResponse = new DatabaseResponse();
 
-                                    BuddyCheckList afterProcessing = await buddyHelper.ProcessBuddy(buddyCheck);
+                                    int customerID;
 
-                                    buddy.IsProcessed = afterProcessing.IsProcessed;
+                                    customerIDResponse = await buddyDataAccess.GetCustomerIdFromOrderId(buddy.OrderID, _connectionString);
+
+                                    if (customerIDResponse != null && customerIDResponse.Results != null)
+                                    {
+                                        customerID = (int)customerIDResponse.Results;
+
+                                        BuddyCheckList buddyCheck = new BuddyCheckList { CustomerID = customerID, OrderID = buddy.OrderID, OrderSubscriberID = buddy.OrderSubscriberID, IsProcessed = buddy.IsProcessed, MobileNumber = buddy.MobileNumber };
+
+                                        BuddyCheckList afterProcessing = await buddyHelper.ProcessBuddy(buddyCheck);
+
+                                        buddy.IsProcessed = afterProcessing.IsProcessed;
+                                    }
+
                                 }
 
-                             }
+                                List<PendingBuddy> unProcessedBuddies = buddyListToProcess.Where(b => b.IsProcessed == false).ToList();
 
-                            List<PendingBuddy> unProcessedBuddies = buddyListToProcess.Where(b => b.IsProcessed == false).ToList();
-                                         
-                            if (unProcessedBuddies != null && unProcessedBuddies.Count > 0)
-                            {
-                                List<PendingBuddy> processedBuddies = buddyListToProcess.Where(b => b.IsProcessed == true).ToList();
-
-                                foreach (PendingBuddy upBuddy in processedBuddies)
+                                if (unProcessedBuddies != null && unProcessedBuddies.Count > 0)
                                 {
-                                    DatabaseResponse upBuddyCreateResponse = await buddyDataAccess.UpdatePendingBuddyList(_connectionString,upBuddy);
-                                }                                
-                            }
-                            else
-                            {
-                                List<PendingBuddy> processedBuddies = buddyListToProcess.Where(b => b.IsProcessed == true).ToList();
+                                    List<PendingBuddy> processedBuddies = buddyListToProcess.Where(b => b.IsProcessed == true).ToList();
 
-                                foreach (PendingBuddy upBuddy in processedBuddies)
-                                {
-                                    DatabaseResponse upBuddyCreateResponse = await buddyDataAccess.UpdatePendingBuddyList(_connectionString, upBuddy);
+                                    foreach (PendingBuddy upBuddy in processedBuddies)
+                                    {
+                                        DatabaseResponse upBuddyCreateResponse = await buddyDataAccess.UpdatePendingBuddyList(_connectionString, upBuddy);
+                                    }
+
+
+                                   DatabaseResponse ublockResponse = await buddyDataAccess.UnLockPendingBuddy(unProcessedBuddies[0].OrderID, _connectionString);
+                                    
                                 }
+                                else
+                                {
+                                    List<PendingBuddy> processedBuddies = buddyListToProcess.Where(b => b.IsProcessed == true).ToList();
 
-                                DatabaseResponse removeProcessedResponse = await buddyDataAccess.RemoveProcessedBuddyList(_connectionString, buddyListToProcess[0].OrderID);
-                                
-                                DatabaseResponse customerIDResponse = await buddyDataAccess.GetCustomerIdFromOrderId(buddyListToProcess[0].OrderID, _connectionString);
+                                    foreach (PendingBuddy upBuddy in processedBuddies)
+                                    {
+                                        DatabaseResponse upBuddyCreateResponse = await buddyDataAccess.UpdatePendingBuddyList(_connectionString, upBuddy);
+                                    }
 
-                                string emailStatus = await buddyHelper.SendEmailNotification(((OrderCust)customerIDResponse.Results).CustomerID, buddyListToProcess[0].OrderID, Configuration);
+                                    DatabaseResponse removeProcessedResponse = await buddyDataAccess.RemoveProcessedBuddyList(_connectionString, buddyListToProcess[0].OrderID);
 
-                                int processed = await buddyHelper.ProcessOrderQueueMessage(buddyListToProcess[0].OrderID);
+                                    DatabaseResponse customerIDResponse = await buddyDataAccess.GetCustomerIdFromOrderId(buddyListToProcess[0].OrderID, _connectionString);
+
+                                    string emailStatus = await buddyHelper.SendEmailNotification(((OrderCust)customerIDResponse.Results).CustomerID, buddyListToProcess[0].OrderID, Configuration);
+
+                                    int processed = await buddyHelper.ProcessOrderQueueMessage(buddyListToProcess[0].OrderID);
+
+                                }
 
                             }
                         }

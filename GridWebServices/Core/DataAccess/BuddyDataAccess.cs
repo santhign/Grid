@@ -504,6 +504,81 @@ namespace Core.DataAccess
             }
 
         }
+
+
+        public async Task<DatabaseResponse> CheckBuddyLocked( int orderID, string connectionString)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@OrderID",  SqlDbType.Int )
+
+                };
+
+                parameters[0].Value = orderID;
+
+                _DataHelper = new DataAccessHelper("Order_CheckBuddyOrderLocked", parameters, connectionString);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync();    // 102 /156/ 157
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                response = new DatabaseResponse { ResponseCode = result };
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+
+        }
+
+        public async Task<DatabaseResponse> UnLockPendingBuddy(int orderID, string connectionString)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@OrderID",  SqlDbType.Int )
+
+                };
+
+                parameters[0].Value = orderID;
+
+                _DataHelper = new DataAccessHelper("Order_UnLockPendingBuddy", parameters, connectionString);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync();    // 102 / 157
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                response = new DatabaseResponse { ResponseCode = result };
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+
+        }
         
     }
 
