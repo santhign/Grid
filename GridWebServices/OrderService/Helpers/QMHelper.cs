@@ -142,6 +142,14 @@ namespace OrderService.Helpers
                             //  Action buddyProcessing = FinalBuddyProcessing;
 
                             int processed = await FinalBuddyProcessing();
+
+                            if(processed==1)
+                            {
+                                LogInfo.Information("Calling SendEmailNotification");
+                                string emailStatus = await SendEmailNotification(updateRequest.MPGSOrderID, ((OrderSource)sourceTyeResponse.Results).SourceID);
+                                LogInfo.Information("Email Send status for : " + emailStatus);
+
+                            }                          
                         }
 
                         else
@@ -150,14 +158,15 @@ namespace OrderService.Helpers
 
                             try
                             {
-
+                                LogInfo.Information("Calling SendEmailNotification");
                                 string emailStatus = await SendEmailNotification(updateRequest.MPGSOrderID, ((OrderSource)sourceTyeResponse.Results).SourceID);
                                 LogInfo.Information("Email Send status for : " + emailStatus);
                             }
 
                             catch(Exception ex)
                             {
-                                LogInfo.Information("Email Send failed ex");
+                                LogInfo.Information("Email Send failed");
+                                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
                             }
                            
 
