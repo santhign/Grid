@@ -274,8 +274,8 @@ namespace AdminService.Controllers
 
         }
 
-        [HttpGet("UpdateNRICDetails")]
-        public async Task<IActionResult> UpdateNRICDetails([FromHeader(Name = "Grid-Authorization-Token")] string token, NRICDetails request)
+        [HttpPost("UpdateNRICDetails")]
+        public async Task<IActionResult> UpdateNRICDetails([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromForm] NRICDetails request)
         {
             try
             {
@@ -350,6 +350,9 @@ namespace AdminService.Controllers
                             NameInNRIC = request.NameInNRIC,
                             DOB = request.DOB,
                             Expiry = request.Expiry,
+                            Remarks = request.Remarks,
+                            IDVerificationStatus = request.IDVerificationStatus,
+                            
                         };
 
                         if (request.FrontImage != null && request.BackImage != null)
@@ -406,11 +409,13 @@ namespace AdminService.Controllers
                             var emailDetails = (EmailResponse)returnResponse.Results;
                             DatabaseResponse configResponse = new DatabaseResponse();
                             DatabaseResponse tokenCreationResponse = new DatabaseResponse();
+                            
                             string finalURL = string.Empty;
                             // Fetch the URL
                             if (emailDetails.VerificationStatus == 2) // Rejected then token
                             {
-                                configResponse = await _adminOrderDataAccess.GetConfiguration("Emailurl");
+
+                                configResponse = ConfigHelper.GetValueByKey(ConfigKeys.NRICReUploadLink.GetDescription(), _iconfiguration);
                                 tokenCreationResponse = await _adminOrderDataAccess.CreateTokenForVerificationRequests(request.OrderID);
                                 var tokenCreation = (VerificationRequestResponse)tokenCreationResponse.Results;
                                 finalURL = configResponse.Results.ToString() + tokenCreation.RequestToken;

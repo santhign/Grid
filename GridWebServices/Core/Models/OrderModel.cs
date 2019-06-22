@@ -61,8 +61,7 @@ namespace Core.Models
         public DateTime? Expiry { get; set; }
         public string BackImage { get; set; }
         public string FrontImage { get; set; }
-        public string Remarks { get; set; }
-        public int? AdminUserID { get; set; }
+        public string Remarks { get; set; }       
         
     }
 
@@ -78,8 +77,7 @@ namespace Core.Models
         public DateTime? Expiry { get; set; }
         public IFormFile BackImage { get; set; }
         public IFormFile FrontImage { get; set; }
-        public string Remarks { get; set; }
-        public int? AdminUserID { get; set; }
+        public string Remarks { get; set; }        
 
     }
 

@@ -58,6 +58,10 @@ namespace Core.Enums
         [Description("MQConsoleInterval")]
         MQConsoleInterval = 6,
 
+        [EnumMember(Value = "NRICReUploadLink")]
+        [Description("NRICReUploadLink")]
+        NRICReUploadLink = 7,
+
     }
 
     public enum OrderStatus
