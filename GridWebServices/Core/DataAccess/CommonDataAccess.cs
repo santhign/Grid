@@ -401,7 +401,7 @@ namespace Core.DataAccess
             }
         }
 
-        public async Task<DatabaseResponse> UpdateNRICDetails(int adminUserId, int verificationStatus, NRICDetailsRequest request)
+        public async Task<DatabaseResponse> UpdateNRICDetails(int ? adminUserId, int verificationStatus, NRICDetailsRequest request)
         {
             try
             {

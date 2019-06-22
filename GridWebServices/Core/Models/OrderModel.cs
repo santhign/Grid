@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -63,6 +64,23 @@ namespace Core.Models
         public string Remarks { get; set; }
         public int? AdminUserID { get; set; }
         
+    }
+
+    public class NRICDetails
+    {
+        public int OrderID { get; set; }
+        public string IDVerificationStatus { get; set; }
+        public string IdentityCardNumber { get; set; }
+        public string IdentityCardType { get; set; }
+        public string Nationality { get; set; }
+        public string NameInNRIC { get; set; }
+        public DateTime? DOB { get; set; }
+        public DateTime? Expiry { get; set; }
+        public IFormFile BackImage { get; set; }
+        public IFormFile FrontImage { get; set; }
+        public string Remarks { get; set; }
+        public int? AdminUserID { get; set; }
+
     }
 
     public class EmailResponse

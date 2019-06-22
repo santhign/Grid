@@ -390,7 +390,7 @@ namespace AdminService.DataAccess
                 parameters[0].Value = orderId;
 
 
-                _DataHelper = new DataAccessHelper(DbObjectNames.Orders_IDVerificationCapture, parameters, _configuration);
+                _DataHelper = new DataAccessHelper(DbObjectNames.Orders_UpdateIDVerificationRequests, parameters, _configuration);
                 DataTable dt = new DataTable();
 
                 var result = await _DataHelper.RunAsync(dt);

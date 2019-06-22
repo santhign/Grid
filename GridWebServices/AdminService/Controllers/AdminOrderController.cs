@@ -15,6 +15,8 @@ using Microsoft.Extensions.Configuration;
 using AdminService.DataAccess.Interfaces;
 using InfrastructureService.MessageQueue;
 using Newtonsoft.Json;
+using Core.DataAccess;
+using System.IO;
 
 namespace AdminService.Controllers
 {
@@ -203,8 +205,8 @@ namespace AdminService.Controllers
                         }
 
 
-
-                        var orderList = await _adminOrderDataAccess.GetOrderDetails(orderID);
+                        CommonDataAccess commonData = new CommonDataAccess(_iconfiguration);
+                        var orderList = await commonData.GetOrderDetails(orderID);
 
                         if (orderList == null || orderList.OrderID == 0)
                         {
@@ -273,7 +275,7 @@ namespace AdminService.Controllers
         }
 
         [HttpGet("UpdateNRICDetails")]
-        public async Task<IActionResult> UpdateNRICDetails([FromHeader(Name = "Grid-Authorization-Token")] string token,  NRICDetailsRequest request)
+        public async Task<IActionResult> UpdateNRICDetails([FromHeader(Name = "Grid-Authorization-Token")] string token,  NRICDetails request)
         {
             try
             {
@@ -336,7 +338,68 @@ namespace AdminService.Controllers
                         }
 
                         var authToken = (AuthTokenResponse)tokenAuthResponse.Results;
-                        var returnResponse = await _adminOrderDataAccess.UpdateNRICDetails(authToken.CustomerID, deliveryStatusNumber,request);
+                        MiscHelper configHelper = new MiscHelper();                        
+                        CommonDataAccess _commonDataAccess = new CommonDataAccess(_iconfiguration);
+
+                        NRICDetailsRequest personalDetails = new NRICDetailsRequest
+                        {
+                            OrderID = request.OrderID,
+                            IdentityCardNumber = request.IdentityCardNumber,
+                            IdentityCardType = request.IdentityCardType,
+                            Nationality = request.Nationality,
+                            NameInNRIC = request.NameInNRIC,
+                            DOB = request.DOB,
+                            Expiry = request.Expiry,
+                        };
+
+                        if (request.FrontImage != null && request.BackImage != null)
+                        {
+
+                            DatabaseResponse awsConfigResponse = await _commonDataAccess.GetConfiguration(ConfiType.AWS.ToString());
+
+                            if (awsConfigResponse != null && awsConfigResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                            {
+                                GridAWSS3Config awsConfig = configHelper.GetGridAwsConfig((List<Dictionary<string, string>>)awsConfigResponse.Results);
+
+                                AmazonS3 s3Helper = new AmazonS3(awsConfig);
+
+                                string fileNameFront = request.IdentityCardNumber.Substring(1, request.IdentityCardNumber.Length - 2) + 
+                                    "_Front_" + DateTime.Now.ToString("yyMMddhhmmss") + Path.GetExtension(request.FrontImage.FileName); //Grid_IDNUMBER_yyyymmddhhmmss.extension
+
+                                UploadResponse s3UploadResponse = await s3Helper.UploadFile(request.FrontImage, fileNameFront);
+
+                                if (s3UploadResponse.HasSucceed)
+                                {
+                                    personalDetails.FrontImage = awsConfig.AWSEndPoint + s3UploadResponse.FileName;
+                                }
+                                else
+                                {
+                                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.S3UploadFailed));
+                                }
+
+                                string fileNameBack = request.IdentityCardNumber.Substring(1, request.IdentityCardNumber.Length - 2) + "_Back_" + DateTime.Now.ToString("yyMMddhhmmss") 
+                                    + Path.GetExtension(request.BackImage.FileName); //Grid_IDNUMBER_yyyymmddhhmmss.extension
+
+                                s3UploadResponse = await s3Helper.UploadFile(request.BackImage, fileNameBack);
+
+                                if (s3UploadResponse.HasSucceed)
+                                {
+                                    personalDetails.BackImage = awsConfig.AWSEndPoint + s3UploadResponse.FileName;
+                                }
+                                else
+                                {
+                                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.S3UploadFailed));
+                                }
+                            }
+                            else
+                            {
+                                // unable to get aws config
+                                LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.FailedToGetConfiguration));
+
+                            }
+                        }
+
+                        var returnResponse = await _commonDataAccess.UpdateNRICDetails(authToken.CustomerID, deliveryStatusNumber, personalDetails);
 
                         if (returnResponse.ResponseCode == (int)DbReturnValue.UpdateSuccessSendEmail)
                         {
@@ -358,7 +421,7 @@ namespace AdminService.Controllers
 
                             var notificationMessage = MessageHelper.GetMessage(emailDetails.Email, emailDetails.Name, emailDetails.VerificationStatus == 2 ? NotificationEvent.ICValidationReject.GetDescription() : NotificationEvent.ICValidationChange.GetDescription(),
                            ((EmailTemplate)registrationResponse.Results).TemplateName,
-                       _iconfiguration, finalURL);
+                       _iconfiguration, string.IsNullOrWhiteSpace(finalURL) ? null :finalURL); // Reject param1 will be present else in case accepted + Update param1 will be null
                             var notificationResponse = await _adminOrderDataAccess.GetConfiguration(ConfiType.Notification.ToString());
 
 
@@ -408,7 +471,7 @@ namespace AdminService.Controllers
                             {
                                 HasSucceeded = false,
                                 Message = EnumExtensions.GetDescription(DbReturnValue.UpdationFailed),
-                                IsDomainValidationErrors = true
+                                IsDomainValidationErrors = false
                             });
                         }
 

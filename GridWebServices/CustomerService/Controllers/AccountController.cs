@@ -432,9 +432,9 @@ namespace CustomerService.Controllers
             }
         }
 
-        [Route("updateorderpersonalIDdetails")]
+        [Route("UpdateNRICIDDetails")]
         [HttpPost, DisableRequestSizeLimit]
-        public async Task<IActionResult> UpdateOrderPersonalIDDetails([FromHeader(Name = "Grid-General-Token")] string Token, [FromForm] UpdateOrderPersonalIDDetailsPublicRequest request)
+        public async Task<IActionResult> UpdateNRICIDDetails([FromHeader(Name = "Grid-General-Token")] string Token, [FromForm] UpdateOrderPersonalIDDetailsPublicRequest request)
         {
             try
             {
@@ -523,7 +523,7 @@ namespace CustomerService.Controllers
 
                             if (s3UploadResponse.HasSucceed)
                             {
-                                personalDetails.FrontImage = awsConfig.AWSEndPoint + s3UploadResponse.FileName;
+                                personalDetails.BackImage = awsConfig.AWSEndPoint + s3UploadResponse.FileName;
                             }
                             else
                             {
@@ -573,7 +573,7 @@ namespace CustomerService.Controllers
                     }
                     else
                     {
-                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.));
+                        LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.UpdationFailed));
                         return Ok(new OperationResponse
                         {
                             HasSucceeded = false,
