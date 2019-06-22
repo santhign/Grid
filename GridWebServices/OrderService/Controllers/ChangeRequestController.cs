@@ -779,8 +779,8 @@ namespace OrderService.Controllers
 
                             var notificationMessage = MessageHelper.GetSMSMessage(NotificationEvent.RescheduleDelivery.ToString(),
                                 ((SMSTemplates)smsTemplateResponse.Results).TemplateName, updateRequest.OrderNumber,
-                                 updateRequest.ScheduledDate.Value.ToString("dd MMM yyyy"),
-                                new DateTime(updateRequest.DeliveryTime.Value.Ticks).ToString("hh mm tt"));
+                                 updateRequest.ScheduledDate != null ? updateRequest.ScheduledDate.Value.ToString("dd MMM yyyy") : null,
+                                updateRequest.DeliveryTime != null ? new DateTime(updateRequest.DeliveryTime.Value.Ticks).ToString("hh mm tt") : null);
 
                             DatabaseResponse notificationResponse = await _configAccess.GetConfiguration(ConfiType.Notification.ToString());
 
