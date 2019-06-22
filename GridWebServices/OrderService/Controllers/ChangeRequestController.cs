@@ -104,9 +104,9 @@ namespace OrderService.Controllers
                         MessageBodyForCR msgBody = new MessageBodyForCR();
                         Dictionary<string, string> attribute = new Dictionary<string, string>();
                         string topicName = string.Empty, subject = string.Empty;
-                        
+
                         try
-                        {                            
+                        {
                             msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(removeVASResponse.ChangeRequestID);
                             if (msgBody == null || msgBody.ChangeRequestID == 0)
                             {
@@ -173,7 +173,7 @@ namespace OrderService.Controllers
                                 Exception = new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)
 
 
-                            };                           
+                            };
 
                             await _messageQueueDataAccess.InsertMessageInMessageQueueRequestException(queueRequest);
                         }
@@ -291,7 +291,7 @@ namespace OrderService.Controllers
 
                             if (string.IsNullOrWhiteSpace(topicName))
                             {
-                                throw new NullReferenceException("topicName is null for ChangeRequest (" +  buyVASResponse.ChangeRequestID + ") for BuyVAS Request Service API");
+                                throw new NullReferenceException("topicName is null for ChangeRequest (" + buyVASResponse.ChangeRequestID + ") for BuyVAS Request Service API");
                             }
                             msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(buyVASResponse.ChangeRequestID);
 
@@ -772,15 +772,17 @@ namespace OrderService.Controllers
                         //var serviceFeeListWithoutZeroValue = serviceFeeList.Where(x => x != 0);
                         if (serviceFeeList.AsQueryable().Sum() == 0)
                         {
+                            var msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(updateRequest.ChangeRequestId);
                             //Start
                             ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
 
                             DatabaseResponse smsTemplateResponse = await _configAccess.GetSMSNotificationTemplate(NotificationEvent.RescheduleDelivery.ToString());
 
                             var notificationMessage = MessageHelper.GetSMSMessage(NotificationEvent.RescheduleDelivery.ToString(),
-                                ((SMSTemplates)smsTemplateResponse.Results).TemplateName, updateRequest.OrderNumber,
-                                 updateRequest.ScheduledDate != null ? updateRequest.ScheduledDate.Value.ToString("dd MMM yyyy") : null,
-                                updateRequest.DeliveryTime != null ? new DateTime(updateRequest.DeliveryTime.Value.Ticks).ToString("hh mm tt") : null);
+                                ((SMSTemplates)smsTemplateResponse.Results).TemplateName, msgBody.OrderNumber,
+                                 msgBody.SlotDate != null ? msgBody.SlotDate.Value.ToString("dd MMM yyyy") : null,
+                                msgBody.SlotFromTime != null && msgBody.SlotToTime != null ? new DateTime(msgBody.SlotToTime.Value.Ticks).ToString("hh mm tt") +
+                                " to " + new DateTime(msgBody.SlotToTime.Value.Ticks).ToString("hh mm tt") : null);
 
                             DatabaseResponse notificationResponse = await _configAccess.GetConfiguration(ConfiType.Notification.ToString());
 
@@ -794,93 +796,92 @@ namespace OrderService.Controllers
 
                             LogInfo.Information("SMS send status : " + status + " " + JsonConvert.SerializeObject(notificationMessage));
                             //End
-                            var details = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(updateRequest.ChangeRequestId);
 
-                            if (details != null)
+
+
+                            //MessageBodyForCR msgBody = new MessageBodyForCR();
+
+                            string topicName = string.Empty, pushResult = string.Empty;
+
+                            try
                             {
-                                MessageBodyForCR msgBody = new MessageBodyForCR();
+                                Dictionary<string, string> attribute = new Dictionary<string, string>();
 
-                                string topicName = string.Empty, pushResult = string.Empty;
-
-                                try
+                                //msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(details.ChangeRequestID);
+                                if (msgBody == null || msgBody.ChangeRequestID == 0)
                                 {
-                                    Dictionary<string, string> attribute = new Dictionary<string, string>();
-
-                                    msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(details.ChangeRequestID);
-                                    if (msgBody == null || msgBody.ChangeRequestID == 0)
-                                    {
-                                        throw new NullReferenceException("message body is null for ChangeRequest (" + details.ChangeRequestID + ") for ChangeSIM in UpdateCheckout Response Request Service API");
-                                    }
-                                    //if (details.RequestTypeID == (int)Core.Enums.RequestType.ReplaceSIM)
-                                    //{
-                                    topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration).Results.ToString().Trim();
-                                    if (string.IsNullOrWhiteSpace(topicName))
-                                    {
-                                        throw new NullReferenceException("topicName is null for ChangeRequest (" + details.ChangeRequestID + ") for ChangeSIM in UpdateCheckout Response Request Service API");
-                                    }
-                                    attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.ReplaceSIM.GetDescription());
-                                    pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
-                                    //}
-                                    if (pushResult.Trim().ToUpper() == "OK")
-                                    {
-                                        MessageQueueRequest queueRequest = new MessageQueueRequest
-                                        {
-                                            Source = Source.ChangeRequest,
-                                            NumberOfRetries = 1,
-                                            SNSTopic = topicName,
-                                            CreatedOn = DateTime.Now,
-                                            LastTriedOn = DateTime.Now,
-                                            PublishedOn = DateTime.Now,
-                                            MessageAttribute = Core.Enums.RequestType.ReplaceSIM.GetDescription(),
-                                            MessageBody = JsonConvert.SerializeObject(msgBody),
-                                            Status = 1
-                                        };
-                                        await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
-                                    }
-                                    else
-                                    {
-                                        MessageQueueRequest queueRequest = new MessageQueueRequest
-                                        {
-                                            Source = Source.ChangeRequest,
-                                            NumberOfRetries = 1,
-                                            SNSTopic = topicName,
-                                            CreatedOn = DateTime.Now,
-                                            LastTriedOn = DateTime.Now,
-                                            PublishedOn = DateTime.Now,
-                                            MessageAttribute = Core.Enums.RequestType.ReplaceSIM.GetDescription(),
-                                            MessageBody = JsonConvert.SerializeObject(msgBody),
-                                            Status = 0
-                                        };
-                                        await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
-                                    }
-
+                                    throw new NullReferenceException("message body is null for ChangeRequest (" + msgBody.ChangeRequestID + ") for ChangeSIM in UpdateCheckout Response Request Service API");
                                 }
-                                catch (Exception ex)
+                                //if (details.RequestTypeID == (int)Core.Enums.RequestType.ReplaceSIM)
+                                //{
+                                topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration).Results.ToString().Trim();
+                                if (string.IsNullOrWhiteSpace(topicName))
                                 {
-
-                                    LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-                                    MessageQueueRequestException queueRequest = new MessageQueueRequestException
+                                    throw new NullReferenceException("topicName is null for ChangeRequest (" + msgBody.ChangeRequestID + ") for ChangeSIM in UpdateCheckout Response Request Service API");
+                                }
+                                attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.ReplaceSIM.GetDescription());
+                                pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
+                                //}
+                                if (pushResult.Trim().ToUpper() == "OK")
+                                {
+                                    MessageQueueRequest queueRequest = new MessageQueueRequest
                                     {
                                         Source = Source.ChangeRequest,
                                         NumberOfRetries = 1,
-                                        SNSTopic = string.IsNullOrWhiteSpace(topicName) ? null : topicName,
+                                        SNSTopic = topicName,
                                         CreatedOn = DateTime.Now,
                                         LastTriedOn = DateTime.Now,
                                         PublishedOn = DateTime.Now,
-                                        MessageAttribute = Core.Enums.RequestType.ReplaceSIM.GetDescription().ToString(),
-                                        MessageBody = msgBody != null ? JsonConvert.SerializeObject(msgBody) : null,
-                                        Status = 0,
-                                        Remark = "Error Occured in ReplaceSIM from UpdateCheckoutResponse",
-                                        Exception = new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)
-
-
+                                        MessageAttribute = Core.Enums.RequestType.ReplaceSIM.GetDescription(),
+                                        MessageBody = JsonConvert.SerializeObject(msgBody),
+                                        Status = 1
                                     };
-
-
-                                    await _messageQueueDataAccess.InsertMessageInMessageQueueRequestException(queueRequest);
+                                    await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                                }
+                                else
+                                {
+                                    MessageQueueRequest queueRequest = new MessageQueueRequest
+                                    {
+                                        Source = Source.ChangeRequest,
+                                        NumberOfRetries = 1,
+                                        SNSTopic = topicName,
+                                        CreatedOn = DateTime.Now,
+                                        LastTriedOn = DateTime.Now,
+                                        PublishedOn = DateTime.Now,
+                                        MessageAttribute = Core.Enums.RequestType.ReplaceSIM.GetDescription(),
+                                        MessageBody = JsonConvert.SerializeObject(msgBody),
+                                        Status = 0
+                                    };
+                                    await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
                                 }
 
                             }
+                            catch (Exception ex)
+                            {
+
+                                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                                MessageQueueRequestException queueRequest = new MessageQueueRequestException
+                                {
+                                    Source = Source.ChangeRequest,
+                                    NumberOfRetries = 1,
+                                    SNSTopic = string.IsNullOrWhiteSpace(topicName) ? null : topicName,
+                                    CreatedOn = DateTime.Now,
+                                    LastTriedOn = DateTime.Now,
+                                    PublishedOn = DateTime.Now,
+                                    MessageAttribute = Core.Enums.RequestType.ReplaceSIM.GetDescription().ToString(),
+                                    MessageBody = msgBody != null ? JsonConvert.SerializeObject(msgBody) : null,
+                                    Status = 0,
+                                    Remark = "Error Occured in ReplaceSIM from UpdateCheckoutResponse",
+                                    Exception = new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)
+
+
+                                };
+
+
+                                await _messageQueueDataAccess.InsertMessageInMessageQueueRequestException(queueRequest);
+                            }
+
+
                         }
 
                         return Ok(new ServerResponse
@@ -994,9 +995,9 @@ namespace OrderService.Controllers
                 {
                     var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
 
-                    var statusResponse = await _changeRequestDataAccess.TerminationOrSuspensionRequest(aTokenResp.CustomerID, mobileNumber, 
+                    var statusResponse = await _changeRequestDataAccess.TerminationOrSuspensionRequest(aTokenResp.CustomerID, mobileNumber,
                         Core.Enums.RequestType.Suspend.GetDescription(), remark);
-                    var TorSresponse = (TerminationOrSuspensionResponse) statusResponse.Results;
+                    var TorSresponse = (TerminationOrSuspensionResponse)statusResponse.Results;
                     if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                     {
                         MessageBodyForCR msgBody = new MessageBodyForCR();
@@ -1017,7 +1018,7 @@ namespace OrderService.Controllers
                             }
 
                             attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.Suspend.GetDescription());
-                                var pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
+                            var pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
                             if (pushResult.Trim().ToUpper() == "OK")
                             {
 
@@ -1034,7 +1035,7 @@ namespace OrderService.Controllers
                                     MessageBody = JsonConvert.SerializeObject(msgBody),
                                     Status = 1
                                 };
-                                
+
                                 await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
                             }
                             else
@@ -1051,7 +1052,7 @@ namespace OrderService.Controllers
                                     MessageBody = JsonConvert.SerializeObject(msgBody),
                                     Status = 0
                                 };
-                                
+
                                 await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
                             }
                         }
@@ -1119,7 +1120,7 @@ namespace OrderService.Controllers
                         });
                     }
 
-                }                
+                }
                 else
                 {
                     // token auth failure
@@ -1486,7 +1487,7 @@ namespace OrderService.Controllers
                         });
                     }
 
-                }                
+                }
                 else
                 {
                     // token auth failure
@@ -1744,7 +1745,7 @@ namespace OrderService.Controllers
                         MessageBodyForCR msgBody = new MessageBodyForCR();
                         Dictionary<string, string> attribute = new Dictionary<string, string>();
                         string topicName = string.Empty, subject = string.Empty;
-                        
+
                         try
                         {
                             msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(removeVASResponse.ChangeRequestID);
@@ -1813,7 +1814,7 @@ namespace OrderService.Controllers
                                 Exception = ex.StackTrace.ToString()
 
 
-                            };                            
+                            };
                             await _messageQueueDataAccess.InsertMessageInMessageQueueRequestException(queueRequest);
                         }
 
@@ -2157,7 +2158,7 @@ namespace OrderService.Controllers
                 else
                 {
                     // token auth failure
-                   LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+                    LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
 
                     return Ok(new OperationResponse
                     {
@@ -2262,7 +2263,7 @@ namespace OrderService.Controllers
                 else
                 {
                     // token auth failure
-                   LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+                    LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
 
                     return Ok(new OperationResponse
                     {
@@ -2362,7 +2363,7 @@ namespace OrderService.Controllers
                 else
                 {
                     // token auth failure
-                   LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+                    LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
 
                     return Ok(new OperationResponse
                     {
@@ -2422,7 +2423,7 @@ namespace OrderService.Controllers
                             });
                         }
 
-                        
+
 
                         DatabaseResponse LOAResponse = await _changeRequestDataAccess.CR_RemoveLOADetails(ChangeRequestID);
 
@@ -2520,7 +2521,7 @@ namespace OrderService.Controllers
                 AuthHelper helper = new AuthHelper(_iconfiguration);
 
                 DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.CR_loa_update);
-                
+
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {
                     if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)

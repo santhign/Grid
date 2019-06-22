@@ -5213,20 +5213,43 @@ namespace OrderService.Controllers
                         var confirmOrder = await _orderAccess.ProcessRescheduleDelivery(order_Reschedule.AccountInvoiceID);
 
                         var chargesExists = await _orderAccess.CheckRescheduleDeliveryCharges(order_Reschedule.AccountInvoiceID);
-                        var orderDetailsForSMS = await _orderAccess.GetOrderDetails(detailsrequest.OrderID);
-                        var orderObjectForSMS = (Order)orderDetailsForSMS.Results;
+                        //var orderDetailsForSMS = await _orderAccess.GetOrderDetails(detailsrequest.OrderID);
+                        //var orderObjectForSMS = (Order)orderDetailsForSMS.Results;
                         if (confirmOrder.ResponseCode == (int)DbReturnValue.CreateSuccess)
                         {
                             //Send SMS
+                            
+                            string orderNumberForSMS = string.Empty;
+                            DateTime ? SlotDateForSMS;
+                            TimeSpan ? SlotFromTime, SlotToTime;
+                            if (detailsrequest.OrderType == (int)CheckOutType.Orders)
+                            {
+                                DatabaseResponse orderMqResponseForSMS = new DatabaseResponse();
+                                orderMqResponseForSMS = await _messageQueueDataAccess.GetOrderMessageQueueBody(detailsrequest.OrderID);
+                                var orderObject = (OrderQM)orderMqResponseForSMS.Results;
+                                orderNumberForSMS = orderObject.orderNumber;
+                                SlotDateForSMS = orderObject.slotDate;
+                                SlotFromTime = orderObject.slotFromTime;
+                                    SlotToTime = orderObject.slotToTime;
+                            }
+                            else
+                            {
+                                var messageForSMS = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(detailsrequest.OrderID);
+                                //var orderObject = (OrderQM)orderMqResponseForSMS.Results;
+                                orderNumberForSMS = messageForSMS.OrderNumber;
+                                SlotDateForSMS = messageForSMS.SlotDate;
+                                SlotFromTime = messageForSMS.SlotFromTime;
+                                SlotToTime = messageForSMS.SlotToTime;
+                            }
                             ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
 
                             DatabaseResponse smsTemplateResponse = await _configAccess.GetSMSNotificationTemplate(NotificationEvent.RescheduleDelivery.ToString());
 
                             var notificationMessage = MessageHelper.GetSMSMessage(NotificationEvent.RescheduleDelivery.ToString(),
-                                ((SMSTemplates)smsTemplateResponse.Results).TemplateName, orderObjectForSMS.OrderNumber,
-                                 orderObjectForSMS.SlotDate.Value.ToString("dd MMM yyyy"), 
-                                new DateTime(orderObjectForSMS.SlotFromTime.Value.Ticks).ToString("hh mm tt") + 
-                                " to " + new DateTime(orderObjectForSMS.SlotToTime.Value.Ticks).ToString("hh mm tt"));
+                                ((SMSTemplates)smsTemplateResponse.Results).TemplateName, orderNumberForSMS,
+                                 SlotDateForSMS != null ? SlotDateForSMS.Value.ToString("dd MMM yyyy") : null,
+                                SlotFromTime != null && SlotToTime != null ? new DateTime(SlotFromTime.Value.Ticks).ToString("hh mm tt") +
+                                " to " + new DateTime(SlotToTime.Value.Ticks).ToString("hh mm tt") : null);
 
                             DatabaseResponse notificationResponse = await _configAccess.GetConfiguration(ConfiType.Notification.ToString());
 
@@ -5244,10 +5267,14 @@ namespace OrderService.Controllers
                             {
                                 //Start - Send MQ if Successfully Reschedule delivery Order processed with payment.
                                 DatabaseResponse orderMqResponse = new DatabaseResponse();
-
-                                orderMqResponse = await _messageQueueDataAccess.GetOrderMessageQueueBody(detailsrequest.OrderID);
-
-                                OrderQM orderDetails = new OrderQM();
+                                if (detailsrequest.OrderType == (int)CheckOutType.Orders)
+                                {
+                                    orderMqResponse = await _messageQueueDataAccess.GetOrderMessageQueueBody(detailsrequest.OrderID);
+                                }
+                                else
+                                {
+                                    orderMqResponse.Results = (MessageBodyForCR)await _messageQueueDataAccess.GetMessageBodyByChangeRequest(detailsrequest.OrderID);
+                                }                               
 
                                 string topicName = string.Empty;
 
@@ -5255,7 +5282,8 @@ namespace OrderService.Controllers
 
                                 if (orderMqResponse != null && orderMqResponse.Results != null)
                                 {
-                                    orderDetails = (OrderQM)orderMqResponse.Results;
+
+                                    object orderDetails = orderMqResponse.Results;
 
                                     try
                                     {
