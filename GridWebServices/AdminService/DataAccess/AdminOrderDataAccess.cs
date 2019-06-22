@@ -94,7 +94,7 @@ namespace AdminService.DataAccess
             {
                 _DataHelper.Dispose();
             }
-        }      
+        }
 
         /// <summary>
         /// Gets the email notification template.
@@ -378,54 +378,55 @@ namespace AdminService.DataAccess
             }
         }
 
-        public async Task<DatabaseResponse> UpdateTokenForVerificationRequests(int orderId)
-        {
-            try
-            {
-                SqlParameter[] parameters =
-                {
-                    new SqlParameter( "@OrderID",  SqlDbType.Int )
-                };
+        //    public async Task<DatabaseResponse> UpdateTokenForVerificationRequests(int orderId)
+        //    {
+        //        try
+        //        {
+        //            SqlParameter[] parameters =
+        //            {
+        //                new SqlParameter( "@OrderID",  SqlDbType.Int )
+        //            };
 
-                parameters[0].Value = orderId;
+        //            parameters[0].Value = orderId;
 
 
-                _DataHelper = new DataAccessHelper(DbObjectNames.Orders_UpdateIDVerificationRequests, parameters, _configuration);
-                DataTable dt = new DataTable();
+        //            _DataHelper = new DataAccessHelper(DbObjectNames.Orders_UpdateIDVerificationRequests, parameters, _configuration);
+        //            DataTable dt = new DataTable();
 
-                var result = await _DataHelper.RunAsync(dt);
+        //            var result = await _DataHelper.RunAsync(dt);
 
-                if (result != (int)DbReturnValue.UpdateSuccess && result != (int)DbReturnValue.UpdateSuccessSendEmail)
-                    return new DatabaseResponse() { ResponseCode = result };
+        //            if (result != (int)DbReturnValue.UpdateSuccess && result != (int)DbReturnValue.UpdateSuccessSendEmail)
+        //                return new DatabaseResponse() { ResponseCode = result };
 
-                DatabaseResponse response = new DatabaseResponse();
-                VerificationRequestResponse requestDetails = new VerificationRequestResponse();
-                response.ResponseCode = result;
-                if (dt.Rows.Count > 0)
-                {
-                    requestDetails = (from model in dt.AsEnumerable()
-                                      select new VerificationRequestResponse()
-                                      {
-                                          VerificationRequestID = model.Field<int>("VerificationRequestID"),
-                                          OrderID = model.Field<int>("OrderID"),
-                                          RequestToken = model.Field<string>("RequestToken"),
-                                          CreatedOn = model.Field<DateTime>("CreatedOn"),
-                                          IsUsed = model.Field<int>("IsUsed")
-                                      }).FirstOrDefault();
-                }
-                response.Results = requestDetails;
-                return response;
-            }
-            catch (Exception ex)
-            {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+        //            DatabaseResponse response = new DatabaseResponse();
+        //            VerificationRequestResponse requestDetails = new VerificationRequestResponse();
+        //            response.ResponseCode = result;
+        //            if (dt.Rows.Count > 0)
+        //            {
+        //                requestDetails = (from model in dt.AsEnumerable()
+        //                                  select new VerificationRequestResponse()
+        //                                  {
+        //                                      VerificationRequestID = model.Field<int>("VerificationRequestID"),
+        //                                      OrderID = model.Field<int>("OrderID"),
+        //                                      RequestToken = model.Field<string>("RequestToken"),
+        //                                      CreatedOn = model.Field<DateTime>("CreatedOn"),
+        //                                      IsUsed = model.Field<int>("IsUsed")
+        //                                  }).FirstOrDefault();
+        //            }
+        //            response.Results = requestDetails;
+        //            return response;
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
-                throw (ex);
-            }
-            finally
-            {
-                _DataHelper.Dispose();
-            }
-        }
+        //            throw (ex);
+        //        }
+        //        finally
+        //        {
+        //            _DataHelper.Dispose();
+        //        }
+        //    }
+
     }
 }

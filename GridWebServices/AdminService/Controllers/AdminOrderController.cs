@@ -86,9 +86,9 @@ namespace AdminService.Controllers
                                 });
                         }
                         int? deliveryStatusNumber = null;
-                        if(!string.IsNullOrWhiteSpace(deliveryStatus))
+                        if (!string.IsNullOrWhiteSpace(deliveryStatus))
                         {
-                            if(deliveryStatus.Trim().ToLower() == IDVerificationStatus.PendingVerification.GetDescription().Trim().ToLower())                            
+                            if (deliveryStatus.Trim().ToLower() == IDVerificationStatus.PendingVerification.GetDescription().Trim().ToLower())
                                 deliveryStatusNumber = 0;
                             else if (deliveryStatus.Trim().ToLower() == IDVerificationStatus.AcceptedVerification.GetDescription().Trim().ToLower())
                                 deliveryStatusNumber = 1;
@@ -96,7 +96,7 @@ namespace AdminService.Controllers
                                 deliveryStatusNumber = 2;
 
                         }
-                        
+
                         var orderList = await _adminOrderDataAccess.GetOrdersList(deliveryStatusNumber, fromDate, toDate);
 
                         if (orderList == null || orderList.Count == 0)
@@ -275,7 +275,7 @@ namespace AdminService.Controllers
         }
 
         [HttpGet("UpdateNRICDetails")]
-        public async Task<IActionResult> UpdateNRICDetails([FromHeader(Name = "Grid-Authorization-Token")] string token,  NRICDetails request)
+        public async Task<IActionResult> UpdateNRICDetails([FromHeader(Name = "Grid-Authorization-Token")] string token, NRICDetails request)
         {
             try
             {
@@ -338,7 +338,7 @@ namespace AdminService.Controllers
                         }
 
                         var authToken = (AuthTokenResponse)tokenAuthResponse.Results;
-                        MiscHelper configHelper = new MiscHelper();                        
+                        MiscHelper configHelper = new MiscHelper();
                         CommonDataAccess _commonDataAccess = new CommonDataAccess(_iconfiguration);
 
                         NRICDetailsRequest personalDetails = new NRICDetailsRequest
@@ -363,7 +363,7 @@ namespace AdminService.Controllers
 
                                 AmazonS3 s3Helper = new AmazonS3(awsConfig);
 
-                                string fileNameFront = request.IdentityCardNumber.Substring(1, request.IdentityCardNumber.Length - 2) + 
+                                string fileNameFront = request.IdentityCardNumber.Substring(1, request.IdentityCardNumber.Length - 2) +
                                     "_Front_" + DateTime.Now.ToString("yyMMddhhmmss") + Path.GetExtension(request.FrontImage.FileName); //Grid_IDNUMBER_yyyymmddhhmmss.extension
 
                                 UploadResponse s3UploadResponse = await s3Helper.UploadFile(request.FrontImage, fileNameFront);
@@ -377,7 +377,7 @@ namespace AdminService.Controllers
                                     LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.S3UploadFailed));
                                 }
 
-                                string fileNameBack = request.IdentityCardNumber.Substring(1, request.IdentityCardNumber.Length - 2) + "_Back_" + DateTime.Now.ToString("yyMMddhhmmss") 
+                                string fileNameBack = request.IdentityCardNumber.Substring(1, request.IdentityCardNumber.Length - 2) + "_Back_" + DateTime.Now.ToString("yyMMddhhmmss")
                                     + Path.GetExtension(request.BackImage.FileName); //Grid_IDNUMBER_yyyymmddhhmmss.extension
 
                                 s3UploadResponse = await s3Helper.UploadFile(request.BackImage, fileNameBack);
@@ -415,13 +415,18 @@ namespace AdminService.Controllers
                                 var tokenCreation = (VerificationRequestResponse)tokenCreationResponse.Results;
                                 finalURL = configResponse.Results.ToString() + tokenCreation.RequestToken;
                             }
+                            else
+                            {
+                                var result = await _commonDataAccess.UpdateTokenForVerificationRequests(request.OrderID);
+                            }
+
                             //Sending message start
                             // Send email to customer email                            ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
                             DatabaseResponse registrationResponse = await _adminOrderDataAccess.GetEmailNotificationTemplate(emailDetails.VerificationStatus == 2 ? NotificationEvent.ICValidationReject.GetDescription() : NotificationEvent.ICValidationChange.GetDescription());
 
                             var notificationMessage = MessageHelper.GetMessage(emailDetails.Email, emailDetails.Name, emailDetails.VerificationStatus == 2 ? NotificationEvent.ICValidationReject.GetDescription() : NotificationEvent.ICValidationChange.GetDescription(),
                            ((EmailTemplate)registrationResponse.Results).TemplateName,
-                       _iconfiguration, string.IsNullOrWhiteSpace(finalURL) ? null :finalURL); // Reject param1 will be present else in case accepted + Update param1 will be null
+                       _iconfiguration, string.IsNullOrWhiteSpace(finalURL) ? null : finalURL); // Reject param1 will be present else in case accepted + Update param1 will be null
                             var notificationResponse = await _adminOrderDataAccess.GetConfiguration(ConfiType.Notification.ToString());
 
 
@@ -456,6 +461,51 @@ namespace AdminService.Controllers
                         }
                         else if (returnResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
                         {
+                            var emailDetails = (EmailResponse)returnResponse.Results;
+                            DatabaseResponse configResponse = new DatabaseResponse();
+                            DatabaseResponse tokenCreationResponse = new DatabaseResponse();
+                            string finalURL = string.Empty;
+                            if (emailDetails.VerificationStatus == 2) // Rejected then token
+                            {
+                                configResponse = await _adminOrderDataAccess.GetConfiguration("Emailurl");
+                                tokenCreationResponse = await _adminOrderDataAccess.CreateTokenForVerificationRequests(request.OrderID);
+                                var tokenCreation = (VerificationRequestResponse)tokenCreationResponse.Results;
+                                finalURL = configResponse.Results.ToString() + tokenCreation.RequestToken;
+
+                                DatabaseResponse registrationResponse = await _adminOrderDataAccess.GetEmailNotificationTemplate(NotificationEvent.ICValidationReject.GetDescription());
+
+                                var notificationMessage = MessageHelper.GetMessage(emailDetails.Email, emailDetails.Name, NotificationEvent.ICValidationReject.GetDescription(),
+                               ((EmailTemplate)registrationResponse.Results).TemplateName,
+                           _iconfiguration, string.IsNullOrWhiteSpace(finalURL) ? null : finalURL); // Reject param1 will be present else in case accepted + Update param1 will be null
+                                var notificationResponse = await _adminOrderDataAccess.GetConfiguration(ConfiType.Notification.ToString());
+
+
+                                MiscHelper parser = new MiscHelper();
+                                var notificationConfig = parser.GetNotificationConfig((List<Dictionary<string, string>>)notificationResponse.Results);
+
+                                Publisher customerNotificationPublisher = new Publisher(_iconfiguration, notificationConfig.SNSTopic);
+                                await customerNotificationPublisher.PublishAsync(notificationMessage);
+                                try
+                                {
+                                    DatabaseResponse notificationLogResponse = await _adminOrderDataAccess.CreateEMailNotificationLogForDevPurpose(
+                                        new NotificationLogForDevPurpose
+                                        {
+                                            EventType = NotificationEvent.OrderSuccess.ToString(),
+                                            Message = JsonConvert.SerializeObject(notificationMessage)
+
+                                        });
+
+                                }
+                                catch (Exception ex)
+                                {
+                                    LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                                }
+                            }
+
+                            //Sending message start
+                            // Send email to customer email                            ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
+                           
+
                             return Ok(new ServerResponse
                             {
                                 HasSucceeded = true,
@@ -466,7 +516,7 @@ namespace AdminService.Controllers
                         }
                         else
                         {
-                            LogInfo.Error("UpdateNRICDetails failed for "+ request.OrderID + " Order Id "+ DbReturnValue.UpdationFailed);
+                            LogInfo.Error("UpdateNRICDetails failed for " + request.OrderID + " Order Id " + DbReturnValue.UpdationFailed);
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = false,
