@@ -774,7 +774,7 @@ namespace OrderService.DataAccess
                                                   slotToTime = model.Field<TimeSpan?>("slotToTime"),
                                                   scheduledDate = model.Field<DateTime?>("scheduledDate"),
                                                   submissionDate = model.Field<DateTime>("submissionDate"),
-                                                  serviceFee = model.Field<int?>("serviceFee"),
+                                                  serviceFee = model.Field<double?>("serviceFee"),
                                                   amountPaid = model.Field<double?>("amountPaid"),
                                                   paymentMode = model.Field<string>("paymentMode"),
                                                   MPGSOrderID = model.Field<string>("MPGSOrderID"),
@@ -799,10 +799,10 @@ namespace OrderService.DataAccess
                         if (ds.Tables[1] != null && ds.Tables[1].Rows.Count > 0)
                         {
                             List<InvoiceCharges> Charges = new List<InvoiceCharges>();
-                            if (ds.Tables[2] != null && ds.Tables[2].Rows.Count > 0)
+                            if (ds.Tables[1] != null && ds.Tables[1].Rows.Count > 0)
                             {
 
-                                Charges = (from model in ds.Tables[2].AsEnumerable()
+                                Charges = (from model in ds.Tables[1].AsEnumerable()
                                            select new InvoiceCharges()
                                            {
                                                AccountInvoiceID = model.Field<int?>("AccountInvoiceID"),

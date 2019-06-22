@@ -319,7 +319,7 @@ namespace OrderService.Models
         public TimeSpan? slotToTime { get; set; }
         public DateTime? scheduledDate { get; set; }
         public DateTime? submissionDate { get; set; }
-        public int? serviceFee { get; set; }
+        public double? serviceFee { get; set; }
         public double? amountPaid { get; set; }
         public string paymentMode { get; set; }
         public string MPGSOrderID { get; set; }

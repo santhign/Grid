@@ -337,7 +337,7 @@ namespace OrderService.Helpers
                     var result = await qMHelper.SendMQ(orderMqResponse);
                     var invoiceDetails = (RescheduleDeliveryMessage)orderMqResponse.Results;
 
-                    if (invoiceDetails != null)
+                    if (invoiceDetails != null && invoiceDetails.slotDate != null)
                     {
                         CustomerDetails customer = new CustomerDetails
                         {
