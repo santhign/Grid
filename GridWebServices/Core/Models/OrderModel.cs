@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace AdminService.Models
+namespace Core.Models
 {
 
     public class OrderList
@@ -56,8 +56,8 @@ namespace AdminService.Models
         public string IdentityCardType { get; set; }
         public string Nationality { get; set; }
         public string NameInNRIC { get; set; }
-        public DateTime DOB { get; set; }
-        public DateTime Expiry { get; set; }
+        public DateTime? DOB { get; set; }
+        public DateTime? Expiry { get; set; }
         public string BackImage { get; set; }
         public string FrontImage { get; set; }
         public string Remarks { get; set; }
@@ -82,6 +82,4 @@ namespace AdminService.Models
         public int IsUsed { get; set; }
 
     }
-
-
 }
