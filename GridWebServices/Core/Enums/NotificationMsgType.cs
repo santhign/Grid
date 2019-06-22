@@ -29,6 +29,13 @@ namespace Core.Enums
         [Description("OrderSuccess")]
         OrderSuccess = 3,
 
+        [EnumMember(Value = "ReplaceSIM")]
+        [Description("ReplaceSIM")]
+        ReplaceSIM = 9, 
+
+        [EnumMember(Value = "RescheduleDelivery")]
+        [Description("RescheduleDelivery")]
+        RescheduleDelivery = 5
     }
 
     public enum SNSNotification

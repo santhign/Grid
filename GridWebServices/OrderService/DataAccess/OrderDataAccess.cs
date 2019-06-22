@@ -3631,6 +3631,118 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
-        
+
+        public async Task<DatabaseResponse> GetChangeRequestTypeFromID(int changeRequestID)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@ChangeRequestID",  SqlDbType.Int )
+
+                };
+
+                parameters[0].Value = changeRequestID;
+
+                _DataHelper = new DataAccessHelper("Order_GetRequestTypeFromChangeRequestID", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt); // 105 /102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 105)
+                {
+
+                    string ChangeRequestType = string.Empty;
+
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+
+                        ChangeRequestType = dt.Rows[0].ItemArray[0].ToString();
+
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = ChangeRequestType };
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> GetInvoiceRemarksFromInvoiceID(int InvoiceID)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@InvoiceID",  SqlDbType.Int )
+
+                };
+
+                parameters[0].Value = InvoiceID;
+
+                _DataHelper = new DataAccessHelper("Order_GetAccountRemarksByInvoiceID", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt); // 105 /102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 105)
+                {
+
+                    string Remarks = string.Empty;
+
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+
+                        Remarks = dt.Rows[0].ItemArray[0].ToString();
+
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = Remarks };
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
     }
 }
