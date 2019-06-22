@@ -59,5 +59,7 @@ namespace OrderService.DataAccess
         Task<ProfileMQ> GetProfileUpdateMessageBody(int CustomerID);
 
         Task<DatabaseResponse> GetAccountInvoiceMessageQueueBody(int invoiceId);
+
+        Task<DatabaseResponse> GetRescheduleMessageQueueBody(int accountInvoiceID);
     }
 }

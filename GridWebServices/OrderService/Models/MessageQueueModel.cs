@@ -291,4 +291,63 @@ namespace OrderService.Models
         public string invoicelist { get; set; }
         public string invoiceamounts { get; set; }
     }
+
+    public class RescheduleDeliveryMessage
+    {
+        public int ? accountID { get; set; }
+        public int ? customerID { get; set; }
+        public string SourceType { get; set; }
+        public int ? orderID { get; set; }
+        public string orderNumber { get; set; }
+        public DateTime? orderDate { get; set; }
+        public string name { get; set; }
+        public string email { get; set; }
+        public string nationality { get; set; }
+        public string shippingUnit { get; set; }
+        public string shippingFloor { get; set; }
+        public string shippingBuildingNumber { get; set; }
+        public string shippingBuildingName { get; set; }
+        public string shippingStreetName { get; set; }
+        public string shippingPostCode { get; set; }
+        public string shippingContactNumber { get; set; }
+        public string alternateRecipientContact { get; set; }
+        public string alternateRecipientName { get; set; }
+        public string alternateRecipientEmail { get; set; }
+        public string portalSlotID { get; set; }
+        public DateTime? slotDate { get; set; }
+        public TimeSpan? slotFromTime { get; set; }
+        public TimeSpan? slotToTime { get; set; }
+        public DateTime? scheduledDate { get; set; }
+        public DateTime? submissionDate { get; set; }
+        public int? serviceFee { get; set; }
+        public double? amountPaid { get; set; }
+        public string paymentMode { get; set; }
+        public string MPGSOrderID { get; set; }
+        public string MaskedCardNumber { get; set; }
+        public string Token { get; set; }
+        public string CardType { get; set; }
+        public string CardHolderName { get; set; }
+        public int? ExpiryMonth { get; set; }
+        public int? ExpiryYear { get; set; }
+        public string CardFundMethod { get; set; }
+        public string CardBrand { get; set; }
+        public string CardIssuer { get; set; }
+        public DateTime? DateofBirth { get; set; }
+        public string ReferralCode { get; set; }
+        public DateTime? ProcessedOn { get; set; }
+        public string InvoiceNumber { get; set; }
+        public string InvoiceUrl { get; set; }
+        public DateTime? CreatedOn { get; set; }
+        public List<InvoiceCharges> invoiceCharges { get; set; }
+    }
+
+    public class InvoiceCharges
+    {
+        public int? AccountInvoiceID { get; set; }
+        public int? AdminServiceID { get; set; }
+        public string portalServiceName { get; set; }
+        public double? serviceFee { get; set; }
+        public int? isRecurring { get; set; }
+        public int? isGSTIncluded { get; set; }
+    }
 }

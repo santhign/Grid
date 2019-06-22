@@ -793,21 +793,21 @@ namespace OrderService.DataAccess
                             {
 
                                 subscriberServiceCharges = (from model in ds.Tables[3].AsEnumerable()
-                                                       select new ServiceCharge()
-                                                       {
-                                                           OrderSubscriberID = model.Field<int>("OrderSubscriberID"),
-                                                           PortalServiceName = model.Field<string>("PortalServiceName"),
-                                                           ServiceFee = model.Field<double?>("ServiceFee"),
-                                                           IsRecurring = model.Field<int>("IsRecurring"),
-                                                           IsGSTIncluded = model.Field<int>("IsGSTIncluded"),
-                                                       }).Where(c => c.OrderSubscriberID == Convert.ToInt32(dr["OrderSubscriberID"].ToString())).ToList();
+                                                            select new ServiceCharge()
+                                                            {
+                                                                OrderSubscriberID = model.Field<int>("OrderSubscriberID"),
+                                                                PortalServiceName = model.Field<string>("PortalServiceName"),
+                                                                ServiceFee = model.Field<double?>("ServiceFee"),
+                                                                IsRecurring = model.Field<int>("IsRecurring"),
+                                                                IsGSTIncluded = model.Field<int>("IsGSTIncluded"),
+                                                            }).Where(c => c.OrderSubscriberID == Convert.ToInt32(dr["OrderSubscriberID"].ToString())).ToList();
 
                                 OrderBundle.ServiceCharges = subscriberServiceCharges;
 
                             }
                             orderBundles.Add(OrderBundle);
                         }
-                        orderDetails.Bundles = orderBundles;                        
+                        orderDetails.Bundles = orderBundles;
 
                         List<ServiceCharge> orderServiceCharges = new List<ServiceCharge>();
 
@@ -815,13 +815,13 @@ namespace OrderService.DataAccess
                         {
 
                             orderServiceCharges = (from model in ds.Tables[2].AsEnumerable()
-                                            select new ServiceCharge()
-                                            {
-                                                PortalServiceName = model.Field<string>("PortalServiceName"),
-                                                ServiceFee = model.Field<double?>("ServiceFee"),
-                                                IsRecurring = model.Field<int>("IsRecurring"),
-                                                IsGSTIncluded = model.Field<int>("IsGSTIncluded"),
-                                            }).ToList();
+                                                   select new ServiceCharge()
+                                                   {
+                                                       PortalServiceName = model.Field<string>("PortalServiceName"),
+                                                       ServiceFee = model.Field<double?>("ServiceFee"),
+                                                       IsRecurring = model.Field<int>("IsRecurring"),
+                                                       IsGSTIncluded = model.Field<int>("IsGSTIncluded"),
+                                                   }).ToList();
 
                             orderDetails.ServiceCharges = orderServiceCharges;
 
@@ -1131,7 +1131,7 @@ namespace OrderService.DataAccess
             {
                 SqlParameter[] parameters =
                {
-                    new SqlParameter( "@OrderID",  SqlDbType.Int ),                  
+                    new SqlParameter( "@OrderID",  SqlDbType.Int ),
                     new SqlParameter( "@NameInNRIC",  SqlDbType.NVarChar),
                     new SqlParameter( "@DisplayName",  SqlDbType.NVarChar),
                     new SqlParameter( "@Gender",  SqlDbType.NVarChar),
@@ -1139,12 +1139,12 @@ namespace OrderService.DataAccess
                     new SqlParameter( "@ContactNumber",  SqlDbType.NVarChar)
                 };
 
-                parameters[0].Value = personalDetails.OrderID;               
+                parameters[0].Value = personalDetails.OrderID;
                 parameters[1].Value = personalDetails.NameInNRIC;
                 parameters[2].Value = personalDetails.DisplayName;
                 parameters[3].Value = personalDetails.Gender;
                 parameters[4].Value = personalDetails.DOB;
-                parameters[5].Value = personalDetails.ContactNumber;           
+                parameters[5].Value = personalDetails.ContactNumber;
 
                 _DataHelper = new DataAccessHelper("Orders_UpdateOrderBasicDetails", parameters, _configuration);
 
@@ -1537,7 +1537,7 @@ namespace OrderService.DataAccess
                      new SqlParameter( "@CheckOutSessionID",  SqlDbType.NVarChar ),
                      new SqlParameter( "@SuccessIndicator",  SqlDbType.NVarChar ),
                      new SqlParameter( "@CheckoutVersion",  SqlDbType.NVarChar ),
-                     new SqlParameter( "@TransactionID",  SqlDbType.NVarChar )                    
+                     new SqlParameter( "@TransactionID",  SqlDbType.NVarChar )
 
                 };
 
@@ -1566,7 +1566,7 @@ namespace OrderService.DataAccess
                                     select new Checkout()
                                     {
                                         Amount = model.Field<double>("Amount"),
-                                        ReceiptNumber= model.Field<string>("RecieptNumber"),
+                                        ReceiptNumber = model.Field<string>("RecieptNumber"),
                                         OrderId = model.Field<string>("MPGSOrderID"),
                                         OrderNumber = model.Field<string>("OrderNumber"),
                                     }).FirstOrDefault();
@@ -1625,19 +1625,19 @@ namespace OrderService.DataAccess
                 TokenSession tokenSession = new TokenSession();
 
                 if (dt != null && dt.Rows.Count > 0)
-                    {
+                {
 
                     tokenSession = (from model in dt.AsEnumerable()
-                                               select new TokenSession()
-                                               {
-                                                   MPGSOrderID = model.Field<string>("MPGSOrderID"),
-                                                   CheckOutSessionID =  model.Field<string>("CheckOutSessionID"),
-                                                   Amount = model.Field<double>("Amount")
-                                               }).FirstOrDefault();
+                                    select new TokenSession()
+                                    {
+                                        MPGSOrderID = model.Field<string>("MPGSOrderID"),
+                                        CheckOutSessionID = model.Field<string>("CheckOutSessionID"),
+                                        Amount = model.Field<double>("Amount")
+                                    }).FirstOrDefault();
 
-                        response = new DatabaseResponse { ResponseCode = result, Results = tokenSession };
+                    response = new DatabaseResponse { ResponseCode = result, Results = tokenSession };
 
-                    }
+                }
 
                 else
                 {
@@ -1645,7 +1645,7 @@ namespace OrderService.DataAccess
 
                 }
 
-               
+
 
                 return response;
             }
@@ -1954,12 +1954,12 @@ namespace OrderService.DataAccess
                 parameters[0].Value = orderId;
 
                 _DataHelper = new DataAccessHelper("Orders_RollBackOldUnfinishedOrder", parameters, _configuration);
-              
+
 
                 int result = await _DataHelper.RunAsync(); // 103 /104
 
                 return new DatabaseResponse { ResponseCode = result };
-                 
+
             }
 
             catch (Exception ex)
@@ -1982,7 +1982,7 @@ namespace OrderService.DataAccess
         /// <param name="customerId">The customer identifier.</param>
         /// <param name="mobileNumber">The mobile number.</param>
         /// <returns></returns>
-        public async Task<DatabaseResponse> GetBssApiRequestIdAndSubscriberSession(string source, string apiName, int customerId,  string mobileNumber)
+        public async Task<DatabaseResponse> GetBssApiRequestIdAndSubscriberSession(string source, string apiName, int customerId, string mobileNumber)
         {
             try
             {
@@ -1991,13 +1991,13 @@ namespace OrderService.DataAccess
                {
                     new SqlParameter( "@Source",  SqlDbType.NVarChar ),
                     new SqlParameter( "@APIName",  SqlDbType.NVarChar ),
-                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),                   
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
                     new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar),
                 };
 
                 parameters[0].Value = source;
                 parameters[1].Value = apiName;
-                parameters[2].Value = customerId;               
+                parameters[2].Value = customerId;
                 parameters[3].Value = mobileNumber;
 
                 _DataHelper = new DataAccessHelper("Admin_GetBSSRequestIDAndSubscriberSession", parameters, _configuration);
@@ -2051,37 +2051,37 @@ namespace OrderService.DataAccess
 
                 SqlParameter[] parameters =
                {
-                    new SqlParameter( "@OrderID",  SqlDbType.Int)                   
+                    new SqlParameter( "@OrderID",  SqlDbType.Int)
                 };
 
-                parameters[0].Value = OrderID;              
+                parameters[0].Value = OrderID;
 
                 _DataHelper = new DataAccessHelper("Order_GetCustomerNRICDetails", parameters, _configuration);
 
                 DataTable dt = new DataTable();
 
-               int result= await _DataHelper.RunAsync(dt);
-                
+                int result = await _DataHelper.RunAsync(dt);
+
                 DatabaseResponse response = new DatabaseResponse();
 
                 OrderNRICDetails nRICDetails = new OrderNRICDetails();
 
-                if (dt!=null && dt.Rows.Count > 0)
+                if (dt != null && dt.Rows.Count > 0)
                 {
                     nRICDetails = (from model in dt.AsEnumerable()
-                                    select new OrderNRICDetails()
-                                    {
-                                         CustomerID = model.Field<int>("CustomerID"),
-                                         DocumentID  = model.Field<int>("DocumentID"),
-                                         DocumentURL = model.Field<string>("DocumentURL"),
-                                         DocumentBackURL = model.Field<string>("DocumentBackURL"),
-                                         IdentityCardNumber = model.Field<string>("IdentityCardNumber"),
-                                         IdentityCardType = model.Field<string>("IdentityCardType"),
-                                          Nationality = model.Field<string>("Nationality"),
-                                    }).FirstOrDefault();
+                                   select new OrderNRICDetails()
+                                   {
+                                       CustomerID = model.Field<int>("CustomerID"),
+                                       DocumentID = model.Field<int>("DocumentID"),
+                                       DocumentURL = model.Field<string>("DocumentURL"),
+                                       DocumentBackURL = model.Field<string>("DocumentBackURL"),
+                                       IdentityCardNumber = model.Field<string>("IdentityCardNumber"),
+                                       IdentityCardType = model.Field<string>("IdentityCardType"),
+                                       Nationality = model.Field<string>("Nationality"),
+                                   }).FirstOrDefault();
                 }
 
-                response = new DatabaseResponse {ResponseCode= result, Results = nRICDetails };
+                response = new DatabaseResponse { ResponseCode = result, Results = nRICDetails };
 
                 return response;
             }
@@ -2249,8 +2249,8 @@ namespace OrderService.DataAccess
                     orderSource = (from model in dt.AsEnumerable()
                                    select new OrderSource()
                                    {
-                                        SourceType = model.Field<string>("SourceType"), 
-                                        SourceID = model.Field<int>("SourceID")
+                                       SourceType = model.Field<string>("SourceType"),
+                                       SourceID = model.Field<int>("SourceID")
                                    }).FirstOrDefault();
                 }
 
@@ -2296,16 +2296,16 @@ namespace OrderService.DataAccess
 
                 DatabaseResponse response = new DatabaseResponse();
 
-                OrderCount orderCount= new OrderCount();
+                OrderCount orderCount = new OrderCount();
 
                 if (dt != null && dt.Rows.Count > 0)
                 {
                     orderCount = (from model in dt.AsEnumerable()
-                                   select new OrderCount()
-                                   {
-                                        SuccessfulOrders = model.Field<int>("OrderCount"),
-                                      
-                                   }).FirstOrDefault();
+                                  select new OrderCount()
+                                  {
+                                      SuccessfulOrders = model.Field<int>("OrderCount"),
+
+                                  }).FirstOrDefault();
                 }
 
                 response = new DatabaseResponse { ResponseCode = result, Results = orderCount };
@@ -2335,7 +2335,7 @@ namespace OrderService.DataAccess
             try
             {
                 SqlParameter[] parameters =
-               {                   
+               {
                      new SqlParameter( "@MPGSOrderID",  SqlDbType.NVarChar ),
                      new SqlParameter( "@CheckOutSessionID",  SqlDbType.NVarChar ),
                      new SqlParameter( "@SuccessIndicator",  SqlDbType.NVarChar ),
@@ -2347,7 +2347,7 @@ namespace OrderService.DataAccess
                 parameters[1].Value = tokenResponse.MPGSResponse.session.id;
                 parameters[2].Value = tokenResponse.MPGSResponse.session.updateStatus;
                 parameters[3].Value = tokenResponse.MPGSResponse.session.version;
-                parameters[4].Value = tokenResponse.TransactionID;              
+                parameters[4].Value = tokenResponse.TransactionID;
 
                 _DataHelper = new DataAccessHelper("Orders_UpdateMPGSCreateTokenSessionDetails", parameters, _configuration);
 
@@ -2365,16 +2365,16 @@ namespace OrderService.DataAccess
                     {
 
                         detailsToTokenize = (from model in dt.AsEnumerable()
-                                    select new CreateTokenUpdatedDetails()
-                                    {
-                                        MPGSOrderID = model.Field<string>("MPGSOrderID"),
-                                        TransactionID = model.Field<string>("TokenizeTransactionID"),
-                                        Amount = model.Field<double>("Amount"),
-                                        SessionID = model.Field<string>("CheckOutSessionID"),
-                                        OrderID = model.Field<int>("OrderID"),
-                                        CustomerID = model.Field<int>("OrderID")
+                                             select new CreateTokenUpdatedDetails()
+                                             {
+                                                 MPGSOrderID = model.Field<string>("MPGSOrderID"),
+                                                 TransactionID = model.Field<string>("TokenizeTransactionID"),
+                                                 Amount = model.Field<double>("Amount"),
+                                                 SessionID = model.Field<string>("CheckOutSessionID"),
+                                                 OrderID = model.Field<int>("OrderID"),
+                                                 CustomerID = model.Field<int>("OrderID")
 
-                                    }).FirstOrDefault();
+                                             }).FirstOrDefault();
                     }
 
                     response = new DatabaseResponse { ResponseCode = result, Results = detailsToTokenize };
@@ -2421,14 +2421,14 @@ namespace OrderService.DataAccess
                 parameters[3].Value = subscriberBasicDetails.MobileNumber;
 
                 _DataHelper = new DataAccessHelper("Order_UpdateSubscriberBasicDetails", parameters, _configuration);
-            
+
 
                 int result = await _DataHelper.RunAsync();    // 101 / 106
 
                 DatabaseResponse response = new DatabaseResponse();
-                
-               response = new DatabaseResponse { ResponseCode = result };
-                
+
+                response = new DatabaseResponse { ResponseCode = result };
+
 
                 return response;
             }
@@ -2619,9 +2619,9 @@ namespace OrderService.DataAccess
                 parameters[1].Value = orderId;
 
                 _DataHelper = new DataAccessHelper(DbObjectNames.Orders_CancelOrder, parameters, _configuration);
-               
+
                 return await _DataHelper.RunAsync();    // 105 / 119 
-               
+
             }
             catch (Exception ex)
             {
@@ -2695,8 +2695,8 @@ namespace OrderService.DataAccess
 
                         var sourceTyeResponse = await GetSourceTypeByMPGSSOrderId(MPGSOrderID);
                         DatabaseResponse OrderCountResponse = await GetCustomerOrderCount(customerID);
-                        if (((((OrderSource)sourceTyeResponse.Results).SourceType == CheckOutType.Orders.ToString()) && (((OrderCount)OrderCountResponse.Results).SuccessfulOrders >=1)) || (((OrderSource)sourceTyeResponse.Results).SourceType != CheckOutType.Orders.ToString())) 
-                        {                            
+                        if (((((OrderSource)sourceTyeResponse.Results).SourceType == CheckOutType.Orders.ToString()) && (((OrderCount)OrderCountResponse.Results).SuccessfulOrders >= 1)) || (((OrderSource)sourceTyeResponse.Results).SourceType != CheckOutType.Orders.ToString()))
+                        {
                             msgBody = await _messageQueueDataAccess.GetProfileUpdateMessageBody(customerID);
                             pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
 
@@ -2752,7 +2752,7 @@ namespace OrderService.DataAccess
                             MessageAttribute = Core.Enums.RequestType.EditPaymentMethod.GetDescription().ToString(),
                             MessageBody = msgBody != null ? JsonConvert.SerializeObject(msgBody) : null,
                             Status = 0,
-                            Remark = "Error Occured in "+ SourceMethodName +" method while generating message",
+                            Remark = "Error Occured in " + SourceMethodName + " method while generating message",
                             Exception = new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)
 
 
@@ -2839,7 +2839,7 @@ namespace OrderService.DataAccess
             {
                 SqlParameter[] parameters =
                {
-                     new SqlParameter( "@CustomerID",  SqlDbType.Int )                    
+                     new SqlParameter( "@CustomerID",  SqlDbType.Int )
                 };
 
                 parameters[0].Value = customerID;
@@ -2907,12 +2907,12 @@ namespace OrderService.DataAccess
                {
                      new SqlParameter( "@CustomerID",  SqlDbType.Int ),
                        new SqlParameter( "@PaymentMethodID",  SqlDbType.Int ),
-                     
+
                 };
 
                 parameters[0].Value = customerID;
                 parameters[1].Value = paymentMethodID;
-                
+
 
                 _DataHelper = new DataAccessHelper("Order_GetPaymentTokenByID", parameters, _configuration);
 
@@ -3016,8 +3016,8 @@ namespace OrderService.DataAccess
             {
                 SqlParameter[] parameters =
                {
-                     new SqlParameter("@CustomerID",  SqlDbType.Int ),                     
-                     new SqlParameter("@OrderID",  SqlDbType.Int ),                     
+                     new SqlParameter("@CustomerID",  SqlDbType.Int ),
+                     new SqlParameter("@OrderID",  SqlDbType.Int ),
                      new SqlParameter("@ShippingContactNumber",  SqlDbType.NVarChar ),
                      new SqlParameter("@ShippingFloor",  SqlDbType.NVarChar ),
                      new SqlParameter("@ShippingUnit",  SqlDbType.NVarChar ),
@@ -3036,7 +3036,7 @@ namespace OrderService.DataAccess
                 };
 
 
-                parameters[0].Value = customerID;                
+                parameters[0].Value = customerID;
                 parameters[1].Value = detailsrequest.OrderID;
                 parameters[2].Value = detailsrequest.ShippingContactNumber;
                 parameters[3].Value = detailsrequest.ShippingFloor;
@@ -3071,12 +3071,12 @@ namespace OrderService.DataAccess
                 if (dt.Rows.Count > 0)
                 {
                     rescheduleDeliveryResponse = (from model in dt.AsEnumerable()
-                                         select new Order_RescheduleDeliveryResponse()
-                                         {
-                                             AccountInvoiceID = model.Field<int>("AccountInvoiceID"),
-                                             PayableAmount = model.Field<double?>("PayableAmount"),
-                                             
-                                         }).FirstOrDefault();
+                                                  select new Order_RescheduleDeliveryResponse()
+                                                  {
+                                                      AccountInvoiceID = model.Field<int>("AccountInvoiceID"),
+                                                      PayableAmount = model.Field<double?>("PayableAmount"),
+
+                                                  }).FirstOrDefault();
                 }
                 else
                 {
@@ -3084,7 +3084,7 @@ namespace OrderService.DataAccess
                 }
 
                 var response = new DatabaseResponse { ResponseCode = result, Results = rescheduleDeliveryResponse };
-                return response;              
+                return response;
 
             }
             catch (Exception ex)
@@ -3110,7 +3110,7 @@ namespace OrderService.DataAccess
             {
                 SqlParameter[] parameters =
                 {
-                     
+
                      new SqlParameter("@AccountInvoiceID",  SqlDbType.Int )
 
                 };
@@ -3154,10 +3154,10 @@ namespace OrderService.DataAccess
                 SqlParameter[] parameters =
                {
                      new SqlParameter( "@OrderID",  SqlDbType.Int )
-                     
+
                 };
 
-                parameters[0].Value = orderID;               
+                parameters[0].Value = orderID;
 
                 _DataHelper = new DataAccessHelper("Orders_RequireBuddy", parameters, _configuration);
 
@@ -3167,19 +3167,19 @@ namespace OrderService.DataAccess
 
                 DatabaseResponse response = new DatabaseResponse();
 
-               List< BuddyCheckList> buddyCheckList = new List<BuddyCheckList>();
+                List<BuddyCheckList> buddyCheckList = new List<BuddyCheckList>();
 
                 if (dt != null && dt.Rows.Count > 0)
                 {
                     buddyCheckList = (from model in dt.AsEnumerable()
-                                     select new BuddyCheckList()
-                                     {
-                                         CustomerID = model.Field<int>("CustomerID"),
-                                         OrderID = orderID,
-                                         OrderSubscriberID = model.Field<int>("OrderSubscriberID"),
+                                      select new BuddyCheckList()
+                                      {
+                                          CustomerID = model.Field<int>("CustomerID"),
+                                          OrderID = orderID,
+                                          OrderSubscriberID = model.Field<int>("OrderSubscriberID"),
                                           MobileNumber = model.Field<string>("MobileNumber"),
-                                          HasBuddyPromotion = model.Field<int>("HasBuddyPromotion")                                         
-                                     }).Where(cl=>cl.HasBuddyPromotion==1).ToList();
+                                          HasBuddyPromotion = model.Field<int>("HasBuddyPromotion")
+                                      }).Where(cl => cl.HasBuddyPromotion == 1).ToList();
 
                     response = new DatabaseResponse { ResponseCode = result, Results = buddyCheckList };
 
@@ -3189,7 +3189,7 @@ namespace OrderService.DataAccess
                 {
                     response = new DatabaseResponse { ResponseCode = result };
 
-                }              
+                }
 
                 return response;
             }
@@ -3219,16 +3219,16 @@ namespace OrderService.DataAccess
 
                 };
 
-                 parameters[0].Value = MPGSOrderID;
+                parameters[0].Value = MPGSOrderID;
 
                 _DataHelper = new DataAccessHelper("Orders_IsPaymentProcessed", parameters, _configuration);
-                
+
                 int result = await _DataHelper.RunAsync();    // 126 / 135
 
                 DatabaseResponse response = new DatabaseResponse();
 
                 List<BuddyCheckList> buddyCheckList = new List<BuddyCheckList>();
-               
+
                 response = new DatabaseResponse { ResponseCode = result };
 
                 return response;
@@ -3264,7 +3264,7 @@ namespace OrderService.DataAccess
                 parameters[1].Value = updateRequest.UserId;
                 parameters[2].Value = updateRequest.NewMobileNumber;
 
-                _DataHelper = new DataAccessHelper("Orders_ProcessBuddyPlan", parameters, _configuration);               
+                _DataHelper = new DataAccessHelper("Orders_ProcessBuddyPlan", parameters, _configuration);
 
                 int result = await _DataHelper.RunAsync();    // 107 / 100/119                
 
@@ -3294,9 +3294,9 @@ namespace OrderService.DataAccess
                 SqlParameter[] parameters =
                {
                      new SqlParameter( "@OrderID",  SqlDbType.Int ),
-                     new SqlParameter( "@OrderSubscriberID",  SqlDbType.Int ),                    
+                     new SqlParameter( "@OrderSubscriberID",  SqlDbType.Int ),
                      new SqlParameter( "@NewMobileNumber",  SqlDbType.NVarChar ),
-                     new SqlParameter( "@IsProcessed",  SqlDbType.Bit )    
+                     new SqlParameter( "@IsProcessed",  SqlDbType.Bit )
                 };
 
                 parameters[0].Value = updateRequest.OrderID;
@@ -3304,7 +3304,7 @@ namespace OrderService.DataAccess
                 parameters[2].Value = updateRequest.MobileNumber;
                 parameters[3].Value = updateRequest.IsProcessed;
 
-                _DataHelper = new DataAccessHelper("Orders_CreatePendingBuddyList", parameters, _configuration);               
+                _DataHelper = new DataAccessHelper("Orders_CreatePendingBuddyList", parameters, _configuration);
 
                 int result = await _DataHelper.RunAsync();    // 107 / 100               
 
@@ -3356,11 +3356,11 @@ namespace OrderService.DataAccess
                     if (dt != null && dt.Rows.Count > 0)
                     {
                         account = (from model in dt.AsEnumerable()
-                                    select new BSSAccount()
-                                    {
-                                         AccountID = model.Field<int>("AccountID"),
+                                   select new BSSAccount()
+                                   {
+                                       AccountID = model.Field<int>("AccountID"),
 
-                                    }).FirstOrDefault();
+                                   }).FirstOrDefault();
 
                     }
 
@@ -3397,7 +3397,7 @@ namespace OrderService.DataAccess
             {
                 SqlParameter[] parameters =
                {
-                     new SqlParameter( "@AccountID",  SqlDbType.Int ),                                  
+                     new SqlParameter( "@AccountID",  SqlDbType.Int ),
                      new SqlParameter( "@InvoiceName",  SqlDbType.NVarChar ),
                      new SqlParameter( "@InvoiceUrl",  SqlDbType.NVarChar ),
                      new SqlParameter( "@FinalAmount",  SqlDbType.Float ),
@@ -3428,11 +3428,11 @@ namespace OrderService.DataAccess
                 if (result == 100)
                 {
 
-                    int orderID=0;
+                    int orderID = 0;
 
                     if (dt != null && dt.Rows.Count > 0)
                     {
-                        orderID = int.Parse( dt.Rows[0].ItemArray[0].ToString());
+                        orderID = int.Parse(dt.Rows[0].ItemArray[0].ToString());
 
                     }
 
@@ -3442,8 +3442,8 @@ namespace OrderService.DataAccess
                 else
                 {
                     response = new DatabaseResponse { ResponseCode = result };
-                }  
-               
+                }
+
                 return response;
             }
             catch (Exception ex)
@@ -3459,7 +3459,7 @@ namespace OrderService.DataAccess
         }
 
 
-     
+
         //public async Task<CustomerDetails> GetCustomerDetailByOrder(int customerID)
         //{
         //    try
@@ -3508,7 +3508,7 @@ namespace OrderService.DataAccess
                 SqlParameter[] parameters =
                  {
                      new SqlParameter( "@RescheduleDeliveryInformationID",  SqlDbType.Int )
-                   
+
                 };
 
                 parameters[0].Value = RescheduleDeliveryInformationID;
@@ -3601,7 +3601,7 @@ namespace OrderService.DataAccess
                 SqlParameter[] parameters =
                  {
                      new SqlParameter( "@MPGSOrderID",  SqlDbType.NVarChar ),
-                     new SqlParameter( "@TransactionResponse",  SqlDbType.NVarChar )                    
+                     new SqlParameter( "@TransactionResponse",  SqlDbType.NVarChar )
 
                 };
 
@@ -3610,14 +3610,14 @@ namespace OrderService.DataAccess
                 parameters[1].Value = PaymentResponse;
 
                 _DataHelper = new DataAccessHelper("Orders_UpdatePaymentTransactionResponse", parameters, _configuration);
-                 
+
                 int result = await _DataHelper.RunAsync(); // 101
 
                 DatabaseResponse response = new DatabaseResponse();
 
 
-                return response = new DatabaseResponse { ResponseCode = result };  
-                
+                return response = new DatabaseResponse { ResponseCode = result };
+
             }
 
             catch (Exception ex)
@@ -3637,13 +3637,13 @@ namespace OrderService.DataAccess
             try
             {
                 SqlParameter[] parameters =
-                 {                     
+                 {
                      new SqlParameter( "@AccountInvoiceID",  SqlDbType.Int )
 
                 };
 
                 parameters[0].Value = AccountInvoiceID;
-                
+
 
                 _DataHelper = new DataAccessHelper("Orders_CheckRescheduleDeliveryCharges", parameters, _configuration);
 
@@ -3669,7 +3669,7 @@ namespace OrderService.DataAccess
             {
                 _DataHelper.Dispose();
             }
-         }
+        }
 
         public async Task<DatabaseResponse> GetChangeRequestTypeFromID(int changeRequestID)
         {
@@ -3725,8 +3725,8 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
-       public async Task<DatabaseResponse> GetInvoiceRemarksFromInvoiceID(int InvoiceID)
-       {
+        public async Task<DatabaseResponse> GetInvoiceRemarksFromInvoiceID(int InvoiceID)
+        {
             try
             {
 
@@ -3780,6 +3780,8 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+
+
 
     }
 }

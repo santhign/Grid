@@ -326,92 +326,103 @@ namespace OrderService.Helpers
             {
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
 
-                DatabaseResponse invoiceMqResponse = new DatabaseResponse();
+                DatabaseResponse accountTypeResponse = await _orderAccess.GetInvoiceRemarksFromInvoiceID(InvoiceID);
 
-                invoiceMqResponse = await _messageQueueDataAccess.GetAccountInvoiceMessageQueueBody(InvoiceID);
-
-                InvoceQM invoiceDetails = new InvoceQM();
-
-                string topicName = string.Empty;
-
-                string pushResult = string.Empty;
-
-                if (invoiceMqResponse != null && invoiceMqResponse.Results != null)
+                if (((string)accountTypeResponse.Results) == "RecheduleDeliveryInformation")
                 {
-                    invoiceDetails = (InvoceQM)invoiceMqResponse.Results;
+                    DatabaseResponse orderMqResponse = new DatabaseResponse();
+                    orderMqResponse = await _messageQueueDataAccess.GetRescheduleMessageQueueBody(InvoiceID);
 
-                    DatabaseResponse accountTypeResponse = await _orderAccess.GetInvoiceRemarksFromInvoiceID(InvoiceID);
+                    QMHelper qMHelper = new QMHelper(_iconfiguration, _messageQueueDataAccess);
+                    var result = await qMHelper.SendMQ(orderMqResponse);
+                    var invoiceDetails = (RescheduleDeliveryMessage)orderMqResponse.Results;
 
-                    if (((string)accountTypeResponse.Results) == "RecheduleDeliveryInformation")
+                    if (invoiceDetails != null)
                     {
-                        if (invoiceDetails != null)
+                        CustomerDetails customer = new CustomerDetails
                         {
-                            CustomerDetails customer = new CustomerDetails
+                            
+                            Name = invoiceDetails.name,
+                            DeliveryEmail = invoiceDetails.email,
+                            ShippingContactNumber = invoiceDetails.shippingContactNumber,
+                            OrderNumber = invoiceDetails.orderNumber,
+                            SlotDate = invoiceDetails.slotDate ?? DateTime.Now,
+                            SlotFromTime = invoiceDetails.slotFromTime ?? DateTime.Now.TimeOfDay,
+                            SlotToTime = invoiceDetails.slotToTime ?? DateTime.Now.TimeOfDay
+                        };
+
+                        string status = await SendOrderSuccessSMSNotification(customer, NotificationEvent.RescheduleDelivery.ToString());
+                    }
+                }
+
+                else
+                {
+
+                    DatabaseResponse invoiceMqResponse = new DatabaseResponse();
+
+                    invoiceMqResponse = await _messageQueueDataAccess.GetAccountInvoiceMessageQueueBody(InvoiceID);
+
+                    InvoceQM invoiceDetails = new InvoceQM();
+
+                    string topicName = string.Empty;
+
+                    string pushResult = string.Empty;
+
+                    if (invoiceMqResponse != null && invoiceMqResponse.Results != null)
+                    {
+                        invoiceDetails = (InvoceQM)invoiceMqResponse.Results;
+
+                        // invoiceDetails.invoicelist= await GetInvoiceList(invoiceDetails.customerID);
+
+                        invoiceDetails.paymentmode = invoiceDetails.CardFundMethod == EnumExtensions.GetDescription(PaymentMode.CC) ? PaymentMode.CC.ToString() : PaymentMode.DC.ToString();
+
+                        MessageQueueRequest queueRequest = new MessageQueueRequest
+                        {
+                            Source = CheckOutType.AccountInvoices.ToString(),
+                            NumberOfRetries = 1,
+                            SNSTopic = topicName,
+                            CreatedOn = DateTime.Now,
+                            LastTriedOn = DateTime.Now,
+                            PublishedOn = DateTime.Now,
+                            MessageAttribute = EnumExtensions.GetDescription(RequestType.PayBill),
+                            MessageBody = JsonConvert.SerializeObject(invoiceDetails),
+                            Status = 0
+                        };
+
+                        try
+                        {
+                            Dictionary<string, string> attribute = new Dictionary<string, string>();
+
+                            topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration).Results.ToString().Trim();
+
+                            attribute.Add(EventTypeString.EventType, EnumExtensions.GetDescription(RequestType.PayBill));
+
+                            pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, invoiceDetails, attribute);
+
+                            queueRequest.PublishedOn = DateTime.Now;
+
+                            if (pushResult.Trim().ToUpper() == "OK")
                             {
+                                queueRequest.Status = 1;
 
-                                //Name = msgBody.Name,
-                                //DeliveryEmail = invoiceDetails.email,
-                                //ShippingContactNumber = msgBody.ShippingContactNumber,
-                                //OrderNumber = msgBody.OrderNumber,
-                                //SlotDate = msgBody.SlotDate ?? DateTime.Now,
-                                //SlotFromTime = msgBody.SlotFromTime ?? DateTime.Now.TimeOfDay,
-                                //SlotToTime = msgBody.SlotToTime ?? DateTime.Now.TimeOfDay
-                            };
+                                await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                            }
+                            else
+                            {
+                                queueRequest.Status = 0;
 
-                            string status = await SendOrderSuccessSMSNotification(customer, NotificationEvent.RescheduleDelivery.ToString());
+                                await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                            }
+
                         }
-                    }                  
-
-                    // invoiceDetails.invoicelist= await GetInvoiceList(invoiceDetails.customerID);
-
-                    invoiceDetails.paymentmode = invoiceDetails.CardFundMethod == EnumExtensions.GetDescription(PaymentMode.CC) ? PaymentMode.CC.ToString() : PaymentMode.DC.ToString();
-
-                    MessageQueueRequest queueRequest = new MessageQueueRequest
-                    {
-                        Source = CheckOutType.AccountInvoices.ToString(),
-                        NumberOfRetries = 1,
-                        SNSTopic = topicName,
-                        CreatedOn = DateTime.Now,
-                        LastTriedOn = DateTime.Now,
-                        PublishedOn = DateTime.Now,
-                        MessageAttribute = EnumExtensions.GetDescription(RequestType.PayBill),
-                        MessageBody = JsonConvert.SerializeObject(invoiceDetails),
-                        Status = 0
-                    };
-
-                    try
-                    {
-                        Dictionary<string, string> attribute = new Dictionary<string, string>();
-
-                        topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration).Results.ToString().Trim();
-                        
-                        attribute.Add(EventTypeString.EventType, EnumExtensions.GetDescription(RequestType.PayBill));
-
-                        pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, invoiceDetails, attribute);
-
-                        queueRequest.PublishedOn = DateTime.Now;
-
-                        if (pushResult.Trim().ToUpper() == "OK")
+                        catch (Exception ex)
                         {
-                           queueRequest.Status = 1;                          
+                            LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
-                           await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
-                        }
-                        else
-                        {
                             queueRequest.Status = 0;
 
                             await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
                         }
-
-                    }
-                    catch (Exception ex)
-                    {
-                        LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-
-                        queueRequest.Status = 0;
-
-                        await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
                     }
                 }
             }
@@ -860,6 +871,89 @@ namespace OrderService.Helpers
 
                 throw ex;
             }
+        }
+
+        public async Task<int> SendMQ(DatabaseResponse orderMqResponse)
+        {
+            string topicName = string.Empty;
+            string pushResult = string.Empty;
+            if (orderMqResponse != null && orderMqResponse.Results != null)
+            {
+
+                object orderDetails = orderMqResponse.Results;
+
+                try
+                {
+                    Dictionary<string, string> attribute = new Dictionary<string, string>();
+
+                    topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration).Results.ToString().Trim();
+
+
+                    attribute.Add(EventTypeString.EventType, RequestType.RescheduleDelivery.GetDescription());
+
+                    pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, orderDetails, attribute);
+
+                    if (pushResult.Trim().ToUpper() == "OK")
+                    {
+                        MessageQueueRequest queueRequest = new MessageQueueRequest
+                        {
+                            Source = CheckOutType.Orders.ToString(),
+                            NumberOfRetries = 1,
+                            SNSTopic = topicName,
+                            CreatedOn = DateTime.Now,
+                            LastTriedOn = DateTime.Now,
+                            PublishedOn = DateTime.Now,
+                            MessageAttribute = RequestType.RescheduleDelivery.GetDescription(),
+                            MessageBody = JsonConvert.SerializeObject(orderDetails),
+                            Status = 1
+                        };
+                        await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                    }
+                    else
+                    {
+                        MessageQueueRequest queueRequest = new MessageQueueRequest
+                        {
+                            Source = CheckOutType.Orders.ToString(),
+                            NumberOfRetries = 1,
+                            SNSTopic = topicName,
+                            CreatedOn = DateTime.Now,
+                            LastTriedOn = DateTime.Now,
+                            PublishedOn = DateTime.Now,
+                            MessageAttribute = RequestType.RescheduleDelivery.GetDescription(),
+                            MessageBody = JsonConvert.SerializeObject(orderDetails),
+                            Status = 0
+                        };
+                        await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                    MessageQueueRequestException queueRequest = new MessageQueueRequestException
+                    {
+                        Source = CheckOutType.Orders.ToString(),
+                        NumberOfRetries = 1,
+                        SNSTopic = string.IsNullOrWhiteSpace(topicName) ? null : topicName,
+                        CreatedOn = DateTime.Now,
+                        LastTriedOn = DateTime.Now,
+                        PublishedOn = DateTime.Now,
+                        MessageAttribute = Core.Enums.RequestType.RescheduleDelivery.GetDescription().ToString(),
+                        MessageBody = orderDetails != null ? JsonConvert.SerializeObject(orderDetails) : null,
+                        Status = 0,
+                        Remark = "Error Occured in Reschedule Delivery",
+                        Exception = new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)
+
+
+                    };
+
+                    await _messageQueueDataAccess.InsertMessageInMessageQueueRequestException(queueRequest);
+                    return 0;
+                }
+
+
+            }
+            return 1;
         }
     }
 }

@@ -20,8 +20,6 @@ namespace OrderService.DataAccess
         internal DataAccessHelper _DataHelper = null;
 
         private IConfiguration _configuration;
-
-
         /// <summary>
         /// Constructor setting configuration
         /// </summary>
@@ -718,6 +716,132 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+
+        public async Task<DatabaseResponse> GetRescheduleMessageQueueBody(int accountInvoiceID)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@AccountInvoiceID",  SqlDbType.Int )
+
+                };
+
+                parameters[0].Value = accountInvoiceID;
+
+                _DataHelper = new DataAccessHelper("Orders_GetRescheduleMessageQueueBody", parameters, _configuration);
+
+                DataSet ds = new DataSet();
+
+                int result = await _DataHelper.RunAsync(ds); // 105 /102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 105)
+                {
+
+                    RescheduleDeliveryMessage rescheduleDelivery = new RescheduleDeliveryMessage();
+
+                    if (ds != null && ds.Tables[0] != null && ds.Tables[0].Rows.Count > 0)
+                    {
+
+                        rescheduleDelivery = (from model in ds.Tables[0].AsEnumerable()
+                                              select new RescheduleDeliveryMessage()
+                                              {
+                                                  accountID = model.Field<int?>("accountID"),
+                                                  customerID = model.Field<int?>("customerID"),
+                                                  SourceType = model.Field<string>("SourceType"),
+                                                  orderID = model.Field<int?>("orderID"),
+                                                  orderNumber = model.Field<string>("orderNumber"),
+                                                  orderDate = model.Field<DateTime?>("orderDate"),
+                                                  name = model.Field<string>("name"),
+                                                  email = model.Field<string>("email"),
+                                                  nationality = model.Field<string>("nationality"),
+                                                  shippingUnit = model.Field<string>("shippingUnit"),
+                                                  shippingFloor = model.Field<string>("shippingFloor"),
+                                                  shippingBuildingNumber = model.Field<string>("shippingBuildingNumber"),
+                                                  shippingBuildingName = model.Field<string>("shippingBuildingName"),
+                                                  shippingStreetName = model.Field<string>("shippingStreetName"),
+                                                  shippingPostCode = model.Field<string>("shippingPostCode"),
+                                                  shippingContactNumber = model.Field<string>("shippingContactNumber"),
+                                                  alternateRecipientContact = model.Field<string>("alternateRecipientContact"),
+                                                  alternateRecipientName = model.Field<string>("alternateRecipientName"),
+                                                  alternateRecipientEmail = model.Field<string>("alternateRecipientEmail"),
+                                                  portalSlotID = model.Field<string>("portalSlotID"),
+                                                  slotDate = model.Field<DateTime?>("slotDate"),
+                                                  slotFromTime = model.Field<TimeSpan?>("slotFromTime"),
+                                                  slotToTime = model.Field<TimeSpan?>("slotToTime"),
+                                                  scheduledDate = model.Field<DateTime?>("scheduledDate"),
+                                                  submissionDate = model.Field<DateTime>("submissionDate"),
+                                                  serviceFee = model.Field<int?>("serviceFee"),
+                                                  amountPaid = model.Field<double?>("amountPaid"),
+                                                  paymentMode = model.Field<string>("paymentMode"),
+                                                  MPGSOrderID = model.Field<string>("MPGSOrderID"),
+                                                  MaskedCardNumber = model.Field<string>("MaskedCardNumber"),
+                                                  Token = model.Field<string>("Token"),
+                                                  CardType = model.Field<string>("CardType"),
+                                                  CardHolderName = model.Field<string>("CardHolderName"),
+                                                  ExpiryMonth = model.Field<int?>("ExpiryMonth"),
+                                                  ExpiryYear = model.Field<int?>("ExpiryYear"),
+                                                  CardFundMethod = model.Field<string>("CardFundMethod"),
+                                                  CardBrand = model.Field<string>("CardBrand"),
+                                                  CardIssuer = model.Field<string>("CardIssuer"),
+                                                  DateofBirth = model.Field<DateTime?>("DateofBirth"),
+                                                  ReferralCode = model.Field<string>("ReferralCode"),
+                                                  ProcessedOn = model.Field<DateTime?>("ProcessedOn"),
+                                                  InvoiceNumber = model.Field<string>("InvoiceNumber"),
+                                                  InvoiceUrl = model.Field<string>("InvoiceUrl"),
+                                                  CreatedOn = model.Field<DateTime?>("CreatedOn")
+
+                                              }).FirstOrDefault();
+
+                        if (ds.Tables[1] != null && ds.Tables[1].Rows.Count > 0)
+                        {
+                            List<InvoiceCharges> Charges = new List<InvoiceCharges>();
+                            if (ds.Tables[2] != null && ds.Tables[2].Rows.Count > 0)
+                            {
+
+                                Charges = (from model in ds.Tables[2].AsEnumerable()
+                                           select new InvoiceCharges()
+                                           {
+                                               AccountInvoiceID = model.Field<int?>("AccountInvoiceID"),
+                                               AdminServiceID = model.Field<int?>("AdminServiceID"),
+                                               isGSTIncluded = model.Field<int?>("isGSTIncluded"),
+                                               isRecurring = model.Field<int?>("isRecurring"),
+                                               portalServiceName = model.Field<string>("portalServiceName"),
+                                               serviceFee = model.Field<double?>("serviceFee"),
+                                           }).ToList();
+
+                            }
+                            rescheduleDelivery.invoiceCharges = Charges;
+
+                        }
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = rescheduleDelivery };
+
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
     }
 
-    }
+}
