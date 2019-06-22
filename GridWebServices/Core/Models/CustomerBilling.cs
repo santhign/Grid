@@ -75,7 +75,10 @@ namespace Core.Models
         /// The order identifier.
         /// </value>
         [Required(ErrorMessage = "OrderID is required")]
-        public int OrderID { get; set; }      
+        public int OrderID { get; set; }
+
+        [Required(ErrorMessage = "CustomerID is required")]
+        public int CustomerID { get; set; }
 
         [Required(ErrorMessage = "IDImageFront Image is required")]
         public IFormFile IDImageFront { get; set; }
