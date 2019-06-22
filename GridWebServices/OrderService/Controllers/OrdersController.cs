@@ -5219,9 +5219,10 @@ namespace OrderService.Controllers
                         {
                             //Send SMS
                             
-                            string orderNumberForSMS = string.Empty;
+                            string orderNumberForSMS = string.Empty, Name = string.Empty, Email = string.Empty, MobileNumber = string.Empty;
                             DateTime ? SlotDateForSMS;
                             TimeSpan ? SlotFromTime, SlotToTime;
+                            
                             if (detailsrequest.OrderType == (int)CheckOutType.Orders)
                             {
                                 DatabaseResponse orderMqResponseForSMS = new DatabaseResponse();
@@ -5231,6 +5232,9 @@ namespace OrderService.Controllers
                                 SlotDateForSMS = orderObject.slotDate;
                                 SlotFromTime = orderObject.slotFromTime;
                                     SlotToTime = orderObject.slotToTime;
+                                Name = orderObject.name;
+                                Email = orderObject.email;
+                                MobileNumber = orderObject.shippingContactNumber;
                             }
                             else
                             {
@@ -5240,13 +5244,16 @@ namespace OrderService.Controllers
                                 SlotDateForSMS = messageForSMS.SlotDate;
                                 SlotFromTime = messageForSMS.SlotFromTime;
                                 SlotToTime = messageForSMS.SlotToTime;
+                                Name = messageForSMS.Name;
+                                Email = messageForSMS.Email;
+                                MobileNumber = messageForSMS.MobileNumber;
                             }
                             ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
 
                             DatabaseResponse smsTemplateResponse = await _configAccess.GetSMSNotificationTemplate(NotificationEvent.RescheduleDelivery.ToString());
 
                             var notificationMessage = MessageHelper.GetSMSMessage(NotificationEvent.RescheduleDelivery.ToString(),
-                                ((SMSTemplates)smsTemplateResponse.Results).TemplateName, orderNumberForSMS,
+                                ((SMSTemplates)smsTemplateResponse.Results).TemplateName, Name,Email,MobileNumber, orderNumberForSMS,
                                  SlotDateForSMS != null ? SlotDateForSMS.Value.ToString("dd MMM yyyy") : null,
                                 SlotFromTime != null && SlotToTime != null ? new DateTime(SlotFromTime.Value.Ticks).ToString("hh mm tt") +
                                 " to " + new DateTime(SlotToTime.Value.Ticks).ToString("hh mm tt") : null);
