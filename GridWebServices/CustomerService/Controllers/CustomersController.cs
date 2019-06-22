@@ -3237,5 +3237,75 @@ namespace CustomerService.Controllers
 
             }
         }
+
+        [HttpGet("ValidateVerificationToken/{verificationToken}")]
+        public async Task<IActionResult> ValidateVerificationToken ([FromHeader(Name = "Grid-General-Token")] string token, [FromRoute] string verificationToken)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                                                 .SelectMany(x => x.Errors)
+                                                 .Select(x => x.ErrorMessage))
+                    });
+                }
+
+                TokenValidationHelper tokenValidationHelper = new TokenValidationHelper();
+                if (!tokenValidationHelper.ValidateGenericToken(token, _iconfiguration))
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = true
+                    });
+                }
+
+                CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
+                var response = await _customerAccess.ValidateVerificationToken(verificationToken);
+
+                if (response.ResponseCode == (int)DbReturnValue.RecordExists)
+                {
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = true,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.RecordExists),
+                        IsDomainValidationErrors = false,
+                        ReturnedObject = response.Results
+
+                    });
+                }
+
+                else
+                {
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
     }
 }

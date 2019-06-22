@@ -345,7 +345,7 @@ namespace AdminService.Controllers
                             DatabaseResponse tokenCreationResponse = new DatabaseResponse();
                             string finalURL = string.Empty;
                             // Fetch the URL
-                            if (emailDetails.VerificationStatus == 2)
+                            if (emailDetails.VerificationStatus == 2) // Rejected then token
                             {
                                 configResponse = await _adminOrderDataAccess.GetConfiguration("Emailurl");
                                 tokenCreationResponse = await _adminOrderDataAccess.CreateTokenForVerificationRequests(request.OrderID);

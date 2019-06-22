@@ -1203,4 +1203,11 @@ namespace CustomerService.Models
         /// </value>
         public DateTime? StartDate { get; set; }
     }
+
+
+    public class VerificationResponse
+    {
+        public int? CustomerID { get; set; }
+        public int? OrderID { get; set; }
+    }
 }
