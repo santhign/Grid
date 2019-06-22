@@ -29,13 +29,22 @@ namespace Core.Enums
         [Description("OrderSuccess")]
         OrderSuccess = 3,
 
+        [EnumMember(Value = "ICValidationChange")]
+        [Description("ICValidationChange")]
+        ICValidationChange = 4,
+
+        [EnumMember(Value = "ICValidationReject")]
+        [Description("ICValidationReject")]
+        ICValidationReject = 5,
+
         [EnumMember(Value = "ReplaceSIM")]
         [Description("ReplaceSIM")]
-        ReplaceSIM = 9, 
+        ReplaceSIM = 6,
 
         [EnumMember(Value = "RescheduleDelivery")]
         [Description("RescheduleDelivery")]
-        RescheduleDelivery = 5
+        RescheduleDelivery = 7,
+
     }
 
     public enum SNSNotification

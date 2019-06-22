@@ -232,6 +232,10 @@ namespace Core.Enums
         [EnumMember(Value = "PendingBuddyUnLocked")]
         [Description("PendingBuddyUnLocked")]
         PendingBuddyUnLocked = 157,
+
+        [EnumMember(Value = "Update Success Send Email")]
+        [Description("Record updated successfully")]
+        UpdateSuccessSendEmail = 158,
     }
 }
 

@@ -3632,46 +3632,29 @@ namespace OrderService.DataAccess
             }
         }
 
-        public async Task<DatabaseResponse> GetChangeRequestTypeFromID(int changeRequestID)
+        public async Task<DatabaseResponse> CheckRescheduleDeliveryCharges(int AccountInvoiceID)
         {
             try
             {
-
                 SqlParameter[] parameters =
-               {
-                    new SqlParameter( "@ChangeRequestID",  SqlDbType.Int )
+                 {                     
+                     new SqlParameter( "@AccountInvoiceID",  SqlDbType.Int )
 
                 };
 
-                parameters[0].Value = changeRequestID;
+                parameters[0].Value = AccountInvoiceID;
+                
 
-                _DataHelper = new DataAccessHelper("Order_GetRequestTypeFromChangeRequestID", parameters, _configuration);
+                _DataHelper = new DataAccessHelper("Orders_CheckRescheduleDeliveryCharges", parameters, _configuration);
 
-                DataTable dt = new DataTable();
+                //DataTable dt = new DataTable();
 
-                int result = await _DataHelper.RunAsync(dt); // 105 /102
+                int result = await _DataHelper.RunAsync(); // 105 /102
 
                 DatabaseResponse response = new DatabaseResponse();
 
-                if (result == 105)
-                {
+                response.ResponseCode = result;
 
-                    string ChangeRequestType = string.Empty;
-
-                    if (dt != null && dt.Rows.Count > 0)
-                    {
-
-                        ChangeRequestType = dt.Rows[0].ItemArray[0].ToString();
-
-                    }
-
-                    response = new DatabaseResponse { ResponseCode = result, Results = ChangeRequestType };
-                }
-
-                else
-                {
-                    response = new DatabaseResponse { ResponseCode = result };
-                }
 
                 return response;
             }
@@ -3688,7 +3671,45 @@ namespace OrderService.DataAccess
             }
         }
 
-        public async Task<DatabaseResponse> GetInvoiceRemarksFromInvoiceID(int InvoiceID)
+             public async Task<DatabaseResponse> CheckRescheduleDeliveryCharges(int AccountInvoiceID)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                 {                     
+                     new SqlParameter( "@AccountInvoiceID",  SqlDbType.Int )
+
+                };
+
+                parameters[0].Value = AccountInvoiceID;
+                
+
+                _DataHelper = new DataAccessHelper("Orders_CheckRescheduleDeliveryCharges", parameters, _configuration);
+
+                //DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(); // 105 /102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                response.ResponseCode = result;
+
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+public async Task<DatabaseResponse> GetInvoiceRemarksFromInvoiceID(int InvoiceID)
         {
             try
             {
