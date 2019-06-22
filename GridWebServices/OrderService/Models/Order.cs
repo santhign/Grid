@@ -91,10 +91,7 @@ namespace OrderService.Models
         public List<ServiceCharge> ServiceCharges { get; set; }
     }
 
-    public class OrderCustomer
-    {
-        public int CustomerId { get; set; }
-    }
+   
 
     public class InvoiceOrder
     {

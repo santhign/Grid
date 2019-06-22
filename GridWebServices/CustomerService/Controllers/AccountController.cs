@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 using CustomerService.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
@@ -14,6 +15,10 @@ using Core.Enums;
 using Core.Extensions;
 using Core.Helpers;
 using InfrastructureService;
+using System.IO;
+using Core.DataAccess;
+using System.Collections.Generic;
+
 
 namespace CustomerService.Controllers
 {
@@ -427,6 +432,181 @@ namespace CustomerService.Controllers
             }
         }
 
+        [Route("updateorderpersonalIDdetails")]
+        [HttpPost, DisableRequestSizeLimit]
+        public async Task<IActionResult> UpdateOrderPersonalIDDetails([FromHeader(Name = "Grid-General-Token")] string Token, [FromForm] UpdateOrderPersonalIDDetailsPublicRequest request)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        IsDomainValidationErrors = true,
+                        Message = string.Join("; ", ModelState.Values
+                                                 .SelectMany(x => x.Errors)
+                                                 .Select(x => x.ErrorMessage))
+                    });
+                }
 
+                TokenValidationHelper tokenValidationHelper = new TokenValidationHelper();
+
+                if (!tokenValidationHelper.ValidateGenericToken(Token, _iconfiguration))
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = Core.Extensions.EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = true
+                    });
+                }
+
+                AccountDataAccess _AccountAccess = new AccountDataAccess(_iconfiguration);
+
+                CommonDataAccess _commonDataAccess = new CommonDataAccess(_iconfiguration);
+
+                DatabaseResponse customerResponse = await _commonDataAccess.GetCustomerIdFromOrderId(request.OrderID);
+
+                if (customerResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                {
+                    IFormFile frontImage = request.IDImageFront;
+
+                    IFormFile backImage = request.IDImageBack;
+
+                    BSSAPIHelper bsshelper = new BSSAPIHelper();
+
+                    MiscHelper configHelper = new MiscHelper();
+
+                    OrderDetails customerOrderDetails = await _commonDataAccess.GetOrderDetails(request.OrderID);
+
+                    NRICDetailsRequest personalDetails = new NRICDetailsRequest
+                    {
+                        OrderID = request.OrderID,
+                        IdentityCardNumber = customerOrderDetails.IdentityCardNumber,
+                        IdentityCardType = customerOrderDetails.IdentityCardType,
+                        Nationality = customerOrderDetails.Nationality,
+                        NameInNRIC = customerOrderDetails.Name,
+                        DOB = customerOrderDetails.DOB,
+                        Expiry = customerOrderDetails.ExpiryDate,
+                    };
+
+                    //process file if uploaded - non null
+
+                    if (frontImage != null && backImage != null)
+                    {
+
+                        DatabaseResponse awsConfigResponse = await _commonDataAccess.GetConfiguration(ConfiType.AWS.ToString());
+
+                        if (awsConfigResponse != null && awsConfigResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                        {
+                            GridAWSS3Config awsConfig = configHelper.GetGridAwsConfig((List<Dictionary<string, string>>)awsConfigResponse.Results);
+
+                            AmazonS3 s3Helper = new AmazonS3(awsConfig);
+
+                            string fileNameFront = customerOrderDetails.IdentityCardNumber.Substring(1, customerOrderDetails.IdentityCardNumber.Length - 2) + "_Front_" + DateTime.UtcNow.ToString("yyMMddhhmmss") + Path.GetExtension(frontImage.FileName); //Grid_IDNUMBER_yyyymmddhhmmss.extension
+
+                            UploadResponse s3UploadResponse = await s3Helper.UploadFile(frontImage, fileNameFront);
+
+                            if (s3UploadResponse.HasSucceed)
+                            {
+                                personalDetails.FrontImage = awsConfig.AWSEndPoint + s3UploadResponse.FileName;
+                            }
+                            else
+                            {
+                                LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.S3UploadFailed));
+                            }
+
+                            string fileNameBack = customerOrderDetails.IdentityCardNumber.Substring(1, customerOrderDetails.IdentityCardNumber.Length - 2) + "_Back_" + DateTime.UtcNow.ToString("yyMMddhhmmss") + Path.GetExtension(frontImage.FileName); //Grid_IDNUMBER_yyyymmddhhmmss.extension
+
+                            s3UploadResponse = await s3Helper.UploadFile(backImage, fileNameBack);
+
+                            if (s3UploadResponse.HasSucceed)
+                            {
+                                personalDetails.FrontImage = awsConfig.AWSEndPoint + s3UploadResponse.FileName;
+                            }
+                            else
+                            {
+                                LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.S3UploadFailed));
+                            }
+                        }
+                        else
+                        {
+                            // unable to get aws config
+                            LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.FailedToGetConfiguration));
+
+                        }
+                    }    //file     
+
+                    //update ID ReUpload details
+                    DatabaseResponse updateNRICResponse = await _commonDataAccess.UpdateNRICDetails(null, 0, personalDetails);
+
+                    if (updateNRICResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
+                    {
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = true,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess),
+                            IsDomainValidationErrors = false
+                        });
+                    }
+                    else if (updateNRICResponse.ResponseCode == (int)DbReturnValue.UpdateSuccessSendEmail)
+                    {
+                        LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.UpdateSuccessSendEmail) + "for " + request.OrderID + "Order");
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccessSendEmail),
+                            IsDomainValidationErrors = false
+                        });
+                    }
+
+                    else if (updateNRICResponse.ResponseCode == (int)DbReturnValue.NotExists)
+                    {
+                        LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.NotExists) + " Order" + request.OrderID);
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccessSendEmail),
+                            IsDomainValidationErrors = false
+                        });
+                    }
+                    else
+                    {
+                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.));
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.UpdationFailed),
+                            IsDomainValidationErrors = false
+                        });
+                    }
+                }
+
+                else
+                {
+                    // failed to locate customer
+                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.FailedToGetCustomer));
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(CommonErrors.FailedToGetCustomer),
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
     }
 }

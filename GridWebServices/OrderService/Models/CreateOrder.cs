@@ -520,50 +520,7 @@ namespace OrderService.Models
        
     }
 
-    public class UpdateOrderPersonalIDDetailsRequest
-    {
-        /// <summary>
-        /// Gets or sets the order identifier.
-        /// </summary>
-        /// <value>
-        /// The order identifier.
-        /// </value>
-        [Required(ErrorMessage = "OrderID is required")]
-        public int OrderID { get; set; }
-
-        /// <summary>
-        /// Gets or sets the nationality.
-        /// </summary>
-        /// <value>
-        /// The nationality.
-        /// </value>
-        [Required(ErrorMessage = "Nationality is required")]
-        public string Nationality { get; set; }
-
-        /// <summary>
-        /// Gets or sets the type of the identifier.
-        /// </summary>
-        /// <value>
-        /// The type of the identifier.
-        /// </value>
-        [Required(ErrorMessage = "IDType is required")]
-        public string IDType { get; set; }
-
-        /// <summary>
-        /// Gets or sets the identifier number.
-        /// </summary>
-        /// <value>
-        /// The identifier number.
-        /// </value>
-        [Required(ErrorMessage = "IDNumber is required")]
-        public string IDNumber { get; set; }
-
-        [Required(ErrorMessage = "IDImageFront Image is required")]
-        public IFormFile IDImageFront { get; set; }
-
-        [Required(ErrorMessage = "IDImageBack Image is required")]
-        public IFormFile IDImageBack { get; set; }        
-    }
+   
     /// <summary>
     /// 
     /// </summary>
