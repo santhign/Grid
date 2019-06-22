@@ -79,7 +79,7 @@ namespace NotificationService.Controllers
                     Directory.CreateDirectory($@"SNSNotifications");
                 }
 
-                System.IO.File.WriteAllText($@"SNSNotifications/notifications_{DateTime.UtcNow.ToString("yyyyMMddHHmmssffff")}.json", requestBody);
+                System.IO.File.WriteAllText($@"SNSNotifications/notifications_{DateTime.Now.ToString("yyyyMMddHHmmssffff")}.json", requestBody);
 
                 // end temp
 
@@ -193,7 +193,7 @@ namespace NotificationService.Controllers
                                 DatabaseResponse notificationLogResponse = await _configAccess.CreateEMailNotificationLog(new NotificationLog {
                                     Status = response.Status.ToString() == "Sent" ? 1 : 0, Email = response.Email,
                                     EmailTemplateID = template.EmailTemplateID, EmailBody = template.EmailBody,
-                                    EmailSubject = template.EmailSubject, ScheduledOn = subscription.Timestamp, SendOn = DateTime.UtcNow });
+                                    EmailSubject = template.EmailSubject, ScheduledOn = subscription.Timestamp, SendOn = DateTime.Now });
                             }
                         }
 
@@ -235,7 +235,7 @@ namespace NotificationService.Controllers
                             SMSText = smsData.SMSText,
                             Status = response != "failure" ? 1 : 0,
                             ScheduledOn = subscription.Timestamp,
-                            SendOn = DateTime.UtcNow
+                            SendOn = DateTime.Now
 
                         });
                     }

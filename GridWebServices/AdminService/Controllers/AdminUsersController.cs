@@ -131,7 +131,7 @@ namespace AdminService.Controllers
                         {
                              new Claim(ClaimTypes.Name, adminuser.AdminUserID.ToString())
                         }),
-                        Expires = DateTime.UtcNow.AddDays(expiryDay), //  need to check with business needs
+                        Expires = DateTime.Now.AddDays(expiryDay), //  need to check with business needs
                         SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
                     };
 

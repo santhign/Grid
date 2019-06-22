@@ -572,7 +572,7 @@ namespace Core.Helpers
 
                 if (rangeInMonths > 0)
                 {
-                    DateTime endDate = DateTime.UtcNow;
+                    DateTime endDate = DateTime.Now;
 
                     DateTime startDate = endDate.AddMonths(-(rangeInMonths));
 

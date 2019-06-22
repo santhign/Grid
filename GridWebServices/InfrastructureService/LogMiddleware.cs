@@ -38,7 +38,7 @@ namespace InfrastructureService
                 var request = httpContext.Request;
                 if (request.Path.StartsWithSegments(new PathString("/api")))
                 {
-                    var requestTime = DateTime.UtcNow;
+                    var requestTime = DateTime.Now;
                     var requestBodyContent = await ReadRequestBody(request);
                     var originalBodyStream = httpContext.Response.Body;
                     using (var responseBody = new MemoryStream())

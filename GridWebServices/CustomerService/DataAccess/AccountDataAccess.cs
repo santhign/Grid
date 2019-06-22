@@ -218,7 +218,7 @@ namespace CustomerService.DataAccess
                         {
                              new Claim(ClaimTypes.Name, dt.Rows[0][0].ToString().Trim())
                         }),
-                        Expires = DateTime.UtcNow.AddDays(expiry), //  need to check with business needs
+                        Expires = DateTime.Now.AddDays(expiry), //  need to check with business needs
                         SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
                     };
 

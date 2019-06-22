@@ -64,9 +64,9 @@ namespace BuddyProcessingApp
         {
             try
             {
-                Console.WriteLine("Start timer action: " + DateTime.UtcNow);
+                Console.WriteLine("Start timer action: " + DateTime.Now);
 
-                LogInfo.Information("Start timer action: " + DateTime.UtcNow);
+                LogInfo.Information("Start timer action: " + DateTime.Now);
 
                 BuddyDataAccess buddyDataAccess = new BuddyDataAccess();
 
@@ -156,9 +156,9 @@ namespace BuddyProcessingApp
                     }
                 }
               
-                Console.WriteLine("End timer action: " + DateTime.UtcNow);
+                Console.WriteLine("End timer action: " + DateTime.Now);
 
-                LogInfo.Information("End timer action: " + DateTime.UtcNow);                
+                LogInfo.Information("End timer action: " + DateTime.Now);                
             }
             catch (Exception ex)
             {

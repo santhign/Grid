@@ -55,7 +55,7 @@ namespace OrderService.Controllers
                 {
                     _notificationModel = notification;
 
-                    notification.Timestamp = Convert.ToInt64((DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds);
+                    notification.Timestamp = Convert.ToInt64((DateTime.Now - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds);
 
                     PaymentHelper.InitWebhooksNotificationsFolder();
 

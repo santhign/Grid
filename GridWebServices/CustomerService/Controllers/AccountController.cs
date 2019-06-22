@@ -137,7 +137,7 @@ namespace CustomerService.Controllers
                              new Claim(ClaimTypes.Name, customer.CustomerID.ToString())
                         }),
 
-                        Expires = DateTime.UtcNow.AddDays(expiry), 
+                        Expires = DateTime.Now.AddDays(expiry), 
 
                         SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
                     };
@@ -504,7 +504,7 @@ namespace CustomerService.Controllers
 
                             AmazonS3 s3Helper = new AmazonS3(awsConfig);
 
-                            string fileNameFront = customerOrderDetails.IdentityCardNumber.Substring(1, customerOrderDetails.IdentityCardNumber.Length - 2) + "_Front_" + DateTime.UtcNow.ToString("yyMMddhhmmss") + Path.GetExtension(frontImage.FileName); //Grid_IDNUMBER_yyyymmddhhmmss.extension
+                            string fileNameFront = customerOrderDetails.IdentityCardNumber.Substring(1, customerOrderDetails.IdentityCardNumber.Length - 2) + "_Front_" + DateTime.Now.ToString("yyMMddhhmmss") + Path.GetExtension(frontImage.FileName); //Grid_IDNUMBER_yyyymmddhhmmss.extension
 
                             UploadResponse s3UploadResponse = await s3Helper.UploadFile(frontImage, fileNameFront);
 
@@ -517,7 +517,7 @@ namespace CustomerService.Controllers
                                 LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.S3UploadFailed));
                             }
 
-                            string fileNameBack = customerOrderDetails.IdentityCardNumber.Substring(1, customerOrderDetails.IdentityCardNumber.Length - 2) + "_Back_" + DateTime.UtcNow.ToString("yyMMddhhmmss") + Path.GetExtension(frontImage.FileName); //Grid_IDNUMBER_yyyymmddhhmmss.extension
+                            string fileNameBack = customerOrderDetails.IdentityCardNumber.Substring(1, customerOrderDetails.IdentityCardNumber.Length - 2) + "_Back_" + DateTime.Now.ToString("yyMMddhhmmss") + Path.GetExtension(frontImage.FileName); //Grid_IDNUMBER_yyyymmddhhmmss.extension
 
                             s3UploadResponse = await s3Helper.UploadFile(backImage, fileNameBack);
 

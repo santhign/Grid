@@ -68,7 +68,7 @@ namespace Core.Helpers
                   
                     if(configResponse.ResponseCode==(int)DbReturnValue.RecordExists)
                     {
-                        if (tokenResponse.CreatedOn < DateTime.UtcNow.AddDays(- int.Parse(configResponse.Results.ToString())))
+                        if (tokenResponse.CreatedOn < DateTime.Now.AddDays(- int.Parse(configResponse.Results.ToString())))
                         {
                             tokenResponse.IsExpired = true;
                         }
@@ -141,7 +141,7 @@ namespace Core.Helpers
 
                     if (configResponse.ResponseCode == (int)DbReturnValue.RecordExists)
                     {
-                        if (tokenResponse.CreatedOn < DateTime.UtcNow.AddDays(- int.Parse(configResponse.Results.ToString())))
+                        if (tokenResponse.CreatedOn < DateTime.Now.AddDays(- int.Parse(configResponse.Results.ToString())))
                         {
                             tokenResponse.IsExpired = true;
                         }
