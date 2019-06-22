@@ -66,6 +66,28 @@ namespace OrderService.Helpers
 
                                 msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(details.ChangeRequestID);
 
+                                DatabaseResponse changeRequestTypeResponse = await _orderAccess.GetChangeRequestTypeFromID(details.ChangeRequestID);
+
+                                if(((string) changeRequestTypeResponse.Results)== NotificationEvent.ReplaceSIM.ToString())
+                                {
+                                    if(msgBody.SlotDate!=null)
+                                    {
+                                        CustomerDetails customer = new CustomerDetails
+                                        {
+
+                                            Name = msgBody.Name,
+                                            DeliveryEmail = msgBody.Email,
+                                            ShippingContactNumber = msgBody.ShippingContactNumber,
+                                            OrderNumber = msgBody.OrderNumber,
+                                            SlotDate = msgBody.SlotDate ?? DateTime.Now,
+                                            SlotFromTime = msgBody.SlotFromTime ?? DateTime.Now.TimeOfDay,
+                                            SlotToTime = msgBody.SlotToTime ?? DateTime.Now.TimeOfDay
+                                        };
+
+                                        string status = await SendOrderSuccessSMSNotification(customer, NotificationEvent.ReplaceSIM.ToString());
+                                    }                                   
+                                }                               
+
                                 if (details.RequestTypeID == (int)Core.Enums.RequestType.ReplaceSIM)
                                 {
                                     topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration).Results.ToString().Trim();
@@ -177,7 +199,7 @@ namespace OrderService.Helpers
 
                     else if (((OrderSource)sourceTyeResponse.Results).SourceType == CheckOutType.AccountInvoices.ToString())
                     {
-                        //send invoice queue message
+                        //send invoice queue message                     
 
                         ProcessAccountInvoiceQueueMessage(((OrderSource)sourceTyeResponse.Results).SourceID);
 
@@ -318,7 +340,29 @@ namespace OrderService.Helpers
                 {
                     invoiceDetails = (InvoceQM)invoiceMqResponse.Results;
 
-                   // invoiceDetails.invoicelist= await GetInvoiceList(invoiceDetails.customerID);
+                    DatabaseResponse accountTypeResponse = await _orderAccess.GetInvoiceRemarksFromInvoiceID(InvoiceID);
+
+                    if (((string)accountTypeResponse.Results) == "RecheduleDeliveryInformation")
+                    {
+                        if (invoiceDetails != null)
+                        {
+                            CustomerDetails customer = new CustomerDetails
+                            {
+
+                                //Name = msgBody.Name,
+                                //DeliveryEmail = invoiceDetails.email,
+                                //ShippingContactNumber = msgBody.ShippingContactNumber,
+                                //OrderNumber = msgBody.OrderNumber,
+                                //SlotDate = msgBody.SlotDate ?? DateTime.Now,
+                                //SlotFromTime = msgBody.SlotFromTime ?? DateTime.Now.TimeOfDay,
+                                //SlotToTime = msgBody.SlotToTime ?? DateTime.Now.TimeOfDay
+                            };
+
+                            string status = await SendOrderSuccessSMSNotification(customer, NotificationEvent.RescheduleDelivery.ToString());
+                        }
+                    }                  
+
+                    // invoiceDetails.invoicelist= await GetInvoiceList(invoiceDetails.customerID);
 
                     invoiceDetails.paymentmode = invoiceDetails.CardFundMethod == EnumExtensions.GetDescription(PaymentMode.CC) ? PaymentMode.CC.ToString() : PaymentMode.DC.ToString();
 
@@ -751,7 +795,7 @@ namespace OrderService.Helpers
 
                     LogInfo.Information("Email send status : " + status + " " + JsonConvert.SerializeObject(notificationMessage));
 
-                    status = await SendOrderSuccessSMSNotification(customer);
+                    status = await SendOrderSuccessSMSNotification(customer, NotificationEvent.OrderSuccess.ToString());
 
                     try
                     {
@@ -781,18 +825,20 @@ namespace OrderService.Helpers
             return status;
         }
 
-        public async Task<string> SendOrderSuccessSMSNotification(CustomerDetails customer)
+        public async Task<string> SendOrderSuccessSMSNotification(CustomerDetails customer, string MessageName )
         {
             string status = string.Empty;
+
             try
             {
+              
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
 
                 ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
 
-                DatabaseResponse smsTemplateResponse = await _configAccess.GetSMSNotificationTemplate(NotificationEvent.OrderSuccess.ToString());               
+                DatabaseResponse smsTemplateResponse = await _configAccess.GetSMSNotificationTemplate(MessageName);               
 
-                var notificationMessage = MessageHelper.GetSMSMessage(NotificationEvent.OrderSuccess.ToString(), ((SMSTemplates)smsTemplateResponse.Results).TemplateName,customer.Name,customer.DeliveryEmail,customer.ShippingContactNumber, customer.OrderNumber, customer.SlotDate.ToString("dd MMM yyyy"), new DateTime(customer.SlotFromTime.Ticks).ToString("hh mm tt") + " to " + new DateTime(customer.SlotToTime.Ticks).ToString("hh mm tt"));
+                var notificationMessage = MessageHelper.GetSMSMessage(MessageName, ((SMSTemplates)smsTemplateResponse.Results).TemplateName,customer.Name,customer.DeliveryEmail,customer.ShippingContactNumber, customer.OrderNumber, customer.SlotDate.ToString("dd MMM yyyy"), new DateTime(customer.SlotFromTime.Ticks).ToString("hh mm tt") + " to " + new DateTime(customer.SlotToTime.Ticks).ToString("hh mm tt"));
 
                 DatabaseResponse notificationResponse = await _configAccess.GetConfiguration(ConfiType.Notification.ToString());
 
