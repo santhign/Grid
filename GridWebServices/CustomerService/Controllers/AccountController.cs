@@ -543,6 +543,7 @@ namespace CustomerService.Controllers
 
                     if (updateNRICResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
                     {
+                        DatabaseResponse updateTokenStatus = await _commonDataAccess.UpdateTokenForVerificationRequests(request.OrderID);
                         return Ok(new OperationResponse
                         {
                             HasSucceeded = true,
