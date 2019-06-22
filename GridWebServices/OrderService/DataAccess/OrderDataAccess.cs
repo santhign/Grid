@@ -3669,35 +3669,51 @@ namespace OrderService.DataAccess
             {
                 _DataHelper.Dispose();
             }
-        }
+         }
 
-             public async Task<DatabaseResponse> CheckRescheduleDeliveryCharges(int AccountInvoiceID)
+        public async Task<DatabaseResponse> GetChangeRequestTypeFromID(int changeRequestID)
         {
             try
             {
+
                 SqlParameter[] parameters =
-                 {                     
-                     new SqlParameter( "@AccountInvoiceID",  SqlDbType.Int )
+               {
+                    new SqlParameter( "@ChangeRequestID",  SqlDbType.Int )
 
                 };
 
-                parameters[0].Value = AccountInvoiceID;
-                
+                parameters[0].Value = changeRequestID;
 
-                _DataHelper = new DataAccessHelper("Orders_CheckRescheduleDeliveryCharges", parameters, _configuration);
+                _DataHelper = new DataAccessHelper("Order_GetRequestTypeFromChangeRequestID", parameters, _configuration);
 
-                //DataTable dt = new DataTable();
+                DataTable dt = new DataTable();
 
-                int result = await _DataHelper.RunAsync(); // 105 /102
+                int result = await _DataHelper.RunAsync(dt); // 105 /102
 
                 DatabaseResponse response = new DatabaseResponse();
 
-                response.ResponseCode = result;
+                if (result == 105)
+                {
 
+                    string ChangeRequestType = string.Empty;
+
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+
+                        ChangeRequestType = dt.Rows[0].ItemArray[0].ToString();
+
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = ChangeRequestType };
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
 
                 return response;
             }
-
             catch (Exception ex)
             {
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
@@ -3709,8 +3725,8 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
-public async Task<DatabaseResponse> GetInvoiceRemarksFromInvoiceID(int InvoiceID)
-        {
+       public async Task<DatabaseResponse> GetInvoiceRemarksFromInvoiceID(int InvoiceID)
+       {
             try
             {
 
