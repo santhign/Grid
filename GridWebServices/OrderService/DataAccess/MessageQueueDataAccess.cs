@@ -478,7 +478,7 @@ namespace OrderService.DataAccess
                                               {
                                                   OrderID = model.Field<int>("OrderID"),
                                                   SubscriberID = model.Field<int?>("SubscriberID"),
-                                                  AdminServiceID = model.Field<int?>("SubscriberID"),
+                                                  AdminServiceID = model.Field<int?>("AdminServiceID"),
                                                   portalServiceName = model.Field<string>("portalServiceName"),
                                                   serviceFee = model.Field<double?>("serviceFee"),
                                                   isRecurring = model.Field<int>("isRecurring"),
