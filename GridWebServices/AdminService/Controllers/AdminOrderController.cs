@@ -204,8 +204,8 @@ namespace AdminService.Controllers
                                 });
                         }
 
-
                         CommonDataAccess commonData = new CommonDataAccess(_iconfiguration);
+
                         var orderList = await commonData.GetOrderDetails(orderID);
 
                         if (orderList == null || orderList.OrderID == 0)
@@ -218,14 +218,73 @@ namespace AdminService.Controllers
                             });
                         }
                         else
-                        {
-                            return Ok(new ServerResponse
-                            {
-                                HasSucceeded = true,
-                                Message = StatusMessages.SuccessMessage,
-                                Result = orderList
+                        {     
+                                // DownloadFile
+                               
 
-                            });
+                                DatabaseResponse awsConfigResponse = await commonData.GetConfiguration(ConfiType.AWS.ToString());
+
+                                if (awsConfigResponse != null && awsConfigResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                                {
+                                    MiscHelper configHelper = new MiscHelper();
+
+                                    GridAWSS3Config awsConfig = configHelper.GetGridAwsConfig((List<Dictionary<string, string>>)awsConfigResponse.Results);
+
+                                    AmazonS3 s3Helper = new AmazonS3(awsConfig);
+
+
+                                    DownloadResponse FrontImageDownloadResponse = new DownloadResponse();
+
+                                    DownloadResponse BackImageDownloadResponse = new DownloadResponse();
+
+                                    if (!string.IsNullOrEmpty(orderList.DocumentURL))
+                                    {
+                                        FrontImageDownloadResponse = await s3Helper.DownloadFile(orderList.DocumentURL.Remove(0, awsConfig.AWSEndPoint.Length));
+
+                                        if (FrontImageDownloadResponse.HasSucceed)
+                                        {
+                                        orderList.DocumentURL = FrontImageDownloadResponse.FileObject != null ? configHelper.GetBase64StringFromByteArray(FrontImageDownloadResponse.FileObject, orderList.DocumentURL.Remove(0, awsConfig.AWSEndPoint.Length)) : null;
+                                         }
+                                         else
+                                         {
+                                                orderList.DocumentURL = "";
+                                         }
+                                     }
+
+                                    if (!string.IsNullOrEmpty(orderList.DocumentBackURL))
+                                    {
+                                        BackImageDownloadResponse = await s3Helper.DownloadFile(orderList.DocumentBackURL.Remove(0, awsConfig.AWSEndPoint.Length));
+
+                                    if (BackImageDownloadResponse.HasSucceed)
+                                    {
+                                        orderList.DocumentBackURL = BackImageDownloadResponse.FileObject != null ? configHelper.GetBase64StringFromByteArray(BackImageDownloadResponse.FileObject, orderList.DocumentBackURL.Remove(0, awsConfig.AWSEndPoint.Length)) : null;
+                                    }
+                                    else
+                                    {
+                                        orderList.DocumentURL = "";
+                                    }
+                                }
+                                return Ok(new ServerResponse
+                                {
+                                    HasSucceeded = true,
+                                    Message = StatusMessages.SuccessMessage,
+                                    Result = orderList
+
+                                });
+                                }
+                                else
+                                {
+                                    // unable to get aws config
+                                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.FailedToGetConfiguration));
+
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = false,
+                                        Message = EnumExtensions.GetDescription(CommonErrors.FailedToGetConfiguration)
+
+                                    });
+                                }                         
+
                         }
 
                     }
