@@ -1844,11 +1844,13 @@ namespace CustomerService.DataAccess
                 {
                     response = (from model in dt.AsEnumerable()
                                      select new VerificationResponse()
-                                     {
-                                         
+                                     {                                         
                                          CustomerID = model.Field<int?>("CustomerID"),
                                          OrderID = model.Field<int?>("OrderID"),
-                                         
+                                         OrderNumber = model.Field<string>("OrderNumber"),
+                                         Name = model.Field<string>("Name"),
+                                         Email = model.Field<string>("Email")                                        
+
                                      }).FirstOrDefault();
                 }
 
