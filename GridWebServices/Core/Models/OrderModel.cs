@@ -78,6 +78,7 @@ namespace Core.Models
         public IFormFile BackImage { get; set; }
         public IFormFile FrontImage { get; set; }
         public string Remarks { get; set; }        
+        public string RequestToken { get; set; }
 
     }
 
@@ -96,6 +97,16 @@ namespace Core.Models
         public string RequestToken { get; set; }
         public DateTime ? CreatedOn { get; set; }
         public int IsUsed { get; set; }
+
+    }
+
+    public class VerificationResponse
+    {
+        public int? CustomerID { get; set; }
+        public int? OrderID { get; set; }
+        public string OrderNumber { get; set; }
+        public string Name { get; set; }
+        public string Email { get; set; }
 
     }
 }

@@ -521,6 +521,52 @@ namespace Core.DataAccess
                 _DataHelper.Dispose();
             }
         }
+
+        public async Task<DatabaseResponse> ValidateVerificationToken(string verificationToken)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@verificationToken",  SqlDbType.NVarChar ),
+                };
+
+                parameters[0].Value = verificationToken;
+
+                _DataHelper = new DataAccessHelper("Orders_VerifyVerificationToken", parameters, _configuration);
+                DataTable dt = new DataTable();
+
+                var result = await _DataHelper.RunAsync(dt);
+                var response = new VerificationResponse();
+
+                if (dt.Rows.Count > 0)
+                {
+                    response = (from model in dt.AsEnumerable()
+                                select new VerificationResponse()
+                                {
+                                    CustomerID = model.Field<int?>("CustomerID"),
+                                    OrderID = model.Field<int?>("OrderID"),
+                                    OrderNumber = model.Field<string>("OrderNumber"),
+                                    Name = model.Field<string>("Name"),
+                                    Email = model.Field<string>("Email")
+
+                                }).FirstOrDefault();
+                }
+
+                return new DatabaseResponse() { ResponseCode = result, Results = response };
+            }
+
+            catch (Exception ex)
+            {
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw ex;
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
     }
 
 

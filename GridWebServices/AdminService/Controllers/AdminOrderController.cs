@@ -307,6 +307,19 @@ namespace AdminService.Controllers
                                 });
                         }
 
+                        CommonDataAccess commonDataAccess = new CommonDataAccess(_iconfiguration);
+                        var tokenResult = await commonDataAccess.ValidateVerificationToken(request.RequestToken);
+
+                        if (tokenResult.ResponseCode != (int)DbReturnValue.RecordExists)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.RequestTokenExpired),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+
                         int deliveryStatusNumber = 0;
                         if (!string.IsNullOrWhiteSpace(request.IDVerificationStatus))
                         {
