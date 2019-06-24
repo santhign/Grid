@@ -146,7 +146,7 @@ namespace InfrastructureService
                     {
                         return new DownloadResponse
                         {
-                            HasSucceed = false,
+                            HasSucceed = true,
                             FileObject= ReadStream(responseStream)
                         };
                         
