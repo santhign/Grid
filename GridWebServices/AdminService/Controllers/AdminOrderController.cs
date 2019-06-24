@@ -364,7 +364,7 @@ namespace AdminService.Controllers
                                                     .SelectMany(x => x.Errors)
                                                     .Select(x => x.ErrorMessage))
                                 });
-                        }
+                        }                      
 
                         int deliveryStatusNumber = 0;
                         if (!string.IsNullOrWhiteSpace(request.IDVerificationStatus))

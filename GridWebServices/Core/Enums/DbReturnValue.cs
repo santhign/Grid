@@ -236,6 +236,10 @@ namespace Core.Enums
         [EnumMember(Value = "Update Success Send Email")]
         [Description("Record updated successfully")]
         UpdateSuccessSendEmail = 158,
+
+        [EnumMember(Value = "Request Token Expired")]
+        [Description("Request token is already used. Token expired")]
+        RequestTokenExpired = 159,
     }
 }
 

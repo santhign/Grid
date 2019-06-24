@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -69,7 +70,9 @@ namespace Core.Models
 
     public class NRICDetails
     {
+        [Required(ErrorMessage = "OrderID is required")]
         public int OrderID { get; set; }
+        [Required(ErrorMessage = "Status is required")]
         public string IDVerificationStatus { get; set; }
         public string IdentityCardNumber { get; set; }
         public string IdentityCardType { get; set; }
@@ -80,6 +83,7 @@ namespace Core.Models
         public IFormFile BackImage { get; set; }
         public IFormFile FrontImage { get; set; }
         public string Remarks { get; set; }        
+       
 
     }
 
@@ -98,6 +102,16 @@ namespace Core.Models
         public string RequestToken { get; set; }
         public DateTime ? CreatedOn { get; set; }
         public int IsUsed { get; set; }
+
+    }
+
+    public class VerificationResponse
+    {
+        public int? CustomerID { get; set; }
+        public int? OrderID { get; set; }
+        public string OrderNumber { get; set; }
+        public string Name { get; set; }
+        public string Email { get; set; }
 
     }
 }

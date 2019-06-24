@@ -462,6 +462,19 @@ namespace CustomerService.Controllers
                     });
                 }
 
+                CommonDataAccess commonDataAccess = new CommonDataAccess(_iconfiguration);
+                var tokenResult = await commonDataAccess.ValidateVerificationToken(request.RequestToken);
+
+                if (tokenResult.ResponseCode != (int)DbReturnValue.RecordExists)
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.RequestTokenExpired),
+                        IsDomainValidationErrors = false
+                    });
+                }
+
                 AccountDataAccess _AccountAccess = new AccountDataAccess(_iconfiguration);
 
                 CommonDataAccess _commonDataAccess = new CommonDataAccess(_iconfiguration);

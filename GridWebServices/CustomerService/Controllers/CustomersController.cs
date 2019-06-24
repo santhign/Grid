@@ -3266,8 +3266,8 @@ namespace CustomerService.Controllers
                     });
                 }
 
-                CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
-                var response = await _customerAccess.ValidateVerificationToken(verificationToken);
+                CommonDataAccess commonDataAccess = new CommonDataAccess(_iconfiguration);
+                var response = await commonDataAccess.ValidateVerificationToken(verificationToken);
 
                 if (response.ResponseCode == (int)DbReturnValue.RecordExists)
                 {
