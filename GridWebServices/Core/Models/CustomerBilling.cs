@@ -85,6 +85,9 @@ namespace Core.Models
 
         [Required(ErrorMessage = "IDImageBack Image is required")]
         public IFormFile IDImageBack { get; set; }
+
+        [Required(ErrorMessage = "RequestToken is required")]
+        public string RequestToken { get; set; }
     }
     public class OrderCustomer
     {
