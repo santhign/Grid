@@ -32,6 +32,8 @@ namespace Core.Models
         public string Nationality { get; set; }
         public string DocumentURL { get; set; }
         public string DocumentBackURL { get; set; }
+        public byte[] FrontImage { get; set; }
+        public byte[] BackImage { get; set; }
         public List<IDVerificaionHistory> VerificaionHistories { get; set; }
         
     }

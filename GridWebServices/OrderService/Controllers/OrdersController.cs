@@ -3553,7 +3553,7 @@ namespace OrderService.Controllers
                                         FrontImageDownloadResponse = await s3Helper.DownloadFile(((OrderNRICDetails)nRICresponse.Results).DocumentURL.Remove(0, awsConfig.AWSEndPoint.Length));
                                     }
 
-                                    if (!string.IsNullOrEmpty(((OrderNRICDetails)nRICresponse.Results).DocumentURL))
+                                    if (!string.IsNullOrEmpty(((OrderNRICDetails)nRICresponse.Results).DocumentBackURL))
                                     {
                                         BackImageDownloadResponse =  await s3Helper.DownloadFile(((OrderNRICDetails)nRICresponse.Results).DocumentBackURL.Remove(0, awsConfig.AWSEndPoint.Length));
                                     }
