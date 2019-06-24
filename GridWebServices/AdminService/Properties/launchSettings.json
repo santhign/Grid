@@ -20,7 +20,7 @@
       "launchBrowser": true,
       "applicationUrl": "http://*:5126",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Production"
+        "ASPNETCORE_ENVIRONMENT": "Staging"
       }
     }
   }
