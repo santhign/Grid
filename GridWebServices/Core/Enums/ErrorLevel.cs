@@ -341,5 +341,25 @@ namespace Core.Enums
         [Description("Logged out successfully")]
         SuccessfullyLoggedOut = 80,
 
+        [EnumMember(Value = "BuddyProcessed")]
+        [Description("Buddy processed")]
+        BuddyProcessed = 81,
+
+        [EnumMember(Value = "BuddyProcessingFailed")]
+        [Description("Buddy processing failed. Check on pending buddy tables")]
+        BuddyProcessingFailed = 82,
+
+        [EnumMember(Value = "MQSent")]
+        [Description("MQ Sent")]
+        MQSent = 83,
+
+        [EnumMember(Value = "InvalidCheckoutType")]
+        [Description("Invalid Checkout Type picked up after successful payment")]
+        InvalidCheckoutType = 84,
+
+        [EnumMember(Value = "SystemExceptionAfterPayment")]
+        [Description("System exception eccured after successful payment")]
+        SystemExceptionAfterPayment = 85,
+
     }
 }

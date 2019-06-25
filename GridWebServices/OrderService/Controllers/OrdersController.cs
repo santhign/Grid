@@ -4544,7 +4544,57 @@ namespace OrderService.Controllers
                                             QMHelper qMHelper = new QMHelper(_iconfiguration, _messageQueueDataAccess);
 
                                             if (await qMHelper.ProcessSuccessTransaction(updateRequest) == 1)
-                                            {      
+                                            {
+                                                LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(CommonErrors.BuddyProcessed));
+
+                                                return Ok(new OperationResponse
+                                                {
+                                                    HasSucceeded = true,
+                                                    Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
+                                                    IsDomainValidationErrors = false,
+                                                    ReturnedObject = paymentResponse
+                                                });
+                                            }
+                                            else if (await qMHelper.ProcessSuccessTransaction(updateRequest) == 2)
+                                            {
+                                                LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(CommonErrors.BuddyProcessingFailed));
+
+                                                return Ok(new OperationResponse
+                                                {                                                    
+                                                    HasSucceeded = true,
+                                                    Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
+                                                    IsDomainValidationErrors = false,
+                                                    ReturnedObject = paymentResponse
+                                                });
+                                            }
+                                            else if (await qMHelper.ProcessSuccessTransaction(updateRequest) == 3)
+                                            {
+                                                LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(CommonErrors.MQSent));
+                                               
+                                                return Ok(new OperationResponse
+                                                {
+                                                    HasSucceeded = true,
+                                                    Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
+                                                    IsDomainValidationErrors = false,
+                                                    ReturnedObject = paymentResponse
+                                                });
+                                            }
+
+                                            else if (await qMHelper.ProcessSuccessTransaction(updateRequest) == 4)
+                                            {
+                                                LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing Buddy/MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.SourceTypeNotFound) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
+                                                return Ok(new OperationResponse
+                                                {
+                                                    HasSucceeded = true,
+                                                    Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
+                                                    IsDomainValidationErrors = false,
+                                                    ReturnedObject = paymentResponse
+                                                });
+                                            }
+
+                                            else if (await qMHelper.ProcessSuccessTransaction(updateRequest) == 5)
+                                            {                                               
+                                                LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing Buddy/MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.InvalidCheckoutType) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
                                                 return Ok(new OperationResponse
                                                 {
                                                     HasSucceeded = true,
@@ -4556,15 +4606,16 @@ namespace OrderService.Controllers
 
                                             else
                                             {
-                                                // 0
-                                                LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.SourceTypeNotFound));
-
+                                                // entry for exceptions from QM Helper, but need to send payment success message to UI as payment already processed
+                                                LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing Buddy/MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.SystemExceptionAfterPayment) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
                                                 return Ok(new OperationResponse
                                                 {
-                                                    HasSucceeded = false,
-                                                    Message = EnumExtensions.GetDescription(CommonErrors.SourceTypeNotFound),
-                                                    IsDomainValidationErrors = false
+                                                    HasSucceeded = true,
+                                                    Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
+                                                    IsDomainValidationErrors = false,
+                                                    ReturnedObject = paymentResponse
                                                 });
+
                                             }
                                         }
                                         else if(paymentProcessingRespose.ResponseCode==(int)DbReturnValue.PaymentAlreadyProcessed)
@@ -4602,7 +4653,6 @@ namespace OrderService.Controllers
                                             IsDomainValidationErrors = false
                                         });
                                     }
-
                                 }
 
                                 else
@@ -5016,10 +5066,59 @@ namespace OrderService.Controllers
 
                                                     QMHelper qMHelper = new QMHelper(_iconfiguration, _messageQueueDataAccess);
 
-                                                    if (await qMHelper.ProcessSuccessTransaction(updateRequest) == 1)
-                                                    {
-                                                        PaymentSuccessResponse paymentResponse = new PaymentSuccessResponse { Source = ((CheckOutType)orderType).ToString(), MPGSOrderID = updateRequest.MPGSOrderID, Amount = checkoutDetails.Amount, Currency = gatewayConfig.Currency };
+                                                    PaymentSuccessResponse paymentResponse = new PaymentSuccessResponse { Source = ((CheckOutType)orderType).ToString(), MPGSOrderID = updateRequest.MPGSOrderID, Amount = checkoutDetails.Amount, Currency = gatewayConfig.Currency };
 
+                                                    if (await qMHelper.ProcessSuccessTransaction(updateRequest) == 1)
+                                                    {   
+                                                        LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(CommonErrors.BuddyProcessed));
+                                                        return Ok(new OperationResponse
+                                                        {
+                                                            HasSucceeded = true,
+                                                            Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
+                                                            IsDomainValidationErrors = false,
+                                                            ReturnedObject = paymentResponse
+                                                        });
+                                                    }
+                                                    else if (await qMHelper.ProcessSuccessTransaction(updateRequest) == 2)
+                                                    {
+                                                        LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(CommonErrors.BuddyProcessingFailed));
+
+                                                        return Ok(new OperationResponse
+                                                        {
+                                                            HasSucceeded = true,
+                                                            Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
+                                                            IsDomainValidationErrors = false,
+                                                            ReturnedObject = paymentResponse
+                                                        });
+                                                    }
+                                                    else if (await qMHelper.ProcessSuccessTransaction(updateRequest) == 3)
+                                                    {
+                                                        LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(CommonErrors.MQSent));
+
+                                                        return Ok(new OperationResponse
+                                                        {
+                                                            HasSucceeded = true,
+                                                            Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
+                                                            IsDomainValidationErrors = false,
+                                                            ReturnedObject = paymentResponse
+                                                        });
+                                                    }
+
+                                                    else if (await qMHelper.ProcessSuccessTransaction(updateRequest) == 4)
+                                                    {
+                                                        LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing Buddy/MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.SourceTypeNotFound) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
+                                                        return Ok(new OperationResponse
+                                                        {
+                                                            HasSucceeded = true,
+                                                            Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
+                                                            IsDomainValidationErrors = false,
+                                                            ReturnedObject = paymentResponse
+                                                        });
+                                                    }
+
+                                                    else if (await qMHelper.ProcessSuccessTransaction(updateRequest) == 5)
+                                                    {
+                                                        LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing Buddy/MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.InvalidCheckoutType) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
                                                         return Ok(new OperationResponse
                                                         {
                                                             HasSucceeded = true,
@@ -5031,17 +5130,17 @@ namespace OrderService.Controllers
 
                                                     else
                                                     {
-                                                        // 0
-                                                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.SourceTypeNotFound));
-
+                                                        // entry for exceptions from QM Helper, but need to send payment success message to UI as payment already processed
+                                                        LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing Buddy/MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.SystemExceptionAfterPayment) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
                                                         return Ok(new OperationResponse
                                                         {
-                                                            HasSucceeded = false,
-                                                            Message = EnumExtensions.GetDescription(CommonErrors.SourceTypeNotFound),
-                                                            IsDomainValidationErrors = false
+                                                            HasSucceeded = true,
+                                                            Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
+                                                            IsDomainValidationErrors = false,
+                                                            ReturnedObject = paymentResponse
                                                         });
-                                                    }
 
+                                                    }                                                   
                                                 }
                                                 else
                                                 {
@@ -5050,7 +5149,7 @@ namespace OrderService.Controllers
                                                     {
                                                         HasSucceeded = false,
                                                         Message = EnumExtensions.GetDescription(DbReturnValue.TransactionFailed),
-                                                        IsDomainValidationErrors = false
+                                                        IsDomainValidationErrors = false,                                                        
                                                     });
                                                 }
                                             }
