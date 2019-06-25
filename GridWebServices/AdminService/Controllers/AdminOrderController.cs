@@ -243,11 +243,13 @@ namespace AdminService.Controllers
 
                                         if (FrontImageDownloadResponse.HasSucceed)
                                         {
-                                        orderList.DocumentURL = FrontImageDownloadResponse.FileObject != null ? configHelper.GetBase64StringFromByteArray(FrontImageDownloadResponse.FileObject, orderList.DocumentURL.Remove(0, awsConfig.AWSEndPoint.Length)) : null;
+                                        orderList.FrontImage = FrontImageDownloadResponse.FileObject != null ? configHelper.GetBase64StringFromByteArray(FrontImageDownloadResponse.FileObject, orderList.DocumentURL.Remove(0, awsConfig.AWSEndPoint.Length)) : null;
+                                        orderList.DocumentURL = "";
                                          }
                                          else
                                          {
-                                                orderList.DocumentURL = "";
+                                            orderList.DocumentURL = "";
+                                         orderList.FrontImage = "";
                                          }
                                      }
 
@@ -257,11 +259,13 @@ namespace AdminService.Controllers
 
                                     if (BackImageDownloadResponse.HasSucceed)
                                     {
-                                        orderList.DocumentBackURL = BackImageDownloadResponse.FileObject != null ? configHelper.GetBase64StringFromByteArray(BackImageDownloadResponse.FileObject, orderList.DocumentBackURL.Remove(0, awsConfig.AWSEndPoint.Length)) : null;
+                                        orderList.DocumentBackURL = "";
+                                        orderList.BackImage = BackImageDownloadResponse.FileObject != null ? configHelper.GetBase64StringFromByteArray(BackImageDownloadResponse.FileObject, orderList.DocumentBackURL.Remove(0, awsConfig.AWSEndPoint.Length)) : null;
                                     }
                                     else
                                     {
-                                        orderList.DocumentURL = "";
+                                        orderList.DocumentBackURL = "";
+                                        orderList.BackImage = "";
                                     }
                                 }
                                 return Ok(new ServerResponse
@@ -283,7 +287,7 @@ namespace AdminService.Controllers
                                         Message = EnumExtensions.GetDescription(CommonErrors.FailedToGetConfiguration)
 
                                     });
-                                }                         
+                                }                        
 
                         }
 
