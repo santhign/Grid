@@ -377,7 +377,7 @@ namespace Core.DataAccess
                                                             ChangeLog = model.Field<string>("ChangeLog"),
                                                             Remarks = model.Field<string>("Remarks"),
                                                             UpdatedOn = model.Field<DateTime?>("UpdatedOn"),
-                                                            UpdatedBy = model.Field<int?>("UpdatedBy")
+                                                            UpdatedBy = model.Field<string>("UpdatedBy")
                                                         }).ToList();
                     }
                     else
