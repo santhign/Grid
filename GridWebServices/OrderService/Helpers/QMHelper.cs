@@ -146,8 +146,10 @@ namespace OrderService.Helpers
 
                                 await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
                             }
-
+                          
                         }
+
+                        return 1;
                     }
 
                     else if (((OrderSource)sourceTyeResponse.Results).SourceType == CheckOutType.Orders.ToString())
@@ -201,7 +203,7 @@ namespace OrderService.Helpers
 
                             return 3; // no buddy plan; MQ send
                         }
-
+                        
                     }
 
                     else if (((OrderSource)sourceTyeResponse.Results).SourceType == CheckOutType.AccountInvoices.ToString())
@@ -211,7 +213,12 @@ namespace OrderService.Helpers
                         ProcessAccountInvoiceQueueMessage(((OrderSource)sourceTyeResponse.Results).SourceID);
 
                         return 1;
-                    }                   
+                    }
+
+                    else
+                    {
+                        return 5; // incorrect source type
+                    }
                 }
 
                 else
