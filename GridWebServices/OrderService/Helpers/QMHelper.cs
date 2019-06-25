@@ -171,7 +171,13 @@ namespace OrderService.Helpers
                                 string emailStatus = await SendEmailNotification(updateRequest.MPGSOrderID, ((OrderSource)sourceTyeResponse.Results).SourceID);
                                 LogInfo.Information("Email Send status for : " + emailStatus);
 
-                            }                          
+                                return 1; // buddy processed
+                            }
+
+                            else
+                            {
+                                return 0; // buddy not processed
+                            }
                         }
 
                         else
@@ -189,10 +195,11 @@ namespace OrderService.Helpers
                             {
                                 LogInfo.Information("Email Send failed");
                                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-                            }
-                           
+                            }                           
 
                             ProcessOrderQueueMessage(((OrderSource)sourceTyeResponse.Results).SourceID);
+
+                            return 3; // no buddy plan; MQ send
                         }
 
                     }
@@ -203,23 +210,22 @@ namespace OrderService.Helpers
 
                         ProcessAccountInvoiceQueueMessage(((OrderSource)sourceTyeResponse.Results).SourceID);
 
-                    }
-
-
-                    return 1;
+                        return 1;
+                    }                   
                 }
 
                 else
                 {
                     // unable to get sourcetype form db
 
-                    return 0;
+                    return 4;
 
                 }
             }
             catch(Exception ex)
             {
-                throw ex;
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                return 0;
             }
         }
 
@@ -428,7 +434,7 @@ namespace OrderService.Helpers
             }
             catch (Exception ex)
             {
-                throw ex;
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
             }
         }
         public void ProcessBuddy(Action buddyProcessor)
@@ -488,14 +494,16 @@ namespace OrderService.Helpers
 
                 catch(Exception ex)
                 {
-                    throw ex;
+                    LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                    return 0;
                 }               
 
             }
             catch (Exception ex)
             {
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-                throw ex;
+                return 0;
             }
             
         }
@@ -523,6 +531,8 @@ namespace OrderService.Helpers
                     LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
 
                     buddy.IsProcessed = false;
+
+                    return 0;
                 }
 
                 string AssetToSubscribe = string.Empty;
@@ -539,6 +549,11 @@ namespace OrderService.Helpers
                     string json = bsshelper.GetJsonString(numbers.FreeNumbers); // json insert
 
                     DatabaseResponse updateBssCallFeeNumbers = await _orderAccess.UpdateBSSCallNumbers(json, ((BSSAssetRequest)requestIdRes.Results).userid, ((BSSAssetRequest)requestIdRes.Results).BSSCallLogID);
+                }
+
+                else
+                {
+                    return 0;
                 }
 
                 if (res != null && (int.Parse(res.Response.asset_details.total_record_count) > 0))
@@ -562,6 +577,8 @@ namespace OrderService.Helpers
                             // update process status
 
                             buddy.IsProcessed = true;
+
+                            return 1;
                             
                         }
 
@@ -569,6 +586,8 @@ namespace OrderService.Helpers
                         {
                             // buddy process failed
                             buddy.IsProcessed = false;
+
+                            return 0;
                         }
 
                        
@@ -579,7 +598,8 @@ namespace OrderService.Helpers
                         buddy.IsProcessed = false;
 
                         LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateAssetBlockingFailed));
-                        
+
+                        return 0;
                     }
 
                 }
@@ -589,8 +609,9 @@ namespace OrderService.Helpers
                     buddy.IsProcessed = false;
                     LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.GetAssetFailed));
 
+                    return 0;
                 }
-                return 1;
+               
 
             }
             catch (Exception ex)

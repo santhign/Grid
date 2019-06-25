@@ -569,7 +569,7 @@ namespace CustomerService.Controllers
                         LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.UpdateSuccessSendEmail) + "for " + request.OrderID + "Order");
                         return Ok(new OperationResponse
                         {
-                            HasSucceeded = false,
+                            HasSucceeded = true,
                             Message = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccessSendEmail),
                             IsDomainValidationErrors = false
                         });
