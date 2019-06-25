@@ -149,7 +149,7 @@ namespace OrderService.Helpers
                           
                         }
 
-                        return 1;
+                        return 3;
                     }
 
                     else if (((OrderSource)sourceTyeResponse.Results).SourceType == CheckOutType.Orders.ToString())
@@ -178,7 +178,7 @@ namespace OrderService.Helpers
 
                             else
                             {
-                                return 0; // buddy not processed
+                                return 2; // buddy not processed
                             }
                         }
 
@@ -201,7 +201,7 @@ namespace OrderService.Helpers
 
                             ProcessOrderQueueMessage(((OrderSource)sourceTyeResponse.Results).SourceID);
 
-                            return 3; // no buddy plan; MQ send
+                            return 3; // not buddy plan; MQ send
                         }
                         
                     }
@@ -212,12 +212,13 @@ namespace OrderService.Helpers
 
                         ProcessAccountInvoiceQueueMessage(((OrderSource)sourceTyeResponse.Results).SourceID);
 
-                        return 1;
+                        return 3;
                     }
 
                     else
                     {
-                        return 5; // incorrect source type
+                        return 5; // incorrect CheckOutType, no chance to reach here, but just to do 
+                                  //returnn from all code path, because in all of the above I need to keep CheckOutType check 
                     }
                 }
 
