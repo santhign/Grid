@@ -259,8 +259,9 @@ namespace AdminService.Controllers
 
                                     if (BackImageDownloadResponse.HasSucceed)
                                     {
-                                        orderList.DocumentBackURL = "";
+                                        
                                         orderList.BackImage = BackImageDownloadResponse.FileObject != null ? configHelper.GetBase64StringFromByteArray(BackImageDownloadResponse.FileObject, orderList.DocumentBackURL.Remove(0, awsConfig.AWSEndPoint.Length)) : null;
+                                        orderList.DocumentBackURL = "";
                                     }
                                     else
                                     {
