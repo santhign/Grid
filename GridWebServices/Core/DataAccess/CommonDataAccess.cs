@@ -454,7 +454,10 @@ namespace Core.DataAccess
                                     {
                                         Email = model.Field<string>("Email"),
                                         Name = model.Field<string>("Name"),
-                                        VerificationStatus = model.Field<int>("VerificationStatus")
+                                        VerificationStatus = model.Field<int>("VerificationStatus"),
+                                        ChangeLog = model.Field<string>("ChangeLog"),
+                                        Remark = model.Field<string>("Remark")
+
                                     }).FirstOrDefault();
                 }
                 response.Results = emailDetails;

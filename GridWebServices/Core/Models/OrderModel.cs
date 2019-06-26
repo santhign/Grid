@@ -93,7 +93,7 @@ namespace Core.Models
         public string Name { get; set; }
         public int VerificationStatus { get; set; }
         public string Remark { get; set;  }
-        public string Action { get; set; }
+        public string ChangeLog { get; set; }
 
     }
 
