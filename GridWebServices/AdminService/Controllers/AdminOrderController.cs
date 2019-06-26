@@ -536,7 +536,7 @@ namespace AdminService.Controllers
                             string finalURL = string.Empty;
                             if (emailDetails.VerificationStatus == 2) // Rejected then token
                             {
-                                configResponse = await _adminOrderDataAccess.GetConfiguration("Emailurl");
+                                configResponse = await _adminOrderDataAccess.GetConfiguration("NRICReUploadLink");
                                 tokenCreationResponse = await _adminOrderDataAccess.CreateTokenForVerificationRequests(request.OrderID);
                                 var tokenCreation = (VerificationRequestResponse)tokenCreationResponse.Results;
                                 finalURL = configResponse.Results.ToString() + tokenCreation.RequestToken;
