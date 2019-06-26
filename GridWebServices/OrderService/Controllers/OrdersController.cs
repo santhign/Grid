@@ -4475,7 +4475,7 @@ namespace OrderService.Controllers
                         OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
                         //update checkout details
                         DatabaseResponse updateCheckoutDetailsResponse = await _orderAccess.UpdateCheckOutResponse(updateRequest);
-
+                        //Function to check if the payment amount is same as one from order
                         if (updateCheckoutDetailsResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
                         {
                             if ((TokenSession)updateCheckoutDetailsResponse.Results != null)
@@ -4512,14 +4512,17 @@ namespace OrderService.Controllers
 
                                         string captureResponse = gatewayHelper.Capture(gatewayConfig, tokenSession);
 
+                                        LogInfo.Information(captureResponse);
                                       //  get the session details and transaction details
 
                                        TransactionRetrieveResponseOperation transactionResponse = new TransactionRetrieveResponseOperation();                                       
 
                                         string receipt = gatewayHelper.RetrieveCheckOutTransaction(gatewayConfig, updateRequest);
+                                        LogInfo.Information(receipt);
 
                                         transactionResponse = gatewayHelper.GetCapturedTransaction(receipt);
 
+                                        LogInfo.Information(transactionResponse.TrasactionResponse.ApiResult + transactionResponse.TrasactionResponse.PaymentStatus + transactionResponse.TrasactionResponse.OrderId);
                                         DatabaseResponse tokenDetailsUpdateResponse = new DatabaseResponse();
 
                                         DatabaseResponse paymentProcessingRespose = new DatabaseResponse();
