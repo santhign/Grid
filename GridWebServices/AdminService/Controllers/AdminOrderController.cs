@@ -338,6 +338,12 @@ namespace AdminService.Controllers
 
         }
 
+        /// <summary>
+        /// Updates the nric details.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="request">The request.</param>
+        /// <returns></returns>
         [HttpPost("UpdateNRICDetails")]
         public async Task<IActionResult> UpdateNRICDetails([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromForm] NRICDetails request)
         {
@@ -613,6 +619,12 @@ namespace AdminService.Controllers
 
         }
 
+        /// <summary>
+        /// Gets the order details history.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="orderID">The order identifier.</param>
+        /// <returns></returns>
         [HttpGet("GetOrderDetailsHistoryForNRIC/{orderID}")]
         public async Task<IActionResult> GetOrderDetailsHistory([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int orderID)
         {
