@@ -739,7 +739,7 @@ namespace OrderService.Helpers
                         {
                             orderedNumbersSb.Append("<tr><td width='100%' colspan='3'> </td></tr>");
                         }
-                        orderedNumbersSb.Append("<tr><td width='25%'>MobileNumber :<td width='20%'>");
+                        orderedNumbersSb.Append("<tr><td width='25%'>Mobile Number :<td width='20%'>");
                         orderedNumbersSb.Append(number.MobileNumber);
                         orderedNumbersSb.Append("</td><td width ='55%'></td></tr>");
                         orderedNumbersSb.Append("<tr><td width='25%'>Plan :<td width='20%'>");
@@ -766,21 +766,23 @@ namespace OrderService.Helpers
 
                         deliveryAddressSb.Append(customer.ShippingStreetName);
                     }
-
-                    deliveryAddressSb.Append("<br />");
+                    if (deliveryAddressSb.ToString() != "")
+                    {
+                        deliveryAddressSb.Append("<br />");
+                    }
 
                     StringBuilder shippingAddr2 = new StringBuilder();
 
                     if (!string.IsNullOrEmpty(customer.ShippingFloor))
                     {
-                        shippingAddr2.Append(customer.ShippingFloor);
+                        shippingAddr2.Append("#" + customer.ShippingFloor);
                     }
 
                     if (!string.IsNullOrEmpty(customer.ShippingUnit))
                     {
                         if (shippingAddr2.ToString() != "")
                         {
-                            shippingAddr2.Append(" ");
+                            shippingAddr2.Append(" - ");
                         }
                         shippingAddr2.Append(customer.ShippingUnit);
                     }
@@ -789,19 +791,21 @@ namespace OrderService.Helpers
                     {
                         if (shippingAddr2.ToString() != "")
                         {
-                            shippingAddr2.Append(" ");
+                            shippingAddr2.Append(", ");
                         }
 
                         shippingAddr2.Append(customer.ShippingBuildingName);
                     }
+                    if (shippingAddr2.ToString() != "")
+                    {
+                        deliveryAddressSb.Append(shippingAddr2.ToString());
 
-                    deliveryAddressSb.Append(shippingAddr2.ToString());
-
-                    deliveryAddressSb.Append("<br />");
+                        deliveryAddressSb.Append("<br />");
+                    }
 
                     if (!string.IsNullOrEmpty(customer.ShippingPostCode))
                     {
-                        deliveryAddressSb.Append(customer.ShippingPostCode);
+                        deliveryAddressSb.Append("Singapore - " + customer.ShippingPostCode);
                     }
 
                     string deliveryDate = customer.SlotDate.ToString("dd MMM yyyy") + " " + new DateTime(customer.SlotFromTime.Ticks).ToString("hh mm tt") + " to " + new DateTime(customer.SlotToTime.Ticks).ToString("hh mm tt");
