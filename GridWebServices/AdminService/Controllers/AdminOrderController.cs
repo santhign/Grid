@@ -212,7 +212,7 @@ namespace AdminService.Controllers
                         {
                             return Ok(new ServerResponse
                             {
-                                HasSucceeded = true,
+                                HasSucceeded = false,
                                 Message = EnumExtensions.GetDescription(DbReturnValue.NotExists)
 
                             });
