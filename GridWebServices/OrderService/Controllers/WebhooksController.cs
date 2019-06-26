@@ -234,15 +234,45 @@ namespace OrderService.Controllers
 
                     QMHelper qMHelper = new QMHelper(_iconfiguration, _messageQueueDataAccess);
 
-                    if (await qMHelper.ProcessSuccessTransaction(updateRequest) == 1)
+                    int processResult = await qMHelper.ProcessSuccessTransaction(updateRequest);                   
+
+                    if (processResult == 1)
                     {
-                        LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.ProcessingQue));
+                        LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(CommonErrors.BuddyProcessed));
+
+                       
+                    }
+                    else if (processResult == 2)
+                    {
+                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(CommonErrors.BuddyProcessingFailed));
+
+                       
+                    }
+                    else if (processResult == 3)
+                    {
+                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(CommonErrors.MQSent));
+
+                       
+                    }
+
+                    else if (processResult == 4)
+                    {
+                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing Buddy/MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.SourceTypeNotFound) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
+                       
+                    }
+
+                    else if (processResult == 5)
+                    {
+                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing Buddy/MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.InvalidCheckoutType) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
+                      
                     }
 
                     else
-                    {                       
-                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.SourceTypeNotFound) + " " + EnumExtensions.GetDescription(CommonErrors.ProcessingQueFailed));
-                      
+                    {
+                        // entry for exceptions from QM Helper, but need to send payment success message to UI as payment already processed
+                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing Buddy/MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.SystemExceptionAfterPayment) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
+                       
+
                     }
                 }
            

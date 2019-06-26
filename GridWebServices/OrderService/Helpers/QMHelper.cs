@@ -808,7 +808,7 @@ namespace OrderService.Helpers
                         deliveryAddressSb.Append("Singapore - " + customer.ShippingPostCode);
                     }
 
-                    string deliveryDate = customer.SlotDate.ToString("dd MMM yyyy") + " " + new DateTime(customer.SlotFromTime.Ticks).ToString("hh mm tt") + " to " + new DateTime(customer.SlotToTime.Ticks).ToString("hh mm tt");
+                    string deliveryDate = customer.SlotDate.ToString("dd MMM yyyy") + " " + new DateTime(customer.SlotFromTime.Ticks).ToString("hh:mm tt") + " to " + new DateTime(customer.SlotToTime.Ticks).ToString("hh:mm tt");
 
                     var notificationMessage = MessageHelper.GetMessage(customer.ToEmailList, customer.Name,
 
