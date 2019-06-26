@@ -4543,7 +4543,9 @@ namespace OrderService.Controllers
 
                                             QMHelper qMHelper = new QMHelper(_iconfiguration, _messageQueueDataAccess);
 
-                                            if (await qMHelper.ProcessSuccessTransaction(updateRequest) == 1)
+                                            int processResult = await qMHelper.ProcessSuccessTransaction(updateRequest);
+
+                                            if (processResult == 1)
                                             {
                                                 LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(CommonErrors.BuddyProcessed));
 
@@ -4555,9 +4557,9 @@ namespace OrderService.Controllers
                                                     ReturnedObject = paymentResponse
                                                 });
                                             }
-                                            else if (await qMHelper.ProcessSuccessTransaction(updateRequest) == 2)
+                                            else if (processResult == 2)
                                             {
-                                                LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(CommonErrors.BuddyProcessingFailed));
+                                                LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(CommonErrors.BuddyProcessingFailed));
 
                                                 return Ok(new OperationResponse
                                                 {                                                    
@@ -4567,9 +4569,9 @@ namespace OrderService.Controllers
                                                     ReturnedObject = paymentResponse
                                                 });
                                             }
-                                            else if (await qMHelper.ProcessSuccessTransaction(updateRequest) == 3)
+                                            else if (processResult == 3)
                                             {
-                                                LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(CommonErrors.MQSent));
+                                                LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(CommonErrors.MQSent));
                                                
                                                 return Ok(new OperationResponse
                                                 {
@@ -4580,9 +4582,9 @@ namespace OrderService.Controllers
                                                 });
                                             }
 
-                                            else if (await qMHelper.ProcessSuccessTransaction(updateRequest) == 4)
+                                            else if (processResult == 4)
                                             {
-                                                LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing Buddy/MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.SourceTypeNotFound) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
+                                                LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing Buddy/MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.SourceTypeNotFound) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
                                                 return Ok(new OperationResponse
                                                 {
                                                     HasSucceeded = true,
@@ -4592,9 +4594,9 @@ namespace OrderService.Controllers
                                                 });
                                             }
 
-                                            else if (await qMHelper.ProcessSuccessTransaction(updateRequest) == 5)
+                                            else if (processResult == 5)
                                             {                                               
-                                                LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing Buddy/MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.InvalidCheckoutType) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
+                                                LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing Buddy/MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.InvalidCheckoutType) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
                                                 return Ok(new OperationResponse
                                                 {
                                                     HasSucceeded = true,
@@ -4607,7 +4609,7 @@ namespace OrderService.Controllers
                                             else
                                             {
                                                 // entry for exceptions from QM Helper, but need to send payment success message to UI as payment already processed
-                                                LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing Buddy/MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.SystemExceptionAfterPayment) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
+                                                LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing Buddy/MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.SystemExceptionAfterPayment) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
                                                 return Ok(new OperationResponse
                                                 {
                                                     HasSucceeded = true,
@@ -5068,9 +5070,12 @@ namespace OrderService.Controllers
 
                                                     PaymentSuccessResponse paymentResponse = new PaymentSuccessResponse { Source = ((CheckOutType)orderType).ToString(), MPGSOrderID = updateRequest.MPGSOrderID, Amount = checkoutDetails.Amount, Currency = gatewayConfig.Currency };
 
-                                                    if (await qMHelper.ProcessSuccessTransaction(updateRequest) == 1)
+                                                    int processResult = await qMHelper.ProcessSuccessTransaction(updateRequest);
+
+                                                    if (processResult==1)
                                                     {   
                                                         LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(CommonErrors.BuddyProcessed));
+
                                                         return Ok(new OperationResponse
                                                         {
                                                             HasSucceeded = true,
@@ -5079,7 +5084,7 @@ namespace OrderService.Controllers
                                                             ReturnedObject = paymentResponse
                                                         });
                                                     }
-                                                    else if (await qMHelper.ProcessSuccessTransaction(updateRequest) == 2)
+                                                    else if (processResult == 2)
                                                     {
                                                         LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(CommonErrors.BuddyProcessingFailed));
 
@@ -5091,7 +5096,7 @@ namespace OrderService.Controllers
                                                             ReturnedObject = paymentResponse
                                                         });
                                                     }
-                                                    else if (await qMHelper.ProcessSuccessTransaction(updateRequest) == 3)
+                                                    else if (processResult == 3)
                                                     {
                                                         LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(CommonErrors.MQSent));
 
@@ -5104,7 +5109,7 @@ namespace OrderService.Controllers
                                                         });
                                                     }
 
-                                                    else if (await qMHelper.ProcessSuccessTransaction(updateRequest) == 4)
+                                                    else if (processResult == 4)
                                                     {
                                                         LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing Buddy/MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.SourceTypeNotFound) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
                                                         return Ok(new OperationResponse
@@ -5116,7 +5121,7 @@ namespace OrderService.Controllers
                                                         });
                                                     }
 
-                                                    else if (await qMHelper.ProcessSuccessTransaction(updateRequest) == 5)
+                                                    else if (processResult == 5)
                                                     {
                                                         LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing Buddy/MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.InvalidCheckoutType) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
                                                         return Ok(new OperationResponse
