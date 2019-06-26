@@ -1668,6 +1668,7 @@ namespace OrderService.DataAccess
         /// <returns></returns>
         public async Task<DatabaseResponse> UpdateCheckOutReceipt(TransactionResponseModel transactionModel)
         {
+            DatabaseResponse response = new DatabaseResponse();
             try
             {
                 SqlParameter[] parameters =
@@ -1720,8 +1721,6 @@ namespace OrderService.DataAccess
 
                 int result = await _DataHelper.RunAsync();    // 105 / 102
 
-                DatabaseResponse response = new DatabaseResponse();
-
                 response = new DatabaseResponse { ResponseCode = result };
 
                 return response;
@@ -1730,7 +1729,7 @@ namespace OrderService.DataAccess
             {
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
-                throw (ex);
+                return response;
             }
             finally
             {
