@@ -218,48 +218,48 @@ namespace AdminService.Controllers
                             });
                         }
                         else
-                        {     
-                                // DownloadFile
-                               
+                        {
+                            // DownloadFile
 
-                                DatabaseResponse awsConfigResponse = await commonData.GetConfiguration(ConfiType.AWS.ToString());
 
-                                if (awsConfigResponse != null && awsConfigResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                            DatabaseResponse awsConfigResponse = await commonData.GetConfiguration(ConfiType.AWS.ToString());
+
+                            if (awsConfigResponse != null && awsConfigResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                            {
+                                MiscHelper configHelper = new MiscHelper();
+
+                                GridAWSS3Config awsConfig = configHelper.GetGridAwsConfig((List<Dictionary<string, string>>)awsConfigResponse.Results);
+
+                                AmazonS3 s3Helper = new AmazonS3(awsConfig);
+
+
+                                DownloadResponse FrontImageDownloadResponse = new DownloadResponse();
+
+                                DownloadResponse BackImageDownloadResponse = new DownloadResponse();
+
+                                if (!string.IsNullOrEmpty(orderList.DocumentURL))
                                 {
-                                    MiscHelper configHelper = new MiscHelper();
+                                    FrontImageDownloadResponse = await s3Helper.DownloadFile(orderList.DocumentURL.Remove(0, awsConfig.AWSEndPoint.Length));
 
-                                    GridAWSS3Config awsConfig = configHelper.GetGridAwsConfig((List<Dictionary<string, string>>)awsConfigResponse.Results);
-
-                                    AmazonS3 s3Helper = new AmazonS3(awsConfig);
-
-
-                                    DownloadResponse FrontImageDownloadResponse = new DownloadResponse();
-
-                                    DownloadResponse BackImageDownloadResponse = new DownloadResponse();
-
-                                    if (!string.IsNullOrEmpty(orderList.DocumentURL))
+                                    if (FrontImageDownloadResponse.HasSucceed)
                                     {
-                                        FrontImageDownloadResponse = await s3Helper.DownloadFile(orderList.DocumentURL.Remove(0, awsConfig.AWSEndPoint.Length));
-
-                                        if (FrontImageDownloadResponse.HasSucceed)
-                                        {
                                         orderList.FrontImage = FrontImageDownloadResponse.FileObject != null ? configHelper.GetBase64StringFromByteArray(FrontImageDownloadResponse.FileObject, orderList.DocumentURL.Remove(0, awsConfig.AWSEndPoint.Length)) : null;
                                         orderList.DocumentURL = "";
-                                         }
-                                         else
-                                         {
-                                            orderList.DocumentURL = "";
-                                         orderList.FrontImage = "";
-                                         }
-                                     }
-
-                                    if (!string.IsNullOrEmpty(orderList.DocumentBackURL))
+                                    }
+                                    else
                                     {
-                                        BackImageDownloadResponse = await s3Helper.DownloadFile(orderList.DocumentBackURL.Remove(0, awsConfig.AWSEndPoint.Length));
+                                        orderList.DocumentURL = "";
+                                        orderList.FrontImage = "";
+                                    }
+                                }
+
+                                if (!string.IsNullOrEmpty(orderList.DocumentBackURL))
+                                {
+                                    BackImageDownloadResponse = await s3Helper.DownloadFile(orderList.DocumentBackURL.Remove(0, awsConfig.AWSEndPoint.Length));
 
                                     if (BackImageDownloadResponse.HasSucceed)
                                     {
-                                        
+
                                         orderList.BackImage = BackImageDownloadResponse.FileObject != null ? configHelper.GetBase64StringFromByteArray(BackImageDownloadResponse.FileObject, orderList.DocumentBackURL.Remove(0, awsConfig.AWSEndPoint.Length)) : null;
                                         orderList.DocumentBackURL = "";
                                     }
@@ -276,19 +276,19 @@ namespace AdminService.Controllers
                                     Result = orderList
 
                                 });
-                                }
-                                else
+                            }
+                            else
+                            {
+                                // unable to get aws config
+                                LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.FailedToGetConfiguration));
+
+                                return Ok(new OperationResponse
                                 {
-                                    // unable to get aws config
-                                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.FailedToGetConfiguration));
+                                    HasSucceeded = false,
+                                    Message = EnumExtensions.GetDescription(CommonErrors.FailedToGetConfiguration)
 
-                                    return Ok(new OperationResponse
-                                    {
-                                        HasSucceeded = false,
-                                        Message = EnumExtensions.GetDescription(CommonErrors.FailedToGetConfiguration)
-
-                                    });
-                                }                        
+                                });
+                            }
 
                         }
 
@@ -369,7 +369,7 @@ namespace AdminService.Controllers
                                                     .SelectMany(x => x.Errors)
                                                     .Select(x => x.ErrorMessage))
                                 });
-                        }                      
+                        }
 
                         int deliveryStatusNumber = 0;
                         if (!string.IsNullOrWhiteSpace(request.IDVerificationStatus))
@@ -416,7 +416,7 @@ namespace AdminService.Controllers
                             Expiry = request.Expiry,
                             Remarks = request.Remarks,
                             IDVerificationStatus = request.IDVerificationStatus,
-                            
+
                         };
 
                         if (request.FrontImage != null && request.BackImage != null)
@@ -473,7 +473,7 @@ namespace AdminService.Controllers
                             var emailDetails = (EmailResponse)returnResponse.Results;
                             DatabaseResponse configResponse = new DatabaseResponse();
                             DatabaseResponse tokenCreationResponse = new DatabaseResponse();
-                            
+
                             string finalURL = string.Empty;
                             // Fetch the URL
                             if (emailDetails.VerificationStatus == 2) // Rejected then token
@@ -573,7 +573,7 @@ namespace AdminService.Controllers
 
                             //Sending message start
                             // Send email to customer email                            ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
-                           
+
 
                             return Ok(new ServerResponse
                             {
@@ -592,6 +592,108 @@ namespace AdminService.Controllers
                                 Message = EnumExtensions.GetDescription(DbReturnValue.UpdationFailed),
                                 IsDomainValidationErrors = false
                             });
+                        }
+
+                    }
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+
+                }
+
+                else
+                {
+                    // token auth failure
+                    LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+
+        }
+
+        [HttpGet("GetOrderDetailsHistoryForNRIC/{orderID}")]
+        public async Task<IActionResult> GetOrderDetailsHistory([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int orderID)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+                AdminUsersDataAccess _adminUsersDataAccess = new AdminUsersDataAccess(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await _adminUsersDataAccess.AuthenticateAdminUserToken(token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    {
+                        if (!ModelState.IsValid)
+                        {
+                            return StatusCode((int)HttpStatusCode.OK,
+                                new OperationResponse
+                                {
+                                    HasSucceeded = false,
+                                    IsDomainValidationErrors = true,
+                                    Message = string.Join("; ", ModelState.Values
+                                                    .SelectMany(x => x.Errors)
+                                                    .Select(x => x.ErrorMessage))
+                                });
+                        }
+                        var orderList = await _adminOrderDataAccess.GetNRICOrderDetailsHistory(orderID);
+
+                        if (orderList == null || orderList.Count == 0)
+                        {
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists)
+
+                            });
+                        }
+                        else
+                        {
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = true,
+                                Message = StatusMessages.SuccessMessage,
+                                Result = orderList
+
+                            });
+
+
                         }
 
                     }

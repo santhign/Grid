@@ -170,6 +170,8 @@ namespace Core.Enums
         public const string Orders_InsertIDVerificationRequests = "Orders_InsertIDVerificationRequests";
         /// <summary>The orders update identifier verification requests</summary>
         public const string Orders_UpdateIDVerificationRequests = "Orders_UpdateIDVerificationRequests";
+
+        public const string Admin_GetOrderDetailsHistoryForNRIC = "Admin_GetOrderDetailsHistoryForNRIC";
     }
 
 }

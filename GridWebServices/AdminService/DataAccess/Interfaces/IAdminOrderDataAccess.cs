@@ -16,5 +16,7 @@ namespace AdminService.DataAccess.Interfaces
         Task<DatabaseResponse> GetConfiguration(string configType);
 
         Task<DatabaseResponse> CreateTokenForVerificationRequests(int orderId);
+
+        Task<List<IDVerificaionHistory>> GetNRICOrderDetailsHistory(int orderID);
     }
 }

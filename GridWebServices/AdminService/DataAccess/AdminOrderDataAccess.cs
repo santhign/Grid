@@ -376,7 +376,63 @@ namespace AdminService.DataAccess
             {
                 _DataHelper.Dispose();
             }
-        }        
+        }
+
+        public async Task<List<IDVerificaionHistory>> GetNRICOrderDetailsHistory(int orderID)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+              {
+                    new SqlParameter( "@OrderID",  SqlDbType.Int ),
+
+                };
+
+                parameters[0].Value = orderID;
+
+
+                _DataHelper = new DataAccessHelper(DbObjectNames.Admin_GetOrderDetailsHistoryForNRIC, parameters, _configuration);
+
+                DataSet ds = new DataSet();
+
+                await _DataHelper.RunAsync(ds);
+                
+                var verificaionHistories = new List<IDVerificaionHistory>();
+                if (ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
+                {
+
+                    verificaionHistories = (from model in ds.Tables[0].AsEnumerable()
+                                                        select new IDVerificaionHistory()
+                                                        {
+                                                            VerificationLogID = model.Field<int>("VerificationLogID"),
+                                                            OrderID = model.Field<int>("OrderID"),
+                                                            IDVerificationStatusNumber = model.Field<int>("IDVerificationStatusNumber"),
+                                                            IDVerificationStatus = model.Field<string>("IDVerificationStatus"),
+                                                            ChangeLog = model.Field<string>("ChangeLog"),
+                                                            Remarks = model.Field<string>("Remarks"),
+                                                            UpdatedOn = model.Field<DateTime?>("UpdatedOn"),
+                                                            UpdatedBy = model.Field<string>("UpdatedBy")
+                                                        }).ToList();
+                    }
+                    else
+                    {
+                    verificaionHistories = null;
+                    }
+                
+                return verificaionHistories;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
 
     }
 }

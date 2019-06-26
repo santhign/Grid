@@ -92,6 +92,8 @@ namespace Core.Models
         public string Email { get; set; }
         public string Name { get; set; }
         public int VerificationStatus { get; set; }
+        public string Remark { get; set;  }
+        public string Action { get; set; }
 
     }
 
