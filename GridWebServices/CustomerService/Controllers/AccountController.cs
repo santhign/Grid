@@ -566,6 +566,7 @@ namespace CustomerService.Controllers
                     }
                     else if (updateNRICResponse.ResponseCode == (int)DbReturnValue.UpdateSuccessSendEmail)
                     {
+                        DatabaseResponse updateTokenStatus = await _commonDataAccess.UpdateTokenForVerificationRequests(request.OrderID);
                         LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.UpdateSuccessSendEmail) + "for " + request.OrderID + "Order");
                         return Ok(new OperationResponse
                         {
