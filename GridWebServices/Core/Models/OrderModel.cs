@@ -55,7 +55,7 @@ namespace Core.Models
     public class NRICDetailsRequest
     {
         public int OrderID { get; set; }
-        public string IDVerificationStatus { get; set; }
+        public int IDVerificationStatus { get; set; }
         public string IdentityCardNumber { get; set; }
         public string IdentityCardType { get; set; }
         public string Nationality { get; set; }
@@ -72,8 +72,9 @@ namespace Core.Models
     {
         [Required(ErrorMessage = "OrderID is required")]
         public int OrderID { get; set; }
+
         [Required(ErrorMessage = "Status is required")]
-        public string IDVerificationStatus { get; set; }
+        public int IDVerificationStatus { get; set; }
         public string IdentityCardNumber { get; set; }
         public string IdentityCardType { get; set; }
         public string Nationality { get; set; }

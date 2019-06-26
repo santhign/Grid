@@ -371,35 +371,8 @@ namespace AdminService.Controllers
                                 });
                         }
 
-                        int deliveryStatusNumber = 0;
-                        if (!string.IsNullOrWhiteSpace(request.IDVerificationStatus))
-                        {
-                            if (request.IDVerificationStatus.Trim().ToLower() == IDVerificationStatus.PendingVerification.GetDescription().Trim().ToLower())
-                                deliveryStatusNumber = 0;
-                            else if (request.IDVerificationStatus.Trim().ToLower() == IDVerificationStatus.AcceptedVerification.GetDescription().Trim().ToLower())
-                                deliveryStatusNumber = 1;
-                            else if (request.IDVerificationStatus.Trim().ToLower() == IDVerificationStatus.RejectedVerification.GetDescription().Trim().ToLower())
-                                deliveryStatusNumber = 2;
-                            else
-                            {
-                                return Ok(new OperationResponse
-                                {
-                                    HasSucceeded = false,
-                                    Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
-                                    IsDomainValidationErrors = true
-                                });
-                            }
-
-                        }
-                        else
-                        {
-                            return Ok(new OperationResponse
-                            {
-                                HasSucceeded = false,
-                                Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
-                                IsDomainValidationErrors = true
-                            });
-                        }
+                        int deliveryStatusNumber = request.IDVerificationStatus;
+                        
 
                         var authToken = (AuthTokenResponse)tokenAuthResponse.Results;
                         MiscHelper configHelper = new MiscHelper();
