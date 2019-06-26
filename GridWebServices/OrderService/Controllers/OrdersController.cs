@@ -4528,7 +4528,7 @@ namespace OrderService.Controllers
                                         DatabaseResponse paymentProcessingRespose = new DatabaseResponse();
 
                                         transactionResponse.TrasactionResponse.Token = tokenSession.Token;
-
+                                        LogInfo.Information("Processing the order payment: and calling UpdateCheckOutReceipt");
                                         paymentProcessingRespose = await _orderAccess.UpdateCheckOutReceipt(transactionResponse.TrasactionResponse);
                                         if (paymentProcessingRespose == null)
                                         {
@@ -4540,6 +4540,7 @@ namespace OrderService.Controllers
                                                 IsDomainValidationErrors = false
                                             });
                                         }
+                                        LogInfo.Information("Processed UpdateCheckOutReceipt");
                                         DatabaseResponse updatePaymentResponse = await _orderAccess.UpdatePaymentResponse(updateRequest.MPGSOrderID, receipt);
 
                                         tokenDetailsUpdateResponse = await _orderAccess.UpdatePaymentMethodDetails(transactionResponse.TrasactionResponse, customerID, tokenSession.Token);
