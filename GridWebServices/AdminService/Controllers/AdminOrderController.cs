@@ -549,6 +549,10 @@ namespace AdminService.Controllers
                                     LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
                                 }
                             }
+                            else
+                            {
+                                var result = await _commonDataAccess.UpdateTokenForVerificationRequests(request.OrderID);
+                            }
 
                             //Sending message start
                             // Send email to customer email                            ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
