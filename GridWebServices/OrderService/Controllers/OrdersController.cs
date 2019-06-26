@@ -4530,7 +4530,16 @@ namespace OrderService.Controllers
                                         transactionResponse.TrasactionResponse.Token = tokenSession.Token;
 
                                         paymentProcessingRespose = await _orderAccess.UpdateCheckOutReceipt(transactionResponse.TrasactionResponse);
-
+                                        if (paymentProcessingRespose == null)
+                                        {
+                                            LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TransactionFailed));
+                                            return Ok(new OperationResponse
+                                            {
+                                                HasSucceeded = false,
+                                                Message = EnumExtensions.GetDescription(DbReturnValue.TransactionFailed),
+                                                IsDomainValidationErrors = false
+                                            });
+                                        }
                                         DatabaseResponse updatePaymentResponse = await _orderAccess.UpdatePaymentResponse(updateRequest.MPGSOrderID, receipt);
 
                                         tokenDetailsUpdateResponse = await _orderAccess.UpdatePaymentMethodDetails(transactionResponse.TrasactionResponse, customerID, tokenSession.Token);
