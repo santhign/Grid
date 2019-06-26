@@ -2285,7 +2285,7 @@ namespace CustomerService.Controllers
                             MQDataAccess _MQDataAccess = new MQDataAccess(_iconfiguration);
                             try
                             {
-                                msgBody = await _MQDataAccess.GetProfileUpdateMessageBody(((AuthTokenResponse)tokenAuthResponse.Results).CustomerID);
+                                msgBody = await _MQDataAccess.GetDisplayUpdateMessageBody(((AuthTokenResponse)tokenAuthResponse.Results).CustomerID, details.MobileNumber);
 
                                 topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration).Results.ToString().Trim();
                                 attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.EditDisplayName.GetDescription());
