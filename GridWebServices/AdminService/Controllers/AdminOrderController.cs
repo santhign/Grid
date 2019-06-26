@@ -468,7 +468,7 @@ namespace AdminService.Controllers
 
                             var notificationMessage = MessageHelper.GetMessage(emailDetails.Email, emailDetails.Name, emailDetails.VerificationStatus == 2 ? NotificationEvent.ICValidationReject.GetDescription() : NotificationEvent.ICValidationChange.GetDescription(),
                            ((EmailTemplate)registrationResponse.Results).TemplateName,
-                       _iconfiguration, string.IsNullOrWhiteSpace(emailDetails.ChangeLog) ? null : emailDetails.ChangeLog, string.IsNullOrWhiteSpace(finalURL) ? null : finalURL, string.IsNullOrWhiteSpace(emailDetails.Remark) ? null : emailDetails.Remark); // Reject param1 will be present else in case accepted + Update param1 will be null
+                       _iconfiguration, string.IsNullOrWhiteSpace(finalURL) ? null : finalURL, string.IsNullOrWhiteSpace(emailDetails.Remark) ? null : emailDetails.Remark,  string.IsNullOrWhiteSpace(emailDetails.ChangeLog) ? null : emailDetails.ChangeLog);
                             var notificationResponse = await _adminOrderDataAccess.GetConfiguration(ConfiType.Notification.ToString());
 
 
@@ -518,7 +518,7 @@ namespace AdminService.Controllers
 
                                 var notificationMessage = MessageHelper.GetMessage(emailDetails.Email, emailDetails.Name, NotificationEvent.ICValidationReject.GetDescription(),
                                ((EmailTemplate)registrationResponse.Results).TemplateName,
-                           _iconfiguration, string.IsNullOrWhiteSpace(emailDetails.ChangeLog) ? null : emailDetails.ChangeLog, string.IsNullOrWhiteSpace(finalURL) ? null : finalURL, string.IsNullOrWhiteSpace(emailDetails.Remark) ? null : emailDetails.Remark); // Reject param1 will be present else in case accepted + Update param1 will be null
+                           _iconfiguration, string.IsNullOrWhiteSpace(finalURL) ? null : finalURL, string.IsNullOrWhiteSpace(emailDetails.Remark) ? null : emailDetails.Remark, string.IsNullOrWhiteSpace(emailDetails.ChangeLog) ? null : emailDetails.ChangeLog);
                                 var notificationResponse = await _adminOrderDataAccess.GetConfiguration(ConfiType.Notification.ToString());
 
 
