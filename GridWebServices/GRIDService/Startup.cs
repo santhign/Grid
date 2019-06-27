@@ -46,7 +46,7 @@ namespace GRIDService
             {
                 c.SwaggerDoc("v1", new Info { Title = "GRID Service API", Version = "v1" });                
                 var xmlDocPath = System.AppDomain.CurrentDomain.BaseDirectory + @"GRIDService.xml";
-                //c.IncludeXmlComments(xmlDocPath);
+                c.IncludeXmlComments(xmlDocPath);
             });
         }
 

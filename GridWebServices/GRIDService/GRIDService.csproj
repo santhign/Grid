@@ -5,6 +5,10 @@
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>C:\Users\Ninad\Projects\Stratagile\Code\Service\consumerportal-services\GridWebServices\GRIDService\GRIDService.xml</DocumentationFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
@@ -21,6 +25,9 @@
     <None Update="DataAccess\GRID_DB.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>GRID_DB.cs</LastGenOutput>
+    </None>
+    <None Update="GRIDService.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 
