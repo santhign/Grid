@@ -364,6 +364,7 @@ namespace Core.DataAccess
                                    Nationality = model.Field<string>("Nationality"),
                                    DocumentURL = model.Field<string>("DocumentURL"),
                                    DocumentBackURL = model.Field<string>("DocumentBackURL"),
+                                   Email = model.Field<string>("Email"),
                                }).FirstOrDefault();
                     if (ds.Tables.Count > 1 && ds.Tables[1].Rows.Count > 0)
                     {

@@ -377,6 +377,20 @@ namespace AdminService.Controllers
                                 });
                         }
 
+                        if (!string.IsNullOrEmpty(request.IdentityCardNumber)) { 
+                            EmailValidationHelper _helper = new EmailValidationHelper();
+                            if (!_helper.NRICValidation(request.IdentityCardType, request.IdentityCardNumber, out string _warningmsg))
+                            {
+                                LogInfo.Warning("NRIC Validation with type: " + _warningmsg);
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = false,
+                                    Message = "Document details are invalid",
+                                    IsDomainValidationErrors = false
+                                });
+                            }
+                        }
+
                         int deliveryStatusNumber = request.IDVerificationStatus;
                         
 
@@ -474,7 +488,7 @@ namespace AdminService.Controllers
 
                             var notificationMessage = MessageHelper.GetMessage(emailDetails.Email, emailDetails.Name, emailDetails.VerificationStatus == 2 ? NotificationEvent.ICValidationReject.GetDescription() : NotificationEvent.ICValidationChange.GetDescription(),
                            ((EmailTemplate)registrationResponse.Results).TemplateName,
-                       _iconfiguration, string.IsNullOrWhiteSpace(finalURL) ? null : finalURL, string.IsNullOrWhiteSpace(emailDetails.Remark) ? null : emailDetails.Remark,  string.IsNullOrWhiteSpace(emailDetails.ChangeLog) ? null : emailDetails.ChangeLog);
+                       _iconfiguration, string.IsNullOrWhiteSpace(finalURL) ? "-" : finalURL, string.IsNullOrWhiteSpace(emailDetails.Remark) ? "-" : emailDetails.Remark,  string.IsNullOrWhiteSpace(emailDetails.ChangeLog) ? "-" : emailDetails.ChangeLog);
                             var notificationResponse = await _adminOrderDataAccess.GetConfiguration(ConfiType.Notification.ToString());
 
 
@@ -524,7 +538,7 @@ namespace AdminService.Controllers
 
                                 var notificationMessage = MessageHelper.GetMessage(emailDetails.Email, emailDetails.Name, NotificationEvent.ICValidationReject.GetDescription(),
                                ((EmailTemplate)registrationResponse.Results).TemplateName,
-                           _iconfiguration, string.IsNullOrWhiteSpace(finalURL) ? null : finalURL, string.IsNullOrWhiteSpace(emailDetails.Remark) ? null : emailDetails.Remark, string.IsNullOrWhiteSpace(emailDetails.ChangeLog) ? null : emailDetails.ChangeLog);
+                           _iconfiguration, string.IsNullOrWhiteSpace(finalURL) ? "-" : finalURL, string.IsNullOrWhiteSpace(emailDetails.Remark) ? "-" : emailDetails.Remark, string.IsNullOrWhiteSpace(emailDetails.ChangeLog) ? "-" : emailDetails.ChangeLog);
                                 var notificationResponse = await _adminOrderDataAccess.GetConfiguration(ConfiType.Notification.ToString());
 
 
