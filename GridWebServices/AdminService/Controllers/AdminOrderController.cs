@@ -379,7 +379,7 @@ namespace AdminService.Controllers
 
                         if (!string.IsNullOrEmpty(request.IdentityCardNumber)) { 
                             EmailValidationHelper _helper = new EmailValidationHelper();
-                            if (!_helper.NRICValidation(request.IdentityCardType, request.IdentityCardNumber, out string _warningmsg))
+                            if (!_helper.NRICValidation(null, request.IdentityCardNumber, out string _warningmsg))
                             {
                                 LogInfo.Warning("NRIC Validation with type: " + _warningmsg);
                                 return Ok(new OperationResponse
