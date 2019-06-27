@@ -4511,46 +4511,120 @@ namespace OrderService.Controllers
                                         tokenSession.Token = tokenizeResponse.Token;
 
                                         string captureResponse = gatewayHelper.Capture(gatewayConfig, tokenSession);
-
-                                        LogInfo.Information(captureResponse);
-                                      //  get the session details and transaction details
-
-                                       TransactionRetrieveResponseOperation transactionResponse = new TransactionRetrieveResponseOperation();                                       
-
-                                        string receipt = gatewayHelper.RetrieveCheckOutTransaction(gatewayConfig, updateRequest);
-                                        LogInfo.Information(receipt);
-
-                                        transactionResponse = gatewayHelper.GetCapturedTransaction(receipt);
-
-                                        LogInfo.Information(transactionResponse.TrasactionResponse.ApiResult + transactionResponse.TrasactionResponse.PaymentStatus + transactionResponse.TrasactionResponse.OrderId);
-                                        DatabaseResponse tokenDetailsUpdateResponse = new DatabaseResponse();
-
-                                        DatabaseResponse paymentProcessingRespose = new DatabaseResponse();
-
-                                        transactionResponse.TrasactionResponse.Token = tokenSession.Token;
-                                        LogInfo.Information("Processing the order payment: and calling UpdateCheckOutReceipt");
-                                        paymentProcessingRespose = await _orderAccess.UpdateCheckOutReceipt(transactionResponse.TrasactionResponse);
-                                        DatabaseResponse updatePaymentResponse = await _orderAccess.UpdatePaymentResponse(updateRequest.MPGSOrderID, receipt);
-
-                                        tokenDetailsUpdateResponse = await _orderAccess.UpdatePaymentMethodDetails(transactionResponse.TrasactionResponse, customerID, tokenSession.Token);
-                                                                               
-                                        //Get Order Type
-                                        var sourceTyeResponse = await _orderAccess.GetSourceTypeByMPGSSOrderId(updateRequest.MPGSOrderID);
-
-                                        PaymentSuccessResponse paymentResponse = new PaymentSuccessResponse { Source = ((OrderSource)sourceTyeResponse.Results).SourceType, MPGSOrderID = updateRequest.MPGSOrderID, Amount = tokenSession.Amount, Currency = gatewayConfig.Currency };
-
-                                        if (paymentProcessingRespose.ResponseCode == (int)DbReturnValue.TransactionSuccess)
+                                        if (captureResponse == MPGSAPIResponse.SUCCESS.ToString())
                                         {
-                                            LogInfo.Information(EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess));
+                                            LogInfo.Information(captureResponse);
+                                            //  get the session details and transaction details
 
-                                            QMHelper qMHelper = new QMHelper(_iconfiguration, _messageQueueDataAccess);
+                                            TransactionRetrieveResponseOperation transactionResponse = new TransactionRetrieveResponseOperation();
 
-                                            int processResult = await qMHelper.ProcessSuccessTransaction(updateRequest);
+                                            string receipt = gatewayHelper.RetrieveCheckOutTransaction(gatewayConfig, updateRequest);
+                                            LogInfo.Information(receipt);
 
-                                            if (processResult == 1)
+                                            transactionResponse = gatewayHelper.GetCapturedTransaction(receipt);
+
+                                            LogInfo.Information(transactionResponse.TrasactionResponse.ApiResult + transactionResponse.TrasactionResponse.PaymentStatus + transactionResponse.TrasactionResponse.OrderId);
+                                            DatabaseResponse tokenDetailsUpdateResponse = new DatabaseResponse();
+
+                                            DatabaseResponse paymentProcessingRespose = new DatabaseResponse();
+
+                                            transactionResponse.TrasactionResponse.Token = tokenSession.Token;
+                                            LogInfo.Information("Processing the order payment: and calling UpdateCheckOutReceipt");
+                                            paymentProcessingRespose = await _orderAccess.UpdateCheckOutReceipt(transactionResponse.TrasactionResponse);
+                                            DatabaseResponse updatePaymentResponse = await _orderAccess.UpdatePaymentResponse(updateRequest.MPGSOrderID, receipt);
+
+                                            tokenDetailsUpdateResponse = await _orderAccess.UpdatePaymentMethodDetails(transactionResponse.TrasactionResponse, customerID, tokenSession.Token);
+
+                                            //Get Order Type
+                                            var sourceTyeResponse = await _orderAccess.GetSourceTypeByMPGSSOrderId(updateRequest.MPGSOrderID);
+
+                                            PaymentSuccessResponse paymentResponse = new PaymentSuccessResponse { Source = ((OrderSource)sourceTyeResponse.Results).SourceType, MPGSOrderID = updateRequest.MPGSOrderID, Amount = tokenSession.Amount, Currency = gatewayConfig.Currency };
+
+                                            if (paymentProcessingRespose.ResponseCode == (int)DbReturnValue.TransactionSuccess)
                                             {
-                                                LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(CommonErrors.BuddyProcessed));
+                                                LogInfo.Information(EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess));
 
+                                                QMHelper qMHelper = new QMHelper(_iconfiguration, _messageQueueDataAccess);
+
+                                                int processResult = await qMHelper.ProcessSuccessTransaction(updateRequest);
+
+                                                if (processResult == 1)
+                                                {
+                                                    LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(CommonErrors.BuddyProcessed));
+
+                                                    return Ok(new OperationResponse
+                                                    {
+                                                        HasSucceeded = true,
+                                                        Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
+                                                        IsDomainValidationErrors = false,
+                                                        ReturnedObject = paymentResponse
+                                                    });
+                                                }
+                                                else if (processResult == 2)
+                                                {
+                                                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(CommonErrors.BuddyProcessingFailed));
+
+                                                    return Ok(new OperationResponse
+                                                    {
+                                                        HasSucceeded = true,
+                                                        Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
+                                                        IsDomainValidationErrors = false,
+                                                        ReturnedObject = paymentResponse
+                                                    });
+                                                }
+                                                else if (processResult == 3)
+                                                {
+                                                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(CommonErrors.MQSent));
+
+                                                    return Ok(new OperationResponse
+                                                    {
+                                                        HasSucceeded = true,
+                                                        Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
+                                                        IsDomainValidationErrors = false,
+                                                        ReturnedObject = paymentResponse
+                                                    });
+                                                }
+
+                                                else if (processResult == 4)
+                                                {
+                                                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing Buddy/MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.SourceTypeNotFound) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
+                                                    return Ok(new OperationResponse
+                                                    {
+                                                        HasSucceeded = true,
+                                                        Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
+                                                        IsDomainValidationErrors = false,
+                                                        ReturnedObject = paymentResponse
+                                                    });
+                                                }
+
+                                                else if (processResult == 5)
+                                                {
+                                                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing Buddy/MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.InvalidCheckoutType) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
+                                                    return Ok(new OperationResponse
+                                                    {
+                                                        HasSucceeded = true,
+                                                        Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
+                                                        IsDomainValidationErrors = false,
+                                                        ReturnedObject = paymentResponse
+                                                    });
+                                                }
+
+                                                else
+                                                {
+                                                    // entry for exceptions from QM Helper, but need to send payment success message to UI as payment already processed
+                                                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing Buddy/MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.SystemExceptionAfterPayment) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
+                                                    return Ok(new OperationResponse
+                                                    {
+                                                        HasSucceeded = true,
+                                                        Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
+                                                        IsDomainValidationErrors = false,
+                                                        ReturnedObject = paymentResponse
+                                                    });
+
+                                                }
+                                            }
+                                            else if (paymentProcessingRespose.ResponseCode == (int)DbReturnValue.PaymentAlreadyProcessed)
+                                            {
                                                 return Ok(new OperationResponse
                                                 {
                                                     HasSucceeded = true,
@@ -4559,88 +4633,26 @@ namespace OrderService.Controllers
                                                     ReturnedObject = paymentResponse
                                                 });
                                             }
-                                            else if (processResult == 2)
-                                            {
-                                                LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(CommonErrors.BuddyProcessingFailed));
-
-                                                return Ok(new OperationResponse
-                                                {                                                    
-                                                    HasSucceeded = true,
-                                                    Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
-                                                    IsDomainValidationErrors = false,
-                                                    ReturnedObject = paymentResponse
-                                                });
-                                            }
-                                            else if (processResult == 3)
-                                            {
-                                                LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(CommonErrors.MQSent));
-                                               
-                                                return Ok(new OperationResponse
-                                                {
-                                                    HasSucceeded = true,
-                                                    Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
-                                                    IsDomainValidationErrors = false,
-                                                    ReturnedObject = paymentResponse
-                                                });
-                                            }
-
-                                            else if (processResult == 4)
-                                            {
-                                                LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing Buddy/MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.SourceTypeNotFound) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
-                                                return Ok(new OperationResponse
-                                                {
-                                                    HasSucceeded = true,
-                                                    Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
-                                                    IsDomainValidationErrors = false,
-                                                    ReturnedObject = paymentResponse
-                                                });
-                                            }
-
-                                            else if (processResult == 5)
-                                            {                                               
-                                                LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing Buddy/MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.InvalidCheckoutType) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
-                                                return Ok(new OperationResponse
-                                                {
-                                                    HasSucceeded = true,
-                                                    Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
-                                                    IsDomainValidationErrors = false,
-                                                    ReturnedObject = paymentResponse
-                                                });
-                                            }
-
                                             else
                                             {
-                                                // entry for exceptions from QM Helper, but need to send payment success message to UI as payment already processed
-                                                LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing Buddy/MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.SystemExceptionAfterPayment) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
+                                                LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TransactionFailed));
                                                 return Ok(new OperationResponse
                                                 {
-                                                    HasSucceeded = true,
-                                                    Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
-                                                    IsDomainValidationErrors = false,
-                                                    ReturnedObject = paymentResponse
+                                                    HasSucceeded = false,
+                                                    Message = EnumExtensions.GetDescription(DbReturnValue.TransactionFailed),
+                                                    IsDomainValidationErrors = false
                                                 });
-
                                             }
-                                        }
-                                        else if(paymentProcessingRespose.ResponseCode==(int)DbReturnValue.PaymentAlreadyProcessed)
-                                        {
-                                            return Ok(new OperationResponse
-                                            {
-                                                HasSucceeded = true,
-                                                Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
-                                                IsDomainValidationErrors = false,
-                                                ReturnedObject = paymentResponse
-                                            });
                                         }
                                         else
                                         {
-                                            LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TransactionFailed));
                                             return Ok(new OperationResponse
                                             {
                                                 HasSucceeded = false,
-                                                Message = EnumExtensions.GetDescription(DbReturnValue.TransactionFailed),
+                                                Message = EnumExtensions.GetDescription(CommonErrors.CaptureFailed),
                                                 IsDomainValidationErrors = false
                                             });
+
                                         }
                                     }
 
@@ -6250,7 +6262,111 @@ namespace OrderService.Controllers
                 });
             }
         }
-       
+
+
+        [HttpGet]
+        [Route("GetMQBody/{OrderID}")]
+        public async Task<IActionResult> GetMQBody([FromHeader(Name = "Grid-Authorization-Token")] string token, int OrderID)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+
+
+                AuthHelper helper = new AuthHelper(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    {
+                        int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+
+                        if (!ModelState.IsValid)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = string.Join("; ", ModelState.Values
+                                                           .SelectMany(x => x.Errors)
+                                                           .Select(x => x.ErrorMessage))
+                            });
+                        }
+
+                        MessageQueueDataAccess _orderAccess = new MessageQueueDataAccess(_iconfiguration);
+
+                        DatabaseResponse mqResponse = await _orderAccess.GetOrderMessageQueueBody(OrderID);
+
+                        if (mqResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                        {
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = true,
+                                Message = "Retrieved Successfully",
+                                Result = mqResponse.Results
+
+                            });
+                        }
+                        else
+                        {                            
+                            return Ok(new ServerResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(CommonErrors.DeliveryInfoNotExists)
+                            });
+                        }
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+            }
+        }
     }
 
 }
