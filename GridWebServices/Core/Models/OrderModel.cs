@@ -35,6 +35,8 @@ namespace Core.Models
         public string DocumentBackURL { get; set; }
         public string FrontImage { get; set; }
         public string BackImage { get; set; }
+
+        public string Email { get; set; }
         public List<IDVerificaionHistory> VerificaionHistories { get; set; }
         
     }
