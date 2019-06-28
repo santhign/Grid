@@ -51,9 +51,9 @@ namespace GRIDService.Controllers
         /// </summary>
         /// <param name="token">The token.</param>
         /// <param name="changeRequestID">The change request identifier.</param>
-        /// <param name="status">The status.</param>
+        /// <param name="status">The status.  --1=Success, 0=Failed </param>
         /// <param name="SIMID">The simid.</param>
-        /// <param name="SusbcriberStateUpdate">The susbcriber state update.</param>
+        /// <param name="SusbcriberStateUpdate">The susbcriber state update.  --1=Activate; 0=No Change</param>
         /// <returns></returns>
         [HttpPost]
         [Route("ProcessChangeSim/{changeRequestID}/{status}/{SIMID}/{SusbcriberStateUpdate}")]
