@@ -99,7 +99,7 @@ namespace GRIDService.Controllers
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = true,
-                        Message = Enum.ReturnSuccess.GetDescription(),
+                        Message = "Success",
                         IsDomainValidationErrors = false
                     });
                 }
@@ -108,7 +108,7 @@ namespace GRIDService.Controllers
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
-                        Message = Enum.ReturnFailure.GetDescription(),
+                        Message = "Failure",
                         IsDomainValidationErrors = false
                     });
                 }
@@ -178,7 +178,7 @@ namespace GRIDService.Controllers
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = true,
-                        Message = Enum.ReturnSuccess.GetDescription(),
+                        Message = "Success",
                         IsDomainValidationErrors = false
                     });
                 }
@@ -187,7 +187,7 @@ namespace GRIDService.Controllers
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
-                        Message = Enum.ReturnFailure.GetDescription(),
+                        Message = "Failure",
                         IsDomainValidationErrors = false
                     });
                 }
@@ -257,7 +257,7 @@ namespace GRIDService.Controllers
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = true,
-                        Message = Enum.ReturnSuccess.GetDescription(),
+                        Message = "Success",
                         IsDomainValidationErrors = false
                     });
                 }
@@ -266,7 +266,7 @@ namespace GRIDService.Controllers
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
-                        Message = Enum.ReturnFailure.GetDescription(),
+                        Message = "Failure",
                         IsDomainValidationErrors = false
                     });
                 }
@@ -338,7 +338,7 @@ namespace GRIDService.Controllers
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = true,
-                        Message = Enum.ReturnSuccess.GetDescription(),
+                        Message = "Success",
                         IsDomainValidationErrors = false
                     });
                 }
@@ -347,7 +347,7 @@ namespace GRIDService.Controllers
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
-                        Message = Enum.ReturnFailure.GetDescription(),
+                        Message = "Failure",
                         IsDomainValidationErrors = false
                     });
                 }
@@ -418,7 +418,7 @@ namespace GRIDService.Controllers
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = true,
-                        Message = Enum.ReturnSuccess.GetDescription(),
+                        Message = "Success",
                         IsDomainValidationErrors = false
                     });
                 }
@@ -427,7 +427,7 @@ namespace GRIDService.Controllers
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
-                        Message = Enum.ReturnFailure.GetDescription(),
+                        Message = "Failure",
                         IsDomainValidationErrors = false
                     });
                 }
@@ -498,7 +498,7 @@ namespace GRIDService.Controllers
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = true,
-                        Message = Enum.ReturnSuccess.GetDescription(),
+                        Message = "Success",
                         IsDomainValidationErrors = false
                     });
                 }
@@ -507,7 +507,7 @@ namespace GRIDService.Controllers
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
-                        Message = Enum.ReturnFailure.GetDescription(),
+                        Message = "Failure",
                         IsDomainValidationErrors = false
                     });
                 }
@@ -578,7 +578,7 @@ namespace GRIDService.Controllers
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = true,
-                        Message = Enum.ReturnSuccess.GetDescription(),
+                        Message = "Success",
                         IsDomainValidationErrors = false
                     });
                 }
@@ -587,7 +587,7 @@ namespace GRIDService.Controllers
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
-                        Message = Enum.ReturnFailure.GetDescription(),
+                        Message = "Failure",
                         IsDomainValidationErrors = false
                     });
                 }
@@ -656,7 +656,7 @@ namespace GRIDService.Controllers
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = true,
-                        Message = Enum.ReturnSuccess.GetDescription(),
+                        Message = "Success",
                         IsDomainValidationErrors = false
                     });
                 }
@@ -665,7 +665,7 @@ namespace GRIDService.Controllers
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
-                        Message = Enum.ReturnFailure.GetDescription(),
+                        Message = "Failure",
                         IsDomainValidationErrors = false
                     });
                 }
@@ -734,7 +734,7 @@ namespace GRIDService.Controllers
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = true,
-                        Message = Enum.ReturnSuccess.GetDescription(),
+                        Message = "Success",
                         IsDomainValidationErrors = false
                     });
                 }
@@ -743,7 +743,7 @@ namespace GRIDService.Controllers
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
-                        Message = Enum.ReturnFailure.GetDescription(),
+                        Message = "Failure",
                         IsDomainValidationErrors = false
                     });
                 }
@@ -814,7 +814,7 @@ namespace GRIDService.Controllers
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = true,
-                        Message = Enum.ReturnSuccess.GetDescription(),
+                        Message = "Success",
                         IsDomainValidationErrors = false
                     });
                 }
@@ -823,7 +823,7 @@ namespace GRIDService.Controllers
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
-                        Message = Enum.ReturnFailure.GetDescription(),
+                        Message = "Failure",
                         IsDomainValidationErrors = false
                     });
                 }
@@ -894,7 +894,7 @@ namespace GRIDService.Controllers
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = true,
-                        Message = Enum.ReturnSuccess.GetDescription(),
+                        Message = "Success",
                         IsDomainValidationErrors = false
                     });
                 }
@@ -903,7 +903,7 @@ namespace GRIDService.Controllers
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
-                        Message = Enum.ReturnFailure.GetDescription(),
+                        Message = "Failure",
                         IsDomainValidationErrors = false
                     });
                 }
@@ -973,7 +973,7 @@ namespace GRIDService.Controllers
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = true,
-                        Message = Enum.ReturnSuccess.GetDescription(),
+                        Message = "Success",
                         IsDomainValidationErrors = false
                     });
                 }
@@ -982,7 +982,7 @@ namespace GRIDService.Controllers
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
-                        Message = Enum.ReturnFailure.GetDescription(),
+                        Message = "Failure",
                         IsDomainValidationErrors = false
                     });
                 }
