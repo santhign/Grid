@@ -12,6 +12,7 @@ using Core.Extensions;
 using CustomerService.Models;
 using InfrastructureService;
 using Swashbuckle.AspNetCore.Swagger;
+using System.Text.RegularExpressions;
 
 namespace CustomerService.DataAccess
 {
@@ -48,7 +49,6 @@ namespace CustomerService.DataAccess
         {
             try
             {
-
                 SqlParameter[] parameters =
                {
                     new SqlParameter( "@Email",  SqlDbType.NVarChar ),
@@ -87,7 +87,6 @@ namespace CustomerService.DataAccess
                                        Status = model.Field<string>("Status")
                                    }).FirstOrDefault();
                 }
-
                 return new DatabaseResponse { ResponseCode = result, Results = newCustomer };
             }
 
@@ -178,14 +177,16 @@ namespace CustomerService.DataAccess
         /// <returns></returns>
         public async Task<DatabaseResponse> UpdateCustomerProfile(int CustomerID, CustomerProfile customer)
         {
+            DatabaseResponse response = new DatabaseResponse();
             try
             {
+
                 SqlParameter[] parameters =
                {
-                    new SqlParameter( "@CustomerID",  SqlDbType.NVarChar ),
-                    new SqlParameter( "@Password",  SqlDbType.NVarChar ),
-                    new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar),
-                    new SqlParameter( "@Email",  SqlDbType.NVarChar)
+                        new SqlParameter( "@CustomerID",  SqlDbType.NVarChar ),
+                        new SqlParameter( "@Password",  SqlDbType.NVarChar ),
+                        new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar),
+                        new SqlParameter( "@Email",  SqlDbType.NVarChar)
                 };
 
                 parameters[0].Value = CustomerID;
@@ -198,9 +199,10 @@ namespace CustomerService.DataAccess
 
                 _DataHelper = new DataAccessHelper(DbObjectNames.Customer_UpdateCustomerProfile, parameters, _configuration);
 
-                int result = await _DataHelper.RunAsync();                
+                int result = await _DataHelper.RunAsync();
 
-                return new DatabaseResponse { ResponseCode = result };
+                response = new DatabaseResponse { ResponseCode = result };
+                return response;
             }
 
             catch (Exception ex)

@@ -17,6 +17,7 @@ using Serilog;
 using System.Net.Mail;
 using InfrastructureService.MessageQueue;
 using Newtonsoft.Json;
+using System.Text.RegularExpressions;
 
 namespace CustomerService.Controllers
 {
@@ -195,13 +196,16 @@ namespace CustomerService.Controllers
                         }
 
                         var customerAccess = new CustomerDataAccess(_iconfiguration);
-
-                        var statusResponse = await customerAccess.UpdateCustomerProfile(((AuthTokenResponse)tokenAuthResponse.Results).CustomerID, new CustomerProfile
+                        if (!Regex.Match(new Base64Helper().base64Decode(_profile.Password), @"(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}").Success)
                         {
-                            MobileNumber = _profile.MobileNumber,
-                            Password = _profile.Password,
-                            Email = _profile.Email
-                        });
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = DbReturnValue.PasswordPolicyError.GetDescription(),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                        var statusResponse = await customerAccess.UpdateCustomerProfile(((AuthTokenResponse)tokenAuthResponse.Results).CustomerID, _profile);
 
                         if (statusResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
                         {
@@ -583,7 +587,15 @@ namespace CustomerService.Controllers
                 }
 
                 CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
-
+                if (!Regex.Match(new Base64Helper().base64Decode(customer.Password), @"(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}").Success)
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = DbReturnValue.PasswordPolicyError.GetDescription(),
+                        IsDomainValidationErrors = false
+                    });
+                }
                 DatabaseResponse response = await _customerAccess.CreateCustomer(customer);
                 var customerObject = (Customer)response.Results;
                 if (response.ResponseCode == ((int)DbReturnValue.EmailExists))
