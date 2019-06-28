@@ -240,6 +240,10 @@ namespace Core.Enums
         [EnumMember(Value = "Request Token Expired")]
         [Description("Request token is already used. Token expired")]
         RequestTokenExpired = 159,
+
+        [EnumMember(Value = "Password Policy Error")]
+        [Description("Please input a stronger alpha-numberic password with minimum 8 characters")]
+        PasswordPolicyError = 160,
     }
 }
 

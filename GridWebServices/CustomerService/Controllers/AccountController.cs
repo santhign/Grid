@@ -18,7 +18,7 @@ using InfrastructureService;
 using System.IO;
 using Core.DataAccess;
 using System.Collections.Generic;
-
+using System.Text.RegularExpressions;
 
 namespace CustomerService.Controllers
 {
@@ -374,7 +374,15 @@ namespace CustomerService.Controllers
                 }
 
                 AccountDataAccess _accountDataAccess = new AccountDataAccess(_iconfiguration);
-
+                if (!Regex.Match(new Base64Helper().base64Decode(passwordResetRequest.NewPassword), @"(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}").Success)
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = DbReturnValue.PasswordPolicyError.GetDescription(),
+                        IsDomainValidationErrors = false
+                    });
+                }
                 DatabaseResponse response = await _accountDataAccess.ResetPassword(passwordResetRequest);
 
                 if (response.ResponseCode == ((int)DbReturnValue.NotExists))
