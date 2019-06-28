@@ -412,43 +412,60 @@ namespace AdminService.Controllers
 
                         };
 
-                        if (request.FrontImage != null && request.BackImage != null)
+                        if (request.FrontImage != null || request.BackImage != null)
                         {
+                            string IDCardNumberForImage = string.Empty;
 
                             DatabaseResponse awsConfigResponse = await _commonDataAccess.GetConfiguration(ConfiType.AWS.ToString());
 
                             if (awsConfigResponse != null && awsConfigResponse.ResponseCode == (int)DbReturnValue.RecordExists)
                             {
+
                                 GridAWSS3Config awsConfig = configHelper.GetGridAwsConfig((List<Dictionary<string, string>>)awsConfigResponse.Results);
-
+                                // Check for IdentityCardNumber 
+                                //Start
+                                if (string.IsNullOrEmpty(request.IdentityCardNumber))
+                                {
+                                    var orderDetailsForIDCard = await _commonDataAccess.GetOrderDetails(request.OrderID);
+                                    IDCardNumberForImage = orderDetailsForIDCard.IdentityCardNumber;
+                                }
+                                else
+                                {
+                                    IDCardNumberForImage = request.IdentityCardNumber;
+                                }
+                                //End
                                 AmazonS3 s3Helper = new AmazonS3(awsConfig);
-
-                                string fileNameFront = request.IdentityCardNumber.Substring(1, request.IdentityCardNumber.Length - 2) +
-                                    "_Front_" + DateTime.Now.ToString("yyMMddhhmmss") + Path.GetExtension(request.FrontImage.FileName); //Grid_IDNUMBER_yyyymmddhhmmss.extension
-
-                                UploadResponse s3UploadResponse = await s3Helper.UploadFile(request.FrontImage, fileNameFront);
-
-                                if (s3UploadResponse.HasSucceed)
+                                if (request.FrontImage != null)
                                 {
-                                    personalDetails.FrontImage = awsConfig.AWSEndPoint + s3UploadResponse.FileName;
+                                    string fileNameFront = IDCardNumberForImage.Substring(1, IDCardNumberForImage.Length - 2) +
+                                        "_Front_" + DateTime.Now.ToString("yyMMddhhmmss") + Path.GetExtension(request.FrontImage.FileName); //Grid_IDNUMBER_yyyymmddhhmmss.extension
+
+                                    UploadResponse s3UploadResponse = await s3Helper.UploadFile(request.FrontImage, fileNameFront);
+
+                                    if (s3UploadResponse.HasSucceed)
+                                    {
+                                        personalDetails.FrontImage = awsConfig.AWSEndPoint + s3UploadResponse.FileName;
+                                    }
+                                    else
+                                    {
+                                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.S3UploadFailed));
+                                    }
                                 }
-                                else
+                                if (request.BackImage != null)
                                 {
-                                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.S3UploadFailed));
-                                }
+                                    string fileNameBack = IDCardNumberForImage.Substring(1, IDCardNumberForImage.Length - 2) + "_Back_" + DateTime.Now.ToString("yyMMddhhmmss")
+                                        + Path.GetExtension(request.BackImage.FileName); //Grid_IDNUMBER_yyyymmddhhmmss.extension
 
-                                string fileNameBack = request.IdentityCardNumber.Substring(1, request.IdentityCardNumber.Length - 2) + "_Back_" + DateTime.Now.ToString("yyMMddhhmmss")
-                                    + Path.GetExtension(request.BackImage.FileName); //Grid_IDNUMBER_yyyymmddhhmmss.extension
+                                    UploadResponse s3UploadResponse = await s3Helper.UploadFile(request.BackImage, fileNameBack);
 
-                                s3UploadResponse = await s3Helper.UploadFile(request.BackImage, fileNameBack);
-
-                                if (s3UploadResponse.HasSucceed)
-                                {
-                                    personalDetails.BackImage = awsConfig.AWSEndPoint + s3UploadResponse.FileName;
-                                }
-                                else
-                                {
-                                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.S3UploadFailed));
+                                    if (s3UploadResponse.HasSucceed)
+                                    {
+                                        personalDetails.BackImage = awsConfig.AWSEndPoint + s3UploadResponse.FileName;
+                                    }
+                                    else
+                                    {
+                                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.S3UploadFailed));
+                                    }
                                 }
                             }
                             else
