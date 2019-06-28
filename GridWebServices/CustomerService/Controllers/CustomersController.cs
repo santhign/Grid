@@ -258,6 +258,22 @@ namespace CustomerService.Controllers
                             catch (Exception ex)
                             {
                                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                                MessageQueueRequestException queueRequest = new MessageQueueRequestException
+                                {
+                                    Source = Source.ChangeRequest,
+                                    NumberOfRetries = 1,
+                                    SNSTopic = string.IsNullOrWhiteSpace(topicName) ? null : topicName,
+                                    CreatedOn = DateTime.Now,
+                                    LastTriedOn = DateTime.Now,
+                                    PublishedOn = DateTime.Now,
+                                    MessageAttribute = Core.Enums.RequestType.EditContact.GetDescription().ToString(),
+                                    MessageBody = msgBody != null ? JsonConvert.SerializeObject(msgBody) : null,
+                                    Status = 0,
+                                    Remark = "Error Occured in UpdateCustomerProfile",
+                                    Exception = new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)
+
+
+                                };
                             }
                             return Ok(new ServerResponse
                             {
@@ -2071,6 +2087,24 @@ namespace CustomerService.Controllers
                             catch (Exception ex)
                             {
                                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                                MessageQueueRequestException queueRequest = new MessageQueueRequestException
+                                {
+                                    Source = Source.ChangeRequest,
+                                    NumberOfRetries = 1,
+                                    SNSTopic = string.IsNullOrWhiteSpace(topicName) ? null : topicName,
+                                    CreatedOn = DateTime.Now,
+                                    LastTriedOn = DateTime.Now,
+                                    PublishedOn = DateTime.Now,
+                                    MessageAttribute = Core.Enums.RequestType.EditBillAddress.GetDescription().ToString(),
+                                    MessageBody = msgBody != null ? JsonConvert.SerializeObject(msgBody) : null,
+                                    Status = 0,
+                                    Remark = "Error Occured in UpdateBillingDetails",
+                                    Exception = new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)
+
+                                };
+
+                                await _MQDataAccess.InsertMessageInMessageQueueRequestException(queueRequest);
+
                             }
                             return Ok(new ServerResponse
                             {
