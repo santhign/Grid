@@ -138,7 +138,7 @@ namespace GRIDService.Controllers
         [HttpPost]
         [Route("ProcessSuspension")]
         public async Task<IActionResult> ProcessSuspension([FromHeader(Name = "Grid-Service-Header-Token")] string token,
-            SuspensionRequest suspensionRequest)
+            [FromForm] SuspensionRequest suspensionRequest)
         {
 
             try
@@ -773,7 +773,7 @@ namespace GRIDService.Controllers
         /// <param name="error_reason">The error reason.</param>
         /// <returns></returns>
         [HttpPost]
-        [Route("UpdateSubscriberState")]
+        [Route("UpdateSubscriberState/{SubscriberID}/{state}/{error_reason}")]
         public async Task<IActionResult> UpdateSubscriberState([FromHeader(Name = "Grid-Service-Header-Token")] string token, [FromRoute]int SubscriberID, [FromRoute] string state, [FromRoute] string error_reason)
         {
 
@@ -853,7 +853,7 @@ namespace GRIDService.Controllers
         /// <param name="vendor">The vendor.</param>
         /// <returns></returns>
         [HttpPost]
-        [Route("UpdateVendor")]
+        [Route("UpdateVendor/{DeliveryinformationID}/{shipnumber}/{vendor}")]
         public async Task<IActionResult> UpdateVendor([FromHeader(Name = "Grid-Service-Header-Token")] string token, [FromRoute] int DeliveryinformationID, [FromRoute] string shipnumber, [FromRoute] string vendor)
         {
 
@@ -932,7 +932,7 @@ namespace GRIDService.Controllers
         /// <param name="TrackingCode">The tracking code.</param>
         /// <returns></returns>
         [HttpPost]
-        [Route("UpdateVendorTrackingCode")]
+        [Route("UpdateVendorTrackingCode/{DeliveryinformationID}/{TrackingCode}")]
         public async Task<IActionResult> UpdateVendorTrackingCode([FromHeader(Name = "Grid-Service-Header-Token")] string token, [FromRoute] int DeliveryinformationID, [FromRoute] string TrackingCode)
         {
 
@@ -1009,7 +1009,7 @@ namespace GRIDService.Controllers
         /// </summary>
         /// <param name="Token">The token.</param>
         /// <returns></returns>
-        public bool ValidateGridHeaderToken(string Token)
+        private bool ValidateGridHeaderToken(string Token)
         {
             var token = ConfigHelper.GetValueByKey(Enum.ConfigKeyForGridService, _iconfiguration).Results.ToString().Trim();
             return Token == token;

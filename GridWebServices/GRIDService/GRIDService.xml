@@ -596,5 +596,56 @@
             The error reason.
             </value>
         </member>
+        <member name="T:GRIDService.Program">
+            <summary>
+            Program class
+            </summary>
+        </member>
+        <member name="P:GRIDService.Program.Configuration">
+            <summary>
+            Gets the configuration.
+            </summary>
+            <value>
+            The configuration.
+            </value>
+        </member>
+        <member name="M:GRIDService.Program.Main(System.String[])">
+            <summary>
+            Defines the entry point of the application.
+            </summary>
+            <param name="args">The arguments.</param>
+        </member>
+        <member name="M:GRIDService.Program.CreateWebHostBuilder(System.String[])">
+            <summary>
+            Creates the web host builder.
+            </summary>
+            <param name="args">The arguments.</param>
+            <returns></returns>
+        </member>
+        <member name="T:GRIDService.Startup">
+            <summary>
+            Startup class 
+            </summary>
+        </member>
+        <member name="P:GRIDService.Startup.Configuration">
+            <summary>
+            Gets the configuration.
+            </summary>
+            <value>
+            The configuration.
+            </value>
+        </member>
+        <member name="M:GRIDService.Startup.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Initializes a new instance of the <see cref="T:GRIDService.Startup"/> class.
+            </summary>
+            <param name="configuration">The configuration.</param>
+        </member>
+        <member name="M:GRIDService.Startup.ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Configures the services.
+            </summary>
+            <param name="services">The services.</param>
+        </member>
     </members>
 </doc>
