@@ -18,7 +18,7 @@ namespace GRIDService.Models
         /// </value>
         public int ChangeRequestID { get; set; }
         /// <summary>
-        /// Gets or sets the type of the suspension.
+        /// Gets or sets the type of the suspension. --0=Partial; 1=Full
         /// </summary>
         /// <value>
         /// The type of the suspension.
@@ -32,7 +32,7 @@ namespace GRIDService.Models
         /// </value>
         public string Remarks { get; set; }
         /// <summary>
-        /// Gets or sets the status.
+        /// Gets or sets the status. --c=Completed;r=Rejected
         /// </summary>
         /// <value>
         /// The status.
@@ -46,7 +46,7 @@ namespace GRIDService.Models
         /// </value>
         public string RejectReason { get; set; }
         /// <summary>
-        /// Gets or sets the current status.
+        /// Gets or sets the current status.  --0=Partial; 1=Full; -1= No action
         /// </summary>
         /// <value>
         /// The current status.

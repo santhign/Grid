@@ -163,21 +163,21 @@ namespace OrderService.DataAccess
 
                                                }).ToList();
 
-                        if (ds.Tables.Count > 2 && ds.Tables[3].Rows.Count != 0)
-                            msgBody.Charges = (from model in ds.Tables[3].AsEnumerable()
-                                               select new ChargesDetails()
-                                               {
-                                                   ChangeRequestID = model.Field<int>("ChangeRequestID"),
-                                                   SubscriberID = model.Field<int?>("SubscriberID"),
-                                                   PortalServiceName = model.Field<string>("PortalServiceName"),
-                                                   ServiceFee = model.Field<double?>("ServiceFee"),
-                                                   IsRecurring = model.Field<int?>("IsRecurring"),
-                                                   IsGSTIncluded = model.Field<int?>("IsGSTIncluded"),
-
-
-                                               }).ToList();
 
                     }
+                    if (ds.Tables.Count > 2 && ds.Tables[3].Rows.Count != 0)
+                        msgBody.Charges = (from model in ds.Tables[3].AsEnumerable()
+                                           select new ChargesDetails()
+                                           {
+                                               ChangeRequestID = model.Field<int>("ChangeRequestID"),
+                                               SubscriberID = model.Field<int?>("SubscriberID"),
+                                               PortalServiceName = model.Field<string>("PortalServiceName"),
+                                               ServiceFee = model.Field<double?>("ServiceFee"),
+                                               IsRecurring = model.Field<int?>("IsRecurring"),
+                                               IsGSTIncluded = model.Field<int?>("IsGSTIncluded"),
+
+
+                                           }).ToList();
                 }
 
                 return msgBody;

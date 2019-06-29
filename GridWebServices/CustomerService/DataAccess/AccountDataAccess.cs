@@ -13,6 +13,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
+using System.Text.RegularExpressions;
 
 namespace CustomerService.DataAccess
 {
@@ -324,7 +325,6 @@ namespace CustomerService.DataAccess
         {
             try
             {
-
                 SqlParameter[] parameters =
                {
                     new SqlParameter( "@Token",  SqlDbType.NVarChar ),
@@ -339,7 +339,6 @@ namespace CustomerService.DataAccess
                 _DataHelper = new DataAccessHelper("Customer_ResetPassword", parameters, _configuration);
 
                 int result = await _DataHelper.RunAsync();
-
                 return new DatabaseResponse { ResponseCode = result };
             }
 
