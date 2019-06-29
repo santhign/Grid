@@ -19,8 +19,10 @@ namespace Core.DataAccess
         internal DataAccessHelper _DataHelper = null;
         public async Task<DatabaseResponse> GetOrderMessageQueueBody(int orderId, string connectionString)
         {
+            DatabaseResponse response = new DatabaseResponse();
             try
             {
+               
 
                 SqlParameter[] parameters =
                {
@@ -28,15 +30,13 @@ namespace Core.DataAccess
 
                 };
 
-                parameters[0].Value = orderId;
+                 parameters[0].Value = orderId;
 
                 _DataHelper = new DataAccessHelper("Orders_GetMessageQueueBody", parameters, connectionString);
 
                 DataSet ds = new DataSet();
 
-                int result = await _DataHelper.RunAsync(ds); // 105 /102
-
-                DatabaseResponse response = new DatabaseResponse();
+                int result = await _DataHelper.RunAsync(ds); // 105 /102              
 
                 if (result == 105)
                 {
@@ -135,7 +135,6 @@ namespace Core.DataAccess
                             }
 
 
-
                             Subscribers = (from model in ds.Tables[1].AsEnumerable()
                                            select new OrderSubscriber()
                                            {
@@ -174,6 +173,7 @@ namespace Core.DataAccess
                                               {
                                                   OrderID = model.Field<int>("OrderID"),
                                                   SubscriberID = model.Field<int>("SubscriberID"),
+                                                  AdminServiceID = model.Field<int?>("AdminServiceID"),
                                                   portalServiceName = model.Field<string>("portalServiceName"),
                                                   serviceFee = model.Field<double?>("serviceFee"),
                                                   isRecurring = model.Field<int>("isRecurring"),
@@ -186,7 +186,6 @@ namespace Core.DataAccess
                     }
 
                     response = new DatabaseResponse { ResponseCode = result, Results = order };
-
                 }
 
                 else
@@ -199,9 +198,11 @@ namespace Core.DataAccess
 
             catch (Exception ex)
             {
-              //  LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                Log.Error("Critical exceptiion occured while getting MQ body");
+                Log.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
-                throw (ex);
+                return response;
+
             }
             finally
             {

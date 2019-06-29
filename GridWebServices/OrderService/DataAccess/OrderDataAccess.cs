@@ -2734,7 +2734,7 @@ namespace OrderService.DataAccess
                         }
                         else
                         {
-                            LogInfo.Information(MPGSOrderID.ToString() + " ID is not having Order as Source Type");
+                            LogInfo.Information(MPGSOrderID.ToString() + " ID is not having Order as Source Type or it may the first order");
                         }
                     }
                     catch (Exception ex)
