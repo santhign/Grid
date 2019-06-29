@@ -37,6 +37,7 @@ namespace BuddyProcessingApp
                 _timeInterval = GetIntervel();             
 
                 bool complete = false;
+
                 var t = new Thread(() =>
                 {
                     bool toggle = false;
@@ -73,19 +74,23 @@ namespace BuddyProcessingApp
                 BuddyHelper buddyHelper = new BuddyHelper(_connectionString);
 
                 DatabaseResponse pendingBuddyResponse = await buddyDataAccess.GetPendingBuddyList(_connectionString);
-
+                //Getting all pending buddy orders and numbers to process buddy
                 if (pendingBuddyResponse != null && pendingBuddyResponse.ResponseCode == (int)DbReturnValue.RecordExists)
                 {
                     List<PendingBuddy> pendingBuddyList = new List<PendingBuddy>();
 
                     pendingBuddyList = (List<PendingBuddy>)pendingBuddyResponse.Results;
 
-                    List<int> orderList = (from buddy in pendingBuddyList select (buddy.OrderID)).ToList();
+                    // Taking only order ID 
 
+                    List<int> orderList = (from buddy in pendingBuddyList select (buddy.OrderID)).ToList();                    
+                  
                     if (orderList != null && orderList.Count > 0)
                     {
+
                         foreach (int orderID in orderList)
                         {
+                            // taking an order from the list and lock  it for processing if its not already locked
                             DatabaseResponse  lockCheckResponse= await buddyDataAccess.CheckBuddyLocked(orderID, _connectionString);
 
                             if(lockCheckResponse.ResponseCode==(int)DbReturnValue.PendingBuddyUnLocked)
@@ -106,7 +111,7 @@ namespace BuddyProcessingApp
 
                                     if (customerIDResponse != null && customerIDResponse.Results != null)
                                     {
-                                        customerID = (int)customerIDResponse.Results;
+                                        customerID = ((OrderCust)customerIDResponse.Results).CustomerID;
 
                                         BuddyCheckList buddyCheck = new BuddyCheckList { CustomerID = customerID, OrderID = buddy.OrderID, OrderSubscriberID = buddy.OrderSubscriberID, IsProcessed = buddy.IsProcessed, MobileNumber = buddy.MobileNumber };
 
@@ -114,7 +119,6 @@ namespace BuddyProcessingApp
 
                                         buddy.IsProcessed = afterProcessing.IsProcessed;
                                     }
-
                                 }
 
                                 List<PendingBuddy> unProcessedBuddies = buddyListToProcess.Where(b => b.IsProcessed == false).ToList();
@@ -128,8 +132,7 @@ namespace BuddyProcessingApp
                                         DatabaseResponse upBuddyCreateResponse = await buddyDataAccess.UpdatePendingBuddyList(_connectionString, upBuddy);
                                     }
 
-
-                                   DatabaseResponse ublockResponse = await buddyDataAccess.UnLockPendingBuddy(unProcessedBuddies[0].OrderID, _connectionString);
+                                   DatabaseResponse unlockResponse = await buddyDataAccess.UnLockPendingBuddy(unProcessedBuddies[0].OrderID, _connectionString);
                                     
                                 }
                                 else
@@ -145,12 +148,30 @@ namespace BuddyProcessingApp
 
                                     DatabaseResponse customerIDResponse = await buddyDataAccess.GetCustomerIdFromOrderId(buddyListToProcess[0].OrderID, _connectionString);
 
-                                    string emailStatus = await buddyHelper.SendEmailNotification(((OrderCust)customerIDResponse.Results).CustomerID, buddyListToProcess[0].OrderID, Configuration);
+                                    try
+                                    {
+                                        string emailStatus = await buddyHelper.SendEmailNotification(((OrderCust)customerIDResponse.Results).CustomerID, buddyListToProcess[0].OrderID, Configuration);
 
-                                    int processed = await buddyHelper.ProcessOrderQueueMessage(buddyListToProcess[0].OrderID);
+                                        LogInfo.Information("Email Send Status : " +emailStatus);
+                                    }
+                                    catch(Exception ex)
+                                    {
+                                        LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                                    }
 
+                                    try
+                                    {
+                                        int processed = await buddyHelper.ProcessOrderQueueMessage(buddyListToProcess[0].OrderID);
+
+                                        LogInfo.Information("MQ Send Status : " + processed.ToString());
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                                    }
+
+                                    
                                 }
-
                             }
                         }
                     }
@@ -170,7 +191,6 @@ namespace BuddyProcessingApp
         {
             try
             {
-
                 DatabaseResponse intervelConfigResponse = new DatabaseResponse();
 
                 intervelConfigResponse = ConfigHelper.GetValueByKey(ConfigKeys.BuddyTrialIntervel.ToString(), _connectionString);

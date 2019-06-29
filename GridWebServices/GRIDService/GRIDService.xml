@@ -1,0 +1,651 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>GRIDService</name>
+    </assembly>
+    <members>
+        <member name="T:GRIDService.Controllers.GRIDController">
+            <summary>
+            GRID Controller
+            </summary>
+            <seealso cref="T:Microsoft.AspNetCore.Mvc.Controller" />
+        </member>
+        <member name="F:GRIDService.Controllers.GRIDController._iconfiguration">
+            <summary>
+            The iconfiguration
+            </summary>
+        </member>
+        <member name="F:GRIDService.Controllers.GRIDController._dataAccess">
+            <summary>
+            The change request data access
+            </summary>
+        </member>
+        <member name="M:GRIDService.Controllers.GRIDController.#ctor(Microsoft.Extensions.Configuration.IConfiguration,GRIDService.DataAccess.Interfaces.IGRIDDataAccess)">
+            <summary>
+            Initializes a new instance of the <see cref="T:GRIDService.Controllers.GRIDController"/> class.
+            </summary>
+            <param name="configuration">The configuration.</param>
+            <param name="dataAccess">The data access.</param>
+        </member>
+        <member name="M:GRIDService.Controllers.GRIDController.ProcessChangeSim(System.String,System.Int32,System.Int32,System.String,System.Int32)">
+            <summary>
+            Processes the change sim.
+            </summary>
+            <param name="token">The token.</param>
+            <param name="changeRequestID">The change request identifier.</param>
+            <param name="status">The status.  --1=Success, 0=Failed </param>
+            <param name="SIMID">The simid.</param>
+            <param name="SusbcriberStateUpdate">The susbcriber state update.  --1=Activate; 0=No Change</param>
+            <returns></returns>
+        </member>
+        <member name="M:GRIDService.Controllers.GRIDController.ProcessSuspension(System.String,GRIDService.Models.SuspensionRequest)">
+            <summary>
+            Processes the suspension.
+            </summary>
+            <param name="token">The token.</param>
+            <param name="suspensionRequest">The suspension request.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GRIDService.Controllers.GRIDController.ProcessTermination(System.String,GRIDService.Models.TerminationOrUnsuspensionRequest)">
+            <summary>
+            Processes the termination.
+            </summary>
+            <param name="token">The token.</param>
+            <param name="terminationRequest">The termination request.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GRIDService.Controllers.GRIDController.ProcessVASAddition(System.String,System.Int32,System.Int32,System.DateTime,System.DateTime)">
+            <summary>
+            Processes the vas addition.
+            </summary>
+            <param name="token">The token.</param>
+            <param name="ChangeRequestID">The change request identifier.</param>
+            <param name="Status">The status.</param>
+            <param name="ValidFrom">The valid from.</param>
+            <param name="ValidTo">The valid to.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GRIDService.Controllers.GRIDController.ProcessVASRemoval(System.String,System.Int32,System.Int32)">
+            <summary>
+            Grids the process vas removal.
+            </summary>
+            <param name="token">The token.</param>
+            <param name="changeRequestID">The change request identifier.</param>
+            <param name="status">The status.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GRIDService.Controllers.GRIDController.UpdateBillingAccount(System.String,System.String,System.String,System.String)">
+            <summary>
+            Updates the billing account.
+            </summary>
+            <param name="token">The token.</param>
+            <param name="AccountID">The account identifier.</param>
+            <param name="BillingAccountNumber">The billing account number.</param>
+            <param name="BSSProfileid">The BSS profileid.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GRIDService.Controllers.GRIDController.UpdateDeliveryStatus(System.String,System.String,System.String,System.String)">
+            <summary>
+            Updates the delivery status.
+            </summary>
+            <param name="token">The token.</param>
+            <param name="AccountID">The account identifier.</param>
+            <param name="BillingAccountNumber">The billing account number.</param>
+            <param name="BSSProfileid">The BSS profileid.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GRIDService.Controllers.GRIDController.UpdateInitialOrderSubscriptions(System.String,GRIDService.Models.UpdateInitialOrderSubscriptionsRequest)">
+            <summary>
+            Updates the initial order subscriptions.
+            </summary>
+            <param name="token">The token.</param>
+            <param name="request">The request.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GRIDService.Controllers.GRIDController.UpdateOrderStatus(System.String,GRIDService.Models.UpdateOrderStatus)">
+            <summary>
+            Updates the order status.
+            </summary>
+            <param name="token">The token.</param>
+            <param name="request">The request.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GRIDService.Controllers.GRIDController.UpdateSubscriberState(System.String,System.Int32,System.String,System.String)">
+            <summary>
+            Updates the state of the subscriber.
+            </summary>
+            <param name="token">The token.</param>
+            <param name="SubscriberID">The subscriber identifier.</param>
+            <param name="state">The state.</param>
+            <param name="error_reason">The error reason.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GRIDService.Controllers.GRIDController.UpdateVendor(System.String,System.Int32,System.String,System.String)">
+            <summary>
+            Updates the vendor.
+            </summary>
+            <param name="token">The token.</param>
+            <param name="DeliveryinformationID">The deliveryinformation identifier.</param>
+            <param name="shipnumber">The shipnumber.</param>
+            <param name="vendor">The vendor.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GRIDService.Controllers.GRIDController.UpdateVendorTrackingCode(System.String,System.Int32,System.String)">
+            <summary>
+            Updates the vendor tracking code.
+            </summary>
+            <param name="token">The token.</param>
+            <param name="DeliveryinformationID">The deliveryinformation identifier.</param>
+            <param name="TrackingCode">The tracking code.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GRIDService.Controllers.GRIDController.ValidateGridHeaderToken(System.String)">
+            <summary>
+            Validates the generic token.
+            </summary>
+            <param name="Token">The token.</param>
+            <returns></returns>
+        </member>
+        <member name="T:GRIDService.DataAccess.GRIDDataAccess">
+            <summary>
+            GRID Data Access
+            </summary>
+            <seealso cref="T:GRIDService.DataAccess.Interfaces.IGRIDDataAccess" />
+        </member>
+        <member name="F:GRIDService.DataAccess.GRIDDataAccess._DataHelper">
+            <summary>
+            The data helper
+            </summary>
+        </member>
+        <member name="F:GRIDService.DataAccess.GRIDDataAccess._configuration">
+            <summary>
+            The configuration
+            </summary>
+        </member>
+        <member name="M:GRIDService.DataAccess.GRIDDataAccess.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Constructor setting configuration
+            </summary>
+            <param name="configuration">The configuration.</param>
+        </member>
+        <member name="M:GRIDService.DataAccess.GRIDDataAccess.Grid_ProcessChangeSim(System.Int32,System.Int32,System.String,System.Int32)">
+            <summary>
+            Grids the process change sim.
+            </summary>
+            <param name="ChangeRequestID">The change request identifier.</param>
+            <param name="Status">The status.</param>
+            <param name="SIMID">The simid.</param>
+            <param name="SusbcriberStateUpdate">The susbcriber state update.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GRIDService.DataAccess.GRIDDataAccess.Grid_ProcessSuspension(GRIDService.Models.SuspensionRequest)">
+            <summary>
+            Grids the process suspension.
+            </summary>
+            <param name="suspensionRequest">The suspension request.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GRIDService.DataAccess.GRIDDataAccess.Grid_ProcessTermination(GRIDService.Models.TerminationOrUnsuspensionRequest)">
+            <summary>
+            Grids the process termination.
+            </summary>
+            <param name="terminationRequest">The termination request.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GRIDService.DataAccess.GRIDDataAccess.Grid_ProcessUnSuspension(GRIDService.Models.TerminationOrUnsuspensionRequest)">
+            <summary>
+            Grids the process un suspension.
+            </summary>
+            <param name="unsuspensionRequest">The unsuspension request.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GRIDService.DataAccess.GRIDDataAccess.Grid_ProcessVASAddition(System.Int32,System.Int32,System.DateTime,System.DateTime)">
+            <summary>
+            Grids the process vas addition.
+            </summary>
+            <param name="ChangeRequestID">The change request identifier.</param>
+            <param name="Status">The status.</param>
+            <param name="ValidFrom">The valid from.</param>
+            <param name="ValidTo">The valid to.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GRIDService.DataAccess.GRIDDataAccess.Grid_ProcessVASRemoval(System.Int32,System.Int32)">
+            <summary>
+            Grids the process vas removal.
+            </summary>
+            <param name="ChangeRequestID">The change request identifier.</param>
+            <param name="Status">The status.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GRIDService.DataAccess.GRIDDataAccess.Grid_UpdateBillingAccount(System.String,System.String,System.String)">
+            <summary>
+            Grids the update billing account.
+            </summary>
+            <param name="AccountID">The account identifier.</param>
+            <param name="BillingAccountNumber">The billing account number.</param>
+            <param name="BSSProfileid">The BSS profileid.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GRIDService.DataAccess.GRIDDataAccess.Grid_UpdateDeliveryStatus(System.String,System.String,System.String)">
+            <summary>
+            Grids the update delivery status.
+            </summary>
+            <param name="AccountID">The account identifier.</param>
+            <param name="BillingAccountNumber">The billing account number.</param>
+            <param name="BSSProfileid">The BSS profileid.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GRIDService.DataAccess.GRIDDataAccess.Grid_UpdateInitialOrderSubscriptions(GRIDService.Models.UpdateInitialOrderSubscriptionsRequest)">
+            <summary>
+            Grids the update initial order subscriptions.
+            </summary>
+            <param name="request">The request.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GRIDService.DataAccess.GRIDDataAccess.Grid_UpdateOrderStatus(GRIDService.Models.UpdateOrderStatus)">
+            <summary>
+            Grids the update order status.
+            </summary>
+            <param name="request">The request.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GRIDService.DataAccess.GRIDDataAccess.Grid_UpdateSubscriberState(System.Int32,System.String,System.String)">
+            <summary>
+            Grids the state of the update subscriber.
+            </summary>
+            <param name="SubscriberID">The subscriber identifier.</param>
+            <param name="state">The state.</param>
+            <param name="error_reason">The error reason.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GRIDService.DataAccess.GRIDDataAccess.Grid_UpdateVendor(System.Int32,System.String,System.String)">
+            <summary>
+            Grids the update vendor.
+            </summary>
+            <param name="DeliveryinformationID">The deliveryinformation identifier.</param>
+            <param name="shipnumber">The shipnumber.</param>
+            <param name="vendor">The vendor.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GRIDService.DataAccess.GRIDDataAccess.Grid_UpdateVendorTrackingCode(System.Int32,System.String)">
+            <summary>
+            Grids the update vendor tracking code.
+            </summary>
+            <param name="DeliveryinformationID">The deliveryinformation identifier.</param>
+            <param name="TrackingCode">The tracking code.</param>
+            <returns></returns>
+        </member>
+        <member name="T:GRIDService.DataAccess.Interfaces.IGRIDDataAccess">
+            <summary>
+            Interface GRIDDataAccess
+            </summary>
+        </member>
+        <member name="M:GRIDService.DataAccess.Interfaces.IGRIDDataAccess.Grid_ProcessChangeSim(System.Int32,System.Int32,System.String,System.Int32)">
+            <summary>
+            Grids the process change sim.
+            </summary>
+            <param name="ChangeRequestID">The change request identifier.</param>
+            <param name="Status">The status.</param>
+            <param name="SIMID">The simid.</param>
+            <param name="SusbcriberStateUpdate">The susbcriber state update.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GRIDService.DataAccess.Interfaces.IGRIDDataAccess.Grid_ProcessSuspension(GRIDService.Models.SuspensionRequest)">
+            <summary>
+            Grids the process suspension.
+            </summary>
+            <param name="suspensionRequest">The suspension request.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GRIDService.DataAccess.Interfaces.IGRIDDataAccess.Grid_ProcessTermination(GRIDService.Models.TerminationOrUnsuspensionRequest)">
+            <summary>
+            Grids the process termination.
+            </summary>
+            <param name="terminationRequest">The termination request.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GRIDService.DataAccess.Interfaces.IGRIDDataAccess.Grid_ProcessVASAddition(System.Int32,System.Int32,System.DateTime,System.DateTime)">
+            <summary>
+            Grids the process vas addition.
+            </summary>
+            <param name="ChangeRequestID">The change request identifier.</param>
+            <param name="Status">The status.</param>
+            <param name="ValidFrom">The valid from.</param>
+            <param name="ValidTo">The valid to.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GRIDService.DataAccess.Interfaces.IGRIDDataAccess.Grid_ProcessVASRemoval(System.Int32,System.Int32)">
+            <summary>
+            Grids the process vas removal.
+            </summary>
+            <param name="ChangeRequestID">The change request identifier.</param>
+            <param name="Status">The status.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GRIDService.DataAccess.Interfaces.IGRIDDataAccess.Grid_UpdateBillingAccount(System.String,System.String,System.String)">
+            <summary>
+            Grids the update billing account.
+            </summary>
+            <param name="AccountID">The account identifier.</param>
+            <param name="BillingAccountNumber">The billing account number.</param>
+            <param name="BSSProfileid">The BSS profileid.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GRIDService.DataAccess.Interfaces.IGRIDDataAccess.Grid_UpdateDeliveryStatus(System.String,System.String,System.String)">
+            <summary>
+            Grids the update delivery status.
+            </summary>
+            <param name="AccountID">The account identifier.</param>
+            <param name="BillingAccountNumber">The billing account number.</param>
+            <param name="BSSProfileid">The BSS profileid.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GRIDService.DataAccess.Interfaces.IGRIDDataAccess.Grid_UpdateInitialOrderSubscriptions(GRIDService.Models.UpdateInitialOrderSubscriptionsRequest)">
+            <summary>
+            Grids the update initial order subscriptions.
+            </summary>
+            <param name="request">The request.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GRIDService.DataAccess.Interfaces.IGRIDDataAccess.Grid_UpdateOrderStatus(GRIDService.Models.UpdateOrderStatus)">
+            <summary>
+            Grids the update order status.
+            </summary>
+            <param name="request">The request.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GRIDService.DataAccess.Interfaces.IGRIDDataAccess.Grid_UpdateSubscriberState(System.Int32,System.String,System.String)">
+            <summary>
+            Grids the state of the update subscriber.
+            </summary>
+            <param name="SubscriberID">The subscriber identifier.</param>
+            <param name="state">The state.</param>
+            <param name="error_reason">The error reason.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GRIDService.DataAccess.Interfaces.IGRIDDataAccess.Grid_UpdateVendor(System.Int32,System.String,System.String)">
+            <summary>
+            Grids the update vendor.
+            </summary>
+            <param name="DeliveryinformationID">The deliveryinformation identifier.</param>
+            <param name="shipnumber">The shipnumber.</param>
+            <param name="vendor">The vendor.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GRIDService.DataAccess.Interfaces.IGRIDDataAccess.Grid_UpdateVendorTrackingCode(System.Int32,System.String)">
+            <summary>
+            Grids the update vendor tracking code.
+            </summary>
+            <param name="DeliveryinformationID">The deliveryinformation identifier.</param>
+            <param name="TrackingCode">The tracking code.</param>
+            <returns></returns>
+        </member>
+        <member name="T:GRIDService.Enum">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:GRIDService.Enum.ReturnSuccess">
+            <summary>
+            The return success
+            </summary>
+        </member>
+        <member name="F:GRIDService.Enum.ReturnFailure">
+            <summary>
+            The return failure
+            </summary>
+        </member>
+        <member name="F:GRIDService.Enum.ConfigKeyForGridService">
+            <summary>
+            The return failure
+            </summary>
+        </member>
+        <member name="T:GRIDService.Models.SuspensionRequest">
+            <summary>
+            Suspension Request Class
+            </summary>
+        </member>
+        <member name="P:GRIDService.Models.SuspensionRequest.ChangeRequestID">
+            <summary>
+            Gets or sets the change request identifier.
+            </summary>
+            <value>
+            The change request identifier.
+            </value>
+        </member>
+        <member name="P:GRIDService.Models.SuspensionRequest.SuspensionType">
+            <summary>
+            Gets or sets the type of the suspension. --0=Partial; 1=Full
+            </summary>
+            <value>
+            The type of the suspension.
+            </value>
+        </member>
+        <member name="P:GRIDService.Models.SuspensionRequest.Remarks">
+            <summary>
+            Gets or sets the remarks.
+            </summary>
+            <value>
+            The remarks.
+            </value>
+        </member>
+        <member name="P:GRIDService.Models.SuspensionRequest.Status">
+            <summary>
+            Gets or sets the status. --c=Completed;r=Rejected
+            </summary>
+            <value>
+            The status.
+            </value>
+        </member>
+        <member name="P:GRIDService.Models.SuspensionRequest.RejectReason">
+            <summary>
+            Gets or sets the reject reason.
+            </summary>
+            <value>
+            The reject reason.
+            </value>
+        </member>
+        <member name="P:GRIDService.Models.SuspensionRequest.CurrentStatus">
+            <summary>
+            Gets or sets the current status.  --0=Partial; 1=Full; -1= No action
+            </summary>
+            <value>
+            The current status.
+            </value>
+        </member>
+        <member name="T:GRIDService.Models.TerminationOrUnsuspensionRequest">
+            <summary>
+            Termination Or Unsuspension Request class
+            </summary>
+        </member>
+        <member name="P:GRIDService.Models.TerminationOrUnsuspensionRequest.ChangeRequestID">
+            <summary>
+            Gets or sets the change request identifier.
+            </summary>
+            <value>
+            The change request identifier.
+            </value>
+        </member>
+        <member name="P:GRIDService.Models.TerminationOrUnsuspensionRequest.Remarks">
+            <summary>
+            Gets or sets the remarks.
+            </summary>
+            <value>
+            The remarks.
+            </value>
+        </member>
+        <member name="P:GRIDService.Models.TerminationOrUnsuspensionRequest.Status">
+            <summary>
+            Gets or sets the status.
+            </summary>
+            <value>
+            The status.
+            </value>
+        </member>
+        <member name="P:GRIDService.Models.TerminationOrUnsuspensionRequest.RejectReason">
+            <summary>
+            Gets or sets the reject reason.
+            </summary>
+            <value>
+            The reject reason.
+            </value>
+        </member>
+        <member name="P:GRIDService.Models.TerminationOrUnsuspensionRequest.CurrentStatus">
+            <summary>
+            Gets or sets the current status.
+            </summary>
+            <value>
+            The current status.
+            </value>
+        </member>
+        <member name="T:GRIDService.Models.UpdateInitialOrderSubscriptionsRequest">
+            <summary>
+            Update Initial Order Subscriptions Request class
+            </summary>
+        </member>
+        <member name="P:GRIDService.Models.UpdateInitialOrderSubscriptionsRequest.OrderID">
+            <summary>
+            Gets or sets the order identifier.
+            </summary>
+            <value>
+            The order identifier.
+            </value>
+        </member>
+        <member name="P:GRIDService.Models.UpdateInitialOrderSubscriptionsRequest.SubscriberID">
+            <summary>
+            Gets or sets the subscriber identifier.
+            </summary>
+            <value>
+            The subscriber identifier.
+            </value>
+        </member>
+        <member name="P:GRIDService.Models.UpdateInitialOrderSubscriptionsRequest.BundleID">
+            <summary>
+            Gets or sets the bundle identifier.
+            </summary>
+            <value>
+            The bundle identifier.
+            </value>
+        </member>
+        <member name="P:GRIDService.Models.UpdateInitialOrderSubscriptionsRequest.BSSPlanCode">
+            <summary>
+            Gets or sets the BSS plan code.
+            </summary>
+            <value>
+            The BSS plan code.
+            </value>
+        </member>
+        <member name="P:GRIDService.Models.UpdateInitialOrderSubscriptionsRequest.Status">
+            <summary>
+            Gets or sets the status.
+            </summary>
+            <value>
+            The status.
+            </value>
+        </member>
+        <member name="P:GRIDService.Models.UpdateInitialOrderSubscriptionsRequest.ValidFrom">
+            <summary>
+            Gets or sets the valid from.
+            </summary>
+            <value>
+            The valid from.
+            </value>
+        </member>
+        <member name="P:GRIDService.Models.UpdateInitialOrderSubscriptionsRequest.ValidTo">
+            <summary>
+            Gets or sets the valid to.
+            </summary>
+            <value>
+            The valid to.
+            </value>
+        </member>
+        <member name="T:GRIDService.Models.UpdateOrderStatus">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:GRIDService.Models.UpdateOrderStatus.OrderID">
+            <summary>
+            Gets or sets the order identifier.
+            </summary>
+            <value>
+            The order identifier.
+            </value>
+        </member>
+        <member name="P:GRIDService.Models.UpdateOrderStatus.OrderNumber">
+            <summary>
+            Gets or sets the order number.
+            </summary>
+            <value>
+            The order number.
+            </value>
+        </member>
+        <member name="P:GRIDService.Models.UpdateOrderStatus.Orderstatus">
+            <summary>
+            Gets or sets the orderstatus.
+            </summary>
+            <value>
+            The orderstatus.
+            </value>
+        </member>
+        <member name="P:GRIDService.Models.UpdateOrderStatus.error_reason">
+            <summary>
+            Gets or sets the error reason.
+            </summary>
+            <value>
+            The error reason.
+            </value>
+        </member>
+        <member name="T:GRIDService.Program">
+            <summary>
+            Program class
+            </summary>
+        </member>
+        <member name="P:GRIDService.Program.Configuration">
+            <summary>
+            Gets the configuration.
+            </summary>
+            <value>
+            The configuration.
+            </value>
+        </member>
+        <member name="M:GRIDService.Program.Main(System.String[])">
+            <summary>
+            Defines the entry point of the application.
+            </summary>
+            <param name="args">The arguments.</param>
+        </member>
+        <member name="M:GRIDService.Program.CreateWebHostBuilder(System.String[])">
+            <summary>
+            Creates the web host builder.
+            </summary>
+            <param name="args">The arguments.</param>
+            <returns></returns>
+        </member>
+        <member name="T:GRIDService.Startup">
+            <summary>
+            Startup class 
+            </summary>
+        </member>
+        <member name="P:GRIDService.Startup.Configuration">
+            <summary>
+            Gets the configuration.
+            </summary>
+            <value>
+            The configuration.
+            </value>
+        </member>
+        <member name="M:GRIDService.Startup.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Initializes a new instance of the <see cref="T:GRIDService.Startup"/> class.
+            </summary>
+            <param name="configuration">The configuration.</param>
+        </member>
+        <member name="M:GRIDService.Startup.ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Configures the services.
+            </summary>
+            <param name="services">The services.</param>
+        </member>
+    </members>
+</doc>
