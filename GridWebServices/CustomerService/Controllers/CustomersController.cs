@@ -195,9 +195,19 @@ namespace CustomerService.Controllers
                             });
                         }
                         var customerAccess = new CustomerDataAccess(_iconfiguration);
-                        if (!string.IsNullOrWhiteSpace(_profile.Password))
+                        if ((!string.IsNullOrWhiteSpace(_profile.NewPassword) && string.IsNullOrWhiteSpace(_profile.OldPassword))
+                            || (string.IsNullOrWhiteSpace(_profile.NewPassword) && !string.IsNullOrWhiteSpace(_profile.OldPassword)))
                         {
-                            if (!Regex.Match(new Base64Helper().base64Decode(_profile.Password), @"(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}").Success)
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = DbReturnValue.BothPasswordsNotPresent.GetDescription(),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                        if (!string.IsNullOrWhiteSpace(_profile.NewPassword))
+                        {
+                            if (!Regex.Match(new Base64Helper().base64Decode(_profile.NewPassword), @"(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}").Success)
                             {
                                 return Ok(new OperationResponse
                                 {
@@ -284,6 +294,17 @@ namespace CustomerService.Controllers
                                 Result = statusResponse
                             });
                         }
+                        else if(statusResponse.ResponseCode == (int)DbReturnValue.OldPasswordInvalid)
+                        {
+                            LogInfo.Error(DbReturnValue.OldPasswordInvalid.GetDescription());
+
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = DbReturnValue.OldPasswordInvalid.GetDescription(),
+                                IsDomainValidationErrors = false
+                            });
+                        }
                         else
                         {
                             LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
@@ -318,7 +339,7 @@ namespace CustomerService.Controllers
                 else
                 {
                     // token auth failure
-                   LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+                    LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
 
                     return Ok(new OperationResponse
                     {

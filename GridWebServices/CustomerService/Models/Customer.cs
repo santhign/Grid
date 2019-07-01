@@ -138,13 +138,22 @@ namespace CustomerService.Models
     public class CustomerProfile
     {
         /// <summary>
-        /// Gets or sets the password.
+        /// Gets or sets the old password.
         /// </summary>
         /// <value>
         /// The password.
         /// </value>
         /// 
-        public string Password { get; set; }
+        public string OldPassword { get; set; }
+
+        /// <summary>
+        /// Gets or sets the new password.
+        /// </summary>
+        /// <value>
+        /// The password.
+        /// </value>
+        /// 
+        public string NewPassword { get; set; }
 
         /// <summary>
         /// Gets or sets the mobile number.
