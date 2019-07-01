@@ -194,16 +194,18 @@ namespace CustomerService.Controllers
                                                            .Select(x => x.ErrorMessage))
                             });
                         }
-
                         var customerAccess = new CustomerDataAccess(_iconfiguration);
-                        if (!Regex.Match(new Base64Helper().base64Decode(_profile.Password), @"(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}").Success)
+                        if (!string.IsNullOrWhiteSpace(_profile.Password))
                         {
-                            return Ok(new OperationResponse
+                            if (!Regex.Match(new Base64Helper().base64Decode(_profile.Password), @"(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}").Success)
                             {
-                                HasSucceeded = false,
-                                Message = DbReturnValue.PasswordPolicyError.GetDescription(),
-                                IsDomainValidationErrors = false
-                            });
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = false,
+                                    Message = DbReturnValue.PasswordPolicyError.GetDescription(),
+                                    IsDomainValidationErrors = false
+                                });
+                            }
                         }
                         var statusResponse = await customerAccess.UpdateCustomerProfile(((AuthTokenResponse)tokenAuthResponse.Results).CustomerID, _profile);
 

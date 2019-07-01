@@ -190,7 +190,7 @@ namespace CustomerService.DataAccess
                 };
 
                 parameters[0].Value = CustomerID;
-                if (customer.Password == null || customer.Password == "")
+                if (string.IsNullOrWhiteSpace(customer.Password))
                 { parameters[1].Value = DBNull.Value; }
                 else
                 { parameters[1].Value = new Sha2().Hash(new Base64Helper().base64Decode(customer.Password)); }
