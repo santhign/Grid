@@ -367,13 +367,19 @@ namespace BuddyProcessingApp
                         deliveryAddressSb.Append(customer.ShippingPostCode);
                     }
 
-                    string deliveryDate = customer.SlotDate.ToString("dd MMM yyyy") + " " + new DateTime(customer.SlotFromTime.Ticks).ToString("hh mm tt") + " to " + new DateTime(customer.SlotToTime.Ticks).ToString("hh mm tt");
+                    string deliveryDate = customer.SlotDate.ToString("dd MMM yyyy") + " " + new DateTime(customer.SlotFromTime.Ticks).ToString("hh:mm tt") 
+                        + " to " + new DateTime(customer.SlotToTime.Ticks).ToString("hh:mm tt");
 
                     var notificationMessage = MessageHelper.GetMessage(customer.ToEmailList, customer.Name,
 
                                                         NotificationEvent.OrderSuccess.ToString(),
 
-                                                     ((EmailTemplate)templateResponse.Results).TemplateName, _configuration, customer.DeliveryEmail, customer.OrderNumber, orderedNumbersSb.ToString(), deliveryAddressSb.ToString(), customer.AlternateRecipientName == null ? customer.Name : customer.AlternateRecipientName, customer.AlternateRecipientContact == null ? customer.ShippingContactNumber : customer.AlternateRecipientContact, string.IsNullOrEmpty(customer.AlternateRecipientEmail) ? customer.DeliveryEmail : customer.AlternateRecipientEmail, deliveryDate, customer.ReferralCode);
+                                                     ((EmailTemplate)templateResponse.Results).TemplateName, _configuration, customer.DeliveryEmail, 
+                                                     customer.OrderNumber, orderedNumbersSb.ToString(), deliveryAddressSb.ToString(),
+                                                     customer.AlternateRecipientName == null ? customer.Name : customer.AlternateRecipientName, 
+                                                     customer.AlternateRecipientContact == null ? customer.ShippingContactNumber : customer.AlternateRecipientContact, 
+                                                     string.IsNullOrEmpty(customer.AlternateRecipientEmail) ? customer.DeliveryEmail : customer.AlternateRecipientEmail, 
+                                                     deliveryDate, customer.ReferralCode);
 
                     DatabaseResponse notificationResponse = await _configAccess.GetConfiguration(ConfiType.Notification.ToString());
 
@@ -438,7 +444,7 @@ namespace BuddyProcessingApp
 
                 DatabaseResponse smsTemplateResponse = await _configAccess.GetSMSNotificationTemplate(NotificationEvent.OrderSuccess.ToString());
 
-                var notificationMessage = MessageHelper.GetSMSMessage(NotificationEvent.OrderSuccess.ToString(), ((SMSTemplates)smsTemplateResponse.Results).TemplateName, customer.Name, customer.DeliveryEmail, customer.ShippingContactNumber, customer.OrderNumber, customer.SlotDate.ToString("dd MMM yyyy"), new DateTime(customer.SlotFromTime.Ticks).ToString("hh mm tt") + " to " + new DateTime(customer.SlotToTime.Ticks).ToString("hh mm tt"));
+                var notificationMessage = MessageHelper.GetSMSMessage(NotificationEvent.OrderSuccess.ToString(), ((SMSTemplates)smsTemplateResponse.Results).TemplateName, customer.Name, customer.DeliveryEmail, customer.ShippingContactNumber, customer.OrderNumber, customer.SlotDate.ToString("dd MMM yyyy"), new DateTime(customer.SlotFromTime.Ticks).ToString("hh:mm tt") + " to " + new DateTime(customer.SlotToTime.Ticks).ToString("hh:mm tt"));
 
                 DatabaseResponse notificationResponse = await _configAccess.GetConfiguration(ConfiType.Notification.ToString());
 

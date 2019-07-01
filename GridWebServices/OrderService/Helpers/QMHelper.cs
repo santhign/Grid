@@ -885,7 +885,7 @@ namespace OrderService.Helpers
 
                 DatabaseResponse smsTemplateResponse = await _configAccess.GetSMSNotificationTemplate(MessageName);               
 
-                var notificationMessage = MessageHelper.GetSMSMessage(MessageName, ((SMSTemplates)smsTemplateResponse.Results).TemplateName,customer.Name,customer.DeliveryEmail,customer.ShippingContactNumber, customer.OrderNumber, customer.SlotDate.ToString("dd MMM yyyy"), new DateTime(customer.SlotFromTime.Ticks).ToString("hh mm tt") + " to " + new DateTime(customer.SlotToTime.Ticks).ToString("hh mm tt"));
+                var notificationMessage = MessageHelper.GetSMSMessage(MessageName, ((SMSTemplates)smsTemplateResponse.Results).TemplateName,customer.Name,customer.DeliveryEmail,customer.ShippingContactNumber, customer.OrderNumber, customer.SlotDate.ToString("dd MMM yyyy"), new DateTime(customer.SlotFromTime.Ticks).ToString("hh:mm tt") + " to " + new DateTime(customer.SlotToTime.Ticks).ToString("hh:mm tt"));
 
                 DatabaseResponse notificationResponse = await _configAccess.GetConfiguration(ConfiType.Notification.ToString());
 
