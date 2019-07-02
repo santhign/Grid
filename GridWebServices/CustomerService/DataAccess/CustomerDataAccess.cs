@@ -184,18 +184,24 @@ namespace CustomerService.DataAccess
                 SqlParameter[] parameters =
                {
                         new SqlParameter( "@CustomerID",  SqlDbType.NVarChar ),
-                        new SqlParameter( "@Password",  SqlDbType.NVarChar ),
+                        new SqlParameter( "@NewPassword",  SqlDbType.NVarChar ),
+                        new SqlParameter( "@OldPassword",  SqlDbType.NVarChar ),
                         new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar),
                         new SqlParameter( "@Email",  SqlDbType.NVarChar)
                 };
 
                 parameters[0].Value = CustomerID;
-                if (customer.Password == null || customer.Password == "")
+                if (string.IsNullOrWhiteSpace(customer.NewPassword))
                 { parameters[1].Value = DBNull.Value; }
                 else
-                { parameters[1].Value = new Sha2().Hash(new Base64Helper().base64Decode(customer.Password)); }
-                parameters[2].Value = customer.MobileNumber;
-                parameters[3].Value = customer.Email;
+                { parameters[1].Value = new Sha2().Hash(new Base64Helper().base64Decode(customer.NewPassword)); }
+
+                if (string.IsNullOrWhiteSpace(customer.OldPassword))
+                { parameters[2].Value = DBNull.Value; }
+                else
+                { parameters[2].Value = new Sha2().Hash(new Base64Helper().base64Decode(customer.OldPassword)); }
+                parameters[3].Value = customer.MobileNumber;
+                parameters[4].Value = customer.Email;
 
                 _DataHelper = new DataAccessHelper(DbObjectNames.Customer_UpdateCustomerProfile, parameters, _configuration);
 

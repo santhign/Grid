@@ -244,6 +244,14 @@ namespace Core.Enums
         [EnumMember(Value = "Password Policy Error")]
         [Description("Please input a stronger alpha-numberic password with minimum 8 characters")]
         PasswordPolicyError = 160,
+
+        [EnumMember(Value = "Both Password should present")]
+        [Description("Please enter old as well as new password")]
+        BothPasswordsNotPresent = 161,
+
+        [EnumMember(Value = "Old Password is not valid")]
+        [Description("Current password is invalid.")]
+        OldPasswordInvalid = 162,
     }
 }
 

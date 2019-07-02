@@ -194,16 +194,28 @@ namespace CustomerService.Controllers
                                                            .Select(x => x.ErrorMessage))
                             });
                         }
-
                         var customerAccess = new CustomerDataAccess(_iconfiguration);
-                        if (!Regex.Match(new Base64Helper().base64Decode(_profile.Password), @"(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}").Success)
+                        if ((!string.IsNullOrWhiteSpace(_profile.NewPassword) && string.IsNullOrWhiteSpace(_profile.OldPassword))
+                            || (string.IsNullOrWhiteSpace(_profile.NewPassword) && !string.IsNullOrWhiteSpace(_profile.OldPassword)))
                         {
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = false,
-                                Message = DbReturnValue.PasswordPolicyError.GetDescription(),
+                                Message = DbReturnValue.BothPasswordsNotPresent.GetDescription(),
                                 IsDomainValidationErrors = false
                             });
+                        }
+                        if (!string.IsNullOrWhiteSpace(_profile.NewPassword))
+                        {
+                            if (!Regex.Match(new Base64Helper().base64Decode(_profile.NewPassword), @"(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}").Success)
+                            {
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = false,
+                                    Message = DbReturnValue.PasswordPolicyError.GetDescription(),
+                                    IsDomainValidationErrors = false
+                                });
+                            }
                         }
                         var statusResponse = await customerAccess.UpdateCustomerProfile(((AuthTokenResponse)tokenAuthResponse.Results).CustomerID, _profile);
 
@@ -258,12 +270,39 @@ namespace CustomerService.Controllers
                             catch (Exception ex)
                             {
                                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                                MessageQueueRequestException queueRequest = new MessageQueueRequestException
+                                {
+                                    Source = Source.ChangeRequest,
+                                    NumberOfRetries = 1,
+                                    SNSTopic = string.IsNullOrWhiteSpace(topicName) ? null : topicName,
+                                    CreatedOn = DateTime.Now,
+                                    LastTriedOn = DateTime.Now,
+                                    PublishedOn = DateTime.Now,
+                                    MessageAttribute = Core.Enums.RequestType.EditContact.GetDescription().ToString(),
+                                    MessageBody = msgBody != null ? JsonConvert.SerializeObject(msgBody) : null,
+                                    Status = 0,
+                                    Remark = "Error Occured in UpdateCustomerProfile",
+                                    Exception = new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)
+
+
+                                };
                             }
                             return Ok(new ServerResponse
                             {
                                 HasSucceeded = true,
                                 Message = StatusMessages.SuccessMessage,
                                 Result = statusResponse
+                            });
+                        }
+                        else if(statusResponse.ResponseCode == (int)DbReturnValue.OldPasswordInvalid)
+                        {
+                            LogInfo.Error(DbReturnValue.OldPasswordInvalid.GetDescription());
+
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = DbReturnValue.OldPasswordInvalid.GetDescription(),
+                                IsDomainValidationErrors = false
                             });
                         }
                         else
@@ -300,7 +339,7 @@ namespace CustomerService.Controllers
                 else
                 {
                     // token auth failure
-                   LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+                    LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
 
                     return Ok(new OperationResponse
                     {
@@ -2071,6 +2110,24 @@ namespace CustomerService.Controllers
                             catch (Exception ex)
                             {
                                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                                MessageQueueRequestException queueRequest = new MessageQueueRequestException
+                                {
+                                    Source = Source.ChangeRequest,
+                                    NumberOfRetries = 1,
+                                    SNSTopic = string.IsNullOrWhiteSpace(topicName) ? null : topicName,
+                                    CreatedOn = DateTime.Now,
+                                    LastTriedOn = DateTime.Now,
+                                    PublishedOn = DateTime.Now,
+                                    MessageAttribute = Core.Enums.RequestType.EditBillAddress.GetDescription().ToString(),
+                                    MessageBody = msgBody != null ? JsonConvert.SerializeObject(msgBody) : null,
+                                    Status = 0,
+                                    Remark = "Error Occured in UpdateBillingDetails",
+                                    Exception = new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)
+
+                                };
+
+                                await _MQDataAccess.InsertMessageInMessageQueueRequestException(queueRequest);
+
                             }
                             return Ok(new ServerResponse
                             {

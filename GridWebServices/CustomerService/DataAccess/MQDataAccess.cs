@@ -255,5 +255,55 @@ namespace CustomerService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+
+        public async Task InsertMessageInMessageQueueRequestException(MessageQueueRequestException messageQueueRequestException)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@Source",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@SNSTopic",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@MessageAttribute",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@MessageBody",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@Status",  SqlDbType.Int ),
+                    new SqlParameter( "@PublishedOn",  SqlDbType.DateTime ),
+                    new SqlParameter( "@CreatedOn",  SqlDbType.DateTime ),
+                    new SqlParameter( "@NumberOfRetries",  SqlDbType.Int ),
+                    new SqlParameter( "@LastTriedOn",  SqlDbType.DateTime),
+                    new SqlParameter( "@Remark",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@Exception",  SqlDbType.NVarChar )
+
+            };
+
+                parameters[0].Value = messageQueueRequestException.Source;
+                parameters[1].Value = messageQueueRequestException.SNSTopic;
+                parameters[2].Value = messageQueueRequestException.MessageAttribute;
+                parameters[3].Value = messageQueueRequestException.MessageBody;
+                parameters[4].Value = messageQueueRequestException.Status;
+                parameters[5].Value = messageQueueRequestException.PublishedOn;
+                parameters[6].Value = messageQueueRequestException.CreatedOn;
+                parameters[7].Value = messageQueueRequestException.NumberOfRetries;
+                parameters[8].Value = messageQueueRequestException.LastTriedOn;
+                parameters[9].Value = messageQueueRequestException.Remark;
+                parameters[10].Value = messageQueueRequestException.Exception;
+
+
+                _DataHelper = new DataAccessHelper(DbObjectNames.z_UpdateStatusInMessageQueueRequestsException, parameters, _configuration);
+
+
+                await _DataHelper.RunAsync();
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw;
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
     }
 }

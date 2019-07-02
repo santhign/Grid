@@ -131,20 +131,23 @@ namespace OrderService.Helpers
                             catch (Exception ex)
                             {
                                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-                                MessageQueueRequest queueRequest = new MessageQueueRequest
+                                MessageQueueRequestException queueRequest = new MessageQueueRequestException
                                 {
                                     Source = Source.ChangeRequest,
                                     NumberOfRetries = 1,
-                                    SNSTopic = topicName,
+                                    SNSTopic = string.IsNullOrWhiteSpace(topicName) ? null : topicName,
                                     CreatedOn = DateTime.Now,
                                     LastTriedOn = DateTime.Now,
                                     PublishedOn = DateTime.Now,
-                                    MessageAttribute = Core.Enums.RequestType.ReplaceSIM.GetDescription(),
-                                    MessageBody = JsonConvert.SerializeObject(msgBody),
-                                    Status = 0
+                                    MessageAttribute = Core.Enums.RequestType.ReplaceSIM.GetDescription().ToString(),
+                                    MessageBody = msgBody != null ? JsonConvert.SerializeObject(msgBody) : null,
+                                    Status = 0,
+                                    Remark = "Error Occured in ProcessSuccessTransaction",
+                                    Exception = new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)
+
                                 };
 
-                                await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                                await _messageQueueDataAccess.InsertMessageInMessageQueueRequestException(queueRequest);
                             }
                           
                         }
@@ -301,7 +304,7 @@ namespace OrderService.Helpers
                                 LastTriedOn = DateTime.Now,
                                 PublishedOn = DateTime.Now,
                                 MessageAttribute = ((OrderCount)OrderCountResponse.Results).SuccessfulOrders == 1 ? Core.Enums.RequestType.NewCustomer.GetDescription() : Core.Enums.RequestType.NewService.GetDescription(),
-                                MessageBody = JsonConvert.SerializeObject(orderDetails),
+                                MessageBody = orderDetails != null ? JsonConvert.SerializeObject(orderDetails) : null,
                                 Status = 0
                             };
                             await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
@@ -885,7 +888,7 @@ namespace OrderService.Helpers
 
                 DatabaseResponse smsTemplateResponse = await _configAccess.GetSMSNotificationTemplate(MessageName);               
 
-                var notificationMessage = MessageHelper.GetSMSMessage(MessageName, ((SMSTemplates)smsTemplateResponse.Results).TemplateName,customer.Name,customer.DeliveryEmail,customer.ShippingContactNumber, customer.OrderNumber, customer.SlotDate.ToString("dd MMM yyyy"), new DateTime(customer.SlotFromTime.Ticks).ToString("hh mm tt") + " to " + new DateTime(customer.SlotToTime.Ticks).ToString("hh mm tt"));
+                var notificationMessage = MessageHelper.GetSMSMessage(MessageName, ((SMSTemplates)smsTemplateResponse.Results).TemplateName,customer.Name,customer.DeliveryEmail,customer.ShippingContactNumber, customer.OrderNumber, customer.SlotDate.ToString("dd MMM yyyy"), new DateTime(customer.SlotFromTime.Ticks).ToString("hh:mm tt") + " to " + new DateTime(customer.SlotToTime.Ticks).ToString("hh:mm tt"));
 
                 DatabaseResponse notificationResponse = await _configAccess.GetConfiguration(ConfiType.Notification.ToString());
 
