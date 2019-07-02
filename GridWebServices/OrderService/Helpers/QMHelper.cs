@@ -457,6 +457,7 @@ namespace OrderService.Helpers
             catch (Exception ex)
             {
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                throw ex;
             }
 
         }
@@ -703,9 +704,11 @@ namespace OrderService.Helpers
         public async Task<string> SendEmailNotification(string MPGSOrderID, int orderID)
         {
             string status = string.Empty;
+
             LogInfo.Information("Email orderID : " + orderID);
 
             LogInfo.Information("Email MPGSOrderID : " + MPGSOrderID);
+
             try
             {
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);

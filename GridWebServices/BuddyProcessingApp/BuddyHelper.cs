@@ -238,11 +238,24 @@ namespace BuddyProcessingApp
                     }
                     catch (Exception ex)
                     {
-                        LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                        LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));                     
 
-                        queueRequest.Status = 0;
+                        MessageQueueRequestException queueExceptionRequest = new MessageQueueRequestException
+                        {
+                            Source = CheckOutType.Orders.ToString(),
+                            NumberOfRetries = 1,
+                            SNSTopic = string.IsNullOrWhiteSpace(topicName) ? null : topicName,
+                            CreatedOn = DateTime.Now,
+                            LastTriedOn = DateTime.Now,
+                            PublishedOn = DateTime.Now,
+                            MessageAttribute = Core.Enums.RequestType.RescheduleDelivery.GetDescription().ToString(),
+                            MessageBody = orderDetails != null ? JsonConvert.SerializeObject(orderDetails) : null,
+                            Status = 0,
+                            Remark = "Critical Exception while sending MQ from buddy console",
+                            Exception = new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)
+                        };
 
-                        await _buddyAccess.InsertMessageInMessageQueueRequest(queueRequest, _connectionString);
+                        await _buddyAccess.InsertMessageInMessageQueueRequestException(queueExceptionRequest, _connectionString);                       
 
                         return 0;
                     }

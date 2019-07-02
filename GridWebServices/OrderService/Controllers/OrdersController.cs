@@ -4511,6 +4511,7 @@ namespace OrderService.Controllers
                                         tokenSession.Token = tokenizeResponse.Token;
 
                                         string captureResponse = gatewayHelper.Capture(gatewayConfig, tokenSession);
+
                                         if (captureResponse == MPGSAPIResponse.SUCCESS.ToString())
                                         {
                                             LogInfo.Information(captureResponse);
@@ -4519,11 +4520,13 @@ namespace OrderService.Controllers
                                             TransactionRetrieveResponseOperation transactionResponse = new TransactionRetrieveResponseOperation();
 
                                             string receipt = gatewayHelper.RetrieveCheckOutTransaction(gatewayConfig, updateRequest);
+
                                             LogInfo.Information(receipt);
 
                                             transactionResponse = gatewayHelper.GetCapturedTransaction(receipt);
 
                                             LogInfo.Information(transactionResponse.TrasactionResponse.ApiResult + transactionResponse.TrasactionResponse.PaymentStatus + transactionResponse.TrasactionResponse.OrderId);
+
                                             DatabaseResponse tokenDetailsUpdateResponse = new DatabaseResponse();
 
                                             DatabaseResponse paymentProcessingRespose = new DatabaseResponse();
