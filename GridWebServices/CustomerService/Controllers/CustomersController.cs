@@ -1049,6 +1049,7 @@ namespace CustomerService.Controllers
         /// <summary>
         /// This will send forget password mail
         /// </summary>      
+        /// <param name="Token"></param>
         /// <param name="email">abcd@gmail.com</param>
         /// <returns>
         /// Customer Id and Token key
