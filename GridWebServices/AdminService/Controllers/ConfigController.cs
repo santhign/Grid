@@ -127,6 +127,7 @@ namespace AdminService.Controllers
         /// <summary>
         /// Get config validation details
         /// </summary>
+        /// <param name="Token"></param>
         /// <param name="ConfigType"></param>
         /// <returns>config value list</returns> 
         [HttpGet("GetConfigByType/{ConfigType}")]

@@ -37,6 +37,7 @@ namespace CustomerService.Controllers
         /// <summary>
         /// This will validate the email id
         /// </summary> 
+        /// <param name="Token"></param>
         ///<param name="emailid">abcd@gmail.com</param>
         /// <returns>validation result</returns> 
         [HttpGet]
@@ -224,6 +225,7 @@ namespace CustomerService.Controllers
         /// <summary>
         /// This will check NRIC Validation.
         /// </summary>
+        /// <param name="Token"></param>
         /// <param name="NRIC"></param>
         /// <returns>validtion result</returns>
         /// POST: api/NRICValidation/S1234567D 
@@ -284,6 +286,7 @@ namespace CustomerService.Controllers
         /// <summary>
         /// This will check NRIC Validation: IDType - S=Singaporean;F=Forigner
         /// </summary>
+        /// <param name="Token"></param>
         /// <param name="IDType"></param>
         /// <param name="NRIC"></param>
         /// <returns>validtion result</returns>

@@ -28,6 +28,7 @@ namespace AdminService.Controllers
         /// <summary>
         /// This will get all FAQ based on pagename
         /// </summary>
+        /// <param name="Token"></param>
         /// <param name="Pagename">Page1</param>
         /// <returns>LoggedInPrinciple</returns>  
         // GET: api/GetPageFAQ/page1

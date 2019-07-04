@@ -23,10 +23,11 @@ namespace CatelogService.Controllers
         {
             _iconfiguration = configuration;
         }
- 
+
         /// <summary>
         /// Get banner details
         /// </summary>
+        /// <param name="Token"></param>
         /// <param name="request"></param>
         /// <returns>banner details</returns> 
         /// 

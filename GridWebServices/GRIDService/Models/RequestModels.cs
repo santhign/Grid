@@ -75,7 +75,7 @@ namespace GRIDService.Models
         /// </value>
         public string Remarks { get; set; }
         /// <summary>
-        /// Gets or sets the status.
+        /// Gets or sets the status.--c=Completed;r=Rejected
         /// </summary>
         /// <value>
         /// The status.
@@ -89,7 +89,7 @@ namespace GRIDService.Models
         /// </value>
         public string RejectReason { get; set; }
         /// <summary>
-        /// Gets or sets the current status.
+        /// Gets or sets the current status.-- 1=Process; -1= No action
         /// </summary>
         /// <value>
         /// The current status.
@@ -138,7 +138,7 @@ namespace GRIDService.Models
         /// </value>
         public int Status { get; set; }
         /// <summary>
-        /// Gets or sets the valid from.
+        /// Gets or sets the valid from.--1=Activated; 2=OnHold; 3=Terminated
         /// </summary>
         /// <value>
         /// The valid from.
@@ -175,12 +175,12 @@ namespace GRIDService.Models
         /// </value>
         public string OrderNumber { get; set; }
         /// <summary>
-        /// Gets or sets the orderstatus.
+        /// Gets or sets the orderstatus. --C=Completed; F=Failed
         /// </summary>
         /// <value>
         /// The orderstatus.
         /// </value>
-        public string Orderstatus { get; set; }
+        public string Orderstatus { get; set; } 
         /// <summary>
         /// Gets or sets the error reason.
         /// </summary>

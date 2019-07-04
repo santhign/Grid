@@ -347,46 +347,6 @@ namespace GRIDService.DataAccess
         }
 
         /// <summary>
-        /// Grids the update delivery status.
-        /// </summary>
-        /// <param name="AccountID">The account identifier.</param>
-        /// <param name="BillingAccountNumber">The billing account number.</param>
-        /// <param name="BSSProfileid">The BSS profileid.</param>
-        /// <returns></returns>
-        public async Task<int> Grid_UpdateDeliveryStatus(string AccountID, string BillingAccountNumber, string BSSProfileid)
-        {
-            try
-            {
-                SqlParameter[] parameters =
-                {
-                    new SqlParameter( "@AccountID",  SqlDbType.Int ),
-                    new SqlParameter( "@BillingAccountNumber",  SqlDbType.NVarChar ),
-                    new SqlParameter( "@BSSProfileid",  SqlDbType.NVarChar ),
-                };
-
-                parameters[0].Value = AccountID;
-                parameters[1].Value = BillingAccountNumber;
-                parameters[2].Value = BSSProfileid;
-
-                _DataHelper = new DataAccessHelper("Grid_UpdateDeliveryStatus", parameters, _configuration);
-                DataTable dt = new DataTable();
-                return await _DataHelper.RunAsync();
-
-            }
-
-            catch (Exception ex)
-            {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-
-                throw;
-            }
-            finally
-            {
-                _DataHelper.Dispose();
-            }
-        }
-
-        /// <summary>
         /// Grids the update initial order subscriptions.
         /// </summary>
         /// <param name="request">The request.</param>
