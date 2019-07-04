@@ -36,12 +36,12 @@ namespace Core.Enums
         [Description("Grid Customer Micro Service")]
         Customer = 2,
 
-        [EnumMember(Value = "Cust")]
+        [EnumMember(Value = "Order")]
         [Description("Grid Customer Micro Service")]
         Order = 3,
 
 
-        [EnumMember(Value = "Cust")]
+        [EnumMember(Value = "Catalog")]
         [Description("Grid Customer Micro Service")]
         Catalog = 4
        
