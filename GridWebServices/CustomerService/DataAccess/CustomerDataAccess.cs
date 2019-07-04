@@ -519,6 +519,7 @@ namespace CustomerService.DataAccess
                 };
 
                 parameters[0].Value = customerId;
+
                 _DataHelper = new DataAccessHelper("Customers_GetSubscribers", parameters, _configuration);
 
                 var dt = new DataTable();
@@ -529,12 +530,10 @@ namespace CustomerService.DataAccess
 
                 if (result == 105)
                 {
-
                     var subscriber = new List<Subscriber>();
 
                     if (dt.Rows.Count > 0)
                     {
-
                         subscriber = (from model in dt.AsEnumerable()
                                       select new Subscriber()
                                       {
