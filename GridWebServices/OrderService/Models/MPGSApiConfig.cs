@@ -30,7 +30,7 @@ namespace OrderService.Models
 
             }
 
-            public static string WEBHOOKS_NOTIFICATION_FOLDER = "webhooks-notifications";
+            public static string WEBHOOKS_NOTIFICATION_FOLDER = "../logjson/webhooks-notifications";
 
             public Boolean Debug { get; set; }
 
