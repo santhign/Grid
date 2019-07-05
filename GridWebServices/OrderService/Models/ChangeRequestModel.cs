@@ -12,8 +12,8 @@ namespace OrderService.Models
         /// <summary>Gets or sets the customer identifier.</summary>
         /// <value>The customer identifier.</value>
 
-        [Required(ErrorMessage = "OrderID is required")]
-        public int OrderID { get; set; }
+        [Required(ErrorMessage = "CustomerID is required")]
+        public int CustomerID { get; set; }
         /// <summary>Gets or sets the mobile number.</summary>
         /// <value>The mobile number.</value>
         /// 

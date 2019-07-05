@@ -551,6 +551,7 @@ namespace CustomerService.DataAccess
                                           UnsuspensionRaised = model.Field<int>("UnsuspensionRaised"),
                                           TerminationRaised = model.Field<int>("TerminationRaised"),
                                           PlanChangeRaised = model.Field<int>("PlanChangeRaised"),
+                                          ChangeNumberRaised = model.Field<int>("ChangeNumberRaised"),                                          
                                           PlanChangeAllowed = model.Field<int>("PlanChangeAllowed"),
                                           PlanChangeMessage = model.Field<string>("PlanChangeMessage"),
                                           SMSSubscription = model.Field<int>("SMSSubscription"),
