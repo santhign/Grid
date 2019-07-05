@@ -1190,11 +1190,9 @@ namespace OrderService.Controllers
                 { 
                     int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
 
-                    OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);                                
+                    OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration); 
 
-                    DatabaseResponse customerResponse = await _orderAccess.GetCustomerIdFromOrderId(request.OrderID);
-
-                    if (customerResponse.ResponseCode == (int)DbReturnValue.RecordExists && customerID == ((OrderCustomer)customerResponse.Results).CustomerId)
+                    if (customerID == request.CustomerID)
                     {
                         //Block
 
@@ -1204,7 +1202,7 @@ namespace OrderService.Controllers
 
                         GridBSSConfi config = bsshelper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
 
-                        DatabaseResponse requestIdToUpdateBlock = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), ((OrderCustomer)customerResponse.Results).CustomerId, (int)BSSCalls.ExistingSession, request.NewMobileNumber);
+                        DatabaseResponse requestIdToUpdateBlock = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), request.CustomerID, (int)BSSCalls.ExistingSession, request.NewMobileNumber);
 
                         BSSUpdateResponseObject bssUpdateResponse = new BSSUpdateResponseObject();
 

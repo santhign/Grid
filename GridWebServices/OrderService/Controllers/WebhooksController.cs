@@ -191,7 +191,7 @@ namespace OrderService.Controllers
 
                 //update checkout details
 
-                DatabaseResponse updateCheckoutDetailsResponse = await _orderAccess.UpdateCheckOutResponse(updateRequest);
+               // DatabaseResponse updateCheckoutDetailsResponse = await _orderAccess.UpdateCheckOutResponse(updateRequest);
 
                 // retrieve transaction details from MPGS
 
