@@ -385,7 +385,7 @@ namespace OrderService.DataAccess
                 parameters[9].Value = changePhone.PortedNumberOwnedBy;
                 parameters[10].Value = changePhone.PortedNumberOwnerRegistrationId;
 
-                _DataHelper = new DataAccessHelper(DbObjectNames.Customer_CR_ChangePhoneRequest, parameters, _configuration);
+                _DataHelper = new DataAccessHelper("Orders_CR_ChangePhoneRequest", parameters, _configuration);
 
                 DataSet ds = new DataSet();
 
