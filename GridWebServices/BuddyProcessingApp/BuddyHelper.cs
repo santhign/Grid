@@ -211,7 +211,7 @@ namespace BuddyProcessingApp
                           
                         var publisher = new InfrastructureService.MessageQueue.Publisher(_connectionString, topicName);
 
-                        pushResult =  await publisher.PublishAsync(orderMqResponse, attribute);                       
+                        pushResult =  await publisher.PublishAsync(orderDetails, attribute);                       
 
                         if (pushResult.Trim().ToUpper() == "OK")
                         {
