@@ -555,7 +555,7 @@ namespace AdminService.Controllers
 
                                 var notificationMessage = MessageHelper.GetMessage(emailDetails.Email, emailDetails.Name, NotificationEvent.ICValidationReject.GetDescription(),
                                ((EmailTemplate)registrationResponse.Results).TemplateName,
-                           _iconfiguration, string.IsNullOrWhiteSpace(finalURL) ? "-" : finalURL, string.IsNullOrWhiteSpace(emailDetails.Remark) ? "-" : emailDetails.Remark, string.IsNullOrWhiteSpace(emailDetails.ChangeLog) ? "-" : emailDetails.ChangeLog);
+                           _iconfiguration, string.IsNullOrWhiteSpace(finalURL) ? "-" : finalURL, string.IsNullOrWhiteSpace(emailDetails.Remark) ? "-" : emailDetails.Remark.Replace(";", "<br />"), string.IsNullOrWhiteSpace(emailDetails.ChangeLog) ? "-" : emailDetails.ChangeLog);
                                 var notificationResponse = await _adminOrderDataAccess.GetConfiguration(ConfiType.Notification.ToString());
 
 
