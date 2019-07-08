@@ -758,7 +758,7 @@ namespace OrderService.Helpers
 
                     orderedNumbersSb.Append("</table>");
 
-                    if (!string.IsNullOrEmpty(customer.ShippingBuildingName))
+                    if (!string.IsNullOrEmpty(customer.ShippingBuildingNumber))
                     {
                         deliveryAddressSb.Append(customer.ShippingBuildingNumber);
                     }
