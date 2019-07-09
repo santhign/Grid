@@ -628,32 +628,9 @@ namespace OrderService.Models
         public string BillingBuildingName { get; set; }       
         public string BillingStreetName { get; set; }       
         public string BillingPostCode { get; set; }     
-        public string BillingContactNumber { get; set; }      
-        public string IdentityCardType { get; set; }     
-        public string IdentityCardNumber { get; set; }      
+        public string BillingContactNumber { get; set; } 
         public string Name { get; set; }       
-        public string Email { get; set; }      
-        public int IsSameAsBilling { get; set; }       
-        public string ShippingUnit { get; set; }        
-        public string ShippingFloor { get; set; }      
-        public string ShippingBuildingNumber { get; set; }      
-        public string ShippingBuildingName { get; set; }      
-        public string ShippingStreetName { get; set; }      
-        public string ShippingPostCode { get; set; }     
-        public string ShippingContactNumber { get; set; }      
-        public string AlternateRecipientContact { get; set; }    
-        public string AlternateRecipientName { get; set; }        
-        public string AlternateRecipientEmail { get; set; }
-        public string AlternateRecipientIDNumber { get; set; }     
-        public string AlternateRecipientIDType { get; set; }     
-        public string PortalSlotID { get; set; }      
-        public string DeliveryVendor { get; set; }      
-        public DateTime? DeliveryOn { get; set; }       
-        public string VendorTrackingCode { get; set; }
-        public string VendorTrackingUrl { get; set; }
-        public DateTime? DeliveryTime { get; set; }       
-        public DateTime? ScheduledDate { get; set; }      
-        public double? DeliveryFee { get; set; }
+        public string Email { get; set; }
         public double? PayableAmount { get; set; }
         public IList<ChangeRequestCharges> ChangeRequestChargesList;
     }

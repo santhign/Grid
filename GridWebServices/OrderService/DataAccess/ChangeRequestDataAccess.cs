@@ -415,32 +415,8 @@ namespace OrderService.DataAccess
                                         BillingPostCode = model.Field<string>("BillingPostCode"),
                                         BillingContactNumber = model.Field<string>("BillingContactNumber"),
                                         Name = model.Field<string>("Name"),
-                                        Email = model.Field<string>("Email"),
-                                        IdentityCardNumber = model.Field<string>("IdentityCardNumber"),
-                                        IdentityCardType = model.Field<string>("IdentityCardType"),
-                                        IsSameAsBilling = model.Field<int>("IsSameAsBilling"),
-                                        ShippingUnit = model.Field<string>("ShippingUnit"),
-                                        ShippingFloor = model.Field<string>("ShippingFloor"),
-                                        ShippingBuildingName = model.Field<string>("ShippingBuildingName"),
-                                        ShippingBuildingNumber = model.Field<string>("ShippingBuildingNumber"),
-                                        ShippingStreetName = model.Field<string>("ShippingStreetName"),
-                                        ShippingPostCode = model.Field<string>("ShippingPostCode"),
-                                        ShippingContactNumber = model.Field<string>("ShippingContactNumber"),
-                                        AlternateRecipientName = model.Field<string>("AlternateRecipientName"),
-                                        AlternateRecipientEmail = model.Field<string>("AlternateRecipientEmail"),
-                                        AlternateRecipientContact = model.Field<string>("AlternateRecipientContact"),
-                                        AlternateRecipientIDNumber = model.Field<string>("AlternateRecipientIDNumber"),
-                                        AlternateRecipientIDType = model.Field<string>("AlternateRecipientIDType"),
-                                        PortalSlotID = model.Field<string>("PortalSlotID"),
-                                        ScheduledDate = model.Field<DateTime?>("ScheduledDate"),
-                                        DeliveryVendor = model.Field<string>("DeliveryVendor"),
-                                        DeliveryOn = model.Field<DateTime?>("DeliveryOn"),
-                                        DeliveryTime = model.Field<DateTime?>("DeliveryTime"),
-                                        VendorTrackingCode = model.Field<string>("VendorTrackingCode"),
-                                        VendorTrackingUrl = model.Field<string>("VendorTrackingUrl"),
-                                        DeliveryFee = model.Field<double?>("DeliveryFee"),
+                                        Email = model.Field<string>("Email"),                                                                                                  
                                         PayableAmount = model.Field<double?>("PayableAmount")
-
                                     }).FirstOrDefault();
 
                     if (changeNumberResponse != null && ds.Tables[1]!=null && ds.Tables[1].Rows.Count>0)
