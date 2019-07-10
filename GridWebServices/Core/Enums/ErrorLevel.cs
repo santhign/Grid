@@ -361,5 +361,8 @@ namespace Core.Enums
         [Description("System exception eccured after successful payment")]
         SystemExceptionAfterPayment = 85,
 
+        [EnumMember(Value = "UnableToProcess")]
+        [Description("Unable to process the request at present")]
+        UnableToProcess = 86,
     }
 }

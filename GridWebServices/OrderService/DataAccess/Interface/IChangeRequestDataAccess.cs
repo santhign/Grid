@@ -113,6 +113,6 @@ namespace OrderService.DataAccess
         /// <param name="loaDetails">The loa details.</param>
         /// <returns></returns>
         Task<DatabaseResponse> UpdateCRLOADetails(UpdateCRLOADetailsRequest loaDetails);
-
+        Task<DatabaseResponse> CheckChangePhoneRequestStatus(ChangePhoneRequest changePhone, int customerID);
     }
 }

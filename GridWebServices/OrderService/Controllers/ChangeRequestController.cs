@@ -1196,37 +1196,107 @@ namespace OrderService.Controllers
                     {
                         //Block
 
-                        if (request.PortingType != 1)
-                        {
+                        DatabaseResponse checkChangePhoneRequest = await _changeRequestDataAccess.CheckChangePhoneRequestStatus(request, customerID);
 
+                        if (checkChangePhoneRequest.ResponseCode == (int)DbReturnValue.RecordExists)
+                        {
+                            //Unprocessed changeNumber request exists                           
+
+                            ChangedNumberDetails changedNumberDetails = (ChangedNumberDetails)checkChangePhoneRequest.Results;
+
+                            //Unblock the existing request number if its not ported one
                             BSSAPIHelper bsshelper = new BSSAPIHelper();
 
                             DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
 
                             GridBSSConfi config = bsshelper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
 
-                            DatabaseResponse requestIdToUpdateBlock = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), request.CustomerID, (int)BSSCalls.ExistingSession, request.NewMobileNumber);
-
-                            BSSUpdateResponseObject bssUpdateResponse = new BSSUpdateResponseObject();
-
-                            try
+                            DatabaseResponse requestIdToUpdateBlock = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), request.CustomerID, (int)BSSCalls.ExistingSession, changedNumberDetails.NewMobileNumber);
+                                                       
+                            if (changedNumberDetails.ChangeRequestID>0 && changedNumberDetails.PortingType!=1)
                             {
-                                bssUpdateResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateBlock.Results, request.NewMobileNumber, false);
-                            }
-                            catch (Exception ex)
-                            {
-                                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + " " + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
-
-                                return Ok(new OperationResponse
+                                BSSUpdateResponseObject bssUpdateResponse = new BSSUpdateResponseObject();
+                                try
                                 {
-                                    HasSucceeded = false,
-                                    Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed),
-                                    IsDomainValidationErrors = false
-                                });
+                                    bssUpdateResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateBlock.Results, changedNumberDetails.NewMobileNumber, true);
+                                }
+                                catch (Exception ex)
+                                {
+                                    LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + " " + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed) + " for unblocking previous unprocessed ChangeNumber. CustomerID:" + request.CustomerID +", MobileNumber:"+ changedNumberDetails.NewMobileNumber);
 
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = false,
+                                        Message = EnumExtensions.GetDescription(CommonErrors.UnableToProcess),
+                                        IsDomainValidationErrors = false
+                                    });
+
+                                }
                             }
 
-                            if (bsshelper.GetResponseCode(bssUpdateResponse) == "0")
+                            if (request.PortingType != 1)
+                            {                               
+
+                                DatabaseResponse requestIdToUpdateBlockNew = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), request.CustomerID, (int)BSSCalls.ExistingSession, request.NewMobileNumber);
+
+                                BSSUpdateResponseObject bssUpdateResponse = new BSSUpdateResponseObject();
+
+                                try
+                                {
+                                    bssUpdateResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateBlockNew.Results, request.NewMobileNumber, false);
+                                }
+                                catch (Exception ex)
+                                {
+                                    LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + " " + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = false,
+                                        Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed),
+                                        IsDomainValidationErrors = false
+                                    });
+
+                                }
+
+                                if (bsshelper.GetResponseCode(bssUpdateResponse) == "0")
+                                {
+                                    DatabaseResponse statusResponse = await _changeRequestDataAccess.ChangePhoneRequest(request, customerID);
+
+                                    if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
+                                    {
+                                        return Ok(new ServerResponse
+                                        {
+                                            HasSucceeded = true,
+                                            Message = StatusMessages.SuccessMessage,
+                                            Result = statusResponse
+                                        });
+                                    }
+                                    else
+                                    {
+                                        LogInfo.Warning(DbReturnValue.RecordExists.GetDescription());
+
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = false,
+                                            Message = DbReturnValue.CreationFailed.GetDescription(),
+                                            IsDomainValidationErrors = false
+                                        });
+                                    }
+                                }
+                                else
+                                {
+                                    // blocking failed
+
+                                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.UpdateAssetBlockingFailed) + ". ChangeNumber Customer:" + customerID);
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = false,
+                                        Message = EnumExtensions.GetDescription(DbReturnValue.BlockingFailed),
+                                        IsDomainValidationErrors = false
+                                    });
+                                }
+                            }
+                            else
                             {
                                 DatabaseResponse statusResponse = await _changeRequestDataAccess.ChangePhoneRequest(request, customerID);
 
@@ -1250,47 +1320,121 @@ namespace OrderService.Controllers
                                         IsDomainValidationErrors = false
                                     });
                                 }
-
-                            }
-                            else
-                            {
-                                // blocking failed
-
-                                LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.UpdateAssetBlockingFailed) + ". ChangeNumber Customer:" + customerID);
-                                return Ok(new OperationResponse
-                                {
-                                    HasSucceeded = false,
-                                    Message = EnumExtensions.GetDescription(DbReturnValue.BlockingFailed),
-                                    IsDomainValidationErrors = false
-                                });
                             }
                         }
+
+                        else if (checkChangePhoneRequest.ResponseCode == (int)DbReturnValue.NumberChangeRequestAlreadyRaised)
+                        {
+                            //change Numebr request already raised
+
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.NumberChangeRequestAlreadyRaised),
+                                IsDomainValidationErrors = false
+                            });
+
+                        }
+
                         else
                         {
-                            DatabaseResponse statusResponse = await _changeRequestDataAccess.ChangePhoneRequest(request, customerID);
-
-                            if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
+                            // No request exists
+                            //checkChangePhoneRequest.ResponseCode == (int)DbReturnValue.NotExists
+                            if (request.PortingType != 1)
                             {
-                                return Ok(new ServerResponse
+
+                                BSSAPIHelper bsshelper = new BSSAPIHelper();
+
+                                DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
+
+                                GridBSSConfi config = bsshelper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
+
+                                DatabaseResponse requestIdToUpdateBlock = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), request.CustomerID, (int)BSSCalls.ExistingSession, request.NewMobileNumber);
+
+                                BSSUpdateResponseObject bssUpdateResponse = new BSSUpdateResponseObject();
+
+                                try
                                 {
-                                    HasSucceeded = true,
-                                    Message = StatusMessages.SuccessMessage,
-                                    Result = statusResponse
-                                });
+                                    bssUpdateResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateBlock.Results, request.NewMobileNumber, false);
+                                }
+                                catch (Exception ex)
+                                {
+                                    LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + " " + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = false,
+                                        Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed),
+                                        IsDomainValidationErrors = false
+                                    });
+
+                                }
+
+                                if (bsshelper.GetResponseCode(bssUpdateResponse) == "0")
+                                {
+                                    DatabaseResponse statusResponse = await _changeRequestDataAccess.ChangePhoneRequest(request, customerID);
+
+                                    if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
+                                    {
+                                        return Ok(new ServerResponse
+                                        {
+                                            HasSucceeded = true,
+                                            Message = StatusMessages.SuccessMessage,
+                                            Result = statusResponse
+                                        });
+                                    }
+                                    else
+                                    {
+                                        LogInfo.Warning(DbReturnValue.RecordExists.GetDescription());
+
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = false,
+                                            Message = DbReturnValue.CreationFailed.GetDescription(),
+                                            IsDomainValidationErrors = false
+                                        });
+                                    }
+
+                                }
+                                else
+                                {
+                                    // blocking failed
+
+                                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.UpdateAssetBlockingFailed) + ". ChangeNumber Customer:" + customerID);
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = false,
+                                        Message = EnumExtensions.GetDescription(DbReturnValue.BlockingFailed),
+                                        IsDomainValidationErrors = false
+                                    });
+                                }
                             }
                             else
                             {
-                                LogInfo.Warning(DbReturnValue.RecordExists.GetDescription());
+                                DatabaseResponse statusResponse = await _changeRequestDataAccess.ChangePhoneRequest(request, customerID);
 
-                                return Ok(new OperationResponse
+                                if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                                 {
-                                    HasSucceeded = false,
-                                    Message = DbReturnValue.CreationFailed.GetDescription(),
-                                    IsDomainValidationErrors = false
-                                });
+                                    return Ok(new ServerResponse
+                                    {
+                                        HasSucceeded = true,
+                                        Message = StatusMessages.SuccessMessage,
+                                        Result = statusResponse
+                                    });
+                                }
+                                else
+                                {
+                                    LogInfo.Warning(DbReturnValue.RecordExists.GetDescription());
+
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = false,
+                                        Message = DbReturnValue.CreationFailed.GetDescription(),
+                                        IsDomainValidationErrors = false
+                                    });
+                                }
                             }
                         }
-
                     }
                     else
                     {
@@ -1328,7 +1472,6 @@ namespace OrderService.Controllers
                     Message = StatusMessages.ServerError,
                     IsDomainValidationErrors = false
                 });
-
             }
         }
 
