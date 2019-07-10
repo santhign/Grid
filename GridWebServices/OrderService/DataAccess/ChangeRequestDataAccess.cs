@@ -442,7 +442,7 @@ namespace OrderService.DataAccess
 
             catch (Exception ex)
             {
-               // LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+               LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 throw;
             }
