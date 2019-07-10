@@ -634,4 +634,15 @@ namespace OrderService.Models
         public double? PayableAmount { get; set; }
         public IList<ChangeRequestCharges> ChangeRequestChargesList;
     }
+
+    public class ChangedNumberDetails
+    {
+        public int NumberChangeRequestID { get; set; }
+        public int ChangeRequestID { get; set; }       
+        public string NewMobileNumber { get; set; }
+        public int? PremiumType { get; set; }
+        public int? PortingType { get; set; }
+      
+    }
+    
 }

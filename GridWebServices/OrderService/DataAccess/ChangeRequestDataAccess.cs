@@ -442,7 +442,7 @@ namespace OrderService.DataAccess
 
             catch (Exception ex)
             {
-               // LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 throw;
             }
@@ -1118,6 +1118,74 @@ namespace OrderService.DataAccess
             }
         }
 
+        public async Task<DatabaseResponse> CheckChangePhoneRequestStatus(ChangePhoneRequest changePhone, int customerID)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+                    new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar),
+                    new SqlParameter( "@NewMobileNumber",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@RequestType",  SqlDbType.NVarChar),
+                    new SqlParameter( "@PremiumType",  SqlDbType.Int),
+                    new SqlParameter( "@PortingType",  SqlDbType.Int)                  
+                };
+
+                parameters[0].Value = customerID;
+                parameters[1].Value = changePhone.OldMobileNumber;
+                parameters[2].Value = changePhone.NewMobileNumber;
+                parameters[3].Value = RequestType.ChangeNumber.ToString();
+                parameters[4].Value = changePhone.PremiumType;
+                parameters[5].Value = changePhone.PortingType;               
+
+                _DataHelper = new DataAccessHelper("Orders_CR_CheckChangePhoneRequestStatus", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                var result = await _DataHelper.RunAsync(dt);
+
+                DatabaseResponse response = new DatabaseResponse();               
+
+                ChangedNumberDetails changedNumberResponse = new ChangedNumberDetails();
+                if (result == (int)DbReturnValue.RecordExists)
+                {
+                    if (dt != null &&  dt.Rows.Count > 0)
+                    {
+                        changedNumberResponse = (from model in dt.AsEnumerable()
+                                                 select new ChangedNumberDetails()
+                                                 {
+                                                      NumberChangeRequestID = model.Field<int>("NumberChangeRequestID"),
+                                                      ChangeRequestID = model.Field<int>("ChangeRequestID"),
+                                                      NewMobileNumber = model.Field<string>("NewMobileNumber"),
+                                                      PortingType = model.Field<int?>("PortingType"),
+                                                      PremiumType = model.Field<int?>("PremiumType")                                                    
+                                                 }).FirstOrDefault();
+
+                        response = new DatabaseResponse { ResponseCode = result, Results = changedNumberResponse };
+                    }
+                }
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw;
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+       
 
     }
 }

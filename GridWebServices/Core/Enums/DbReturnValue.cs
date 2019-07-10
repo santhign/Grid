@@ -252,6 +252,19 @@ namespace Core.Enums
         [EnumMember(Value = "Old Password is not valid")]
         [Description("Current password is invalid.")]
         OldPasswordInvalid = 162,
+
+        [EnumMember(Value = "RequestTypeNotFound")]
+        [Description("RequestTypeNotFound")]
+        RequestTypeNotFound = 163,
+
+        [EnumMember(Value = "SubscriberNotExists")]
+        [Description("SubscriberNotExists")]
+        SubscriberNotExists = 164,
+
+        [EnumMember(Value = "NumberChangeRequestAlreadyRaised")]
+        [Description("Number ChangeRequest already raised")]
+        NumberChangeRequestAlreadyRaised = 165,
+
     }
 }
 
