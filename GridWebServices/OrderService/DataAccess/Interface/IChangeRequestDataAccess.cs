@@ -58,6 +58,7 @@ namespace OrderService.DataAccess
         /// Changes the phone request.
         /// </summary>
         /// <param name="changePhone">The change phone.</param>
+        /// <param name="customerID">The customerID.</param>
         /// <returns></returns>
         Task<DatabaseResponse> ChangePhoneRequest(ChangePhoneRequest changePhone, int customerID);
         /// <summary>
