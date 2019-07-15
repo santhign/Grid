@@ -391,8 +391,7 @@ namespace AdminService.Controllers
                             }
                         }
 
-                        int deliveryStatusNumber = request.IDVerificationStatus;
-                        
+                        int deliveryStatusNumber = request.IDVerificationStatus;                       
 
                         var authToken = (AuthTokenResponse)tokenAuthResponse.Results;
                         MiscHelper configHelper = new MiscHelper();

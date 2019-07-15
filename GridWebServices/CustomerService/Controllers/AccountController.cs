@@ -19,6 +19,8 @@ using System.IO;
 using Core.DataAccess;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using Newtonsoft.Json;
+using InfrastructureService.MessageQueue;
 
 namespace CustomerService.Controllers
 {
@@ -565,6 +567,11 @@ namespace CustomerService.Controllers
                     if (updateNRICResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
                     {
                         DatabaseResponse updateTokenStatus = await _commonDataAccess.UpdateTokenForVerificationRequests(request.OrderID);
+
+                        EmailResponse emailResponse =  (EmailResponse)updateNRICResponse.Results;
+
+                       string emailStatus=  await SendAdminEmailNotificationOnIDReUpload(emailResponse.Email, emailResponse.OrderNumber);
+
                         return Ok(new OperationResponse
                         {
                             HasSucceeded = true,
@@ -575,7 +582,13 @@ namespace CustomerService.Controllers
                     else if (updateNRICResponse.ResponseCode == (int)DbReturnValue.UpdateSuccessSendEmail)
                     {
                         DatabaseResponse updateTokenStatus = await _commonDataAccess.UpdateTokenForVerificationRequests(request.OrderID);
+
+                        EmailResponse emailResponse = (EmailResponse)updateNRICResponse.Results;
+
+                        string emailStatus = await SendAdminEmailNotificationOnIDReUpload(emailResponse.Email, emailResponse.OrderNumber);
+
                         LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.UpdateSuccessSendEmail) + "for " + request.OrderID + "Order");
+
                         return Ok(new OperationResponse
                         {
                             HasSucceeded = true,
@@ -630,6 +643,75 @@ namespace CustomerService.Controllers
                 });
 
             }
+        }
+
+       
+        public async Task<string> SendAdminEmailNotificationOnIDReUpload(string email, string orderNumber)
+        {
+            string status = string.Empty;
+
+            try
+            {
+                ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
+
+                DatabaseResponse templateResponse = await _configAccess.GetEmailNotificationTemplate(NotificationEvent.ICValidationCustomerUpload.ToString());
+
+                DatabaseResponse notifyEmailResponse=  ConfigHelper.GetValueByKey(ConfigKeys.IDReUploadNotifyEmail.ToString(), _iconfiguration);
+
+                if(notifyEmailResponse.ResponseCode==(int) DbReturnValue.RecordExists && notifyEmailResponse.Results!=null)
+                {
+                    var notificationMessage = MessageHelper.GetMessage((string)notifyEmailResponse.Results, "Admin", NotificationEvent.ICValidationCustomerUpload.ToString(), ((EmailTemplate)templateResponse.Results).TemplateName, _iconfiguration, email, orderNumber);
+
+                    DatabaseResponse notificationResponse = await _configAccess.GetConfiguration(ConfiType.Notification.ToString());
+
+                    MiscHelper parser = new MiscHelper();
+
+                    var notificationConfig = parser.GetNotificationConfig((List<Dictionary<string, string>>)notificationResponse.Results);
+
+                    LogInfo.Information("Email Message to send  " + JsonConvert.SerializeObject(notificationResponse));
+
+                    Publisher orderSuccessNotificationPublisher = new Publisher(_iconfiguration, notificationConfig.SNSTopic);
+
+                    try
+                    {
+
+                        status = await orderSuccessNotificationPublisher.PublishAsync(notificationMessage);
+                    }
+                    catch (Exception ex)
+                    {
+                        LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + "publishing :" + status);
+                        throw ex;
+                    }
+
+                    LogInfo.Information("Email send status : " + status + " " + JsonConvert.SerializeObject(notificationMessage));
+
+                    try
+                    {
+                        DatabaseResponse notificationLogResponse = await _configAccess.CreateEMailNotificationLogForDevPurpose(
+                                   
+                            new NotificationLogForDevPurpose
+                                    {
+                                        EventType = NotificationEvent.OrderSuccess.ToString(),
+
+                                        Message = JsonConvert.SerializeObject(notificationMessage)
+
+                                    });
+                    }
+                    catch (Exception ex)
+                    {
+                        LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + "Email send:" + email);
+                        throw ex;
+                    }
+                }                   
+
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + "IDReUpload:" + email);
+                throw ex;
+            }
+
+            return status;
         }
     }
 }

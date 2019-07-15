@@ -457,7 +457,8 @@ namespace Core.DataAccess
                                         Name = model.Field<string>("Name"),
                                         VerificationStatus = model.Field<int>("VerificationStatus"),
                                         ChangeLog = model.Field<string>("ChangeLog"),
-                                        Remark = model.Field<string>("Remark")
+                                        Remark = model.Field<string>("Remark"),
+                                        OrderNumber = model.Field<string>("OrderNumber")
 
                                     }).FirstOrDefault();
                 }
@@ -485,10 +486,10 @@ namespace Core.DataAccess
                     new SqlParameter( "@OrderID",  SqlDbType.Int )
                 };
 
-                parameters[0].Value = orderId;
-
+                 parameters[0].Value = orderId;
 
                 _DataHelper = new DataAccessHelper(DbObjectNames.Orders_UpdateIDVerificationRequests, parameters, _configuration);
+
                 DataTable dt = new DataTable();
 
                 var result = await _DataHelper.RunAsync(dt);
