@@ -304,6 +304,6 @@ namespace Core.Helpers
 
             return notificationMessage;
         }
-        // Prepair Message
+        // Prepare Message
     }
 }

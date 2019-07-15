@@ -16,6 +16,7 @@ namespace Core.Extensions
                 throw new ArgumentException($"{nameof(enumerationValue)} must be of Enum type", nameof(enumerationValue));
             }
             var memberInfo = type.GetMember(enumerationValue.ToString());
+
             if (memberInfo.Length > 0)
             {
                 var attrs = memberInfo[0].GetCustomAttributes(typeof(DescriptionAttribute), false);

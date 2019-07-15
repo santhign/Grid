@@ -62,6 +62,9 @@ namespace Core.Enums
         [Description("NRICReUploadLink")]
         NRICReUploadLink = 7,
 
+        [EnumMember(Value = "IDReUploadNotifyEmail")]
+        [Description("IDReUploadNotifyEmail")]
+        IDReUploadNotifyEmail = 8,
     }
 
     public enum OrderStatus

@@ -67,6 +67,7 @@ namespace AdminService.DataAccess
                                       OrderID = model.Field<int>("OrderID"),
                                       OrderNumber = model.Field<string>("OrderNumber"),
                                       IDVerificationStatus = model.Field<string>("IDVerificationStatus"),
+                                      IsIDReUploaded = model.Field<int?>("IsIDReUploaded"),
                                       IDVerificationStatusNumber = model.Field<int?>("IDVerificationStatusNumber"),
                                       OrderStatus = model.Field<string>("OrderStatus"),
                                       OrderStatusNumber = model.Field<int?>("OrderStatusNumber"),

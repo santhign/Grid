@@ -45,6 +45,9 @@ namespace Core.Enums
         [Description("RescheduleDelivery")]
         RescheduleDelivery = 7,
 
+        [EnumMember(Value = "ICValidationCustomerUpload")]
+        [Description("ICValidationCustomerUpload")]
+        ICValidationCustomerUpload = 8
     }
 
     public enum SNSNotification

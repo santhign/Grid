@@ -15,6 +15,7 @@ namespace Core.Models
         public int ? OrderStatusNumber { get; set; }
         public string OrderStatus { get; set; }
         public string IDVerificationStatus { get; set; }
+        public int? IsIDReUploaded { get; set; }
         public int ? IDVerificationStatusNumber { get; set; }
         public int ? RejectionCount { get; set; }
         public string Name { get; set; }
@@ -94,9 +95,11 @@ namespace Core.Models
     {
         public string Email { get; set; }
         public string Name { get; set; }
-        public int VerificationStatus { get; set; }
+        public int VerificationStatus { get; set; }       
         public string Remark { get; set;  }
         public string ChangeLog { get; set; }
+        public string OrderNumber { get; set; }
+
 
     }
 
