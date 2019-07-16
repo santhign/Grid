@@ -366,7 +366,7 @@ namespace Core.Enums
         UnableToProcess = 86,
 
         [EnumMember(Value = "UnableToProcess")]
-        [Description("Image is already uploaded")]
+        [Description("Image is already submitted")]
         ImageAlreadyUploaded = 87,        
     }
 }

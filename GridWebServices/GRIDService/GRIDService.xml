@@ -619,5 +619,11 @@
             </summary>
             <param name="services">The services.</param>
         </member>
+        <member name="M:GRIDService.Startup.Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder,Microsoft.AspNetCore.Hosting.IHostingEnvironment)">
+            <summary>
+            Configures the services.
+            </summary>
+            This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        </member>
     </members>
 </doc>
