@@ -568,9 +568,9 @@ namespace CustomerService.Controllers
                     {
                         DatabaseResponse updateTokenStatus = await _commonDataAccess.UpdateTokenForVerificationRequests(request.OrderID);
 
-                        EmailResponse emailResponse =  (EmailResponse)updateNRICResponse.Results;
+                       // EmailResponse emailResponse =  (EmailResponse)updateNRICResponse.Results;
 
-                       string emailStatus=  await SendAdminEmailNotificationOnIDReUpload(emailResponse.Email, emailResponse.OrderNumber);
+                      // string emailStatus=  await SendAdminEmailNotificationOnIDReUpload(emailResponse.Email, emailResponse.OrderNumber);
 
                         return Ok(new OperationResponse
                         {
@@ -583,11 +583,11 @@ namespace CustomerService.Controllers
                     {
                         DatabaseResponse updateTokenStatus = await _commonDataAccess.UpdateTokenForVerificationRequests(request.OrderID);
 
-                        EmailResponse emailResponse = (EmailResponse)updateNRICResponse.Results;
+                      //  EmailResponse emailResponse = (EmailResponse)updateNRICResponse.Results;
 
-                        string emailStatus = await SendAdminEmailNotificationOnIDReUpload(emailResponse.Email, emailResponse.OrderNumber);
+                      //  string emailStatus = await SendAdminEmailNotificationOnIDReUpload(emailResponse.Email, emailResponse.OrderNumber);
 
-                        LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.UpdateSuccessSendEmail) + "for " + request.OrderID + "Order");
+                       // LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.UpdateSuccessSendEmail) + "for " + request.OrderID + "Order");
 
                         return Ok(new OperationResponse
                         {
