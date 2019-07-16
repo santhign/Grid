@@ -599,11 +599,11 @@ namespace CustomerService.Controllers
 
                     else if (updateNRICResponse.ResponseCode == (int)DbReturnValue.NotExists)
                     {
-                        LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.NotExists) + " Order" + request.OrderID);
+                        LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.NotExists) + " " + EnumExtensions.GetDescription(CommonErrors.ImageAlreadyUploaded) + " Order" + request.OrderID);
                         return Ok(new OperationResponse
                         {
                             HasSucceeded = false,
-                            Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
+                            Message = EnumExtensions.GetDescription(CommonErrors.ImageAlreadyUploaded),
                             IsDomainValidationErrors = false
                         });
                     }
