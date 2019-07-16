@@ -3358,7 +3358,7 @@ namespace CustomerService.Controllers
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
-                        Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
+                        Message = EnumExtensions.GetDescription(CommonErrors.ImageAlreadyUploaded),
                         IsDomainValidationErrors = false
                     });
                 }
