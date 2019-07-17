@@ -15,7 +15,7 @@ namespace NotificationService.OutboundHelper
     public class OutboundSMS
     {      
 
-        public async Task<string> SendSMSNotification(Sms _smsdata, IConfiguration _iconfiguration)
+        public async Task<string> SendSMSNotification(TextMessage _smsdata, IConfiguration _iconfiguration)
         {
             try
             {

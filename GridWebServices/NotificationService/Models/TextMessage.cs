@@ -5,10 +5,9 @@ using System.Threading.Tasks;
 
 namespace NotificationService.Models
 {
-    public class Sms
+    public class TextMessage
     {
         public string PhoneNumber { get; set; }
-        public string SMSText { get; set; }       
-
+        public string SMSText { get; set; }
     }
 }
