@@ -116,12 +116,15 @@ namespace CustomerService.Controllers
             }
             catch (Exception ex)
             {
+                EmailValidationResponse _response = new EmailValidationResponse();
+                _response.Status = "api Error";
+                _response.IsValid = true;
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-                return Ok(new OperationResponse
+                return Ok(new ServerResponse
                 {
-                    HasSucceeded = false,
-                    Message = StatusMessages.ServerError,
-                    IsDomainValidationErrors = false
+                    HasSucceeded = true,
+                    Message = StatusMessages.ValidMessage,
+                    Result = _response
                 });
             }
         }
