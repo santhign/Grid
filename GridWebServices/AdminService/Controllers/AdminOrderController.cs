@@ -505,7 +505,10 @@ namespace AdminService.Controllers
                             string finallog = "";
                             foreach (string log in changelog)
                             {
-                                finallog = finallog + "&bull;" + log + "<br/>";
+                                if (!string.IsNullOrWhiteSpace(log))
+                                {
+                                    finallog = finallog + "&bull; " + log.Trim() + "<br/>";
+                                }
                             }
                             var notificationMessage = MessageHelper.GetMessage(emailDetails.Email, emailDetails.Name, emailDetails.VerificationStatus == 2 ? NotificationEvent.ICValidationReject.GetDescription() : NotificationEvent.ICValidationChange.GetDescription(),
                            ((EmailTemplate)registrationResponse.Results).TemplateName,
