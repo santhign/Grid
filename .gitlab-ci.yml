@@ -7,7 +7,7 @@ variables:
     test: "Example.Test"
 
 before_script:
-    - "cd src"
+    - "cd GridWebServices"
     - "dotnet restore"
 
 build:
