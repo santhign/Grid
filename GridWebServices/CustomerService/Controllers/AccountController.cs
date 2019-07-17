@@ -645,7 +645,7 @@ namespace CustomerService.Controllers
             }
         }
 
-       
+       [NonAction]
         public async Task<string> SendAdminEmailNotificationOnIDReUpload(string email, string orderNumber)
         {
             string status = string.Empty;
