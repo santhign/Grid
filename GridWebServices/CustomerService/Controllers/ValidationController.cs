@@ -229,12 +229,12 @@ namespace CustomerService.Controllers
         /// This will check NRIC Validation.
         /// </summary>
         /// <param name="Token"></param>
-        /// <param name="NRIC"></param>
+        /// <param name="NRIC">NRIC</param>
         /// <returns>validtion result</returns>
         /// POST: api/NRICValidation/S1234567D 
         [HttpPost]
-        [Route("NRICValidation/{NRIC}")]
-        public IActionResult NRICValidation([FromHeader(Name = "Grid-General-Token")] string Token, [FromRoute] string NRIC)
+        [Route("NRICValidation")]
+        public IActionResult NRICValidation([FromHeader(Name = "Grid-General-Token")] string Token, [FromBody] string NRIC)
         {
 
             string _warningmsg = "";
@@ -290,13 +290,12 @@ namespace CustomerService.Controllers
         /// This will check NRIC Validation: IDType - S=Singaporean;F=Forigner
         /// </summary>
         /// <param name="Token"></param>
-        /// <param name="IDType"></param>
-        /// <param name="NRIC"></param>
+        /// <param name="IDDetails"></param>
         /// <returns>validtion result</returns>
         /// POST: api/NRICValidation/S1234567D 
         [HttpPost]
-        [Route("NRICTypeValidation/{IDType}/{NRIC}")]
-        public IActionResult NRICTypeValidation([FromHeader(Name = "Grid-General-Token")] string Token, [FromRoute] string IDType, [FromRoute] string NRIC)
+        [Route("NRICTypeValidation")]
+        public IActionResult NRICTypeValidation([FromHeader(Name = "Grid-General-Token")] string Token, [FromBody] NRIC IDDetails)
         {
             string _warningmsg = "";           
 
@@ -314,7 +313,7 @@ namespace CustomerService.Controllers
                 }
 
                 EmailValidationHelper _helper = new EmailValidationHelper();
-                if (_helper.NRICValidation(IDType, NRIC, out _warningmsg))
+                if (_helper.NRICValidation(IDDetails.IDType, IDDetails.IDNumber, out _warningmsg))
                 {
                     return Ok(new ServerResponse
                     {
@@ -324,7 +323,7 @@ namespace CustomerService.Controllers
                 }
                 else
                 {
-                    LogInfo.Warning("NRIC Validation: " + IDType + "_" + _warningmsg);
+                    LogInfo.Warning("NRIC Validation: " + IDDetails.IDType + "_" + _warningmsg);
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = false,
