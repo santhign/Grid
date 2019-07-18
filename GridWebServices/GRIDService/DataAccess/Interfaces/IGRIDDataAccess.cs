@@ -57,14 +57,6 @@ namespace GRIDService.DataAccess.Interfaces
         /// <returns></returns>
         Task<int> Grid_UpdateBillingAccount(string AccountID, string BillingAccountNumber, string BSSProfileid);
         /// <summary>
-        /// Grids the update delivery status.
-        /// </summary>
-        /// <param name="AccountID">The account identifier.</param>
-        /// <param name="BillingAccountNumber">The billing account number.</param>
-        /// <param name="BSSProfileid">The BSS profileid.</param>
-        /// <returns></returns>
-        Task<int> Grid_UpdateDeliveryStatus(string AccountID, string BillingAccountNumber, string BSSProfileid);
-        /// <summary>
         /// Grids the update initial order subscriptions.
         /// </summary>
         /// <param name="request">The request.</param>

@@ -58,8 +58,9 @@ namespace OrderService.DataAccess
         /// Changes the phone request.
         /// </summary>
         /// <param name="changePhone">The change phone.</param>
+        /// <param name="customerID">The customerID.</param>
         /// <returns></returns>
-        Task<DatabaseResponse> ChangePhoneRequest(ChangePhoneRequest changePhone);
+        Task<DatabaseResponse> ChangePhoneRequest(ChangePhoneRequest changePhone, int customerID);
         /// <summary>
         /// Updates the cr shipping details.
         /// </summary>
@@ -112,6 +113,6 @@ namespace OrderService.DataAccess
         /// <param name="loaDetails">The loa details.</param>
         /// <returns></returns>
         Task<DatabaseResponse> UpdateCRLOADetails(UpdateCRLOADetailsRequest loaDetails);
-
+        Task<DatabaseResponse> CheckChangePhoneRequestStatus(ChangePhoneRequest changePhone, int customerID);
     }
 }

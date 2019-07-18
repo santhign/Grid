@@ -352,43 +352,92 @@ namespace OrderService.DataAccess
             }
         }
 
-        /// <summary>
-        /// Changes the phone request.
-        /// </summary>
-        /// <param name="changePhone">The change phone.</param>
-        /// <returns></returns>
-        public async Task<DatabaseResponse> ChangePhoneRequest(ChangePhoneRequest changePhone)
+       
+        public async Task<DatabaseResponse> ChangePhoneRequest(ChangePhoneRequest changePhone, int customerID)
         {
             try
             {
 
                 SqlParameter[] parameters =
                 {
-                    new SqlParameter( "@CustomerID",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
                     new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar),
                     new SqlParameter( "@NewMobileNumber",  SqlDbType.NVarChar ),
-                    new SqlParameter( "@RequestTypeDescription",  SqlDbType.NVarChar),
+                    new SqlParameter( "@RequestType",  SqlDbType.NVarChar),
                     new SqlParameter( "@PremiumType",  SqlDbType.Int),
-                    //new SqlParameter( "@PortedNumberTransferForm",  SqlDbType.NVarChar),
-                    //new SqlParameter( "@PortedNumberOwnedBy",  SqlDbType.NVarChar),
-                    //new SqlParameter( "@PortedNumberOwnerRegistrationID",  SqlDbType.NVarChar)
-                    
+                    new SqlParameter( "@PortingType",  SqlDbType.Int),
+                    new SqlParameter( "@IsOwnNumber",  SqlDbType.Int),
+                    new SqlParameter( "@DonorProvider",  SqlDbType.NVarChar),
+                    new SqlParameter( "@PortedNumberTransferForm",  SqlDbType.NVarChar),
+                    new SqlParameter( "@PortedNumberOwnedBy",  SqlDbType.NVarChar),
+                    new SqlParameter( "@PortedNumberOwnerRegistrationID",  SqlDbType.NVarChar)
                 };
 
-                parameters[0].Value = changePhone.CustomerId;
-                parameters[1].Value = changePhone.MobileNumber;
+                parameters[0].Value = customerID;
+                parameters[1].Value = changePhone.OldMobileNumber;
                 parameters[2].Value = changePhone.NewMobileNumber;
-                parameters[3].Value = Core.Enums.RequestType.ChangeNumber.GetDescription();
+                parameters[3].Value = RequestType.ChangeNumber.ToString();
                 parameters[4].Value = changePhone.PremiumType;
-                //parameters[5].Value = changePhone.PortedNumberTransferForm;
-                //parameters[6].Value = changePhone.PortedNumberOwnedBy;
-                //parameters[7].Value = changePhone.PortedNumberOwnerRegistrationId;
+                parameters[5].Value = changePhone.PortingType;
+                parameters[6].Value = changePhone.IsOwnNumber;
+                parameters[7].Value = changePhone.DonorProvider;
+                parameters[8].Value = changePhone.PortedNumberTransferForm;
+                parameters[9].Value = changePhone.PortedNumberOwnedBy;
+                parameters[10].Value = changePhone.PortedNumberOwnerRegistrationId;
 
-                _DataHelper = new DataAccessHelper(DbObjectNames.Customer_CR_ChangePhoneRequest, parameters, _configuration);
+                _DataHelper = new DataAccessHelper("Orders_CR_ChangePhoneRequest", parameters, _configuration);
 
-                var result = await _DataHelper.RunAsync();
+                DataSet ds = new DataSet();
 
-                return new DatabaseResponse { ResponseCode = result };
+                var result = await _DataHelper.RunAsync(ds);
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result != (int)Core.Enums.DbReturnValue.CreateSuccess)
+                    return new DatabaseResponse { ResponseCode = result };
+
+                    ChangeNumberResponse changeNumberResponse = new ChangeNumberResponse();
+
+                if (ds!=null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count>0)
+                {
+                    changeNumberResponse = (from model in ds.Tables[0].AsEnumerable()
+                                    select new ChangeNumberResponse()
+                                    {
+                                        ChangeRequestId = model.Field<int>("ChangeRequestID"),
+                                        OrderNumber = model.Field<string>("OrderNumber"),
+                                        RequestOn = model.Field<DateTime>("RequestOn"),
+                                        RequestTypeDescription = model.Field<string>("RequestTypeDescription"),
+                                        BillingUnit = model.Field<string>("BillingUnit"),
+                                        BillingFloor = model.Field<string>("BillingFloor"),
+                                        BillingBuildingName = model.Field<string>("BillingBuildingName"),
+                                        BillingBuildingNumber = model.Field<string>("BillingBuildingNumber"),
+                                        BillingStreetName = model.Field<string>("BillingStreetName"),
+                                        BillingPostCode = model.Field<string>("BillingPostCode"),
+                                        BillingContactNumber = model.Field<string>("BillingContactNumber"),
+                                        Name = model.Field<string>("Name"),
+                                        Email = model.Field<string>("Email"),                                                                                                  
+                                        PayableAmount = model.Field<double?>("PayableAmount")
+                                    }).FirstOrDefault();
+
+                    if (changeNumberResponse != null && ds.Tables[1]!=null && ds.Tables[1].Rows.Count>0)
+                        changeNumberResponse.ChangeRequestChargesList = (from model in ds.Tables[1].AsEnumerable()
+                                                                 select new ChangeRequestCharges()
+                                                                 {
+                                                                     PortalServiceName = model.Field<string>("PortalServiceName"),
+                                                                     ServiceFee = model.Field<double?>("ServiceFee"),
+                                                                     IsRecurring = model.Field<int?>("IsRecurring"),
+                                                                     IsGstIncluded = model.Field<int?>("IsGSTIncluded")
+                                                                 }).ToList();
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = changeNumberResponse };
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
             }
 
             catch (Exception ex)
@@ -1069,6 +1118,74 @@ namespace OrderService.DataAccess
             }
         }
 
+        public async Task<DatabaseResponse> CheckChangePhoneRequestStatus(ChangePhoneRequest changePhone, int customerID)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+                    new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar),
+                    new SqlParameter( "@NewMobileNumber",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@RequestType",  SqlDbType.NVarChar),
+                    new SqlParameter( "@PremiumType",  SqlDbType.Int),
+                    new SqlParameter( "@PortingType",  SqlDbType.Int)                  
+                };
+
+                parameters[0].Value = customerID;
+                parameters[1].Value = changePhone.OldMobileNumber;
+                parameters[2].Value = changePhone.NewMobileNumber;
+                parameters[3].Value = RequestType.ChangeNumber.ToString();
+                parameters[4].Value = changePhone.PremiumType;
+                parameters[5].Value = changePhone.PortingType;               
+
+                _DataHelper = new DataAccessHelper("Orders_CR_CheckChangePhoneRequestStatus", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                var result = await _DataHelper.RunAsync(dt);
+
+                DatabaseResponse response = new DatabaseResponse();               
+
+                ChangedNumberDetails changedNumberResponse = new ChangedNumberDetails();
+                if (result == (int)DbReturnValue.RecordExists)
+                {
+                    if (dt != null &&  dt.Rows.Count > 0)
+                    {
+                        changedNumberResponse = (from model in dt.AsEnumerable()
+                                                 select new ChangedNumberDetails()
+                                                 {
+                                                      NumberChangeRequestID = model.Field<int>("NumberChangeRequestID"),
+                                                      ChangeRequestID = model.Field<int>("ChangeRequestID"),
+                                                      NewMobileNumber = model.Field<string>("NewMobileNumber"),
+                                                      PortingType = model.Field<int?>("PortingType"),
+                                                      PremiumType = model.Field<int?>("PremiumType")                                                    
+                                                 }).FirstOrDefault();
+
+                        response = new DatabaseResponse { ResponseCode = result, Results = changedNumberResponse };
+                    }
+                }
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw;
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+       
 
     }
 }

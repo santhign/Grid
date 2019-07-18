@@ -3780,7 +3780,62 @@ namespace OrderService.DataAccess
             }
         }
 
+        public async Task<DatabaseResponse> GetOrderIDByCustomerIdAndMobileNumber(int CustomerID, string MobileNumber)
+        {
+            try
+            {
 
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+                    new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar )
+                };
+
+                parameters[0].Value = CustomerID;
+                parameters[1].Value = MobileNumber;
+
+                _DataHelper = new DataAccessHelper("Order_GetOrderIDByCustomerIdAndMobileNumber", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt); // 105 /102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 105)
+                {
+
+                    string Remarks = string.Empty;
+
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+
+                        Remarks = dt.Rows[0].ItemArray[0].ToString();
+
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = Remarks };
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
 
     }
 }

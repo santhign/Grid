@@ -60,7 +60,7 @@
             </summary>
             <param name="token">The token.</param>
             <param name="ChangeRequestID">The change request identifier.</param>
-            <param name="Status">The status.</param>
+            <param name="Status">The status.--1=Activated, 0=Failed</param>
             <param name="ValidFrom">The valid from.</param>
             <param name="ValidTo">The valid to.</param>
             <returns></returns>
@@ -71,22 +71,12 @@
             </summary>
             <param name="token">The token.</param>
             <param name="changeRequestID">The change request identifier.</param>
-            <param name="status">The status.</param>
+            <param name="status">The status.--1=Success, 0=Failed</param>
             <returns></returns>
         </member>
         <member name="M:GRIDService.Controllers.GRIDController.UpdateBillingAccount(System.String,System.String,System.String,System.String)">
             <summary>
             Updates the billing account.
-            </summary>
-            <param name="token">The token.</param>
-            <param name="AccountID">The account identifier.</param>
-            <param name="BillingAccountNumber">The billing account number.</param>
-            <param name="BSSProfileid">The BSS profileid.</param>
-            <returns></returns>
-        </member>
-        <member name="M:GRIDService.Controllers.GRIDController.UpdateDeliveryStatus(System.String,System.String,System.String,System.String)">
-            <summary>
-            Updates the delivery status.
             </summary>
             <param name="token">The token.</param>
             <param name="AccountID">The account identifier.</param>
@@ -116,7 +106,7 @@
             </summary>
             <param name="token">The token.</param>
             <param name="SubscriberID">The subscriber identifier.</param>
-            <param name="state">The state.</param>
+            <param name="state">The state. --Created; Active; PartialSuspension; Suspended; Terminated; TOS</param>
             <param name="error_reason">The error reason.</param>
             <returns></returns>
         </member>
@@ -226,15 +216,6 @@
             <param name="BSSProfileid">The BSS profileid.</param>
             <returns></returns>
         </member>
-        <member name="M:GRIDService.DataAccess.GRIDDataAccess.Grid_UpdateDeliveryStatus(System.String,System.String,System.String)">
-            <summary>
-            Grids the update delivery status.
-            </summary>
-            <param name="AccountID">The account identifier.</param>
-            <param name="BillingAccountNumber">The billing account number.</param>
-            <param name="BSSProfileid">The BSS profileid.</param>
-            <returns></returns>
-        </member>
         <member name="M:GRIDService.DataAccess.GRIDDataAccess.Grid_UpdateInitialOrderSubscriptions(GRIDService.Models.UpdateInitialOrderSubscriptionsRequest)">
             <summary>
             Grids the update initial order subscriptions.
@@ -325,15 +306,6 @@
         <member name="M:GRIDService.DataAccess.Interfaces.IGRIDDataAccess.Grid_UpdateBillingAccount(System.String,System.String,System.String)">
             <summary>
             Grids the update billing account.
-            </summary>
-            <param name="AccountID">The account identifier.</param>
-            <param name="BillingAccountNumber">The billing account number.</param>
-            <param name="BSSProfileid">The BSS profileid.</param>
-            <returns></returns>
-        </member>
-        <member name="M:GRIDService.DataAccess.Interfaces.IGRIDDataAccess.Grid_UpdateDeliveryStatus(System.String,System.String,System.String)">
-            <summary>
-            Grids the update delivery status.
             </summary>
             <param name="AccountID">The account identifier.</param>
             <param name="BillingAccountNumber">The billing account number.</param>
@@ -476,7 +448,7 @@
         </member>
         <member name="P:GRIDService.Models.TerminationOrUnsuspensionRequest.Status">
             <summary>
-            Gets or sets the status.
+            Gets or sets the status.--c=Completed;r=Rejected
             </summary>
             <value>
             The status.
@@ -492,7 +464,7 @@
         </member>
         <member name="P:GRIDService.Models.TerminationOrUnsuspensionRequest.CurrentStatus">
             <summary>
-            Gets or sets the current status.
+            Gets or sets the current status.-- 1=Process; -1= No action
             </summary>
             <value>
             The current status.
@@ -545,7 +517,7 @@
         </member>
         <member name="P:GRIDService.Models.UpdateInitialOrderSubscriptionsRequest.ValidFrom">
             <summary>
-            Gets or sets the valid from.
+            Gets or sets the valid from.--1=Activated; 2=OnHold; 3=Terminated
             </summary>
             <value>
             The valid from.
@@ -582,7 +554,7 @@
         </member>
         <member name="P:GRIDService.Models.UpdateOrderStatus.Orderstatus">
             <summary>
-            Gets or sets the orderstatus.
+            Gets or sets the orderstatus. --C=Completed; F=Failed
             </summary>
             <value>
             The orderstatus.
@@ -646,6 +618,12 @@
             Configures the services.
             </summary>
             <param name="services">The services.</param>
+        </member>
+        <member name="M:GRIDService.Startup.Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder,Microsoft.AspNetCore.Hosting.IHostingEnvironment)">
+            <summary>
+            Configures the services.
+            </summary>
+            This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         </member>
     </members>
 </doc>

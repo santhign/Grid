@@ -292,7 +292,7 @@ namespace GRIDService.Controllers
         /// </summary>
         /// <param name="token">The token.</param>
         /// <param name="ChangeRequestID">The change request identifier.</param>
-        /// <param name="Status">The status.</param>
+        /// <param name="Status">The status.--1=Activated, 0=Failed</param>
         /// <param name="ValidFrom">The valid from.</param>
         /// <param name="ValidTo">The valid to.</param>
         /// <returns></returns>
@@ -373,7 +373,7 @@ namespace GRIDService.Controllers
         /// </summary>
         /// <param name="token">The token.</param>
         /// <param name="changeRequestID">The change request identifier.</param>
-        /// <param name="status">The status.</param>
+        /// <param name="status">The status.--1=Success, 0=Failed</param>
         /// <returns></returns>
         [HttpPost]
         [Route("ProcessVASRemoval/{changeRequestID}/{status}")]
@@ -527,87 +527,7 @@ namespace GRIDService.Controllers
 
             }
         }
-
-        /// <summary>
-        /// Updates the delivery status.
-        /// </summary>
-        /// <param name="token">The token.</param>
-        /// <param name="AccountID">The account identifier.</param>
-        /// <param name="BillingAccountNumber">The billing account number.</param>
-        /// <param name="BSSProfileid">The BSS profileid.</param>
-        /// <returns></returns>
-        [HttpPost]
-        [Route("UpdateDeliveryStatus/{AccountID}/{BillingAccountNumber}/{BSSProfileid}")]
-        public async Task<IActionResult> UpdateDeliveryStatus([FromHeader(Name = "Grid-Service-Header-Token")] string token, [FromRoute]  string AccountID, [FromRoute] string BillingAccountNumber, [FromRoute] string BSSProfileid)
-        {
-
-            try
-            {
-                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
-                {
-                    HasSucceeded = false,
-                    IsDomainValidationErrors = true,
-                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
-
-                });
-                if (!ModelState.IsValid)
-                {
-                    return StatusCode((int)HttpStatusCode.OK, new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        IsDomainValidationErrors = true,
-                        Message = string.Join("; ", ModelState.Values
-                            .SelectMany(x => x.Errors)
-                            .Select(x => x.ErrorMessage))
-                    });
-                }
-
-                if (!ValidateGridHeaderToken(token))
-                {
-                    return Ok(new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
-                        IsDomainValidationErrors = true
-                    });
-                }
-
-                var result = await _dataAccess.Grid_UpdateDeliveryStatus(AccountID, BillingAccountNumber, BSSProfileid);
-                if (result == Enum.ReturnSuccess)
-                {
-                    return Ok(new OperationResponse
-                    {
-                        HasSucceeded = true,
-                        Message = "Success",
-                        IsDomainValidationErrors = false
-                    });
-                }
-                else
-                {
-                    return Ok(new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        Message = "Failure",
-                        IsDomainValidationErrors = false
-                    });
-                }
-
-
-            }
-            catch (Exception ex)
-            {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-
-                return Ok(new OperationResponse
-                {
-                    HasSucceeded = false,
-                    Message = StatusMessages.ServerError,
-                    IsDomainValidationErrors = false
-                });
-
-            }
-        }
-
+                
         /// <summary>
         /// Updates the initial order subscriptions.
         /// </summary>
@@ -769,7 +689,7 @@ namespace GRIDService.Controllers
         /// </summary>
         /// <param name="token">The token.</param>
         /// <param name="SubscriberID">The subscriber identifier.</param>
-        /// <param name="state">The state.</param>
+        /// <param name="state">The state. --Created; Active; PartialSuspension; Suspended; Terminated; TOS</param>
         /// <param name="error_reason">The error reason.</param>
         /// <returns></returns>
         [HttpPost]

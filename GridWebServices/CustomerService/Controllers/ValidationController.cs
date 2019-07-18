@@ -37,6 +37,7 @@ namespace CustomerService.Controllers
         /// <summary>
         /// This will validate the email id
         /// </summary> 
+        /// <param name="Token"></param>
         ///<param name="emailid">abcd@gmail.com</param>
         /// <returns>validation result</returns> 
         [HttpGet]
@@ -115,12 +116,15 @@ namespace CustomerService.Controllers
             }
             catch (Exception ex)
             {
+                EmailValidationResponse _response = new EmailValidationResponse();
+                _response.Status = "api Error";
+                _response.IsValid = true;
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-                return Ok(new OperationResponse
+                return Ok(new ServerResponse
                 {
-                    HasSucceeded = false,
-                    Message = StatusMessages.ServerError,
-                    IsDomainValidationErrors = false
+                    HasSucceeded = true,
+                    Message = StatusMessages.ValidMessage,
+                    Result = _response
                 });
             }
         }
@@ -224,12 +228,13 @@ namespace CustomerService.Controllers
         /// <summary>
         /// This will check NRIC Validation.
         /// </summary>
-        /// <param name="NRIC"></param>
+        /// <param name="Token"></param>
+        /// <param name="NRIC">NRIC</param>
         /// <returns>validtion result</returns>
         /// POST: api/NRICValidation/S1234567D 
         [HttpPost]
-        [Route("NRICValidation/{NRIC}")]
-        public IActionResult NRICValidation([FromHeader(Name = "Grid-General-Token")] string Token, [FromRoute] string NRIC)
+        [Route("NRICValidation")]
+        public IActionResult NRICValidation([FromHeader(Name = "Grid-General-Token")] string Token, [FromBody] string NRIC)
         {
 
             string _warningmsg = "";
@@ -284,13 +289,13 @@ namespace CustomerService.Controllers
         /// <summary>
         /// This will check NRIC Validation: IDType - S=Singaporean;F=Forigner
         /// </summary>
-        /// <param name="IDType"></param>
-        /// <param name="NRIC"></param>
+        /// <param name="Token"></param>
+        /// <param name="IDDetails"></param>
         /// <returns>validtion result</returns>
         /// POST: api/NRICValidation/S1234567D 
         [HttpPost]
-        [Route("NRICTypeValidation/{IDType}/{NRIC}")]
-        public IActionResult NRICTypeValidation([FromHeader(Name = "Grid-General-Token")] string Token, [FromRoute] string IDType, [FromRoute] string NRIC)
+        [Route("NRICTypeValidation")]
+        public IActionResult NRICTypeValidation([FromHeader(Name = "Grid-General-Token")] string Token, [FromBody] NRIC IDDetails)
         {
             string _warningmsg = "";           
 
@@ -308,7 +313,7 @@ namespace CustomerService.Controllers
                 }
 
                 EmailValidationHelper _helper = new EmailValidationHelper();
-                if (_helper.NRICValidation(IDType, NRIC, out _warningmsg))
+                if (_helper.NRICValidation(IDDetails.IDType, IDDetails.IDNumber, out _warningmsg))
                 {
                     return Ok(new ServerResponse
                     {
@@ -318,7 +323,7 @@ namespace CustomerService.Controllers
                 }
                 else
                 {
-                    LogInfo.Warning("NRIC Validation: " + IDType + "_" + _warningmsg);
+                    LogInfo.Warning("NRIC Validation: " + IDDetails.IDType + "_" + _warningmsg);
                     return Ok(new OperationResponse
                     {
                         HasSucceeded = false,

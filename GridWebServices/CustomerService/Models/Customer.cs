@@ -518,6 +518,7 @@ namespace CustomerService.Models
         public int UnsuspensionAllowed { get; set; }
         public int TerminationAllowed { get; set; }
         public int SIMReplacementAllowed { get; set; }
+        public int ChangeNumberRaised { get; set; }
     }
 
     /// <summary>

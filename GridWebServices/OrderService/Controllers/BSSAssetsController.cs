@@ -294,7 +294,7 @@ namespace OrderService.Controllers
 
                                         }                                        
 
-                                        if (premumResponse != null && premumResponse.Response.asset_details != null)
+                                        if (premumResponse != null && premumResponse.Response!=null && premumResponse.Response.asset_details != null)
                                         {
                                             List<PremiumNumbers> premiumNumbers = bsshelper.GetPremiumNumbers(premumResponse, fee);
 
@@ -555,7 +555,7 @@ namespace OrderService.Controllers
 
                                     }
 
-                                    if (premumResponse != null && premumResponse.Response.asset_details != null)
+                                    if (premumResponse != null && premumResponse.Response!=null && premumResponse.Response.asset_details != null)
                                     {
                                         List<PremiumNumbers> premiumNumbers = bsshelper.GetPremiumNumbers(premumResponse, fee);
 
@@ -743,7 +743,7 @@ namespace OrderService.Controllers
 
                         }                    
 
-                        if (usageHistory != null && usageHistory.Response.result_code == "0")
+                        if (usageHistory != null && usageHistory.Response!=null && usageHistory.Response.result_code == "0")
                         {
                             return Ok(new OperationResponse
                             {
@@ -1093,7 +1093,7 @@ namespace OrderService.Controllers
 
                                 }                              
 
-                                if (accountOutstandingResponse.Response.result_code == "0")
+                                if (accountOutstandingResponse!=null && accountOutstandingResponse.Response!=null && accountOutstandingResponse.Response.result_code == "0")
                                 {
                                     return Ok(new OperationResponse
                                     {

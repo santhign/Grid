@@ -28,6 +28,7 @@ namespace AdminService.Controllers
         /// <summary>
         /// Get Lookup details
         /// </summary>
+        /// <param name="Token"></param>
         /// <param name="lookupType"></param>
         /// <returns>Lookup details</returns> 
         /// 

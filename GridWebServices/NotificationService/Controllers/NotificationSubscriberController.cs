@@ -73,13 +73,13 @@ namespace NotificationService.Controllers
                 }
 
                 //temporary storage for testing
-
-                if (!Directory.Exists($@"SNSNotifications"))
+                string path = ConfigHelper.GetValueByKey("SNSNotificationPath", _iconfiguration).Results.ToString();
+                if (!Directory.Exists(path))
                 {
-                    Directory.CreateDirectory($@"SNSNotifications");
+                    Directory.CreateDirectory(path);
                 }
 
-                System.IO.File.WriteAllText($@"SNSNotifications/notifications_{DateTime.Now.ToString("yyyyMMddHHmmssffff")}.json", requestBody);
+                System.IO.File.WriteAllText(path + $@"/notifications_{DateTime.Now.ToString("yyyyMMddHHmmssffff")}.json", requestBody);
 
                 // end temp
 
@@ -203,7 +203,7 @@ namespace NotificationService.Controllers
                 else if (NotMessage.MessageType == NotificationMsgType.SMS.GetDescription())
                 {
                     OutboundSMS _SMS = new OutboundSMS();
-                    Sms smsData = new Sms();
+                    TextMessage smsData = new TextMessage();
                     ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
 
                     DatabaseResponse smsTemplate = await _configAccess.GetSMSNotificationTemplate(NotMessage.Message.messagetemplate.ToString());

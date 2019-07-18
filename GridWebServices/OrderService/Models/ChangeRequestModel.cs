@@ -11,16 +11,36 @@ namespace OrderService.Models
     {
         /// <summary>Gets or sets the customer identifier.</summary>
         /// <value>The customer identifier.</value>
-        public int? CustomerId { get; set; }
+
+        [Required(ErrorMessage = "CustomerID is required")]
+        public int CustomerID { get; set; }
         /// <summary>Gets or sets the mobile number.</summary>
         /// <value>The mobile number.</value>
-        public string MobileNumber { get; set; }
+        /// 
+        [RegularExpression(@"^([0-9]{8})$", ErrorMessage = "Invalid Mobile Number")]
+        [MaxLength(8, ErrorMessage = "Maximum 8 digits allowed")]
+        [MinLength(8, ErrorMessage = "Minimum 8 digits Required")]
+        [Required(ErrorMessage = "OldMobileNumber is required")]
+        public string OldMobileNumber { get; set; }
+       
         /// <summary>Creates new mobile number.</summary>
-        /// <value>The new mobile number.</value>
+        /// <value>The new mobile number.</value>     
+
+        [RegularExpression(@"^([0-9]{8})$", ErrorMessage = "Invalid Mobile Number")]
+        [MaxLength(8, ErrorMessage = "Maximum 8 digits allowed")]
+        [MinLength(8, ErrorMessage = "Minimum 8 digits Required")]
+        [Required(ErrorMessage = "New MobileNumber is required")]
         public string NewMobileNumber { get; set; }
         /// <summary>Gets or sets the type of the premium.</summary>
-        /// <value>The type of the premium.</value>
+        /// <value>The type of the premium.</value>        
+
+        [Required(ErrorMessage = "PremiumType is required")]
         public int PremiumType { get; set; }
+
+        [Required(ErrorMessage = "IsOwnNumber is required")]
+        public int IsOwnNumber { get; set; }       
+        public string DonorProvider { get; set; }
+        public int PortingType { get; set; }
         /// <summary>Gets or sets the ported number transfer form.</summary>
         /// <value>The ported number transfer form.</value>
         public string PortedNumberTransferForm { get; set; }
@@ -595,4 +615,34 @@ namespace OrderService.Models
         public string EmailAdddress { get; set; }
 
     }
+
+    public class ChangeNumberResponse
+    {
+        public int ChangeRequestId { get; set; }        
+        public string OrderNumber { get; set; }       
+        public DateTime RequestOn { get; set; }      
+        public string RequestTypeDescription { get; set; }       
+        public string BillingUnit { get; set; }      
+        public string BillingFloor { get; set; }      
+        public string BillingBuildingNumber { get; set; }
+        public string BillingBuildingName { get; set; }       
+        public string BillingStreetName { get; set; }       
+        public string BillingPostCode { get; set; }     
+        public string BillingContactNumber { get; set; } 
+        public string Name { get; set; }       
+        public string Email { get; set; }
+        public double? PayableAmount { get; set; }
+        public IList<ChangeRequestCharges> ChangeRequestChargesList;
+    }
+
+    public class ChangedNumberDetails
+    {
+        public int NumberChangeRequestID { get; set; }
+        public int ChangeRequestID { get; set; }       
+        public string NewMobileNumber { get; set; }
+        public int? PremiumType { get; set; }
+        public int? PortingType { get; set; }
+      
+    }
+    
 }
