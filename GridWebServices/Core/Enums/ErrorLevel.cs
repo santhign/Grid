@@ -367,6 +367,14 @@ namespace Core.Enums
 
         [EnumMember(Value = "UnableToProcess")]
         [Description("Image is already submitted")]
-        ImageAlreadyUploaded = 87,        
+        ImageAlreadyUploaded = 87,
+
+        [EnumMember(Value = "BuddySubscriberCreationFailed")]
+        [Description("Buddy subscriber creationfailed. Order rolled backed")]
+        BuddySubscriberCreationFailed = 88,
+
+        [EnumMember(Value = "BuddyRemovalFailed")]
+        [Description("Buddy removal failed")]
+        BuddyRemovalFailed = 89,
     }
 }

@@ -76,8 +76,8 @@ namespace CustomerService
         {
             // Enable Cors
             app.UseCors("MyPolicy");
-            if (!env.IsProduction())
-            {
+            //if (!env.IsProduction())
+            //{
                 app.UseSwagger();
 
                 // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.), 
@@ -86,7 +86,7 @@ namespace CustomerService
                 {
                     c.SwaggerEndpoint("/swagger/v1/swagger.json", "GRID Customer API V1");
                 });
-            }
+            //}
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

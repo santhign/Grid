@@ -92,6 +92,8 @@ namespace OrderService.Models
         /// The display name.
         /// </value>
         public string DisplayName { get; set; }
+        public int IsBuddyLine { get; set; }
+        public int GroupNumber { get; set; }
     }
 
     /// <summary>
@@ -1102,5 +1104,21 @@ namespace OrderService.Models
         [Required(ErrorMessage = "MobileNumber is required")]
         public string MobileNumber { get; set; }
 
+    }
+
+    public class CreateBuddySubscriber
+    {       
+        public int OrderID { get; set; }
+        public string UserId { get; set; }        
+        public string MobileNumber { get; set; }      
+        public string MainLineMobileNumber { get; set; }
+    }
+
+    public class BuddyToRemove
+    {
+        public int BuddyRemovalID { get; set; }    
+        public string MobileNumber { get; set; }
+        public int? IsPorted { get; set; }
+        public int? IsRemoved { get; set; }      
     }
 }
