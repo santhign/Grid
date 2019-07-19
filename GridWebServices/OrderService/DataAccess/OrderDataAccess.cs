@@ -78,8 +78,8 @@ namespace OrderService.DataAccess
                 parameters[2].Value = order.ReferralCode;
                 parameters[3].Value = order.PromotionCode;
 
-                _DataHelper = new DataAccessHelper("Orders_CreateOrder", parameters, _configuration);
-
+               _DataHelper = new DataAccessHelper("Orders_CreateOrder", parameters, _configuration);             
+             
                 DataTable dt = new DataTable();
 
                 int result = await _DataHelper.RunAsync(dt);
@@ -3837,5 +3837,528 @@ namespace OrderService.DataAccess
             }
         }
 
+        public async Task<DatabaseResponse> IsBuddyBundle(int bundleID)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                     new SqlParameter( "@BundleID",  SqlDbType.Int )
+
+                };
+
+                parameters[0].Value = bundleID;
+
+                _DataHelper = new DataAccessHelper("Orders_IsBuddyBundle", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt);    // 105 / 102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                IsBuddyBundle buddy = new IsBuddyBundle();
+
+                if (dt != null && dt.Rows.Count > 0)
+                {
+                    buddy = (from model in dt.AsEnumerable()
+                                      select new IsBuddyBundle()
+                                      {
+                                          BundleID   = model.Field<int>("BundleID"),                                         
+                                          HasBuddyPromotion = model.Field<int>("HasBuddyPromotion")
+                                      }).ToList().FirstOrDefault();
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = buddy};
+
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+
+                }
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> CreateBuddySubscriber(CreateBuddySubscriber subscriber)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@OrderID",  SqlDbType.Int ),
+                    new SqlParameter( "@UserId",  SqlDbType.Int ),
+                    new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar),
+                    new SqlParameter( "@MainLineMobileNumber",  SqlDbType.NVarChar)
+                };
+
+                parameters[0].Value = subscriber.OrderID;
+                parameters[1].Value = subscriber.UserId;
+                parameters[2].Value = subscriber.MobileNumber;
+                parameters[3].Value = subscriber.MainLineMobileNumber;              
+
+                _DataHelper = new DataAccessHelper("Order_CreateBuddySubscriber", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync();    // 100 / 107 /170 - no buddy for the bundle
+
+                return new DatabaseResponse { ResponseCode = result };
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> CreateOrder_V2(CreateOrder order)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+                    new SqlParameter( "@BundleID",  SqlDbType.Int ),
+                    new SqlParameter( "@ReferralCode",  SqlDbType.NVarChar),
+                    new SqlParameter( "@PromotionCode",  SqlDbType.NVarChar)
+                };
+
+                parameters[0].Value = order.CustomerID;
+                parameters[1].Value = order.BundleID;
+                parameters[2].Value = order.ReferralCode;
+                parameters[3].Value = order.PromotionCode;              
+
+                _DataHelper = new DataAccessHelper("Orders_CreateOrder_v2", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt);
+
+                OrderInit orderCreated = new OrderInit();
+
+                if (dt != null && dt.Rows.Count > 0)
+                {
+                    orderCreated = (from model in dt.AsEnumerable()
+                                    select new OrderInit()
+                                    {
+                                        OrderID = model.Field<int>("OrderID"),
+                                        Status = model.Field<string>("Status")
+                                    }).FirstOrDefault();
+
+                }
+
+                return new DatabaseResponse { ResponseCode = result, Results = orderCreated };
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+        public async Task<DatabaseResponse> GetOrderBasicDetails_V2(int orderId)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@OrderID",  SqlDbType.Int )
+
+                };
+
+                parameters[0].Value = orderId;
+
+                _DataHelper = new DataAccessHelper("Order_GetOrderBasicDetails_v2", parameters, _configuration);
+
+                DataSet ds = new DataSet();
+
+                int result = await _DataHelper.RunAsync(ds); // 105 /109
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 105)
+                {
+
+                    OrderBasicDetails orderDetails = new OrderBasicDetails();
+
+                    if (ds != null && ds.Tables[0] != null && ds.Tables[0].Rows.Count > 0)
+                    {
+
+                        orderDetails = (from model in ds.Tables[0].AsEnumerable()
+                                        select new OrderBasicDetails()
+                                        {
+                                            OrderID = model.Field<int>("OrderID"),
+                                            OrderNumber = model.Field<string>("OrderNumber"),
+                                            OrderDate = model.Field<DateTime>("OrderDate"),
+                                        }).FirstOrDefault();
+
+                        List<OrderSubscription> subscriptions = new List<OrderSubscription>();
+
+                        if (ds.Tables[1].Rows.Count > 0)
+                        {
+                            subscriptions = (from model in ds.Tables[1].AsEnumerable()
+                                             select new OrderSubscription()
+                                             {
+                                                 BundleID = model.Field<int>("BundleID"),
+                                                 DisplayName = model.Field<string>("DisplayName"),
+                                                 MobileNumber = model.Field<string>("MobileNumber"),
+                                                 IsBuddyLine = model.Field<int>("IsBuddyLine"),
+                                                 GroupNumber = model.Field<int>("GroupNumber")
+                                             }).ToList();
+
+                            orderDetails.OrderSubscriptions = subscriptions;
+
+                        }
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = orderDetails };
+
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+
+        public async Task<DatabaseResponse> CheckBuddyToRemove(int orderId)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@OrderID",  SqlDbType.Int )
+
+                };
+
+                parameters[0].Value = orderId;
+
+                _DataHelper = new DataAccessHelper("Orders_HasBuddyToRemove", parameters, _configuration);
+
+                DataSet ds = new DataSet();
+
+                int result = await _DataHelper.RunAsync(ds); // 102 /105
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 105)
+                {
+
+                    BuddyToRemove buddyToRemove = new BuddyToRemove();
+
+                    if (ds != null && ds.Tables[0] != null && ds.Tables[0].Rows.Count > 0)
+                    {
+
+                        buddyToRemove = (from model in ds.Tables[0].AsEnumerable()
+                                        select new BuddyToRemove()
+                                        {
+                                             BuddyRemovalID = model.Field<int>("BuddyRemovalID"),
+                                             MobileNumber = model.Field<string>("MobileNumber"),
+                                             IsPorted = model.Field<int?>("IsPorted"),
+                                             IsRemoved = model.Field<int?>("IsRemoved"),
+                                        }).FirstOrDefault();  
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = buddyToRemove };
+
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> UpdateBuddyRemoval(int buddyRemovalID)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@BuddyRemovalID",  SqlDbType.Int )
+
+                };
+
+                parameters[0].Value = buddyRemovalID;
+
+                _DataHelper = new DataAccessHelper("Orders_UpdateBuddyRemoval", parameters, _configuration);
+
+                DataSet ds = new DataSet();
+
+                int result = await _DataHelper.RunAsync(ds); // 102 /101/106
+
+                DatabaseResponse response = new DatabaseResponse();
+              
+               response = new DatabaseResponse { ResponseCode = result };              
+
+               return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+
+        public async Task<DatabaseResponse> GetOrderDetails_V2(int orderId)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@OrderID",  SqlDbType.Int )
+
+                };
+
+                parameters[0].Value = orderId;
+
+                _DataHelper = new DataAccessHelper("Order_GetOrderDetails_v2", parameters, _configuration);
+
+                DataSet ds = new DataSet();
+
+                int result = await _DataHelper.RunAsync(ds); // 105 /102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (result == 105)
+                {
+
+                    Order orderDetails = new Order();
+
+                    if (ds != null && ds.Tables[0] != null && ds.Tables[0].Rows.Count > 0)
+                    {
+
+                        orderDetails = (from model in ds.Tables[0].AsEnumerable()
+                                        select new Order()
+                                        {
+                                            OrderID = model.Field<int>("OrderID"),
+                                            OrderNumber = model.Field<string>("OrderNumber"),
+                                            OrderDate = model.Field<DateTime>("OrderDate"),
+                                            IdentityCardType = model.Field<string>("IdentityCardType"),
+                                            IdentityCardNumber = model.Field<string>("IdentityCardNumber"),
+                                            BillingUnit = model.Field<string>("BillingUnit"),
+                                            BillingFloor = model.Field<string>("BillingFloor"),
+                                            BillingBuildingNumber = model.Field<string>("BillingBuildingNumber"),
+                                            BillingBuildingName = model.Field<string>("BillingBuildingName"),
+                                            BillingStreetName = model.Field<string>("BillingStreetName"),
+                                            BillingPostCode = model.Field<string>("BillingPostCode"),
+                                            BillingContactNumber = model.Field<string>("BillingContactNumber"),
+                                            ReferralCode = model.Field<string>("ReferralCode"),
+                                            PromotionCode = model.Field<string>("PromotionCode"),
+                                            HaveDocuments = model.Field<bool>("HaveDocuments"),
+                                            Name = model.Field<string>("Name"),
+                                            Email = model.Field<string>("Email"),
+                                            IDType = model.Field<string>("IDType"),
+                                            IDNumber = model.Field<string>("IDNumber"),
+                                            IsSameAsBilling = model.Field<int?>("IsSameAsBilling"),
+                                            ShippingUnit = model.Field<string>("ShippingUnit"),
+                                            ShippingFloor = model.Field<string>("ShippingFloor"),
+                                            ShippingBuildingNumber = model.Field<string>("ShippingBuildingNumber"),
+                                            ShippingBuildingName = model.Field<string>("ShippingBuildingName"),
+                                            ShippingStreetName = model.Field<string>("ShippingStreetName"),
+                                            ShippingPostCode = model.Field<string>("ShippingPostCode"),
+                                            ShippingContactNumber = model.Field<string>("ShippingContactNumber"),
+                                            AlternateRecipientContact = model.Field<string>("AlternateRecipientContact"),
+                                            AlternateRecipientName = model.Field<string>("AlternateRecipientName"),
+                                            AlternateRecipientEmail = model.Field<string>("AlternateRecipientEmail"),
+                                            AlternateRecioientIDType = model.Field<string>("AlternateRecioientIDType"),
+                                            AlternateRecioientIDNumber = model.Field<string>("AlternateRecioientIDNumber"),
+                                            PortalSlotID = model.Field<string>("PortalSlotID"),
+                                            SlotDate = model.Field<DateTime?>("SlotDate"),
+                                            SlotFromTime = model.Field<TimeSpan?>("SlotFromTime"),
+                                            SlotToTime = model.Field<TimeSpan?>("SlotToTime"),
+                                            ScheduledDate = model.Field<DateTime?>("ScheduledDate"),
+                                            ServiceFee = model.Field<double?>("ServiceFee"),
+                                            RecieptNumber = model.Field<string>("RecieptNumber"),
+                                        }).FirstOrDefault();
+
+                        List<Bundle> orderBundles = new List<Bundle>();
+
+                        List<ServiceCharge> subscriberServiceCharges = new List<ServiceCharge>();
+
+                        List<PromotionalVAS> promoVASes = new List<PromotionalVAS>();
+
+                        if (ds.Tables[3] != null && ds.Tables[3].Rows.Count > 0)
+                        {
+
+                            subscriberServiceCharges = (from model in ds.Tables[3].AsEnumerable()
+                                                        select new ServiceCharge()
+                                                        {
+                                                            OrderSubscriberID = model.Field<int>("OrderSubscriberID"),
+                                                            PortalServiceName = model.Field<string>("PortalServiceName"),
+                                                            ServiceFee = model.Field<double?>("ServiceFee"),
+                                                            IsRecurring = model.Field<int>("IsRecurring"),
+                                                            IsGSTIncluded = model.Field<int>("IsGSTIncluded"),
+                                                        }).ToList();                           
+
+                        }
+
+                        if (ds.Tables[4] !=null && ds.Tables[4].Rows.Count>0)
+                        {
+                            promoVASes = (from model in ds.Tables[4].AsEnumerable()
+                                                            select new PromotionalVAS()
+                                                            {
+                                                                OrderSubscriberID = model.Field<int>("OrderSubscriberID"),
+                                                                 VASID = model.Field<int>("VASID"),
+                                                                 BSSPlanCode = model.Field<string>("BSSPlanCode"),
+                                                                 PlanMarketingName = model.Field<string>("PlanMarketingName"),
+                                                                 PortalDescription = model.Field<string>("PortalDescription"),
+                                                                 PortalSummaryDescription = model.Field<string>("PortalSummaryDescription"),
+                                                                 Data = model.Field<double?>("Data"),
+                                                                 SMS = model.Field<double?>("SMS"),
+                                                                 Voice = model.Field<double?>("Voice"),
+                                                                 SubscriptionFee = model.Field<double?>("SubscriptionFee"),
+                                                                 IsRecurring = model.Field<string>("IsRecurring"),
+                                                                 SubscriptionCount = model.Field<int>("SubscriptionCount"),
+                                                            }).ToList();  
+                           
+                        }                       
+
+                        if (ds.Tables[1] != null && ds.Tables[1].Rows.Count > 0)
+                        {
+                            orderBundles = (from model in ds.Tables[1].AsEnumerable()
+                                          select new Bundle()
+                                          {
+                                              OrderSubscriberID = model.Field<int>("OrderSubscriberID"),
+                                              BundleID = model.Field<int>("BundleID"),
+                                              DisplayName = model.Field<string>("DisplayName"),
+                                              MobileNumber = model.Field<string>("MobileNumber"),
+                                              IsPrimaryNumber = model.Field<int>("IsPrimaryNumber"),
+                                              PlanMarketingName = model.Field<string>("PlanMarketingName"),
+                                              PortalDescription = model.Field<string>("PortalDescription"),
+                                              PortalSummaryDescription = model.Field<string>("PortalSummaryDescription"),
+                                              TotalData = model.Field<double?>("TotalData"),
+                                              TotalSMS = model.Field<double?>("TotalSMS"),
+                                              TotalVoice = model.Field<double?>("TotalVoice"),
+                                              ActualSubscriptionFee = model.Field<double?>("ActualSubscriptionFee"),
+                                              ApplicableSubscriptionFee = model.Field<double?>("ApplicableSubscriptionFee"),
+                                              ServiceName = model.Field<string>("ServiceName"),
+                                              ActualServiceFee = model.Field<double?>("ActualServiceFee"),
+                                              ApplicableServiceFee = model.Field<double?>("ApplicableServiceFee"),
+                                              PremiumType = model.Field<int>("PremiumType"),
+                                              IsPorted = model.Field<int>("IsPorted"),
+                                              IsOwnNumber = model.Field<int>("IsOwnNumber"),
+                                              DonorProvider = model.Field<string>("DonorProvider"),
+                                              PortedNumberTransferForm = model.Field<string>("PortedNumberTransferForm"),
+                                              PortedNumberOwnedBy = model.Field<string>("PortedNumberOwnedBy"),
+                                              PortedNumberOwnerRegistrationID = model.Field<string>("PortedNumberOwnerRegistrationID"),
+                                              PricingDescription = model.Field<string>("PricingDescription"),
+                                              IsBuddyLine = model.Field<int?>("IsBuddyLine"),
+                                              GroupNumber = model.Field<int?>("GroupNumber"),
+                                              PromotionalVASes= promoVASes!=null && promoVASes.Count>0? promoVASes.Where(v=>v.OrderSubscriberID== model.Field<int>("OrderSubscriberID")).ToList():null,
+                                              ServiceCharges= subscriberServiceCharges!=null && subscriberServiceCharges.Count>0? subscriberServiceCharges.Where(c=>c.OrderSubscriberID== model.Field<int>("OrderSubscriberID")).ToList():null
+                                          }).ToList();
+
+                        }                        
+                        orderDetails.Bundles = orderBundles;
+
+                        List<ServiceCharge> orderServiceCharges = new List<ServiceCharge>();
+
+                        if (ds.Tables[2] != null && ds.Tables[2].Rows.Count > 0)
+                        {
+
+                            orderServiceCharges = (from model in ds.Tables[2].AsEnumerable()
+                                                   select new ServiceCharge()
+                                                   {
+                                                       PortalServiceName = model.Field<string>("PortalServiceName"),
+                                                       ServiceFee = model.Field<double?>("ServiceFee"),
+                                                       IsRecurring = model.Field<int>("IsRecurring"),
+                                                       IsGSTIncluded = model.Field<int>("IsGSTIncluded"),
+                                                   }).ToList();
+
+                            orderDetails.ServiceCharges = orderServiceCharges;
+
+                        }
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = orderDetails };
+
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
     }
 }

@@ -265,6 +265,10 @@ namespace Core.Enums
         [Description("Number ChangeRequest already raised")]
         NumberChangeRequestAlreadyRaised = 165,
 
+        [EnumMember(Value = "NotBuddyBundle")]
+        [Description("Selected Bundle is not a buddy bundle")]
+        NotBuddyBundle = 170,
+
     }
 }
 
