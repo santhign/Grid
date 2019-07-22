@@ -4980,7 +4980,7 @@ namespace OrderService.Controllers
 
                                                 if (processResult == 1)
                                                 {
-                                                    LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(CommonErrors.BuddyProcessed));
+                                                    LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed));
 
                                                     return Ok(new OperationResponse
                                                     {
@@ -4992,7 +4992,7 @@ namespace OrderService.Controllers
                                                 }
                                                 else if (processResult == 2)
                                                 {
-                                                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(CommonErrors.BuddyProcessingFailed));
+                                                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed));
 
                                                     return Ok(new OperationResponse
                                                     {
@@ -5017,7 +5017,7 @@ namespace OrderService.Controllers
 
                                                 else if (processResult == 4)
                                                 {
-                                                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing Buddy/MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.SourceTypeNotFound) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
+                                                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.SourceTypeNotFound) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
                                                     return Ok(new OperationResponse
                                                     {
                                                         HasSucceeded = true,
@@ -5518,7 +5518,7 @@ namespace OrderService.Controllers
 
                                                     if (processResult==1)
                                                     {   
-                                                        LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(CommonErrors.BuddyProcessed));
+                                                        LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed));
 
                                                         return Ok(new OperationResponse
                                                         {
@@ -5530,7 +5530,7 @@ namespace OrderService.Controllers
                                                     }
                                                     else if (processResult == 2)
                                                     {
-                                                        LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(CommonErrors.BuddyProcessingFailed));
+                                                        LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed));
 
                                                         return Ok(new OperationResponse
                                                         {
@@ -5555,7 +5555,7 @@ namespace OrderService.Controllers
 
                                                     else if (processResult == 4)
                                                     {
-                                                        LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing Buddy/MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.SourceTypeNotFound) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
+                                                        LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.SourceTypeNotFound) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
                                                         return Ok(new OperationResponse
                                                         {
                                                             HasSucceeded = true,

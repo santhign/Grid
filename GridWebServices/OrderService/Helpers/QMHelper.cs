@@ -157,56 +157,22 @@ namespace OrderService.Helpers
 
                     else if (((OrderSource)sourceTyeResponse.Results).SourceType == CheckOutType.Orders.ToString())
                     {
-                        DatabaseResponse buddyCheckResponse = new DatabaseResponse();
-
-                        buddyCheckResponse = await _orderAccess.OrderBuddyCheck(((OrderSource)sourceTyeResponse.Results).SourceID);
-
-                        if (buddyCheckResponse.ResponseCode == (int)DbReturnValue.RecordExists && ((List<BuddyCheckList>)buddyCheckResponse.Results).Count > 0)
-                        {                          
-
-                            buddyActionList = (List<BuddyCheckList>)buddyCheckResponse.Results;                          
-
-                            //  Action buddyProcessing = FinalBuddyProcessing;
-
-                            int processed = await FinalBuddyProcessing();
-
-                            if(processed==1)
-                            {
-                                LogInfo.Information("Calling SendEmailNotification");
-                                string emailStatus = await SendEmailNotification(updateRequest.MPGSOrderID, ((OrderSource)sourceTyeResponse.Results).SourceID);
-                                LogInfo.Information("Email Send status for : " + emailStatus);
-
-                                return 1; // buddy processed
-                            }
-
-                            else
-                            {
-                                return 2; // buddy not processed
-                            }
-                        }
-
-                        else
+                        try
                         {
-                            //send queue message
-
-                            try
-                            {
-                                LogInfo.Information("Calling SendEmailNotification");
-                                string emailStatus = await SendEmailNotification(updateRequest.MPGSOrderID, ((OrderSource)sourceTyeResponse.Results).SourceID);
-                                LogInfo.Information("Email Send status for : " + emailStatus);
-                            }
-
-                            catch(Exception ex)
-                            {
-                                LogInfo.Information("Email Send failed");
-                                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-                            }                           
-
-                            ProcessOrderQueueMessage(((OrderSource)sourceTyeResponse.Results).SourceID);
-
-                            return 3; // not buddy plan; MQ send
+                            LogInfo.Information("Calling SendEmailNotification");
+                            string emailStatus = await SendEmailNotification(updateRequest.MPGSOrderID, ((OrderSource)sourceTyeResponse.Results).SourceID);
+                            LogInfo.Information("Email Send status for : " + emailStatus);
                         }
-                        
+
+                        catch (Exception ex)
+                        {
+                            LogInfo.Information("Email Send failed");
+                            LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                        }
+
+                        ProcessOrderQueueMessage(((OrderSource)sourceTyeResponse.Results).SourceID);
+
+                        return 3; // not buddy plan; MQ send  
                     }
 
                     else if (((OrderSource)sourceTyeResponse.Results).SourceType == CheckOutType.AccountInvoices.ToString())

@@ -238,13 +238,13 @@ namespace OrderService.Controllers
 
                     if (processResult == 1)
                     {
-                        LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(CommonErrors.BuddyProcessed));
+                        LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed));
 
                        
                     }
                     else if (processResult == 2)
                     {
-                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(CommonErrors.BuddyProcessingFailed));
+                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed));
 
                        
                     }
@@ -270,9 +270,8 @@ namespace OrderService.Controllers
                     else
                     {
                         // entry for exceptions from QM Helper, but need to send payment success message to UI as payment already processed
-                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing Buddy/MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.SystemExceptionAfterPayment) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
+                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.SystemExceptionAfterPayment) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
                        
-
                     }
                 }
            
