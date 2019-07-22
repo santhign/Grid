@@ -3900,7 +3900,7 @@ namespace OrderService.DataAccess
                 SqlParameter[] parameters =
                {
                     new SqlParameter( "@OrderID",  SqlDbType.Int ),
-                    new SqlParameter( "@UserId",  SqlDbType.Int ),
+                    new SqlParameter( "@UserId",  SqlDbType.NVarChar ),
                     new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar),
                     new SqlParameter( "@MainLineMobileNumber",  SqlDbType.NVarChar)
                 };

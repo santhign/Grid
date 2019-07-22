@@ -264,6 +264,8 @@ namespace OrderService.Controllers
 
                                     DatabaseResponse requestIdRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.GetAssets.ToString(), customerID, (int)BSSCalls.NewSession, "");
 
+                                    DatabaseResponse requestIdResforBuddy = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.GetAssets.ToString(), customerID, (int)BSSCalls.NewSession, "");
+
                                     DatabaseResponse buddyCheckResponse = new DatabaseResponse();
 
                                     buddyCheckResponse = await _orderAccess.IsBuddyBundle(request.BundleID);
@@ -274,9 +276,11 @@ namespace OrderService.Controllers
 
                                         ResponseObject res = new ResponseObject();
 
+                                        ResponseObject res1 = new ResponseObject();
+
                                         try
                                         {
-                                            res = await bsshelper.GetAssetInventory(config, (((List<ServiceFees>)serviceCAF.Results)).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdRes.Results,2);
+                                            res = await bsshelper.GetAssetInventory(config, (((List<ServiceFees>)serviceCAF.Results)).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdRes.Results);
                                         }
 
                                         catch (Exception ex)
@@ -293,7 +297,26 @@ namespace OrderService.Controllers
                                             });
                                         }
 
-                                        if (res != null && res.Response != null && res.Response.asset_details != null && (int.Parse(res.Response.asset_details.total_record_count) > 0))
+                                        try
+                                        {
+                                            res1 = await bsshelper.GetAssetInventory(config, (((List<ServiceFees>)serviceCAF.Results)).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdResforBuddy.Results);
+                                        }
+
+                                        catch (Exception ex)
+                                        {
+                                            LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+
+                                            DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID);
+
+                                            return Ok(new OperationResponse
+                                            {
+                                                HasSucceeded = false,
+                                                Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed) + ". " + EnumExtensions.GetDescription(CommonErrors.OrderRolledBack),
+                                                IsDomainValidationErrors = false
+                                            });
+                                        }
+
+                                        if ((res != null && res.Response != null && res.Response.asset_details != null && (int.Parse(res.Response.asset_details.total_record_count) > 0)) && (res1 != null && res1.Response != null && res1.Response.asset_details != null && (int.Parse(res1.Response.asset_details.total_record_count) > 0)))
                                         {                                           
                                             BSSNumbers numbers = new BSSNumbers();
 
@@ -301,12 +324,20 @@ namespace OrderService.Controllers
 
                                             string mainLine = numbers.FreeNumbers[0].MobileNumber;
 
-                                            string buddyLine = numbers.FreeNumbers[1].MobileNumber;
-
-                                            //insert these number into database
                                             string json = bsshelper.GetJsonString(numbers.FreeNumbers); // json insert
 
                                             DatabaseResponse updateBssCallFreeNumbers = await _orderAccess.UpdateBSSCallNumbers(json, ((BSSAssetRequest)requestIdRes.Results).userid, ((BSSAssetRequest)requestIdRes.Results).BSSCallLogID);
+
+                                            numbers.FreeNumbers = bsshelper.GetFreeNumbers(res1);
+
+                                            string buddyLine = numbers.FreeNumbers[0].MobileNumber;
+
+                                            json = bsshelper.GetJsonString(numbers.FreeNumbers); // json insert
+
+                                            updateBssCallFreeNumbers = await _orderAccess.UpdateBSSCallNumbers(json, ((BSSAssetRequest)requestIdResforBuddy.Results).userid, ((BSSAssetRequest)requestIdResforBuddy.Results).BSSCallLogID);
+
+                                            //insert these number into database
+
 
                                             DatabaseResponse requestIdToUpdateMainLineRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.ExistingSession, mainLine);
 
