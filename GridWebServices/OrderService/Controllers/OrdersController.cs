@@ -463,6 +463,7 @@ namespace OrderService.Controllers
                                                         try
                                                         {
                                                             requestIdToUpdateBuddyLineRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.ExistingSession, buddyLine);
+
                                                             bssUpdateBuddyResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateBuddyLineRes.Results, buddyLine, true);
                                                         }
                                                         catch (Exception exi)
@@ -865,41 +866,9 @@ namespace OrderService.Controllers
                                 //  _orderAccess.CheckBuddyToRemove
                                 // _orderAccess.UpdateBuddyRemoval                               
 
-                                DatabaseResponse checkBuddyResponse = await _orderAccess.CheckBuddyToRemove(((OrderInit)createOrderRresponse.Results).OrderID);
+                                BuddyHelper buddyHelper = new BuddyHelper(_iconfiguration);
 
-                                if(checkBuddyResponse.ResponseCode==(int)DbReturnValue.RecordExists && checkBuddyResponse.Results!=null)
-                                {
-                                    BuddyToRemove buddyToRemove = (BuddyToRemove)checkBuddyResponse.Results;
-
-                                    if(buddyToRemove.BuddyRemovalID>0 && buddyToRemove.IsRemoved == 0)
-                                    {
-                                        BSSAPIHelper bsshelper = new BSSAPIHelper();
-
-                                        DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
-
-                                        GridBSSConfi config = bsshelper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
-
-                                        DatabaseResponse serviceCAF = await _orderAccess.GetBSSServiceCategoryAndFee(ServiceTypes.Free.ToString());                                       
-
-                                        DatabaseResponse requestIdToUpdateRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.ExistingSession, buddyToRemove.MobileNumber);
-
-                                        BSSUpdateResponseObject bssUpdateResponse = new BSSUpdateResponseObject();
-
-                                        try
-                                        {
-                                            bssUpdateResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateRes.Results, buddyToRemove.MobileNumber, true);
-
-                                            DatabaseResponse updateBuddyRemoval = await _orderAccess.UpdateBuddyRemoval(buddyToRemove.BuddyRemovalID);
-                                        }
-
-                                        catch (Exception ex)
-                                        {
-                                            LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BuddyRemovalFailed) + " for Order : " + ((OrderInit)createOrderRresponse.Results).OrderID);
-                                                                                       
-                                        }
-                                    }
-                                }
-
+                                int buddyHandledResponse = await buddyHelper.AddRemoveBuddyHandler(((OrderInit)createOrderRresponse.Results).OrderID, customerID);
                               
                                 LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.UnfishedOrderExists));
 
@@ -4355,6 +4324,7 @@ namespace OrderService.Controllers
                         OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
 
                         DatabaseResponse customerResponse = await _orderAccess.GetCustomerIdFromOrderId(request.OrderID);
+
                         if (customerResponse.ResponseCode == (int)DbReturnValue.RecordExists && customerID == ((OrderCustomer)customerResponse.Results).CustomerId)
                         {
                             //update shipping details
@@ -4362,6 +4332,20 @@ namespace OrderService.Controllers
 
                             if (updatePersoanDetailsResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
                             {
+                                BuddyHelper buddyHelper = new BuddyHelper(_iconfiguration);
+
+                                try
+                                {
+
+                                    int buddyHandledResponse = await buddyHelper.AddRemoveBuddyHandler(request.OrderID, ((OrderCustomer)customerResponse.Results).CustomerId);
+                                }
+
+                                catch(Exception ex)
+                                {
+                                    LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.BuddyRemovalFailed));
+                                }
                                 return Ok(new OperationResponse
                                 {
                                     HasSucceeded = true,
@@ -4394,6 +4378,7 @@ namespace OrderService.Controllers
                         {
                             // failed to locate customer
                               LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.TokenNotMatching));
+
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = false,

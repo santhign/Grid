@@ -376,5 +376,6 @@ namespace Core.Enums
         [EnumMember(Value = "BuddyRemovalFailed")]
         [Description("Buddy removal failed")]
         BuddyRemovalFailed = 89,
+     
     }
 }

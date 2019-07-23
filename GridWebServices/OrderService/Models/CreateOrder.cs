@@ -1121,4 +1121,12 @@ namespace OrderService.Models
         public int? IsPorted { get; set; }
         public int? IsRemoved { get; set; }      
     }
+
+    public class AdditionalBuddy
+    {
+        public int OrderAdditionalBuddyID { get; set; }
+        public string MobileNumber { get; set; }
+        public int? IsProcessed { get; set; }
+        
+    }
 }
