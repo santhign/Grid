@@ -10,15 +10,23 @@ using Core.Enums;
 using Core.Extensions;
 using InfrastructureService;
 using Core.Helpers;
+using Newtonsoft.Json;
+
 
 namespace OrderService.Helpers
 {
     public class BuddyHelper
     {   
         IConfiguration _iconfiguration;
-        public BuddyHelper(IConfiguration configuration)
+
+        private readonly IMessageQueueDataAccess _messageQueueDataAccess;       
+
+        public BuddyHelper(IConfiguration configuration, IMessageQueueDataAccess messageQueueDataAccess)
         {
-            _iconfiguration = configuration;           
+            _iconfiguration = configuration;
+
+            _messageQueueDataAccess = messageQueueDataAccess;
+            
         }
 
         public async Task<int> AddRemoveBuddyHandler(int orderID, int customerID)
@@ -141,6 +149,125 @@ namespace OrderService.Helpers
             {
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
                 return 0;
+            }
+        }
+
+        public async Task<BuyVASStatus> ProcessVas(int customerID, string mobileNumber, int bundleID, int quantity)
+        {
+            BuyVASStatus processVasStatus = new BuyVASStatus();
+
+            try
+            {
+                OrderDataAccess _orderDataAccess = new OrderDataAccess(_iconfiguration);
+
+                var statusResponse = await _orderDataAccess.BuyVasService(customerID, mobileNumber, bundleID, quantity);
+
+                processVasStatus.BuyVASResponse = (BuyVASResponse)statusResponse.Results;
+
+                processVasStatus.ResponseCode = statusResponse.ResponseCode;
+
+                if (statusResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
+                {
+                    //Ninad K : Message Publish code
+                    MessageBodyForCR msgBody = new MessageBodyForCR();
+                    Dictionary<string, string> attribute = new Dictionary<string, string>();
+                    string topicName = string.Empty, subject = string.Empty;
+                    try
+                    {
+                        topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration)
+                        .Results.ToString().Trim();
+
+                        if (string.IsNullOrWhiteSpace(topicName))
+                        {
+                            throw new NullReferenceException("topicName is null for ChangeRequest (" + processVasStatus.BuyVASResponse.ChangeRequestID + ") for BuyVAS Request Service API");
+                        }
+                        msgBody = await _messageQueueDataAccess.GetMessageBodyByChangeRequest(processVasStatus.BuyVASResponse.ChangeRequestID);
+
+                        if (msgBody == null || msgBody.ChangeRequestID == 0)
+                        {
+                            throw new NullReferenceException("message body is null for ChangeRequest (" + processVasStatus.BuyVASResponse.ChangeRequestID + ") for BuyVAS Service API");
+                        }
+
+                        attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.AddVAS.GetDescription());
+                        var pushResult = await _messageQueueDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
+                        if (pushResult.Trim().ToUpper() == "OK")
+                        {
+                            MessageQueueRequest queueRequest = new MessageQueueRequest
+                            {
+                                Source = Source.ChangeRequest,
+                                NumberOfRetries = 1,
+                                SNSTopic = topicName,
+                                CreatedOn = DateTime.Now,
+                                LastTriedOn = DateTime.Now,
+                                PublishedOn = DateTime.Now,
+                                MessageAttribute = Core.Enums.RequestType.AddVAS.GetDescription().ToString(),
+                                MessageBody = JsonConvert.SerializeObject(msgBody),
+                                Status = 1
+                            };
+
+                            await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                        }
+                        else
+                        {
+                            MessageQueueRequest queueRequest = new MessageQueueRequest
+                            {
+                                Source = Source.ChangeRequest,
+                                NumberOfRetries = 1,
+                                SNSTopic = topicName,
+                                CreatedOn = DateTime.Now,
+                                LastTriedOn = DateTime.Now,
+                                PublishedOn = DateTime.Now,
+                                MessageAttribute = Core.Enums.RequestType.AddVAS.GetDescription().ToString(),
+                                MessageBody = JsonConvert.SerializeObject(msgBody),
+                                Status = 0
+                            };
+
+                            await _messageQueueDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                        MessageQueueRequestException queueRequest = new MessageQueueRequestException
+                        {
+                            Source = Source.ChangeRequest,
+                            NumberOfRetries = 1,
+                            SNSTopic = string.IsNullOrWhiteSpace(topicName) ? null : topicName,
+                            CreatedOn = DateTime.Now,
+                            LastTriedOn = DateTime.Now,
+                            PublishedOn = DateTime.Now,
+                            MessageAttribute = Core.Enums.RequestType.AddVAS.GetDescription().ToString(),
+                            MessageBody = msgBody != null ? JsonConvert.SerializeObject(msgBody) : null,
+                            Status = 0,
+                            Remark = "Error Occured in BuyVASService",
+                            Exception = new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)
+
+
+                        };
+
+                        await _messageQueueDataAccess.InsertMessageInMessageQueueRequestException(queueRequest);
+                    }
+
+                    processVasStatus.Result = 1;
+
+                    return processVasStatus;
+                }
+                else
+                {
+                    LogInfo.Warning(DbReturnValue.NoRecords.GetDescription());
+
+                    processVasStatus.Result = 0;
+
+                    return processVasStatus;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                processVasStatus.Result = 0;
+
+                return processVasStatus;
             }
         }
     }

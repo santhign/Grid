@@ -644,5 +644,13 @@ namespace OrderService.Models
         public int? PortingType { get; set; }
       
     }
-    
+
+    public class BuyVASStatus
+    {
+        public int ResponseCode { get; set; }
+        public int Result { get; set; }
+        public BuyVASResponse BuyVASResponse { get; set; }
+
+    }
+
 }

@@ -27,16 +27,7 @@ namespace OrderService.DataAccess
         /// <param name="customerId">The customer identifier.</param>
         /// <param name="accountSubscriptionId">The account subscription identifier.</param>
         /// <returns></returns>
-        Task<DatabaseResponse> RemoveSharedVasService(int customerId, int accountSubscriptionId);
-        /// <summary>
-        /// Buys the vas service.
-        /// </summary>
-        /// <param name="customerId">The customer identifier.</param>
-        /// <param name="mobileNumber">The mobile number.</param>
-        /// <param name="bundleId">The bundle identifier.</param>
-        /// <param name="quantity">The quantity.</param>
-        /// <returns></returns>
-        Task<DatabaseResponse> BuyVasService(int customerId, string mobileNumber, int bundleId, int quantity);
+        Task<DatabaseResponse> RemoveSharedVasService(int customerId, int accountSubscriptionId);       
         /// <summary>
         /// Sims the replacement request.
         /// </summary>

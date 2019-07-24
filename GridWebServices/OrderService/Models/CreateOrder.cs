@@ -1137,4 +1137,12 @@ namespace OrderService.Models
         public string MobileNumber { get; set; }
         public int? IsRemove { get; set; }
     }
+
+    public class VasToProcess
+    {
+        public int OrderSubscriberVASBundleID { get; set; }
+        public int BundleID { get; set; }
+        public string MobileNumber { get; set; }        
+    }
+    
 }

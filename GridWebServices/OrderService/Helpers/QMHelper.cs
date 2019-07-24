@@ -170,6 +170,33 @@ namespace OrderService.Helpers
 
                         ProcessOrderQueueMessage(((OrderSource)sourceTyeResponse.Results).SourceID);
 
+                        BuddyHelper buddyHelper = new BuddyHelper(_iconfiguration, _messageQueueDataAccess);
+
+                        // Proess VAS bundles added to Order
+
+                        DatabaseResponse getVASToProcessResponse= await _orderAccess.GetOrderedVASesToProcess(((OrderSource)sourceTyeResponse.Results).SourceID);
+
+                        LogInfo.Information("Processing VASes for Order:" + ((OrderSource)sourceTyeResponse.Results).SourceID);
+
+                        if (getVASToProcessResponse.ResponseCode==(int)DbReturnValue.RecordExists && getVASToProcessResponse.Results!=null)
+                        {
+                            List<VasToProcess> vasListToProcess =(List<VasToProcess>) getVASToProcessResponse.Results;
+
+                            LogInfo.Information(" VAS list to Process for Order:" + +((OrderSource)sourceTyeResponse.Results).SourceID + " - " + JsonConvert.SerializeObject(vasListToProcess));
+
+                            DatabaseResponse customerResponse = await _orderAccess.GetCustomerIdFromOrderId(((OrderSource)sourceTyeResponse.Results).SourceID);
+                            
+                            if (customerResponse !=null && customerResponse.ResponseCode==(int)DbReturnValue.RecordExists)
+                            {
+                                int customerID = ((OrderCustomer)customerResponse.Results).CustomerId;
+
+                                foreach (VasToProcess vas in vasListToProcess)
+                                {
+                                    BuyVASStatus vasProcessStatus = await buddyHelper.ProcessVas(customerID, vas.MobileNumber, vas.BundleID, 1);
+                                }                               
+                            }                           
+                        }  
+
                         return 3; // not buddy plan; MQ send  
                     }
 

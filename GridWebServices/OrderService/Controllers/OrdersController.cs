@@ -30,10 +30,13 @@ namespace OrderService.Controllers
         IConfiguration _iconfiguration;
         private readonly IMessageQueueDataAccess _messageQueueDataAccess;
 
-        public OrdersController(IConfiguration configuration, IMessageQueueDataAccess messageQueueDataAccess)
+        private readonly IChangeRequestDataAccess _changeRequestDataAccess;
+
+        public OrdersController(IConfiguration configuration, IMessageQueueDataAccess messageQueueDataAccess, IChangeRequestDataAccess changeRequestDataAccess)
         {
             _iconfiguration = configuration;
             _messageQueueDataAccess = messageQueueDataAccess;
+            _changeRequestDataAccess = changeRequestDataAccess;
         }
         /// <summary>
         /// This will return Order details for specific ID passed 
@@ -866,7 +869,7 @@ namespace OrderService.Controllers
                                 //  _orderAccess.CheckBuddyToRemove
                                 // _orderAccess.UpdateBuddyRemoval                               
 
-                                BuddyHelper buddyHelper = new BuddyHelper(_iconfiguration);
+                                BuddyHelper buddyHelper = new BuddyHelper(_iconfiguration, _messageQueueDataAccess);
 
                                 int buddyHandledResponse = await buddyHelper.AddRemoveBuddyHandler(((OrderInit)createOrderRresponse.Results).OrderID, customerID);
                               
@@ -4332,7 +4335,7 @@ namespace OrderService.Controllers
 
                             if (updatePersoanDetailsResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
                             {
-                                BuddyHelper buddyHelper = new BuddyHelper(_iconfiguration);
+                                BuddyHelper buddyHelper = new BuddyHelper(_iconfiguration, _messageQueueDataAccess);
 
                                 try
                                 {
