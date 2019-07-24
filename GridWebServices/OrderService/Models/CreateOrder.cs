@@ -1129,4 +1129,12 @@ namespace OrderService.Models
         public int? IsProcessed { get; set; }
         
     }
+
+    public class VasAddRemoveRequest
+    {
+        public int OrderID { get; set; }
+        public int BundleID { get; set; }
+        public string MobileNumber { get; set; }
+        public int? IsRemove { get; set; }
+    }
 }

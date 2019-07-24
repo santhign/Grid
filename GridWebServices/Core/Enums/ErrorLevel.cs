@@ -376,6 +376,14 @@ namespace Core.Enums
         [EnumMember(Value = "BuddyRemovalFailed")]
         [Description("Buddy removal failed")]
         BuddyRemovalFailed = 89,
-     
+
+        [EnumMember(Value = "RemoveSuccess")]
+        [Description("Successfully removed")]
+        RemoveSuccess = 90,
+
+        [EnumMember(Value = "OrderNotExists")]
+        [Description("Order does not exists")]
+        OrderNotExists = 91,
+
     }
 }

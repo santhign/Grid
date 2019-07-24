@@ -4461,5 +4461,47 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+
+        public async Task<DatabaseResponse> AddRemoveVas(VasAddRemoveRequest request)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@OrderID",  SqlDbType.Int ),
+                    new SqlParameter( "@BundleID",  SqlDbType.Int ),
+                    new SqlParameter( "@MobileNumber",  SqlDbType.Int ),
+                    new SqlParameter( "@IsRemove",  SqlDbType.Int )
+                };
+
+                parameters[0].Value = request.OrderID;
+                parameters[1].Value = request.BundleID;
+                parameters[2].Value = request.MobileNumber;
+                parameters[3].Value = request.IsRemove;
+
+                _DataHelper = new DataAccessHelper("Orders_AddRemoveVAS", parameters, _configuration);
+
+                DataSet ds = new DataSet();
+
+                int result = await _DataHelper.RunAsync(ds); // 100 /107, /103/150, 102/164
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                response = new DatabaseResponse { ResponseCode = result };
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
     }
 }
