@@ -17,6 +17,7 @@ using InfrastructureService.MessageQueue;
 using Newtonsoft.Json;
 using Core.DataAccess;
 using System.IO;
+using AdminService.Filters;
 
 namespace AdminService.Controllers
 {
@@ -172,6 +173,7 @@ namespace AdminService.Controllers
         /// <param name="orderID">The order identifier.</param>
         /// <returns></returns>
         [HttpGet("GetOrderDetailsForNRIC/{orderID}")]
+        [HasPermissionAttribute(AdminServiceUserPermissions.OrdersList)]
         public async Task<IActionResult> GetOrderDetails([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int orderID)
         {
             try
@@ -345,6 +347,7 @@ namespace AdminService.Controllers
         /// <param name="request">The request.</param>
         /// <returns></returns>
         [HttpPost("UpdateNRICDetails")]
+        [HasPermissionAttribute(AdminServiceUserPermissions.IDVerification)]
         public async Task<IActionResult> UpdateNRICDetails([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromForm] NRICDetails request)
         {
             try
@@ -668,6 +671,7 @@ namespace AdminService.Controllers
         /// <param name="orderID">The order identifier.</param>
         /// <returns></returns>
         [HttpGet("GetOrderDetailsHistoryForNRIC/{orderID}")]
+        [HasPermissionAttribute(AdminServiceUserPermissions.IDVerification)]
         public async Task<IActionResult> GetOrderDetailsHistory([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int orderID)
         {
             try

@@ -40,16 +40,16 @@ namespace AdminService.DataAccess
 
                 _DataHelper = new DataAccessHelper("Admin_AuthenticateAdminUser", parameters, _configuration);
 
-                DataTable dt = new DataTable();
+                DataSet ds = new DataSet();
 
-                int result = await _DataHelper.RunAsync(dt);
+                int result = await _DataHelper.RunAsync(ds);
 
                 AdminUsers adminuser = new AdminUsers();
 
-                if (dt != null && dt.Rows.Count > 0)
+                if (ds != null && ds.Tables[0]!=null && ds.Tables[0].Rows.Count > 0)
                 {
 
-                    adminuser = (from model in dt.AsEnumerable()
+                    adminuser = (from model in ds.Tables[0].AsEnumerable()
                                  select new AdminUsers()
                                  {
                                      AdminUserID = model.Field<int>("AdminUserID"),
@@ -59,6 +59,20 @@ namespace AdminService.DataAccess
                                      Role = model.Field<string>("Role"),
 
                                  }).FirstOrDefault();
+                    List<Permission> permissionList = new List<Permission>();
+
+                    if (ds.Tables[1]!=null && ds.Tables[0].Rows.Count>0)
+                    {
+                      permissionList= (from model in ds.Tables[1].AsEnumerable()
+                                                  select new Permission()
+                                                  {
+                                                       RolePermission = model.Field<string>("Permission"),
+
+                                                  }).ToList();
+                    }
+
+                    adminuser.Permissions= permissionList.Select(item => item.RolePermission).ToList();
+
                 }
 
                 return new DatabaseResponse { ResponseCode = result, Results = adminuser };
@@ -547,5 +561,60 @@ namespace AdminService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+
+        public DatabaseResponse GetAdminUserPermissionsByToken(string token)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                 {
+                    new SqlParameter( "@AuthToken",  SqlDbType.VarChar ),
+                };
+
+                parameters[0].Value = token;
+
+                _DataHelper = new DataAccessHelper("Admin_GetPermissionsByToken", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result =  _DataHelper.Run(dt);
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (dt != null && dt.Rows.Count > 0)
+                {
+
+                    List<Permission> permissionList = new List<Permission>();
+
+                    permissionList = (from model in dt.AsEnumerable()
+                                      select new Permission()
+                                      {
+                                          RolePermission = model.Field<string>("Permission"),
+
+                                      }).ToList();
+
+
+                    List<string> permissions = permissionList.Select(item => item.RolePermission).ToList();
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = permissions };
+
+                }
+
+                else response = new DatabaseResponse { ResponseCode = result };
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw ex;
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
     }
 }
