@@ -385,5 +385,9 @@ namespace Core.Enums
         [Description("Order does not exists")]
         OrderNotExists = 91,
 
+        [EnumMember(Value = "Forbidden")]
+        [Description("Forbidden access is denied")]
+        Forbidden = 403,        
+
     }
 }
