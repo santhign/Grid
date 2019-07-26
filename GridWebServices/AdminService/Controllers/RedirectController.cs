@@ -18,6 +18,7 @@ namespace AdminService.Controllers
         {
             _iconfiguration = configuration;           
         }
+        [NonAction]
         public async Task<IActionResult> Forbidden()
         {
             return await Task.Run(() =>
