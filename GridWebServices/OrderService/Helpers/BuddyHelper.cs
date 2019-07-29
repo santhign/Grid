@@ -103,6 +103,7 @@ namespace OrderService.Helpers
                         {
                             LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
 
+                            DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(orderID);
                         }
 
                         if (res != null && res.Response != null && res.Response.asset_details != null && (int.Parse(res.Response.asset_details.total_record_count) > 0))

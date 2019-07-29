@@ -61,7 +61,7 @@ namespace AdminService.DataAccess
                                  }).FirstOrDefault();
                     List<Permission> permissionList = new List<Permission>();
 
-                    if (ds.Tables[1]!=null && ds.Tables[0].Rows.Count>0)
+                    if (ds.Tables[1]!=null && ds.Tables[1].Rows.Count>0)
                     {
                       permissionList= (from model in ds.Tables[1].AsEnumerable()
                                                   select new Permission()
