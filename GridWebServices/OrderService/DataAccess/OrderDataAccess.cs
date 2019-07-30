@@ -4686,8 +4686,8 @@ namespace OrderService.DataAccess
                 };
 
                 parameters[0].Value = orderId;
-                parameters[0].Value = subscriber.MobileNumber;
-                parameters[0].Value = subscriber.IsPorted;
+                parameters[1].Value = subscriber.MobileNumber;
+                parameters[2].Value = subscriber.IsPorted;
 
                 _DataHelper = new DataAccessHelper("Orders_LogUnblockFailedMainline", parameters, _configuration);
 
