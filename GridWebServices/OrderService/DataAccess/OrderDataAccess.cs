@@ -4385,22 +4385,22 @@ namespace OrderService.DataAccess
                 if (result == 105)
                 {
 
-                    AdditionalBuddy additionalBuddy = new AdditionalBuddy();
+                   List<AdditionalBuddy> additionalBuddies = new List<AdditionalBuddy>();
 
                     if (ds != null && ds.Tables[0] != null && ds.Tables[0].Rows.Count > 0)
                     {
 
-                        additionalBuddy = (from model in ds.Tables[0].AsEnumerable()
+                        additionalBuddies = (from model in ds.Tables[0].AsEnumerable()
                                          select new AdditionalBuddy()
                                          {
                                              OrderAdditionalBuddyID = model.Field<int>("OrderAdditionalBuddyID"),
                                              MobileNumber = model.Field<string>("MobileNumber"),
-                                             IsProcessed = model.Field<int?>("IsProcessed")
-                                             
-                                         }).FirstOrDefault();
+                                             IsProcessed = model.Field<int?>("IsProcessed"),
+                                             IsPorted = model.Field<int?>("IsPorted")
+                                         }).ToList();
                     }
 
-                    response = new DatabaseResponse { ResponseCode = result, Results = additionalBuddy };
+                    response = new DatabaseResponse { ResponseCode = result, Results = additionalBuddies };
 
                 }
 
@@ -4635,6 +4635,83 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
-        
+
+        public async Task<DatabaseResponse> RemoveAdditionalBuddyOnRollBackOrder(int orderId)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@OrderID",  SqlDbType.Int ),
+                    
+                };
+
+                parameters[0].Value = orderId;
+               
+
+                _DataHelper = new DataAccessHelper("Orders_RemoveAdditionalBuddyOnRollBackOrder", parameters, _configuration);
+
+                DataSet ds = new DataSet();
+
+                int result = await _DataHelper.RunAsync(ds); //103/150, 
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                response = new DatabaseResponse { ResponseCode = result };
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> LogUnblockFailedMainline(int orderId, AdditionalBuddy subscriber)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@OrderID",  SqlDbType.Int ),
+                    new SqlParameter( "@MobileNumber",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@IsPorted",  SqlDbType.Int )
+                };
+
+                parameters[0].Value = orderId;
+                parameters[0].Value = subscriber.MobileNumber;
+                parameters[0].Value = subscriber.IsPorted;
+
+                _DataHelper = new DataAccessHelper("Orders_LogUnblockFailedMainline", parameters, _configuration);
+
+                DataSet ds = new DataSet();
+
+                int result = await _DataHelper.RunAsync(ds); //103/150, 
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                response = new DatabaseResponse { ResponseCode = result };
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }        
     }
 }

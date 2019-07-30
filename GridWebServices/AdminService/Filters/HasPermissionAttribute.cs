@@ -33,10 +33,14 @@ namespace AdminService.Filters
             try
             {
                 Microsoft.Extensions.Primitives.StringValues adminToken;
+
                 if (filterContext.HttpContext.Request.Headers.ContainsKey("Grid-Authorization-Token"))
                 {
                     filterContext.HttpContext.Request.Headers.TryGetValue("Grid-Authorization-Token", out adminToken);
                 }
+
+                //include token empty scenario
+                // include token validation scenario - expiry
                 string per = _permission;
 
                 AdminUsersDataAccess _adminAccess = new AdminUsersDataAccess(_configuration);
@@ -54,9 +58,9 @@ namespace AdminService.Filters
                         filterContext.Result = new RedirectToRouteResult(
                         new RouteValueDictionary {{ "Controller", "Redirect" },
                                       { "Action", "Forbidden" } });
-
                     }
-                }   
+                } 
+                // include permissions list null scenario
             }
             catch(Exception ex)
             {

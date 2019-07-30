@@ -1127,7 +1127,10 @@ namespace OrderService.Models
         public int OrderAdditionalBuddyID { get; set; }
         public string MobileNumber { get; set; }
         public int? IsProcessed { get; set; }
+        public int? IsPorted { get; set; }
+
         
+
     }
 
     public class VasAddRemoveRequest

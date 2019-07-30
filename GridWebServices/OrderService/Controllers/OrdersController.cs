@@ -875,16 +875,30 @@ namespace OrderService.Controllers
                               
                                 LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.UnfishedOrderExists));
 
-                                DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails_V2(((OrderInit)createOrderRresponse.Results).OrderID);
-
-                                return Ok(new OperationResponse
+                                if (buddyHandledResponse == 1)
                                 {
-                                    HasSucceeded = true,
-                                    Message = EnumExtensions.GetDescription(CommonErrors.UnfishedOrderExists),
-                                    IsDomainValidationErrors = false,
-                                    ReturnedObject = orderDetailsResponse.Results
+                                    DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails_V2(((OrderInit)createOrderRresponse.Results).OrderID);
 
-                                });
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = false,
+                                        Message = EnumExtensions.GetDescription(CommonErrors.OldOrder),
+                                        IsDomainValidationErrors = false,
+                                        ReturnedObject = orderDetailsResponse.Results
+
+                                    });
+                                }
+                                else 
+                                { 
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = false,
+                                        Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed) + ". " + EnumExtensions.GetDescription(CommonErrors.OrderRolledBack),
+                                        IsDomainValidationErrors = false,                                       
+
+                                    });
+                                }                               
+
                             }
                         }
                     }

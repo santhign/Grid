@@ -46,7 +46,7 @@ namespace AdminService.DataAccess
 
                 AdminUsers adminuser = new AdminUsers();
 
-                if (ds != null && ds.Tables[0]!=null && ds.Tables[0].Rows.Count > 0)
+                if (ds != null && ds.Tables.Count>0 && ds.Tables[0]!=null && ds.Tables[0].Rows.Count > 0)
                 {
 
                     adminuser = (from model in ds.Tables[0].AsEnumerable()

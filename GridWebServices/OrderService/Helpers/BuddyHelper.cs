@@ -76,9 +76,11 @@ namespace OrderService.Helpers
 
                 if (checkAdditionalBuddyResponse.ResponseCode == (int)DbReturnValue.RecordExists && checkAdditionalBuddyResponse.Results != null)
                 {
-                    AdditionalBuddy additionalBuddy = (AdditionalBuddy)checkAdditionalBuddyResponse.Results;
+                    List<AdditionalBuddy> additionalBuddies = (List<AdditionalBuddy>)checkAdditionalBuddyResponse.Results;
 
-                    if (additionalBuddy.OrderAdditionalBuddyID > 0 && additionalBuddy.IsProcessed == 0)
+                  foreach(AdditionalBuddy buddy in additionalBuddies)
+                  { 
+                    if (buddy.OrderAdditionalBuddyID > 0 && buddy.IsProcessed == 0)
                     {
                         BSSAPIHelper bsshelper = new BSSAPIHelper();
 
@@ -102,9 +104,12 @@ namespace OrderService.Helpers
                         catch (Exception ex)
                         {
                             LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+                                // need to unblock all subscribers for the order and roll back the order  and return
+                                int buddyRollback = await HandleRollbackOnAdditionalBuddyProcessingFailure(customerID, orderID, additionalBuddies);
 
-                            DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(orderID);
-                        }
+                                // rollback on bss failure
+                                return 3;
+                            }
 
                         if (res != null && res.Response != null && res.Response.asset_details != null && (int.Parse(res.Response.asset_details.total_record_count) > 0))
                         {
@@ -124,16 +129,19 @@ namespace OrderService.Helpers
                                 bssUpdateAdditionalBuddyResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateAdditionalBuddyRes.Results, numbers.FreeNumbers[0].MobileNumber, false);
 
                                 // create buddy subscriber with blocked number and the existing main line
+                                
+                                  if (bsshelper.GetResponseCode(bssUpdateAdditionalBuddyResponse) == "0")
+                                  {
+                                        CreateBuddySubscriber additinalBuddySubscriberToCreate = new CreateBuddySubscriber { OrderID = orderID, MobileNumber = numbers.FreeNumbers[0].MobileNumber, MainLineMobileNumber = buddy.MobileNumber, UserId = ((BSSAssetRequest)requestIdToUpdateAdditionalBuddyRes.Results).userid };
 
-                                CreateBuddySubscriber additinalBuddySubscriberToCreate = new CreateBuddySubscriber { OrderID = orderID, MobileNumber = numbers.FreeNumbers[0].MobileNumber, MainLineMobileNumber = additionalBuddy.MobileNumber, UserId = ((BSSAssetRequest)requestIdToUpdateAdditionalBuddyRes.Results).userid };
+                                        DatabaseResponse createAdditionalBuddySubscriberResponse = await _orderAccess.CreateBuddySubscriber(additinalBuddySubscriberToCreate);
 
-                                DatabaseResponse createAdditionalBuddySubscriberResponse = await _orderAccess.CreateBuddySubscriber(additinalBuddySubscriberToCreate);
-
-                                // uPDAT
-                                if (createAdditionalBuddySubscriberResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
-                                {
-                                    DatabaseResponse updateBuddyRemoval = await _orderAccess.UpdateAdditionalBuddyProcessing(additionalBuddy.OrderAdditionalBuddyID);
-                                }
+                                        // update
+                                        if (createAdditionalBuddySubscriberResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
+                                        {
+                                            DatabaseResponse updateBuddyProcessedResponse = await _orderAccess.UpdateAdditionalBuddyProcessing(buddy.OrderAdditionalBuddyID);
+                                        }
+                                   }                               
                             }
 
                             catch (Exception ex)
@@ -142,7 +150,16 @@ namespace OrderService.Helpers
 
                             }
                         }
-                    }
+                        else
+                        {         // rollback on no assets retunred
+                                int buddyRollback = await HandleRollbackOnAdditionalBuddyProcessingFailure(customerID, orderID, additionalBuddies);
+                              
+                                return 2;
+
+                         }
+                     }
+
+                  }
                 }
                 return 1;
             }
@@ -269,6 +286,77 @@ namespace OrderService.Helpers
                 processVasStatus.Result = 0;
 
                 return processVasStatus;
+            }
+        }
+
+        public async Task<int> HandleRollbackOnAdditionalBuddyProcessingFailure(int customerID, int orderID, List<AdditionalBuddy> additionalBuddies)
+        {  
+            try
+            {
+                OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+
+                BSSAPIHelper bsshelper = new BSSAPIHelper();
+
+                DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
+
+                GridBSSConfi config = bsshelper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
+
+                DatabaseResponse serviceCAF = await _orderAccess.GetBSSServiceCategoryAndFee(ServiceTypes.Free.ToString());              
+
+                //unblock all subscribers for the order            
+
+                foreach (AdditionalBuddy buddy in additionalBuddies)
+                {
+                    // unblock mainline subscriber - not ported
+                    if (buddy.IsPorted == 0)
+                    {
+                        DatabaseResponse requestIdToUnblockSubscribers = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.ExistingSession, buddy.MobileNumber);
+
+                        BSSUpdateResponseObject bssUpdateAdditionalBuddyMainlineUnblockResponse = new BSSUpdateResponseObject();
+
+                        try
+                        {
+                            bssUpdateAdditionalBuddyMainlineUnblockResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUnblockSubscribers.Results, buddy.MobileNumber, true);
+
+                            if (bsshelper.GetResponseCode(bssUpdateAdditionalBuddyMainlineUnblockResponse) != "0")
+                            {
+                                //failed to unblock subscriber number add it to buddy removal table
+
+                                DatabaseResponse logUnblockFailedSubscriber = await _orderAccess.LogUnblockFailedMainline(orderID, buddy);
+
+                                if (logUnblockFailedSubscriber.ResponseCode != (int)DbReturnValue.CreateSuccess)
+                                {
+                                    LogInfo.Warning("Unlocking failed subscriber loging to BuddyRemoval table failed for OrderID:"+ orderID + ", MobileNumber:" + buddy.MobileNumber);
+                                }
+                            }
+
+                        }
+                        catch
+                        {
+                            //failed to unblock subscriber number add it to buddy removal table
+                            DatabaseResponse logUnblockFailedSubscriber = await _orderAccess.LogUnblockFailedMainline(orderID, buddy);
+
+                            if (logUnblockFailedSubscriber.ResponseCode != (int)DbReturnValue.CreateSuccess)
+                            {
+                                LogInfo.Warning("Unlocking failed subscriber loging to BuddyRemoval table failed for OrderID:" + orderID + ", MobileNumber:" + buddy.MobileNumber);
+                            }
+                        }
+                    }                 
+
+                }
+
+                //remove additional buddy for the order from additional buddy table
+                DatabaseResponse removeAdditionalBuddyRes = await _orderAccess.RemoveAdditionalBuddyOnRollBackOrder(orderID);
+
+               //rollback order
+                DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(orderID);
+
+                return 1;
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                return 0;
             }
         }
     }
