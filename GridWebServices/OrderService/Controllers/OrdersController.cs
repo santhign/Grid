@@ -881,8 +881,8 @@ namespace OrderService.Controllers
 
                                     return Ok(new OperationResponse
                                     {
-                                        HasSucceeded = false,
-                                        Message = EnumExtensions.GetDescription(CommonErrors.OldOrder),
+                                        HasSucceeded = true,
+                                        Message = EnumExtensions.GetDescription(CommonErrors.UnfishedOrderExists),
                                         IsDomainValidationErrors = false,
                                         ReturnedObject = orderDetailsResponse.Results
 

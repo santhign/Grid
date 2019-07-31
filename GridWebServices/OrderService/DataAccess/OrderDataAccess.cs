@@ -2419,10 +2419,10 @@ namespace OrderService.DataAccess
                 parameters[2].Value = subscriberBasicDetails.DisplayName;
                 parameters[3].Value = subscriberBasicDetails.MobileNumber;
 
-                _DataHelper = new DataAccessHelper("Order_UpdateSubscriberBasicDetails", parameters, _configuration);
+                _DataHelper = new DataAccessHelper("Order_UpdateSubscriberBasicDetails_v2", parameters, _configuration);
 
 
-                int result = await _DataHelper.RunAsync();    // 101 / 106
+                int result = await _DataHelper.RunAsync();    // 101 / 106/ 127/102
 
                 DatabaseResponse response = new DatabaseResponse();
 
