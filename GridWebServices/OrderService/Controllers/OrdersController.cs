@@ -1079,7 +1079,7 @@ namespace OrderService.Controllers
                                             {
                                                 // Get Order Basic Details
 
-                                                DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails(request.OrderID);
+                                                DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails_V2(request.OrderID);
 
                                                 if (orderDetailsResponse.ResponseCode == (int)DbReturnValue.RecordExists)
                                                 {
@@ -1179,7 +1179,7 @@ namespace OrderService.Controllers
                                         {
                                             // Get Order Basic Details
 
-                                            DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails(request.OrderID);
+                                            DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails_V2(request.OrderID);
 
                                             if (orderDetailsResponse.ResponseCode == (int)DbReturnValue.RecordExists)
                                             {
@@ -1456,7 +1456,7 @@ namespace OrderService.Controllers
                                 {
                                     // Get Order Basic Details
 
-                                    DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails(request.OrderID);
+                                    DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails_V2(request.OrderID);
 
                                     if (orderDetailsResponse.ResponseCode == (int)DbReturnValue.RecordExists)
                                     {
@@ -1503,7 +1503,7 @@ namespace OrderService.Controllers
                                 {
                                     // Get Order Basic Details
 
-                                    DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails(request.OrderID);
+                                    DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails_V2(request.OrderID);
 
                                     if (orderDetailsResponse.ResponseCode == (int)DbReturnValue.RecordExists)
                                     {
@@ -1612,6 +1612,261 @@ namespace OrderService.Controllers
         /// }
         /// </param>
         /// <returns>OperationResponse</returns>
+        //[HttpPost]
+        //[Route("CreateSubscriber")]
+        //public async Task<IActionResult> CreateSubscriber([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] AdditionalSubscriberRequest request)
+        //{
+
+        //    try
+        //    {
+        //        if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+        //        {
+        //            HasSucceeded = false,
+        //            IsDomainValidationErrors = true,
+        //            Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+        //        });
+        //        AuthHelper helper = new AuthHelper(_iconfiguration);
+
+        //        DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_subscriber_create);
+
+        //        if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+        //        {
+        //            if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+        //            {
+        //                int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+        //                if (!ModelState.IsValid)
+        //                {
+        //                    return Ok(new OperationResponse
+        //                    {
+        //                        HasSucceeded = false,
+        //                        IsDomainValidationErrors = true,
+        //                        Message = string.Join("; ", ModelState.Values
+        //                                                  .SelectMany(x => x.Errors)
+        //                                                  .Select(x => x.ErrorMessage))
+        //                    });
+        //                }
+
+        //                OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+
+        //                DatabaseResponse customerResponse = await _orderAccess.GetCustomerIdFromOrderId(request.OrderID);
+
+        //                if (customerResponse.ResponseCode == (int)DbReturnValue.RecordExists && customerID == ((OrderCustomer)customerResponse.Results).CustomerId)
+        //                {
+        //                    // call GetAssets BSSAPI
+        //                    Core.Helpers.EmailValidationHelper _helper = new EmailValidationHelper();
+        //                    bool AllowSrubscriber = await _helper.AllowSubscribers(customerID, (int)SubscriberCheckType.OrderLevel, _iconfiguration);
+        //                    if (!AllowSrubscriber)
+        //                    {
+        //                        LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.NotAllowSubscribers));
+
+        //                        return Ok(new OperationResponse
+        //                        {
+        //                            HasSucceeded = false,
+        //                            Message = EnumExtensions.GetDescription(DbReturnValue.NotAllowSubscribers),
+        //                            IsDomainValidationErrors = false
+        //                        });
+        //                    }
+        //                    BSSAPIHelper bsshelper = new BSSAPIHelper();
+
+        //                    DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
+
+        //                    GridBSSConfi config = bsshelper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
+
+        //                    DatabaseResponse serviceCAF = await _orderAccess.GetBSSServiceCategoryAndFee(ServiceTypes.Free.ToString());
+
+        //                    DatabaseResponse requestIdRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.GetAssets.ToString(), customerID, (int)BSSCalls.NewSession, "");
+
+        //                    ResponseObject res = new ResponseObject();
+
+
+        //                    try
+        //                    {
+        //                        res = await bsshelper.GetAssetInventory(config, (((List<ServiceFees>)serviceCAF.Results)).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdRes.Results);
+        //                    }
+
+        //                    catch (Exception ex)
+        //                    {
+        //                        LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+
+        //                        return Ok(new OperationResponse
+        //                        {
+        //                            HasSucceeded = false,
+        //                            Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed) + ". " + EnumExtensions.GetDescription(CommonErrors.OrderRolledBack),
+        //                            IsDomainValidationErrors = false
+        //                        });
+
+        //                    }
+
+
+        //                    string AssetToSubscribe = bsshelper.GetAssetId(res);
+
+        //                    if (res != null)
+        //                    {
+        //                        BSSNumbers numbers = new BSSNumbers();
+
+        //                        numbers.FreeNumbers = bsshelper.GetFreeNumbers(res);
+
+        //                        //insert this AssetToSubscribe into database
+
+        //                        string json = bsshelper.GetJsonString(numbers.FreeNumbers); // json insert
+
+        //                        DatabaseResponse updateBssCallFeeNumbers = await _orderAccess.UpdateBSSCallNumbers(json, ((BSSAssetRequest)requestIdRes.Results).userid, ((BSSAssetRequest)requestIdRes.Results).BSSCallLogID);
+        //                    }
+
+        //                    if (res != null && (int.Parse(res.Response.asset_details.total_record_count) > 0))
+        //                    {
+        //                        //Block number                                   
+
+        //                        DatabaseResponse requestIdToUpdateRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.ExistingSession, AssetToSubscribe);
+
+        //                        BSSUpdateResponseObject bssUpdateResponse = new BSSUpdateResponseObject();
+
+        //                        try
+        //                        {
+        //                            bssUpdateResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateRes.Results, AssetToSubscribe, false);
+        //                        }
+
+        //                        catch (Exception ex)
+        //                        {
+        //                            LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+
+        //                            return Ok(new OperationResponse
+        //                            {
+        //                                HasSucceeded = false,
+        //                                Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed) + ". " + EnumExtensions.GetDescription(CommonErrors.OrderRolledBack),
+        //                                IsDomainValidationErrors = false
+        //                            });
+
+        //                        }
+
+
+        //                        if (bsshelper.GetResponseCode(bssUpdateResponse) == "0")
+        //                        {
+        //                            // create subscription
+        //                            CreateSubscriber subscriberToCreate = new CreateSubscriber { BundleID = request.BundleID, OrderID = request.OrderID, MobileNumber = AssetToSubscribe, PromotionCode = "" };
+
+        //                            DatabaseResponse createSubscriberResponse = await _orderAccess.CreateSubscriber(subscriberToCreate, ((BSSAssetRequest)requestIdToUpdateRes.Results).userid);
+
+        //                            if (createSubscriberResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
+        //                            {
+        //                                // Get Order Basic Details
+
+        //                                DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails(request.OrderID);
+
+        //                                return Ok(new OperationResponse
+        //                                {
+        //                                    HasSucceeded = true,
+        //                                    Message = EnumExtensions.GetDescription(DbReturnValue.CreateSuccess),
+        //                                    IsDomainValidationErrors = false,
+        //                                    ReturnedObject = orderDetailsResponse.Results
+        //                                });
+
+        //                            }
+
+        //                            else
+        //                            {
+        //                                // Create subscriber failed
+        //                                LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.CreateSubscriptionFailed));
+
+        //                                return Ok(new OperationResponse
+        //                                {
+        //                                    HasSucceeded = true,
+        //                                    Message = EnumExtensions.GetDescription(DbReturnValue.CreationFailed),
+        //                                    IsDomainValidationErrors = false
+
+        //                                });
+        //                            }
+
+
+        //                        }
+        //                        else
+        //                        {
+        //                            //blocking failed
+
+        //                            LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.UpdateAssetBlockingFailed));
+        //                            return Ok(new OperationResponse
+        //                            {
+        //                                HasSucceeded = false,
+        //                                Message = EnumExtensions.GetDescription(DbReturnValue.BlockingFailed),
+        //                                IsDomainValidationErrors = false
+        //                            });
+        //                        }
+
+        //                    }
+        //                    else
+        //                    {
+        //                        // no assets returned
+
+        //                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.GetAssetFailed));
+
+        //                        return Ok(new OperationResponse
+        //                        {
+        //                            HasSucceeded = false,
+        //                            Message = EnumExtensions.GetDescription(DbReturnValue.GetAssetsFailed),
+        //                            IsDomainValidationErrors = false
+        //                        });
+
+        //                    }
+
+        //                }
+        //                else
+        //                {
+        //                    // failed to locate customer
+        //                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.TokenNotMatching));
+        //                    return Ok(new OperationResponse
+        //                    {
+        //                        HasSucceeded = false,
+        //                        Message = EnumExtensions.GetDescription(CommonErrors.TokenNotMatching),
+        //                        IsDomainValidationErrors = false
+        //                    });
+        //                }
+        //            }
+
+        //            else
+        //            {
+        //                //Token expired
+
+        //                LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+        //                return Ok(new OperationResponse
+        //                {
+        //                    HasSucceeded = false,
+        //                    Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+        //                    IsDomainValidationErrors = true
+        //                });
+
+        //            }
+
+        //        }
+
+        //        else
+        //        {
+        //            // token auth failure
+        //            LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+        //            return Ok(new OperationResponse
+        //            {
+        //                HasSucceeded = false,
+        //                Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+        //                IsDomainValidationErrors = false
+        //            });
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)  +". token:" + token);
+
+        //        return Ok(new OperationResponse
+        //        {
+        //            HasSucceeded = false,
+        //            Message = StatusMessages.ServerError,
+        //            IsDomainValidationErrors = false
+        //        });
+
+        //    }
+        //}
+
         [HttpPost]
         [Route("CreateSubscriber")]
         public async Task<IActionResult> CreateSubscriber([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] AdditionalSubscriberRequest request)
@@ -1679,51 +1934,328 @@ namespace OrderService.Controllers
 
                             ResponseObject res = new ResponseObject();
 
-                            try
+                            // version 2 to handle buddy
+
+                            DatabaseResponse buddyCheckResponse = new DatabaseResponse();
+
+                            buddyCheckResponse = await _orderAccess.IsBuddyBundle(request.BundleID);
+
+                            if (buddyCheckResponse.ResponseCode == (int)DbReturnValue.RecordExists && ((IsBuddyBundle)buddyCheckResponse.Results).HasBuddyPromotion == 1)
                             {
-                                res = await bsshelper.GetAssetInventory(config, (((List<ServiceFees>)serviceCAF.Results)).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdRes.Results);
-                            }
+                                // buddy bundle- get 2 numbers and process buddy - v2
+                               
+                                ResponseObject res1 = new ResponseObject();
 
-                            catch (Exception ex)
-                            {
-                                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
-
-                                return Ok(new OperationResponse
-                                {
-                                    HasSucceeded = false,
-                                    Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed) + ". " + EnumExtensions.GetDescription(CommonErrors.OrderRolledBack),
-                                    IsDomainValidationErrors = false
-                                });
-
-                            }
-
-
-                            string AssetToSubscribe = bsshelper.GetAssetId(res);
-
-                            if (res != null)
-                            {
-                                BSSNumbers numbers = new BSSNumbers();
-
-                                numbers.FreeNumbers = bsshelper.GetFreeNumbers(res);
-
-                                //insert this AssetToSubscribe into database
-
-                                string json = bsshelper.GetJsonString(numbers.FreeNumbers); // json insert
-
-                                DatabaseResponse updateBssCallFeeNumbers = await _orderAccess.UpdateBSSCallNumbers(json, ((BSSAssetRequest)requestIdRes.Results).userid, ((BSSAssetRequest)requestIdRes.Results).BSSCallLogID);
-                            }
-
-                            if (res != null && (int.Parse(res.Response.asset_details.total_record_count) > 0))
-                            {
-                                //Block number                                   
-
-                                DatabaseResponse requestIdToUpdateRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.ExistingSession, AssetToSubscribe);
-
-                                BSSUpdateResponseObject bssUpdateResponse = new BSSUpdateResponseObject();
+                                DatabaseResponse requestIdResforBuddy = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.GetAssets.ToString(), customerID, (int)BSSCalls.NewSession, "");
 
                                 try
                                 {
-                                    bssUpdateResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateRes.Results, AssetToSubscribe, false);
+                                    res = await bsshelper.GetAssetInventory(config, (((List<ServiceFees>)serviceCAF.Results)).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdRes.Results);
+                                }
+
+                                catch (Exception ex)
+                                {
+                                    LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+                                      
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = false,
+                                        Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed),
+                                        IsDomainValidationErrors = false
+                                    });
+                                }
+
+                                try
+                                {
+                                    res1 = await bsshelper.GetAssetInventory(config, (((List<ServiceFees>)serviceCAF.Results)).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdResforBuddy.Results);
+                                }
+
+                                catch (Exception ex)
+                                {
+                                    LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = false,
+                                        Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed),
+                                        IsDomainValidationErrors = false
+                                    });
+                                }
+
+                                if ((res != null && res.Response != null && res.Response.asset_details != null && (int.Parse(res.Response.asset_details.total_record_count) > 0)) && (res1 != null && res1.Response != null && res1.Response.asset_details != null && (int.Parse(res1.Response.asset_details.total_record_count) > 0)))
+                                {
+                                    //insert these number into database
+
+                                    BSSNumbers numbers = new BSSNumbers();
+
+                                    numbers.FreeNumbers = bsshelper.GetFreeNumbers(res);
+
+                                    string mainLine = numbers.FreeNumbers[0].MobileNumber;
+
+                                    string json = bsshelper.GetJsonString(numbers.FreeNumbers); // json insert
+
+                                    DatabaseResponse updateBssCallFreeNumbers = await _orderAccess.UpdateBSSCallNumbers(json, ((BSSAssetRequest)requestIdRes.Results).userid, ((BSSAssetRequest)requestIdRes.Results).BSSCallLogID);
+
+                                    numbers.FreeNumbers = bsshelper.GetFreeNumbers(res1);
+
+                                    string buddyLine = numbers.FreeNumbers[0].MobileNumber;
+
+                                    json = bsshelper.GetJsonString(numbers.FreeNumbers); // json insert
+
+                                    updateBssCallFreeNumbers = await _orderAccess.UpdateBSSCallNumbers(json, ((BSSAssetRequest)requestIdResforBuddy.Results).userid, ((BSSAssetRequest)requestIdResforBuddy.Results).BSSCallLogID);
+                                    
+                                    DatabaseResponse requestIdToUpdateMainLineRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.ExistingSession, mainLine);
+
+                                    BSSUpdateResponseObject bssUpdateResponse = new BSSUpdateResponseObject();
+
+                                    DatabaseResponse requestIdToUpdateBuddyLineRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.ExistingSession, buddyLine);
+
+                                    BSSUpdateResponseObject bssUpdateBuddyResponse = new BSSUpdateResponseObject();
+
+                                    // block main line and buddy line
+
+                                    try
+                                    {
+                                        // mainline blocking
+                                        bssUpdateResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateMainLineRes.Results, mainLine, false);
+                                    }
+
+                                    catch (Exception ex)
+                                    {
+                                        LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = false,
+                                            Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed),
+                                            IsDomainValidationErrors = false
+                                        });
+                                    }
+
+                                    try
+                                    {
+                                        // buddy blocking
+                                        bssUpdateBuddyResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateBuddyLineRes.Results, buddyLine, false);
+                                    }
+
+                                    catch (Exception ex)
+                                    {
+                                        LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+
+                                        requestIdToUpdateMainLineRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.ExistingSession, mainLine);
+
+                                        try
+                                        {
+                                            // Unblock main line
+                                            bssUpdateBuddyResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateMainLineRes.Results, mainLine, true);
+                                        }
+
+                                        catch (Exception exi)
+                                        {
+                                            LogInfo.Error(new ExceptionHelper().GetLogString(exi, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+                                        }                                       
+
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = false,
+                                            Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed) + ". " + EnumExtensions.GetDescription(CommonErrors.OrderRolledBack),
+                                            IsDomainValidationErrors = false
+                                        });
+                                    }
+
+                                    // blocked both main and buddy lines - create subscribers 
+                                    if (bsshelper.GetResponseCode(bssUpdateResponse) == "0" && bsshelper.GetResponseCode(bssUpdateBuddyResponse) == "0")
+                                    {
+                                        // create subscription
+                                        CreateSubscriber subscriberToCreate = new CreateSubscriber { BundleID = request.BundleID, OrderID = request.OrderID, MobileNumber = mainLine, PromotionCode = "" };
+
+                                        DatabaseResponse createSubscriberResponse = await _orderAccess.CreateSubscriber(subscriberToCreate, ((BSSAssetRequest)requestIdToUpdateMainLineRes.Results).userid);
+
+                                        if (createSubscriberResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
+                                        {
+                                            //CreateBuddySubscriber-Order_CreateBuddySubscriber                                                       
+
+                                            CreateBuddySubscriber buddySubscriberToCreate = new CreateBuddySubscriber { OrderID = request.OrderID, MobileNumber = buddyLine, MainLineMobileNumber = mainLine, UserId = ((BSSAssetRequest)requestIdToUpdateBuddyLineRes.Results).userid };
+
+                                            DatabaseResponse createBuddySubscriberResponse = await _orderAccess.CreateBuddySubscriber(buddySubscriberToCreate);
+
+                                            if (createBuddySubscriberResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
+                                            {
+                                                DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails_V2(request.OrderID);
+
+                                                return Ok(new OperationResponse
+                                                {
+                                                    HasSucceeded = true,
+                                                    Message = EnumExtensions.GetDescription(DbReturnValue.CreateSuccess),
+                                                    IsDomainValidationErrors = false,
+                                                    ReturnedObject = orderDetailsResponse.Results
+
+                                                });
+                                            }
+                                            else if (createBuddySubscriberResponse.ResponseCode == (int)DbReturnValue.NotBuddyBundle)
+                                            {
+                                                try
+                                                {
+                                                    requestIdToUpdateBuddyLineRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.ExistingSession, buddyLine);
+
+                                                    //un reachable condition, but for safety
+                                                    bssUpdateBuddyResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateBuddyLineRes.Results, buddyLine, true);
+                                                }
+                                                catch (Exception exi)
+                                                {
+                                                    LogInfo.Error(new ExceptionHelper().GetLogString(exi, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+                                                }
+                                                DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails_V2(request.OrderID);
+
+                                                return Ok(new OperationResponse
+                                                {
+                                                    HasSucceeded = true,
+                                                    Message = EnumExtensions.GetDescription(DbReturnValue.CreateSuccess),
+                                                    IsDomainValidationErrors = false,
+                                                    ReturnedObject = orderDetailsResponse.Results
+
+                                                });
+                                            }
+                                            else
+                                            {
+                                                // buddy subscriber creation failed - need to unblock both buddy and main line and rollback order
+
+                                                try
+                                                {
+                                                    requestIdToUpdateBuddyLineRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.ExistingSession, buddyLine);
+
+                                                    bssUpdateBuddyResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateBuddyLineRes.Results, buddyLine, true);
+                                                }
+                                                catch (Exception exi)
+                                                {
+                                                    LogInfo.Error(new ExceptionHelper().GetLogString(exi, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+                                                }
+
+                                                try
+                                                {
+                                                    requestIdToUpdateMainLineRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.ExistingSession, mainLine);
+                                                    // Unblock main line
+                                                    bssUpdateBuddyResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateMainLineRes.Results, mainLine, true);
+                                                }
+
+                                                catch (Exception exi)
+                                                {
+                                                    LogInfo.Error(new ExceptionHelper().GetLogString(exi, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+                                                }                                               
+
+                                                return Ok(new OperationResponse
+                                                {
+                                                    HasSucceeded = false,
+                                                    Message = EnumExtensions.GetDescription(CommonErrors.BuddySubscriberCreationFailed),
+                                                    IsDomainValidationErrors = false
+
+                                                });
+                                            }
+
+                                        }
+
+                                        else
+                                        {
+                                            // create subscription failed
+                                            //unblock both lines and rollback order
+                                            DatabaseResponse rollbackResponse = new DatabaseResponse();
+                                            LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.CreateSubscriptionFailed) + "\n");
+
+                                            try
+                                            {
+                                                requestIdToUpdateBuddyLineRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.ExistingSession, buddyLine);
+
+                                                bssUpdateBuddyResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateBuddyLineRes.Results, buddyLine, true);
+                                            }
+                                            catch (Exception exi)
+                                            {
+                                                LogInfo.Error(new ExceptionHelper().GetLogString(exi, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+                                            }
+
+                                            try
+                                            {
+                                                requestIdToUpdateMainLineRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.ExistingSession, mainLine);
+                                                // Unblock main line
+                                                bssUpdateBuddyResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateMainLineRes.Results, mainLine, true);
+                                            }
+
+                                            catch (Exception exi)
+                                            {
+                                                LogInfo.Error(new ExceptionHelper().GetLogString(exi, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+                                            }
+                                            return Ok(new OperationResponse
+                                            {
+                                                HasSucceeded = false,
+                                                Message = EnumExtensions.GetDescription(CommonErrors.CreateSubscriptionFailed),
+                                                IsDomainValidationErrors = false
+                                            });
+                                        }
+                                    }
+                                    else
+                                    {
+                                        //one or both blocking failed
+                                        //bsshelper.GetResponseCode(bssUpdateResponse) == "0" && bsshelper.GetResponseCode(bssUpdateBuddyResponse
+
+                                        if (bsshelper.GetResponseCode(bssUpdateResponse) == "0")
+                                        {
+                                            try
+                                            {
+                                                // Unblock main line if blocked
+                                                requestIdToUpdateMainLineRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.ExistingSession, mainLine);
+
+                                                bssUpdateBuddyResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateMainLineRes.Results, mainLine, true);
+                                            }
+
+                                            catch (Exception exi)
+                                            {
+                                                LogInfo.Error(new ExceptionHelper().GetLogString(exi, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+                                            }
+                                        }
+
+                                        if (bsshelper.GetResponseCode(bssUpdateBuddyResponse) == "0")
+                                        {
+                                            try
+                                            {
+                                                // Unblock buddy line if blocked
+                                                requestIdToUpdateBuddyLineRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.ExistingSession, buddyLine);
+
+                                                bssUpdateBuddyResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateBuddyLineRes.Results, buddyLine, true);
+                                            }
+
+                                            catch (Exception exi)
+                                            {
+                                                LogInfo.Error(new ExceptionHelper().GetLogString(exi, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+                                            }
+                                        }
+                                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.UpdateAssetBlockingFailed) + "\n");
+
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = false,
+                                            Message = EnumExtensions.GetDescription(DbReturnValue.BlockingFailed),
+                                            IsDomainValidationErrors = false
+                                        });
+                                    }
+                                }
+
+                                else
+                                {
+                                    // no assets returned                                   
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = false,
+                                        Message = EnumExtensions.GetDescription(CommonErrors.GetAssetFailed),
+                                        IsDomainValidationErrors = false
+                                    });
+
+                                }
+                            }
+                            else
+                            {
+                               // if not buddy bundle
+                                try
+                                {
+                                    res = await bsshelper.GetAssetInventory(config, (((List<ServiceFees>)serviceCAF.Results)).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdRes.Results);
                                 }
 
                                 catch (Exception ex)
@@ -1738,76 +2270,115 @@ namespace OrderService.Controllers
                                     });
 
                                 }
+                                string AssetToSubscribe = bsshelper.GetAssetId(res);
 
-
-                                if (bsshelper.GetResponseCode(bssUpdateResponse) == "0")
+                                if (res != null)
                                 {
-                                    // create subscription
-                                    CreateSubscriber subscriberToCreate = new CreateSubscriber { BundleID = request.BundleID, OrderID = request.OrderID, MobileNumber = AssetToSubscribe, PromotionCode = "" };
+                                    BSSNumbers numbers = new BSSNumbers();
 
-                                    DatabaseResponse createSubscriberResponse = await _orderAccess.CreateSubscriber(subscriberToCreate, ((BSSAssetRequest)requestIdToUpdateRes.Results).userid);
+                                    numbers.FreeNumbers = bsshelper.GetFreeNumbers(res);
 
-                                    if (createSubscriberResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
+                                    //insert this AssetToSubscribe into database
+
+                                    string json = bsshelper.GetJsonString(numbers.FreeNumbers); // json insert
+
+                                    DatabaseResponse updateBssCallFeeNumbers = await _orderAccess.UpdateBSSCallNumbers(json, ((BSSAssetRequest)requestIdRes.Results).userid, ((BSSAssetRequest)requestIdRes.Results).BSSCallLogID);
+                                }
+
+                                if (res != null && (int.Parse(res.Response.asset_details.total_record_count) > 0))
+                                {
+                                    //Block number                                   
+
+                                    DatabaseResponse requestIdToUpdateRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.ExistingSession, AssetToSubscribe);
+
+                                    BSSUpdateResponseObject bssUpdateResponse = new BSSUpdateResponseObject();
+
+                                    try
                                     {
-                                        // Get Order Basic Details
+                                        bssUpdateResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateRes.Results, AssetToSubscribe, false);
+                                    }
 
-                                        DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails(request.OrderID);
+                                    catch (Exception ex)
+                                    {
+                                        LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
 
                                         return Ok(new OperationResponse
                                         {
-                                            HasSucceeded = true,
-                                            Message = EnumExtensions.GetDescription(DbReturnValue.CreateSuccess),
-                                            IsDomainValidationErrors = false,
-                                            ReturnedObject = orderDetailsResponse.Results
+                                            HasSucceeded = false,
+                                            Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed) + ". " + EnumExtensions.GetDescription(CommonErrors.OrderRolledBack),
+                                            IsDomainValidationErrors = false
                                         });
 
                                     }
 
+                                    if (bsshelper.GetResponseCode(bssUpdateResponse) == "0")
+                                    {
+                                        // create subscription
+                                        CreateSubscriber subscriberToCreate = new CreateSubscriber { BundleID = request.BundleID, OrderID = request.OrderID, MobileNumber = AssetToSubscribe, PromotionCode = "" };
+
+                                        DatabaseResponse createSubscriberResponse = await _orderAccess.CreateSubscriber(subscriberToCreate, ((BSSAssetRequest)requestIdToUpdateRes.Results).userid);
+
+                                        if (createSubscriberResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
+                                        {
+                                            // Get Order Basic Details
+
+                                            DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails_V2(request.OrderID);
+
+                                            return Ok(new OperationResponse
+                                            {
+                                                HasSucceeded = true,
+                                                Message = EnumExtensions.GetDescription(DbReturnValue.CreateSuccess),
+                                                IsDomainValidationErrors = false,
+                                                ReturnedObject = orderDetailsResponse.Results
+                                            });
+
+                                        }
+
+                                        else
+                                        {
+                                            // Create subscriber failed
+                                            LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.CreateSubscriptionFailed));
+
+                                            return Ok(new OperationResponse
+                                            {
+                                                HasSucceeded = true,
+                                                Message = EnumExtensions.GetDescription(DbReturnValue.CreationFailed),
+                                                IsDomainValidationErrors = false
+
+                                            });
+                                        }
+
+
+                                    }
                                     else
                                     {
-                                        // Create subscriber failed
-                                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.CreateSubscriptionFailed));
+                                        //blocking failed
 
+                                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.UpdateAssetBlockingFailed));
                                         return Ok(new OperationResponse
                                         {
-                                            HasSucceeded = true,
-                                            Message = EnumExtensions.GetDescription(DbReturnValue.CreationFailed),
+                                            HasSucceeded = false,
+                                            Message = EnumExtensions.GetDescription(DbReturnValue.BlockingFailed),
                                             IsDomainValidationErrors = false
-
                                         });
                                     }
-
 
                                 }
                                 else
                                 {
-                                    //blocking failed
+                                    // no assets returned
 
-                                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.UpdateAssetBlockingFailed));
+                                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.GetAssetFailed));
+
                                     return Ok(new OperationResponse
                                     {
                                         HasSucceeded = false,
-                                        Message = EnumExtensions.GetDescription(DbReturnValue.BlockingFailed),
+                                        Message = EnumExtensions.GetDescription(DbReturnValue.GetAssetsFailed),
                                         IsDomainValidationErrors = false
                                     });
+
                                 }
-
                             }
-                            else
-                            {
-                                // no assets returned
-
-                                LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.GetAssetFailed));
-
-                                return Ok(new OperationResponse
-                                {
-                                    HasSucceeded = false,
-                                    Message = EnumExtensions.GetDescription(DbReturnValue.GetAssetsFailed),
-                                    IsDomainValidationErrors = false
-                                });
-
-                            }
-
                         }
                         else
                         {
@@ -1854,7 +2425,7 @@ namespace OrderService.Controllers
             }
             catch (Exception ex)
             {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)  +". token:" + token);
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + ". token:" + token);
 
                 return Ok(new OperationResponse
                 {
@@ -1865,7 +2436,6 @@ namespace OrderService.Controllers
 
             }
         }
-
         /// <summary>
         /// This will returns a set of available delivery slots
         /// </summary>
@@ -3763,7 +4333,7 @@ namespace OrderService.Controllers
                                         if (bsshelper.GetResponseCode(bssUpdateResponse) == "0")
                                         {
                                             // Get Order Basic Details
-                                            DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails(request.OrderID);
+                                            DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails_V2(request.OrderID);
 
                                             return Ok(new OperationResponse
                                             {
@@ -3776,7 +4346,7 @@ namespace OrderService.Controllers
 
                                         else
                                         {
-                                            DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails(request.OrderID);
+                                            DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails_V2(request.OrderID);
 
                                             return Ok(new OperationResponse
                                             {
