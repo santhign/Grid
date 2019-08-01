@@ -6907,6 +6907,16 @@ namespace OrderService.Controllers
                                     IsDomainValidationErrors = false
                                 });
                             }
+                            //171
+                            else if (addRemoveResponse.ResponseCode == (int)DbReturnValue.VasNotInAddedList)
+                            {
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = false,
+                                    Message = EnumExtensions.GetDescription(DbReturnValue.VasNotInAddedList),
+                                    IsDomainValidationErrors = false
+                                });
+                            }
                             //102
                             else
                             {
