@@ -269,6 +269,9 @@ namespace Core.Enums
         [Description("Selected Bundle is not a buddy bundle")]
         NotBuddyBundle = 170,
 
+        [EnumMember(Value = "VasNotInAddedList")]
+        [Description("Vas not in added list")]
+        VasNotInAddedList = 171,
     }
 }
 
