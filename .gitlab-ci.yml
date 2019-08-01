@@ -15,4 +15,4 @@ build:
     script:
         - "dotnet build"
     only:
-  - development
+        - development
