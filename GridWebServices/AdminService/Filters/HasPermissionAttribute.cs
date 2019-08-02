@@ -39,19 +39,59 @@ namespace AdminService.Filters
                     filterContext.HttpContext.Request.Headers.TryGetValue("Grid-Authorization-Token", out adminToken);
                 }
 
-                //include token empty scenario
-                // include token validation scenario - expiry
-                string per = _permission;
-
-                AdminUsersDataAccess _adminAccess = new AdminUsersDataAccess(_configuration);
-
-                DatabaseResponse permissionResponse =  _adminAccess.GetAdminUserPermissionsByToken(adminToken);
-
-                if (permissionResponse != null && permissionResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                if(string.IsNullOrEmpty(adminToken))
                 {
-                    List<string> permissions = (List<string>)permissionResponse.Results;
+                    filterContext.Result = new StatusCodeResult(401);
 
-                    if (!permissions.Contains(_permission))
+                    filterContext.Result = new RedirectToRouteResult(
+                    new RouteValueDictionary {{ "Controller", "Redirect" },
+                                      { "Action", "TokenEmpty" } });
+                }
+                else
+                {
+                    // include token validation scenario - expiry
+                    string per = _permission;
+
+                    AdminUsersDataAccess _adminAccess = new AdminUsersDataAccess(_configuration);
+
+                    DatabaseResponse tokenAuthResponse =   _adminAccess.AuthenticateAdminUserTokenPermission(adminToken);
+
+                    if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                    {
+                        if (((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                        {
+                            filterContext.Result = new StatusCodeResult(401);
+
+                            filterContext.Result = new RedirectToRouteResult(
+                            new RouteValueDictionary {{ "Controller", "Redirect" },
+                                      { "Action", "TokenExpired" } });
+                        }
+                    }
+                    else
+                    {
+                        filterContext.Result = new StatusCodeResult(401);
+
+                        filterContext.Result = new RedirectToRouteResult(
+                        new RouteValueDictionary {{ "Controller", "Redirect" },
+                                      { "Action", "InvalidToken" } });
+                    }
+
+                    DatabaseResponse permissionResponse = _adminAccess.GetAdminUserPermissionsByToken(adminToken);
+
+                    if (permissionResponse != null && permissionResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                    {
+                        List<string> permissions = (List<string>)permissionResponse.Results;
+
+                        if (!permissions.Contains(_permission))
+                        {
+                            filterContext.Result = new StatusCodeResult(403);
+
+                            filterContext.Result = new RedirectToRouteResult(
+                            new RouteValueDictionary {{ "Controller", "Redirect" },
+                                      { "Action", "Forbidden" } });
+                        }
+                    }
+                    else if (permissionResponse.ResponseCode == (int)DbReturnValue.NotExists)
                     {
                         filterContext.Result = new StatusCodeResult(403);
 
@@ -59,8 +99,8 @@ namespace AdminService.Filters
                         new RouteValueDictionary {{ "Controller", "Redirect" },
                                       { "Action", "Forbidden" } });
                     }
-                } 
-                // include permissions list null scenario
+                }              
+              
             }
             catch(Exception ex)
             {

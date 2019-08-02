@@ -2614,7 +2614,7 @@ namespace OrderService.Controllers
                                 DOB = request.DOB,
                                 Gender = request.Gender,
                                 NameInNRIC = request.NameInNRIC,
-                                DisplayName = request.DisplayName
+                                DisplayName = string.IsNullOrEmpty(request.DisplayName)?null: request.DisplayName
 
                             };
 
@@ -3996,6 +3996,11 @@ namespace OrderService.Controllers
 
                                         if (removeLineResponse.ResponseCode == (int)DbReturnValue.DeleteSuccess)
                                         {
+                                            // check buddy to remove here
+
+                                            BuddyHelper buddyHelper = new BuddyHelper(_iconfiguration,_messageQueueDataAccess);
+
+                                            int isRemved = await buddyHelper.RemoveBuddyHandler(request.OrderID, customerID);
 
                                             return Ok(new OperationResponse
                                             {
@@ -4073,6 +4078,10 @@ namespace OrderService.Controllers
 
                                     if (removeLineResponse.ResponseCode == (int)DbReturnValue.DeleteSuccess)
                                     {
+                                        BuddyHelper buddyHelper = new BuddyHelper(_iconfiguration, _messageQueueDataAccess);
+
+                                        int isRemved = await buddyHelper.RemoveBuddyHandler(request.OrderID, customerID);
+
                                         return Ok(new OperationResponse
                                         {
                                             HasSucceeded = true,
@@ -4127,7 +4136,6 @@ namespace OrderService.Controllers
                                             IsDomainValidationErrors = false
                                         });
                                     }
-
                                 }
                             }
 
