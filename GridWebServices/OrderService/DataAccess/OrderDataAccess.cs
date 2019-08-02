@@ -1146,7 +1146,7 @@ namespace OrderService.DataAccess
                 parameters[4].Value = personalDetails.DOB;
                 parameters[5].Value = personalDetails.ContactNumber;
 
-                _DataHelper = new DataAccessHelper("Orders_UpdateOrderBasicDetails", parameters, _configuration);
+                _DataHelper = new DataAccessHelper("Orders_UpdateOrderBasicDetails_v2", parameters, _configuration);
 
                 int result = await _DataHelper.RunAsync();    // 101 / 109 
 
@@ -1715,7 +1715,7 @@ namespace OrderService.DataAccess
                 parameters[17].Value = transactionModel.CustomerIP;
                 parameters[18].Value = 0; // revice
 
-                _DataHelper = new DataAccessHelper("Orders_ProcessPayment", parameters, _configuration);
+                _DataHelper = new DataAccessHelper("Orders_ProcessPayment_v2", parameters, _configuration);
 
                 DataTable dt = new DataTable();
 
@@ -1756,7 +1756,7 @@ namespace OrderService.DataAccess
                 parameters[0].Value = removeRequest.OrderID;
                 parameters[1].Value = removeRequest.MobileNumber;
 
-                _DataHelper = new DataAccessHelper("Orders_RemoveAdditionalSubscriber", parameters, _configuration);
+                _DataHelper = new DataAccessHelper("Orders_RemoveAdditionalSubscriber_v2", parameters, _configuration);
 
                 DataTable dt = new DataTable();
 

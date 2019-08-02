@@ -133,7 +133,9 @@ namespace AdminService.Controllers
                         {
                              new Claim(ClaimTypes.Name, adminuser.AdminUserID.ToString())
                         }),
+
                         Expires = DateTime.Now.AddDays(expiryDay), //  need to check with business needs
+
                         SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
                     };
 
@@ -313,7 +315,7 @@ namespace AdminService.Controllers
         // GET: api/GetAdminUser/1
         [HttpGet]
         [Route("{UserID}")]
-        [HasPermissionAttribute(AdminServiceUserPermissions.AdminUserList)]
+        [HasPermission(AdminServiceUserPermissions.AdminUserList)]
         public async Task<IActionResult> GetAdminUser([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int UserID)
         {
             try
@@ -423,7 +425,7 @@ namespace AdminService.Controllers
         /// 
         // GET: api/GetAdminusers
         [HttpGet]
-        [HasPermissionAttribute(AdminServiceUserPermissions.AdminUserList)]
+        [HasPermission(AdminServiceUserPermissions.AdminUserList)]
         public async Task<IActionResult> GetAdminusers([FromHeader(Name = "Grid-Authorization-Token")] string token)
         {
             try

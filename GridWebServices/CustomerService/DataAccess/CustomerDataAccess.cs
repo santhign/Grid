@@ -537,6 +537,7 @@ namespace CustomerService.DataAccess
                         subscriber = (from model in dt.AsEnumerable()
                                       select new Subscriber()
                                       {
+                                          SubscriberID = model.Field<int>("SubscriberID"),
                                           MobileNumber = model.Field<string>("MobileNumber"),
                                           DisplayName = model.Field<string>("DisplayName"),
                                           SIMID = model.Field<string>("SIMID"),
@@ -560,7 +561,9 @@ namespace CustomerService.DataAccess
                                           SuspensionAllowed = model.Field<int>("SuspensionAllowed"),
                                           UnsuspensionAllowed = model.Field<int>("UnsuspensionAllowed"),
                                           TerminationAllowed = model.Field<int>("TerminationAllowed"),
-                                          SIMReplacementAllowed = model.Field<int>("SIMReplacementAllowed")
+                                          SIMReplacementAllowed = model.Field<int>("SIMReplacementAllowed"),
+                                          IsBuddyLine = model.Field<int>("IsBuddyLine"),
+                                          GroupNumber = model.Field<int>("GroupNumber")
                                       }).ToList();
                     }
 

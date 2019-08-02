@@ -33,44 +33,13 @@ namespace OrderService.Helpers
         {
             try
             {
-                OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+                OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);             
 
-                DatabaseResponse checkBuddyResponse = await _orderAccess.CheckBuddyToRemove(orderID);
+                // call remove buddy handler here
+
+                int isRemoved = await RemoveBuddyHandler(orderID, customerID);
 
                 DatabaseResponse checkAdditionalBuddyResponse = await _orderAccess.CheckAdditionalBuddy(orderID);
-
-                if (checkBuddyResponse.ResponseCode == (int)DbReturnValue.RecordExists && checkBuddyResponse.Results != null)
-                {
-                    BuddyToRemove buddyToRemove = (BuddyToRemove)checkBuddyResponse.Results;
-
-                    if (buddyToRemove.BuddyRemovalID > 0 && buddyToRemove.IsRemoved == 0)
-                    {
-                        BSSAPIHelper bsshelper = new BSSAPIHelper();
-
-                        DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
-
-                        GridBSSConfi config = bsshelper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
-
-                        DatabaseResponse serviceCAF = await _orderAccess.GetBSSServiceCategoryAndFee(ServiceTypes.Free.ToString());
-
-                        DatabaseResponse requestIdToUpdateRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.ExistingSession, buddyToRemove.MobileNumber);
-
-                        BSSUpdateResponseObject bssUpdateResponse = new BSSUpdateResponseObject();
-
-                        try
-                        {
-                            bssUpdateResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateRes.Results, buddyToRemove.MobileNumber, true);
-
-                            DatabaseResponse updateBuddyRemoval = await _orderAccess.UpdateBuddyRemoval(buddyToRemove.BuddyRemovalID);
-                        }
-
-                        catch (Exception ex)
-                        {
-                            LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BuddyRemovalFailed) + " for Order : " + orderID);
-
-                        }
-                    }
-                }
 
                 // check additional Buddy
 
@@ -166,9 +135,67 @@ namespace OrderService.Helpers
             catch (Exception ex)
             {
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
                 return 0;
             }
         }
+
+        public async Task<int> RemoveBuddyHandler(int orderID, int customerID)
+        {
+            try
+            {
+                OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+
+                DatabaseResponse checkBuddyResponse = await _orderAccess.CheckBuddyToRemove(orderID);               
+
+                if (checkBuddyResponse.ResponseCode == (int)DbReturnValue.RecordExists && checkBuddyResponse.Results != null)
+                {
+                    BuddyToRemove buddyToRemove = (BuddyToRemove)checkBuddyResponse.Results;
+
+                    if (buddyToRemove.BuddyRemovalID > 0 && buddyToRemove.IsRemoved == 0 && buddyToRemove.IsPorted!=1)
+                    {
+                        BSSAPIHelper bsshelper = new BSSAPIHelper();
+
+                        DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
+
+                        GridBSSConfi config = bsshelper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
+
+                        DatabaseResponse serviceCAF = await _orderAccess.GetBSSServiceCategoryAndFee(ServiceTypes.Free.ToString());
+
+                        DatabaseResponse requestIdToUpdateRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.ExistingSession, buddyToRemove.MobileNumber);
+
+                        BSSUpdateResponseObject bssUpdateResponse = new BSSUpdateResponseObject();
+
+                        try
+                        {
+                            bssUpdateResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateRes.Results, buddyToRemove.MobileNumber, true);
+
+                            DatabaseResponse updateBuddyRemoval = await _orderAccess.UpdateBuddyRemoval(buddyToRemove.BuddyRemovalID);
+                        }
+
+                        catch (Exception ex)
+                        {
+                            LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BuddyRemovalFailed) + " for Order : " + orderID);
+
+                        }
+                    }
+
+                    return 1;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                return 0;
+            }
+        }
+
+
+
 
         public async Task<BuyVASStatus> ProcessVas(int customerID, string mobileNumber, int bundleID, int quantity)
         {

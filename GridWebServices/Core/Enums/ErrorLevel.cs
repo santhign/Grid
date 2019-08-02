@@ -391,7 +391,11 @@ namespace Core.Enums
 
         [EnumMember(Value = "Forbidden")]
         [Description("Forbidden access is denied")]
-        Forbidden = 403,        
+        Forbidden = 403,
+
+        [EnumMember(Value = "Unauthorized")]
+        [Description("Unauthorized")]
+        Unauthorized = 401,
 
     }
 }

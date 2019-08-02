@@ -519,6 +519,10 @@ namespace CustomerService.Models
         public int TerminationAllowed { get; set; }
         public int SIMReplacementAllowed { get; set; }
         public int ChangeNumberRaised { get; set; }
+        public int SubscriberID { get; set; }
+        public int IsBuddyLine { get; set; }
+        public int GroupNumber { get; set; }
+
     }
 
     /// <summary>

@@ -173,7 +173,7 @@ namespace AdminService.Controllers
         /// <param name="orderID">The order identifier.</param>
         /// <returns></returns>
         [HttpGet("GetOrderDetailsForNRIC/{orderID}")]
-        [HasPermissionAttribute(AdminServiceUserPermissions.OrdersList)]
+        [HasPermission(AdminServiceUserPermissions.OrdersList)]
         public async Task<IActionResult> GetOrderDetails([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int orderID)
         {
             try
@@ -347,7 +347,7 @@ namespace AdminService.Controllers
         /// <param name="request">The request.</param>
         /// <returns></returns>
         [HttpPost("UpdateNRICDetails")]
-        [HasPermissionAttribute(AdminServiceUserPermissions.IDVerification)]
+        [HasPermission(AdminServiceUserPermissions.IDVerification)]
         public async Task<IActionResult> UpdateNRICDetails([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromForm] NRICDetails request)
         {
             try
@@ -671,7 +671,7 @@ namespace AdminService.Controllers
         /// <param name="orderID">The order identifier.</param>
         /// <returns></returns>
         [HttpGet("GetOrderDetailsHistoryForNRIC/{orderID}")]
-        [HasPermissionAttribute(AdminServiceUserPermissions.IDVerification)]
+        [HasPermission(AdminServiceUserPermissions.IDVerification)]
         public async Task<IActionResult> GetOrderDetailsHistory([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int orderID)
         {
             try
