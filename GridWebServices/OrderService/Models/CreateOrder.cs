@@ -485,7 +485,7 @@ namespace OrderService.Models
         /// <value>
         /// The display name.
         /// </value>
-        [Required(ErrorMessage = "Display Name is required")]
+        //[Required(ErrorMessage = "Display Name is required")]
         public string DisplayName { get; set; }
 
         /// <summary>
