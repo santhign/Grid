@@ -65,6 +65,12 @@ namespace Core.Enums
         [EnumMember(Value = "IDReUploadNotifyEmail")]
         [Description("IDReUploadNotifyEmail")]
         IDReUploadNotifyEmail = 8,
+
+
+        [EnumMember(Value = "GridBillingAPIEndPoint")]
+        [Description("GridBillingAPIEndPoint")]
+        GridBillingAPIEndPoint = 9,
+
     }
 
     public enum OrderStatus
