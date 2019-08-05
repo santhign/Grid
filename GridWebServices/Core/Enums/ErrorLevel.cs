@@ -367,6 +367,19 @@ namespace Core.Enums
 
         [EnumMember(Value = "UnableToProcess")]
         [Description("Image is already submitted")]
-        ImageAlreadyUploaded = 87,        
+        ImageAlreadyUploaded = 87,
+
+
+        [EnumMember(Value = "GridBillingAPIConnectionFailed")]
+        [Description("GridBillingAPI Connection failed")]
+        GridBillingAPIConnectionFailed = 88,
+
+        [EnumMember(Value = "BillsFound")]
+        [Description("Billing records exist")]
+        BillsFound = 89,
+
+        [EnumMember(Value = "NoBillsFound")]
+        [Description("Currently no bills generated")]
+        NoBillsFound = 90,
     }
 }
