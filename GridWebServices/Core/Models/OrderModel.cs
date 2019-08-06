@@ -144,11 +144,11 @@ namespace Core.Models
         public string IsCurrentBill { get; set; }
 }
 
-public class BillHistory
+public class CustomerBillHistory
 {
     public string BillingAccountNumber { get; set; }
     public decimal OutstandingAmount { get; set; }
-    public List<Bill> Bill { get; set; }
+    public List<Bill> BillHistory { get; set; }
 }
    
 }

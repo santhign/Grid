@@ -30,13 +30,13 @@ namespace Core.Helpers
         }
 
 
-        public async Task<BillHistory> GetBillingHistory(string gridBillingAPIEndpoint, string billingAccountNumber)
+        public async Task<CustomerBillHistory> GetBillingHistory(string gridBillingAPIEndpoint, string billingAccountNumber)
         {
             try
             {
                 ApiClient client = new ApiClient(new Uri(gridBillingAPIEndpoint));
 
-                return await client.GetAsync<BillHistory>(new Uri(gridBillingAPIEndpoint + "history/" + billingAccountNumber));
+                return await client.GetAsync<CustomerBillHistory>(new Uri(gridBillingAPIEndpoint + "history/" + billingAccountNumber));
             }
             catch (Exception ex)
             {
