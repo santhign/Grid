@@ -690,6 +690,8 @@ namespace AdminService.DataAccess
                                           MobileNumber = model.Field<string>("MobileNumber"),
                                           DisplayName = model.Field<string>("DisplayName"),
                                           State = model.Field<string>("State"),
+                                          IsBuddyLine = model.Field<int?>("IsBuddyLine"),
+                                          GroupNumber = model.Field<int?>("GroupNumber")
                                       }).ToList();
                     }
 
