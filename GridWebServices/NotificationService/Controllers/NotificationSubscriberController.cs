@@ -203,7 +203,7 @@ namespace NotificationService.Controllers
                 else if (NotMessage.MessageType == NotificationMsgType.SMS.GetDescription())
                 {
                     OutboundSMS _SMS = new OutboundSMS();
-                    Sms smsData = new Sms();
+                    TextMessage smsData = new TextMessage();
                     ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
 
                     DatabaseResponse smsTemplate = await _configAccess.GetSMSNotificationTemplate(NotMessage.Message.messagetemplate.ToString());

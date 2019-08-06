@@ -128,7 +128,7 @@ namespace NotificationService.Controllers
         /// }
         [NonAction]
         [Route("SendSMS")]
-        public async Task<IActionResult> SendSMS([FromBody]Sms _smsdata)
+        public async Task<IActionResult> SendSMS([FromBody]TextMessage _smsdata)
         {
             try
             {

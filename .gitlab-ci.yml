@@ -1,0 +1,18 @@
+image: microsoft/dotnet:latest
+
+stages:
+    - build
+
+variables:
+    test: "Example.Test"
+
+before_script:
+    - "cd GridWebServices"
+    - "dotnet restore"
+
+build:
+    stage: build
+    script:
+        - "dotnet build"
+    only:
+        - development

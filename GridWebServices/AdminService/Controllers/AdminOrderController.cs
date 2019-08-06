@@ -501,10 +501,18 @@ namespace AdminService.Controllers
                             //Sending message start
                             // Send email to customer email                            ConfigDataAccess _configAccess = new ConfigDataAccess(_iconfiguration);
                             DatabaseResponse registrationResponse = await _adminOrderDataAccess.GetEmailNotificationTemplate(emailDetails.VerificationStatus == 2 ? NotificationEvent.ICValidationReject.GetDescription() : NotificationEvent.ICValidationChange.GetDescription());
-
+                            string[] changelog = emailDetails.ChangeLog.Split(";");
+                            string finallog = "";
+                            foreach (string log in changelog)
+                            {
+                                if (!string.IsNullOrWhiteSpace(log))
+                                {
+                                    finallog = finallog + "&bull; " + log.Trim() + "<br/>";
+                                }
+                            }
                             var notificationMessage = MessageHelper.GetMessage(emailDetails.Email, emailDetails.Name, emailDetails.VerificationStatus == 2 ? NotificationEvent.ICValidationReject.GetDescription() : NotificationEvent.ICValidationChange.GetDescription(),
                            ((EmailTemplate)registrationResponse.Results).TemplateName,
-                       _iconfiguration, string.IsNullOrWhiteSpace(finalURL) ? "-" : finalURL, string.IsNullOrWhiteSpace(emailDetails.Remark) ? "-" : emailDetails.Remark.Replace(";", "<br />"),  string.IsNullOrWhiteSpace(emailDetails.ChangeLog) ? "-" : emailDetails.ChangeLog);
+                       _iconfiguration, string.IsNullOrWhiteSpace(finalURL) ? "-" : finalURL, string.IsNullOrWhiteSpace(emailDetails.Remark) ? "-" : emailDetails.Remark.Replace(";", "<br />"),  string.IsNullOrWhiteSpace(emailDetails.ChangeLog) ? "-" : finallog);
                             var notificationResponse = await _adminOrderDataAccess.GetConfiguration(ConfiType.Notification.ToString());
 
 
