@@ -983,7 +983,6 @@ namespace AdminService.Controllers
                         }
 
                         var customerAccess = new CustomerDataAccess(_iconfiguration);
-
                         var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
                         var getSubscriber = await customerAccess.GetSubscribers(CustomerID);
                         if (getSubscriber.ResponseCode == (int)DbReturnValue.RecordExists)

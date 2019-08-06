@@ -203,6 +203,8 @@ namespace AdminService.Models
         public string MobileNumber { get; set; }
         public string DisplayName { get; set; }
         public string State { get; set; }
+        public int? IsBuddyLine { get; set; }
+        public int? GroupNumber { get; set; }       
 
     }
 }
