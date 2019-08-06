@@ -1387,7 +1387,7 @@ namespace OrderService.Controllers
 
                         DatabaseResponse accountResponse = await _orderAccess.GetCustomerBSSAccountNumber(customerID);
 
-                        BillHistory customerBillHistory= new BillHistory();
+                        CustomerBillHistory customerBillHistory = new CustomerBillHistory();
 
                         DatabaseResponse gridBillingApiResponse = ConfigHelper.GetValueByKey(ConfigKeys.GridBillingAPIEndPoint.ToString(), _iconfiguration);
 
@@ -1419,7 +1419,7 @@ namespace OrderService.Controllers
                                     {
                                         HasSucceeded = true,
                                         IsDomainValidationErrors = false,
-                                        Message = customerBillHistory.Bill!=null&& customerBillHistory.Bill.Count>0? EnumExtensions.GetDescription(CommonErrors.BillsFound): EnumExtensions.GetDescription(CommonErrors.NoBillsFound),
+                                        Message = customerBillHistory.BillHistory!=null&& customerBillHistory.BillHistory.Count>0? EnumExtensions.GetDescription(CommonErrors.BillsFound): EnumExtensions.GetDescription(CommonErrors.NoBillsFound),
                                         ReturnedObject = customerBillHistory
                                     });
                                 }
