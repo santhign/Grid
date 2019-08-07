@@ -689,7 +689,7 @@ namespace OrderService.Helpers
                 else
                 {                    
                    
-                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.MandatoryRecordEmpty) + " for Customer - " + customerID);
+                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.MandatoryFieldMissing) + " for Customer - " + customerID);
                     return new List<Recordset>();
                 }
             }

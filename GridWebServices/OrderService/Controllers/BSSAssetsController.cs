@@ -930,7 +930,7 @@ namespace OrderService.Controllers
 
                                     return Ok(new OperationResponse
                                     {
-                                        HasSucceeded = true,
+                                        HasSucceeded = false,
                                         IsDomainValidationErrors = false,
                                         Message = EnumExtensions.GetDescription(DbReturnValue.NoRecords),
 
@@ -945,9 +945,9 @@ namespace OrderService.Controllers
                                 LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.BillingAccountNumberEmpty));
                                 return Ok(new OperationResponse
                                 {
-                                    HasSucceeded = true,
+                                    HasSucceeded = false,
                                     IsDomainValidationErrors = false,
-                                    Message = EnumExtensions.GetDescription(CommonErrors.MandatoryRecordEmpty),
+                                    Message = EnumExtensions.GetDescription(CommonErrors.MandatoryFieldMissing),
 
                                 });
                             }
@@ -961,7 +961,7 @@ namespace OrderService.Controllers
                             LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.FailedToGetCustomer));
                             return Ok(new OperationResponse
                             {
-                                HasSucceeded = true,
+                                HasSucceeded = false,
                                 IsDomainValidationErrors = false,
                                 Message = EnumExtensions.GetDescription(DbReturnValue.NoRecords),
 
@@ -1123,9 +1123,9 @@ namespace OrderService.Controllers
                                 LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.BillingAccountNumberEmpty));
                                 return Ok(new OperationResponse
                                 {
-                                    HasSucceeded = true,
+                                    HasSucceeded = false,
                                     IsDomainValidationErrors = false,
-                                    Message = EnumExtensions.GetDescription(CommonErrors.MandatoryRecordEmpty),
+                                    Message = EnumExtensions.GetDescription(CommonErrors.MandatoryFieldMissing),
 
                                 });
                             }
@@ -1137,7 +1137,7 @@ namespace OrderService.Controllers
                             LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.NoRecords));
                             return Ok(new OperationResponse
                             {
-                                HasSucceeded = true,
+                                HasSucceeded = false,
                                 IsDomainValidationErrors = false,
                                 Message = EnumExtensions.GetDescription(DbReturnValue.NoRecords),
 
@@ -1283,9 +1283,9 @@ namespace OrderService.Controllers
                                 LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.BillingAccountNumberEmpty));
                                 return Ok(new OperationResponse
                                 {
-                                    HasSucceeded = true,
+                                    HasSucceeded = false,
                                     IsDomainValidationErrors = false,
-                                    Message = EnumExtensions.GetDescription(CommonErrors.MandatoryRecordEmpty),
+                                    Message = EnumExtensions.GetDescription(CommonErrors.MandatoryFieldMissing),
 
                                 });
                             }
@@ -1297,7 +1297,7 @@ namespace OrderService.Controllers
                             LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.NoRecords));
                             return Ok(new OperationResponse
                             {
-                                HasSucceeded = true,
+                                HasSucceeded = false,
                                 IsDomainValidationErrors = false,
                                 Message = EnumExtensions.GetDescription(DbReturnValue.NoRecords),
 
@@ -1443,9 +1443,9 @@ namespace OrderService.Controllers
                                 LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.BillingAccountNumberEmpty));
                                 return Ok(new OperationResponse
                                 {
-                                    HasSucceeded = true,
+                                    HasSucceeded = false,
                                     IsDomainValidationErrors = false,
-                                    Message = EnumExtensions.GetDescription(CommonErrors.MandatoryRecordEmpty),
+                                    Message = EnumExtensions.GetDescription(CommonErrors.MandatoryFieldMissing),
 
                                 });
                             }
@@ -1457,7 +1457,7 @@ namespace OrderService.Controllers
                             LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.NoRecords));
                             return Ok(new OperationResponse
                             {
-                                HasSucceeded = true,
+                                HasSucceeded = false,
                                 IsDomainValidationErrors = false,
                                 Message = EnumExtensions.GetDescription(DbReturnValue.NoRecords),
 

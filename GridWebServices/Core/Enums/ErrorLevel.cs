@@ -121,9 +121,9 @@ namespace Core.Enums
         [Description("Successfully Assigned New Number")]
         AssignNuewNumberSuccess = 25,
 
-        [EnumMember(Value = "Mandatory Record Empty")]
-        [Description("Mandatory RecordEmpty")]
-        MandatoryRecordEmpty = 26,
+        [EnumMember(Value = "MandatoryFieldMissing")]
+        [Description("Mandatory field missing")]
+        MandatoryFieldMissing = 26,
 
         [EnumMember(Value = "Order Rolled Back")]
         [Description("Order Rolled Back")]
@@ -381,5 +381,18 @@ namespace Core.Enums
         [EnumMember(Value = "NoBillsFound")]
         [Description("Currently no bills generated")]
         NoBillsFound = 90,
+
+        [EnumMember(Value = "AmountNotMatching")]
+        [Description("Bill amount not matching")]
+        AmountNotMatching = 91,
+
+        [EnumMember(Value = "FailedToMatchOutstanding")]
+        [Description("Failed to compare outstanding amount, try again later")]
+        FailedToMatchOutstanding = 92,
+
+        [EnumMember(Value = "ZeroAmount")]
+        [Description("Outstanding amount should be greater than 0")]
+        ZeroAmount = 93,
+
     }
 }
