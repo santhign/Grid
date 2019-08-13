@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
 
 namespace OrderService.Models
 {
@@ -147,8 +148,11 @@ namespace OrderService.Models
 
     public class CreateAccountInvoiceRequest
     {
+        [Required(ErrorMessage = "InvoiceID is required")]
         public string InvoiceID { get; set; }       
-        public string InvoiceName { get; set; }       
+        public string InvoiceName { get; set; }
+
+        [Required(ErrorMessage = "FinalAmount is required")]        
         public double FinalAmount { get; set; }
     }
 

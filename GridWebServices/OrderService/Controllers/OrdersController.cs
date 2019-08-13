@@ -7025,6 +7025,7 @@ namespace OrderService.Controllers
                     if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
                     {
                         int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+
                         if (!ModelState.IsValid)
                         {
                             return Ok(new OperationResponse
@@ -7034,6 +7035,17 @@ namespace OrderService.Controllers
                                 Message = string.Join("; ", ModelState.Values
                                                           .SelectMany(x => x.Errors)
                                                           .Select(x => x.ErrorMessage))
+                            });
+                        }
+
+                        if (accountInvoiceRequest.FinalAmount<=0)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = EnumExtensions.GetDescription(CommonErrors.ZeroAmount),
+                                
                             });
                         }
 
@@ -7047,48 +7059,107 @@ namespace OrderService.Controllers
                         {
                             int AccountID = (int)accountIdResponse.Results;
 
-                            DatabaseResponse downloadLinkResponse = ConfigHelper.GetValueByKey(ConfigKeys.BSSInvoiceDownloadLink.ToString(), _iconfiguration);
+                            DatabaseResponse billingAccountResponse = await _orderAccess.GetCustomerBSSAccountNumber(customerID);
 
-                            string downloadLinkPrefix = (string)downloadLinkResponse.Results;
+                            GridAPIHelper gridAPIHelper = new GridAPIHelper();
 
-                            DatabaseResponse accountResponse = await _orderAccess.GetCustomerBSSAccountNumber(customerID);
+                            GridOutstanding gridOutstanding = new GridOutstanding();
 
-                            AccountInvoice accountInvoice = new AccountInvoice
+                            DatabaseResponse gridBillingApiResponse = ConfigHelper.GetValueByKey(ConfigKeys.GridBillingAPIEndPoint.ToString(), _iconfiguration);
+
+                            if (billingAccountResponse.ResponseCode == (int)DbReturnValue.RecordExists)
                             {
-                                AccountID = AccountID,
-                                CreatedBy = customerID,
-                                BSSBillId = accountInvoiceRequest.InvoiceID,
-                                InvoiceName = accountInvoiceRequest.InvoiceName,
-                                FinalAmount = accountInvoiceRequest.FinalAmount,
-                                InvoiceUrl = downloadLinkPrefix + accountInvoiceRequest.InvoiceID,
-                                Remarks = Misc.Account.ToString(),
-                                PaymentSourceID = AccountID, // for outstanding payment its accountID for rescheduling its deliveryIfo ID
-                                OrderStatus = 0
-
-                            };
-
-                            DatabaseResponse createAccountInvoiceResponse = await _orderAccess.CreateAccountInvoice(accountInvoice);
-
-                            if (createAccountInvoiceResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
-                            {
-                                return Ok(new OperationResponse
+                                if (!string.IsNullOrEmpty(((BSSAccount)billingAccountResponse.Results).AccountNumber))
                                 {
-                                    HasSucceeded = true,
-                                    Message = EnumExtensions.GetDescription(DbReturnValue.CreateSuccess),
-                                    IsDomainValidationErrors = false,
-                                    ReturnedObject = new InvoiceOrder { OrderID = (int)createAccountInvoiceResponse.Results }
-                                });
+                                    try
+                                    {
+                                        gridOutstanding = await gridAPIHelper.GetOutstanding((string)gridBillingApiResponse.Results, ((BSSAccount)billingAccountResponse.Results).AccountNumber);
+                                    }
+
+                                    catch (Exception ex)
+                                    {
+                                        LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.GridBillingAPIConnectionFailed));
+
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = false,
+                                            Message = EnumExtensions.GetDescription(CommonErrors.GridBillingAPIConnectionFailed),
+                                            IsDomainValidationErrors = false
+                                        });
+
+                                    }
+                                }
                             }
 
+                            if (gridOutstanding != null && gridOutstanding.BillingAccountNumber != null)
+                            {
+                                if(gridOutstanding.BillingAccountNumber == accountInvoiceRequest.InvoiceID && gridOutstanding.OutstandingAmount == accountInvoiceRequest.FinalAmount)
+                                {
+
+                                    DatabaseResponse accountResponse = await _orderAccess.GetCustomerBSSAccountNumber(customerID);
+
+                                    AccountInvoice accountInvoice = new AccountInvoice
+                                    {
+                                        AccountID = AccountID,
+                                        CreatedBy = customerID,
+                                        BSSBillId = accountInvoiceRequest.InvoiceID,
+                                        InvoiceName = accountInvoiceRequest.InvoiceName,
+                                        FinalAmount = accountInvoiceRequest.FinalAmount,
+                                        InvoiceUrl = null,
+                                        Remarks = Misc.Account.ToString(),
+                                        PaymentSourceID = AccountID, // for outstanding payment its accountID for rescheduling its deliveryIfo ID
+                                        OrderStatus = 0
+
+                                    };
+
+                                    DatabaseResponse createAccountInvoiceResponse = await _orderAccess.CreateAccountInvoice(accountInvoice);
+
+                                    if (createAccountInvoiceResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
+                                    {
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = true,
+                                            Message = EnumExtensions.GetDescription(DbReturnValue.CreateSuccess),
+                                            IsDomainValidationErrors = false,
+                                            ReturnedObject = new InvoiceOrder { OrderID = (int)createAccountInvoiceResponse.Results }
+                                        });
+                                    }
+
+                                    else
+                                    {
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = false,
+                                            Message = EnumExtensions.GetDescription(DbReturnValue.CreationFailed),
+                                            IsDomainValidationErrors = false
+                                        });
+                                    }
+                                }
+                                else
+                                {
+                                    // failed to return outstanding
+                                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.AmountNotMatching));
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = false,
+                                        IsDomainValidationErrors = false,
+                                        Message = EnumExtensions.GetDescription(CommonErrors.AmountNotMatching),
+
+                                    });
+                                }
+                            }
                             else
                             {
+                                // failed to return outstanding
+                                LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.FailedToMatchOutstanding));
                                 return Ok(new OperationResponse
                                 {
                                     HasSucceeded = false,
-                                    Message = EnumExtensions.GetDescription(DbReturnValue.CreationFailed),
-                                    IsDomainValidationErrors = false
+                                    IsDomainValidationErrors = false,
+                                    Message = EnumExtensions.GetDescription(CommonErrors.FailedToMatchOutstanding),
+
                                 });
-                            }
+                            }                            
 
                         }
                         else

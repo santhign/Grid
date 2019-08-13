@@ -255,6 +255,7 @@ namespace NotificationService.Controllers
 
         }
 
+      
         public static JsonSerializerSettings MicrosoftDateFormatSettings
         {
             get
