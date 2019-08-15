@@ -2125,10 +2125,24 @@ namespace OrderService.DataAccess
                 parameters[5].Value = personalDetails.IDBackImageUrl;
 
                 _DataHelper = new DataAccessHelper("Orders_UpdateOrderPersonalIDDetails", parameters, _configuration);
+                DataTable dt = new DataTable("dt");
+                int result = await _DataHelper.RunAsync(dt); // 101 / 109 
+                IDResponse _response = new IDResponse();  
+                if (result == 101)
+                {
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+                        _response = (from model in dt.AsEnumerable()
+                                    select new IDResponse()
+                                    {
+                                        IDNumber = model.Field<string>("IdentityCardNumber"),
+                                        IDFrontImageUrl = model.Field<string>("DocumentURL"),
+                                        IDBackImageUrl = model.Field<string>("DocumentBackURL"),
+                                    }).FirstOrDefault();
 
-                int result = await _DataHelper.RunAsync();    // 101 / 109 
-
-                return new DatabaseResponse { ResponseCode = result };
+                    }
+                }
+                return new DatabaseResponse { ResponseCode = result, Results = _response};
             }
 
             catch (Exception ex)
