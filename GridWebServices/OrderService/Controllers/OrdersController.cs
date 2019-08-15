@@ -3668,7 +3668,7 @@ namespace OrderService.Controllers
         /// <returns>OperationResponse</returns>
         [Route("updateorderpersonalIDdetails")]
         [HttpPost, DisableRequestSizeLimit]
-        public async Task<IActionResult> UpdateOrderPersonalIDDetails([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromForm] UpdateOrderPersonalIDDetailsRequest request)
+        public async Task<IActionResult> UpdateOrderPersonalIDDetails([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] UpdateOrderPersonalIDDetailsRequest request)
         {
             try
             {
