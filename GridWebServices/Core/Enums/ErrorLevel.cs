@@ -394,5 +394,36 @@ namespace Core.Enums
         [Description("Outstanding amount should be greater than 0")]
         ZeroAmount = 93,
 
+        [EnumMember(Value = "Unauthorized")]
+        [Description("Unauthorized")]
+        Unauthorized = 401,
+
+        [EnumMember(Value = "Forbidden")]
+        [Description("Forbidden access is denied")]
+        Forbidden = 403,
+
+        [EnumMember(Value = "OldOrder")]
+        [Description("Order already exists")]
+        OldOrder = 92,
+
+        [EnumMember(Value = "OrderNotExists")]
+        [Description("Order does not exists")]
+        OrderNotExists = 91,
+
+        [EnumMember(Value = "RemoveSuccess")]
+        [Description("Successfully removed")]
+        RemoveSuccess = 90,
+
+        [EnumMember(Value = "BuddySubscriberCreationFailed")]
+        [Description("Buddy subscriber creationfailed. Order rolled backed")]
+        BuddySubscriberCreationFailed = 88,
+
+        [EnumMember(Value = "BuddyRemovalFailed")]
+        [Description("Buddy removal failed")]
+        BuddyRemovalFailed = 89,
+
+        [EnumMember(Value = "Mandatory Record Empty")]
+        [Description("Mandatory RecordEmpty")]
+        MandatoryRecordEmpty = 26,
     }
 }

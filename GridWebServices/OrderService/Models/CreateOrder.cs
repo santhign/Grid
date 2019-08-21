@@ -602,6 +602,13 @@ namespace OrderService.Models
 
     }
 
+    public class IDResponse
+    {
+        public string IDNumber { get; set; }
+        public string IDFrontImageUrl { get; set; }
+        public string IDBackImageUrl { get; set; }
+    }
+
     /// <summary>
     /// 
     /// </summary>

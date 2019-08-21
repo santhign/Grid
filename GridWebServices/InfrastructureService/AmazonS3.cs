@@ -22,6 +22,66 @@ namespace InfrastructureService
         private static String bucket { get; set; }
 
 
+        public async Task<UploadResponse> UploadByteFile(string base64, string contentType, string fileName)
+        {
+            try
+            {
+                // connecting to the client
+                var client = new AmazonS3Client(accessKey, accessSecret, Amazon.RegionEndpoint.APSoutheast1);
+
+                // get the file and convert it to the byte[]
+                byte[] fileBytes = Convert.FromBase64String(base64);
+
+                // create unique file name
+                //  var fileName = Guid.NewGuid() + Path.GetExtension( file.FileName);
+
+                PutObjectResponse response = null;
+
+                using (var stream = new MemoryStream(fileBytes))
+                {
+                    var request = new PutObjectRequest
+                    {
+                        BucketName = bucket,
+                        Key = fileName,
+                        InputStream = stream,
+                        ContentType = contentType,
+                        CannedACL = S3CannedACL.BucketOwnerFullControl
+                    };
+
+                    response = await client.PutObjectAsync(request);
+                };
+
+                if (response.HttpStatusCode == System.Net.HttpStatusCode.OK)
+                {
+
+                    return new UploadResponse
+                    {
+                        HasSucceed = true,
+                        FileName = fileName
+                    };
+                }
+                else
+                {
+
+                    return new UploadResponse
+                    {
+                        HasSucceed = false,
+                        FileName = fileName
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                return new UploadResponse
+                {
+                    HasSucceed = false,
+                    Message = ex.Message
+
+                };
+
+            }
+        }
+
         public  async Task<UploadResponse> UploadFile(IFormFile file,string fileName)
         {
             try
