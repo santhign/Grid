@@ -3766,7 +3766,7 @@ namespace OrderService.Controllers
                                     }
                                     if (backImage != null)
                                     {
-                                        string fileNameBack = request.IDNumber.Substring(1, request.IDNumber.Length - 2) + "_Back_" + DateTime.Now.ToString("yyMMddhhmmss") + Path.GetExtension(frontImage.FileName); //Grid_IDNUMBER_yyyymmddhhmmss.extension
+                                        string fileNameBack = request.IDNumber.Substring(1, request.IDNumber.Length - 2) + "_Back_" + DateTime.Now.ToString("yyMMddhhmmss") + Path.GetExtension(backImage.FileName); //Grid_IDNUMBER_yyyymmddhhmmss.extension
 
                                         s3UploadResponse = await s3Helper.UploadFile(backImage, fileNameBack);
 
