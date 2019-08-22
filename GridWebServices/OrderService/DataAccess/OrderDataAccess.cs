@@ -1195,7 +1195,7 @@ namespace OrderService.DataAccess
                 parameters[6].Value = billingDetails.StreetName;
                 parameters[7].Value = billingDetails.ContactNumber;
 
-                _DataHelper = new DataAccessHelper("Orders_UpdateOrderBillingDetails", parameters, _configuration);
+                _DataHelper = new DataAccessHelper("Orders_UpdateOrderBillingDetails_v2", parameters, _configuration);
 
                 int result = await _DataHelper.RunAsync();    // 101 / 109 
 

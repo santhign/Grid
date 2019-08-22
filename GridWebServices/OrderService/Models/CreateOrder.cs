@@ -514,10 +514,6 @@ namespace OrderService.Models
         /// The contact number.
         /// </value>
        
-        [RegularExpression(@"^([0-9]{8})$", ErrorMessage = "Invalid Mobile Number")]
-        [MaxLength(8, ErrorMessage = "Maximum 8 digits allowed")]
-        [MinLength(8, ErrorMessage = "Minimum 8 digits Required")]
-        [Required(ErrorMessage = "ContactNumber is required")]
         public string ContactNumber { get; set; }
        
     }
