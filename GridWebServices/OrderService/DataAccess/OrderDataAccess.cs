@@ -4250,6 +4250,8 @@ namespace OrderService.DataAccess
                                             ScheduledDate = model.Field<DateTime?>("ScheduledDate"),
                                             ServiceFee = model.Field<double?>("ServiceFee"),
                                             RecieptNumber = model.Field<string>("RecieptNumber"),
+                                            EventSalesRepresentativeID = model.Field<int>("EventSalesRepresentativeID"),
+                                            SIMIDPrefix = model.Field<string>("SIMIDPrefix"),
                                         }).FirstOrDefault();
 
                         List<Bundle> orderBundles = new List<Bundle>();

@@ -50,7 +50,8 @@ namespace OrderService.Models
         public List<ServiceCharge> ServiceCharges { get; set; }
 
         public string RecieptNumber { get; set; }
-        
+        public int? EventSalesRepresentativeID { get; set; }
+        public string SIMIDPrefix { get; set; }
     }
 
     public class ServiceCharge
