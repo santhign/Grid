@@ -83,30 +83,59 @@ namespace OrderService.Models.Transaction
                 }
             }
 
-            //JObject jObject = JObject.Parse(response);
-            //var transactionList = jObject["transaction"];
-            //model.GatewayCode = transactionList[0]["response"]["gatewayCode"].ToObject<String>();
-            //model.ApiResult = transactionList[0]["result"].ToObject<String>();
-            //model.OrderAmount = transactionList[0]["order"]["amount"].ToObject<String>();
-            //model.OrderCurrency = transactionList[0]["order"]["currency"].ToObject<String>();
-            //model.OrderId = transactionList[0]["order"]["id"].ToObject<String>();
-            //model.OrderDescription = transactionList[0]["order"]["description"]!=null? transactionList[0]["order"]["description"].ToObject<String>():null;
-            //model.TransactionID = transactionList[0]["authorizationResponse"]["transactionIdentifier"]!=null? transactionList[0]["authorizationResponse"]["transactionIdentifier"].ToObject<String>():null;
-            //model.CardNumber = transactionList[0]["sourceOfFunds"]["provided"]["card"]["number"]!=null? transactionList[0]["sourceOfFunds"]["provided"]["card"]["number"].ToObject<String>():null;
-            //model.CardFundMethod = transactionList[0]["sourceOfFunds"]["provided"]["card"]["fundingMethod"]!=null? transactionList[0]["sourceOfFunds"]["provided"]["card"]["fundingMethod"].ToObject<String>():null;
-            //model.CardBrand = transactionList[0]["sourceOfFunds"]["provided"]["card"]["brand"]!=null? transactionList[0]["sourceOfFunds"]["provided"]["card"]["brand"].ToObject<String>():null;
-            //model.CardIssuer = transactionList[0]["sourceOfFunds"]["provided"]["card"]["scheme"]!=null?transactionList[0]["sourceOfFunds"]["provided"]["card"]["scheme"].ToObject<String>():null;
-            //model.CardHolderName = transactionList[0]["sourceOfFunds"]["provided"]["card"]["nameOnCard"]!=null? transactionList[0]["sourceOfFunds"]["provided"]["card"]["nameOnCard"].ToObject<String>():null;
-            //model.ExpiryYear = transactionList[0]["sourceOfFunds"]["provided"]["card"]["expiry"]["year"].ToObject<int>();
-            //model.ExpiryMonth = transactionList[0]["sourceOfFunds"]["provided"]["card"]["expiry"]["month"].ToObject<int>();
-            //model.Token = transactionList[0]["3DSecure"]!=null? (transactionList[0]["3DSecure"]["authenticationToken"]!=null? transactionList[0]["3DSecure"]["authenticationToken"].ToObject<String>():null):null;
-            //model.PaymentStatus = transactionList[0]["order"]["status"]!=null? transactionList[0]["order"]["status"].ToObject<String>():null;
-            //model.CustomerIP = transactionList[0]["device"] != null ? (transactionList[0]["device"]["ipAddress"] != null ? transactionList[0]["device"]["ipAddress"].ToObject<String>() : null):null ;
+           
 
             return model;
         }       
 
-       
+        public static TransactionResponseModel toPaywithTokenTransactionResponseModel(string response)
+        {
+            //JObject jObject = JObject.Parse(transResponse);
+            //var result = jObject["result"];
+            //var order = jObject["order"];
+            //var response = jObject["response"];
+            //string status = order["status"].ToString();
+            //string gatewayCode = response["gatewayCode"].ToString();
+            //var model = new TransactionResponseModel();
+            //model.ApiResult = result.ToString();
+            //model.PaymentStatus = status;
+            //model.GatewayCode = gatewayCode;  
+            //return model;
+
+            RootObject transactionReceipt = new RootObject();
+
+            TransactionResponseModel model = new TransactionResponseModel();
+
+            transactionReceipt = JsonConvert.DeserializeObject<RootObject>(response);
+
+            foreach (Transaction trans in transactionReceipt.transaction)
+            {
+                if (trans.result == "SUCCESS" && trans.transaction.type == "PAYMENT" && trans.order.status == MPGSAPIResponse.CAPTURED.ToString() && trans.response.gatewayCode == "APPROVED")
+                {
+                    model.GatewayCode = trans.response.gatewayCode;
+                    model.ApiResult = trans.result;
+                    model.OrderAmount = trans.order.amount.ToString();
+                    model.OrderCurrency = trans.order.currency;
+                    model.OrderId = trans.order.id;
+                    model.OrderDescription = trans.order.description;
+                    model.TransactionID = trans.authorizationResponse.transactionIdentifier != null ? trans.authorizationResponse.transactionIdentifier : null;
+                    model.CardNumber = trans.sourceOfFunds.provided.card.number != null ? trans.sourceOfFunds.provided.card.number : null;
+                    model.CardFundMethod = trans.sourceOfFunds.provided.card.fundingMethod != null ? trans.sourceOfFunds.provided.card.fundingMethod : null;
+                    model.CardBrand = trans.sourceOfFunds.provided.card.brand != null ? trans.sourceOfFunds.provided.card.brand : null;
+                    model.CardIssuer = trans.sourceOfFunds.provided.card.scheme != null ? trans.sourceOfFunds.provided.card.scheme : null;
+                    model.CardHolderName = trans.sourceOfFunds.provided.card.nameOnCard != null ? trans.sourceOfFunds.provided.card.nameOnCard : null;
+                    model.ExpiryYear = int.Parse(trans.sourceOfFunds.provided.card.expiry.year);
+                    model.ExpiryMonth = int.Parse(trans.sourceOfFunds.provided.card.expiry.month);
+                    model.Token = trans.sourceOfFunds.token;
+                    model.PaymentStatus = trans.order.status;
+                    model.CustomerIP = trans.device != null ? trans.device.ipAddress != null ? trans.device.ipAddress : null : null;
+                }
+            }
+
+
+
+            return model;
+        }
     }
     public class TransactionRetrieveResponseOperation
     {
