@@ -34,7 +34,7 @@ namespace CatelogService.Controllers
         /// <returns>Bundles</returns>
         // GET: api/Bundles
         [HttpGet]
-        public async Task<IActionResult> GetBundles([FromHeader(Name = "Grid-General-Token")] string Token)
+        public async Task<IActionResult> GetBundles([FromHeader(Name = "Grid-General-Token")] string Token, [FromQuery] string usercode)
         {
             try
             {
@@ -50,7 +50,7 @@ namespace CatelogService.Controllers
                 }
 
                 BundleDataAccess _bundleAccess = new BundleDataAccess(_iconfiguration);
-                List<Bundle> returnObj = await _bundleAccess.GetBundleList();
+                List<Bundle> returnObj = await _bundleAccess.GetBundleList(usercode);
                 if (returnObj.Count > 0)
                 {
                     return Ok(new ServerResponse

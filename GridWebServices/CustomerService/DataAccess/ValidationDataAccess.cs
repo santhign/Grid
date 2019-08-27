@@ -7,6 +7,8 @@ using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -19,6 +21,10 @@ namespace CustomerService.DataAccess
     {
         private IConfiguration _configuration;
 
+        /// <summary>
+        /// The data helper
+        /// </summary>
+        internal DataAccessHelper _DataHelper = null;
         /// <summary>
         /// Constructor setting configuration
         /// </summary>
@@ -80,6 +86,36 @@ namespace CustomerService.DataAccess
                 return new DatabaseResponse { Results = data };
             }
 
+            catch (Exception e)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(e, ErrorLevel.Critical));
+                throw e;
+            }
+
+        }
+        public async Task<DatabaseResponse> ValidateUserCode(string UserCode)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                 {
+                    new SqlParameter( "@UserCode",  SqlDbType.NVarChar ),
+
+                };
+
+                parameters[0].Value = UserCode;
+
+
+                _DataHelper = new DataAccessHelper("Customers_ValidateUserCode", parameters, _configuration);
+
+                int result = await _DataHelper.RunAsync(); //103/150, 
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                response = new DatabaseResponse { ResponseCode = result };
+
+                return response;
+            }
             catch (Exception e)
             {
                 LogInfo.Error(new ExceptionHelper().GetLogString(e, ErrorLevel.Critical));

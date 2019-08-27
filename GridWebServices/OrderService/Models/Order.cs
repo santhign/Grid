@@ -211,4 +211,15 @@ namespace OrderService.Models
         public int? SubscriptionCount { get; set; }
     }
 
+    public class SIMCardDetails
+    {
+        public int OrderID { get; set; }
+        public SIMCardDetail[] Details { get; set; }
+    }
+
+    public class SIMCardDetail
+    {
+        public string MobileNumber { get; set; }
+        public string SIMNumber { get; set; }
+    }
 }

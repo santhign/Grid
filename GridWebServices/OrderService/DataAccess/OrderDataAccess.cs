@@ -4726,6 +4726,55 @@ namespace OrderService.DataAccess
             {
                 _DataHelper.Dispose();
             }
-        }        
+        }
+
+        public async Task<DatabaseResponse> UpdateSIMCardDetails(int OrderID, SIMCardDetail[] details)
+        {
+            try
+            {
+                DataTable SIMList = new DataTable();
+                SIMList.Columns.Add(new DataColumn("MobileNumber", typeof(string)));
+                SIMList.Columns.Add(new DataColumn("SIMID", typeof(string)));
+                foreach (SIMCardDetail detail in details)
+                {
+                    DataRow dr = SIMList.NewRow();
+                    dr["MobileNumber"] = detail.MobileNumber;
+                    dr["SIMID"] = detail.SIMNumber;
+
+                    SIMList.Rows.Add(dr);
+                }
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@OrderID",  SqlDbType.Int ),
+                    new SqlParameter( "@@SIMList",  SqlDbType.Structured )
+                };
+
+                parameters[0].Value = OrderID;
+                parameters[1].Value = SIMList;
+
+                _DataHelper = new DataAccessHelper("Orders_UpdateOrderSubscriberSIMLog", parameters, _configuration);
+
+                DataSet ds = new DataSet();
+
+                int result = await _DataHelper.RunAsync(ds); //103/150, 
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                response = new DatabaseResponse { ResponseCode = result };
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
     }
 }

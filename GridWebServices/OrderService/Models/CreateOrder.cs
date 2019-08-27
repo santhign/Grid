@@ -166,6 +166,14 @@ namespace OrderService.Models
         /// </value>
         public string PromotionCode { get; set; }
 
+        /// <summary>
+        /// Gets or sets the user code.
+        /// </summary>
+        /// <value>
+        /// The user code.
+        /// </value>
+        public string UserCode { get; set; }
+
     }
 
 
