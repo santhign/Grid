@@ -121,9 +121,9 @@ namespace Core.Enums
         [Description("Successfully Assigned New Number")]
         AssignNuewNumberSuccess = 25,
 
-        [EnumMember(Value = "Mandatory Record Empty")]
-        [Description("Mandatory RecordEmpty")]
-        MandatoryRecordEmpty = 26,
+        [EnumMember(Value = "MandatoryFieldMissing")]
+        [Description("Mandatory field missing")]
+        MandatoryFieldMissing = 26,
 
         [EnumMember(Value = "Order Rolled Back")]
         [Description("Order Rolled Back")]
@@ -369,6 +369,51 @@ namespace Core.Enums
         [Description("Image is already submitted")]
         ImageAlreadyUploaded = 87,
 
+
+        [EnumMember(Value = "GridBillingAPIConnectionFailed")]
+        [Description("GridBillingAPI Connection failed")]
+        GridBillingAPIConnectionFailed = 88,
+
+        [EnumMember(Value = "BillsFound")]
+        [Description("Billing records exist")]
+        BillsFound = 89,
+
+        [EnumMember(Value = "NoBillsFound")]
+        [Description("Currently no bills generated")]
+        NoBillsFound = 90,
+
+        [EnumMember(Value = "AmountNotMatching")]
+        [Description("Bill amount not matching")]
+        AmountNotMatching = 91,
+
+        [EnumMember(Value = "FailedToMatchOutstanding")]
+        [Description("Failed to compare outstanding amount, try again later")]
+        FailedToMatchOutstanding = 92,
+
+        [EnumMember(Value = "ZeroAmount")]
+        [Description("Outstanding amount should be greater than 0")]
+        ZeroAmount = 93,
+
+        [EnumMember(Value = "Unauthorized")]
+        [Description("Unauthorized")]
+        Unauthorized = 401,
+
+        [EnumMember(Value = "Forbidden")]
+        [Description("Forbidden access is denied")]
+        Forbidden = 403,
+
+        [EnumMember(Value = "OldOrder")]
+        [Description("Order already exists")]
+        OldOrder = 92,
+
+        [EnumMember(Value = "OrderNotExists")]
+        [Description("Order does not exists")]
+        OrderNotExists = 91,
+
+        [EnumMember(Value = "RemoveSuccess")]
+        [Description("Successfully removed")]
+        RemoveSuccess = 90,
+
         [EnumMember(Value = "BuddySubscriberCreationFailed")]
         [Description("Buddy subscriber creationfailed. Order rolled backed")]
         BuddySubscriberCreationFailed = 88,
@@ -377,25 +422,8 @@ namespace Core.Enums
         [Description("Buddy removal failed")]
         BuddyRemovalFailed = 89,
 
-        [EnumMember(Value = "RemoveSuccess")]
-        [Description("Successfully removed")]
-        RemoveSuccess = 90,
-
-        [EnumMember(Value = "OrderNotExists")]
-        [Description("Order does not exists")]
-        OrderNotExists = 91,
-
-        [EnumMember(Value = "OldOrder")]
-        [Description("Order already exists")]
-        OldOrder = 92,
-
-        [EnumMember(Value = "Forbidden")]
-        [Description("Forbidden access is denied")]
-        Forbidden = 403,
-
-        [EnumMember(Value = "Unauthorized")]
-        [Description("Unauthorized")]
-        Unauthorized = 401,
-
+        [EnumMember(Value = "Mandatory Record Empty")]
+        [Description("Mandatory RecordEmpty")]
+        MandatoryRecordEmpty = 26,
     }
 }

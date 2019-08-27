@@ -122,4 +122,33 @@ namespace Core.Models
         public string Email { get; set; }
 
     }
+
+
+    public class GridOutstanding
+    {
+        public string BillingAccountNumber { get; set; }
+        public double OutstandingAmount { get; set; }     
+
+    }
+
+    public class Bill
+    {
+        public string InvoiceNumber { get; set; }
+        public DateTime BillDate { get; set; }
+        public string BillDateFormatted { get; set; }
+        public string BillType { get; set; }
+        public string BillTypeCode { get; set; }
+        public decimal CurrentCharge { get; set; }
+        public string PaymentStatus { get; set; }
+        public string InvoiceURL { get; set; }
+        public string IsCurrentBill { get; set; }
+}
+
+public class CustomerBillHistory
+{
+    public string BillingAccountNumber { get; set; }
+    public decimal OutstandingAmount { get; set; }
+    public List<Bill> BillHistory { get; set; }
+}
+   
 }

@@ -20,6 +20,7 @@ using Newtonsoft.Json;
 using Core.DataAccess;
 using InfrastructureService.MessageQueue;
 using System.Net.Mail;
+using Microsoft.AspNetCore.Http.Internal;
 
 namespace OrderService.Controllers
 {
@@ -4738,7 +4739,7 @@ namespace OrderService.Controllers
 
                             //process file if uploaded - non null
 
-                            if (frontImage != null && backImage != null)
+                            if (frontImage != null || backImage != null)
                             {
                                 DatabaseResponse awsConfigResponse = await _orderAccess.GetConfiguration(ConfiType.AWS.ToString());
 
@@ -4747,31 +4748,37 @@ namespace OrderService.Controllers
                                     GridAWSS3Config awsConfig = configHelper.GetGridAwsConfig((List<Dictionary<string, string>>)awsConfigResponse.Results);
 
                                     AmazonS3 s3Helper = new AmazonS3(awsConfig);
+                                    UploadResponse s3UploadResponse;
 
-                                    string fileNameFront = request.IDNumber.Substring(1, request.IDNumber.Length - 2) + "_Front_" + DateTime.Now.ToString("yyMMddhhmmss") + Path.GetExtension(frontImage.FileName); //Grid_IDNUMBER_yyyymmddhhmmss.extension
-
-                                    UploadResponse s3UploadResponse = await s3Helper.UploadFile(frontImage, fileNameFront);
-
-                                    if (s3UploadResponse.HasSucceed)
+                                    if (frontImage != null)
                                     {
-                                        personalDetails.IDFrontImageUrl = awsConfig.AWSEndPoint + s3UploadResponse.FileName;
+                                        string fileNameFront = request.IDNumber.Substring(1, request.IDNumber.Length - 2) + "_Front_" + DateTime.Now.ToString("yyMMddhhmmss") + Path.GetExtension(frontImage.FileName); //Grid_IDNUMBER_yyyymmddhhmmss.extension
+
+                                        s3UploadResponse = await s3Helper.UploadFile(frontImage, fileNameFront);
+
+                                        if (s3UploadResponse.HasSucceed)
+                                        {
+                                            personalDetails.IDFrontImageUrl = awsConfig.AWSEndPoint + s3UploadResponse.FileName;
+                                        }
+                                        else
+                                        {
+                                            LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.S3UploadFailed));
+                                        }
                                     }
-                                    else
+                                    if (backImage != null)
                                     {
-                                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.S3UploadFailed));
-                                    }
+                                        string fileNameBack = request.IDNumber.Substring(1, request.IDNumber.Length - 2) + "_Back_" + DateTime.Now.ToString("yyMMddhhmmss") + Path.GetExtension(backImage.FileName); //Grid_IDNUMBER_yyyymmddhhmmss.extension
 
-                                    string fileNameBack = request.IDNumber.Substring(1, request.IDNumber.Length - 2) + "_Back_" + DateTime.Now.ToString("yyMMddhhmmss") + Path.GetExtension(frontImage.FileName); //Grid_IDNUMBER_yyyymmddhhmmss.extension
+                                        s3UploadResponse = await s3Helper.UploadFile(backImage, fileNameBack);
 
-                                    s3UploadResponse = await s3Helper.UploadFile(backImage, fileNameBack);
-
-                                    if (s3UploadResponse.HasSucceed)
-                                    {
-                                        personalDetails.IDBackImageUrl = awsConfig.AWSEndPoint + s3UploadResponse.FileName;
-                                    }
-                                    else
-                                    {
-                                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.S3UploadFailed));
+                                        if (s3UploadResponse.HasSucceed)
+                                        {
+                                            personalDetails.IDBackImageUrl = awsConfig.AWSEndPoint + s3UploadResponse.FileName;
+                                        }
+                                        else
+                                        {
+                                            LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.S3UploadFailed));
+                                        }
                                     }
                                 }
                                 else
@@ -4789,12 +4796,25 @@ namespace OrderService.Controllers
 
                             if (updatePersoanDetailsResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
                             {
-                                return Ok(new OperationResponse
+
+                                if (string.IsNullOrEmpty(((IDResponse)updatePersoanDetailsResponse.Results).IDNumber) || string.IsNullOrEmpty(((IDResponse)updatePersoanDetailsResponse.Results).IDBackImageUrl) || string.IsNullOrEmpty(((IDResponse)updatePersoanDetailsResponse.Results).IDFrontImageUrl))
                                 {
-                                    HasSucceeded = true,
-                                    Message = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess),
-                                    IsDomainValidationErrors = false
-                                });
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = false,
+                                        Message = EnumExtensions.GetDescription(DbReturnValue.OrderIDDocumentsMissing),
+                                        IsDomainValidationErrors = false
+                                    });
+                                }
+                                else
+                                {
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = true,
+                                        Message = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess),
+                                        IsDomainValidationErrors = false
+                                    });
+                                }
                             }
                             else if (updatePersoanDetailsResponse.ResponseCode == (int)DbReturnValue.DuplicateNRICNotAllowed)
                             {
@@ -4873,11 +4893,242 @@ namespace OrderService.Controllers
             }
         }
 
+
+
+        /// <summary>
+        /// This will update personal ID details of the customer for the order
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="request">
+        /// Form{
+        /// "OrderID" :1,
+        /// "Nationality": "Singaporean"
+        /// "IDType" :"PAN",
+        /// "IDNumber":"P23FD",
+        /// "IDImageFront" : FileInput,
+        /// "IDImageBack" : FileInput        
+        /// }
+        /// </param>
+        /// <returns>OperationResponse</returns>
+        [Route("UpdateOrderPersonalIDDetails_base64")]
+        [HttpPost, DisableRequestSizeLimit]
+        public async Task<IActionResult> UpdateOrderPersonalIDDetails_base64([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] UpdateOrderPersonalIDDetailsRequest_base64 request)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+                AuthHelper helper = new AuthHelper(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_personaldetails_update);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    {
+                        int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+
+                        if (!ModelState.IsValid)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = string.Join("; ", ModelState.Values
+                                                          .SelectMany(x => x.Errors)
+                                                          .Select(x => x.ErrorMessage))
+                            });
+                        }
+
+                        OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+
+                        DatabaseResponse customerResponse = await _orderAccess.GetCustomerIdFromOrderId(request.OrderID);
+
+                        if (customerResponse.ResponseCode == (int)DbReturnValue.RecordExists && customerID == ((OrderCustomer)customerResponse.Results).CustomerId)
+                        {
+                            string nricwarning = "";
+                            EmailValidationHelper _helper = new EmailValidationHelper();
+                            if (!_helper.NRICValidation((request.IDType == "NRIC" ? "S" : "F"), request.IDNumber, out nricwarning))
+                            {
+                                LogInfo.Error(nricwarning);
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = false,
+                                    Message = EnumExtensions.GetDescription(DbReturnValue.InvalidNRIC),
+                                    IsDomainValidationErrors = false
+                                });
+                            }
+                            //var frontImageArray = Convert.FromBase64String(request.IDImageFront);
+                            //Stream ms = new MemoryStream(frontImageArray);
+                            //IFormFile frontImage = new FormFile(ms, 0, ms.Length, "front", "");
+
+                            //var backImageArray = Convert.FromBase64String(request.IDImageBack);
+                            //Stream bms = new MemoryStream(backImageArray);
+                            //IFormFile backImage = new FormFile(bms, 0, bms.Length, "back", "");
+                            string frontImage = request.IDImageFront.Substring(request.IDImageFront.IndexOf(",") + 1);
+                            string backImage = request.IDImageBack.Substring(request.IDImageBack.IndexOf(",") + 1);
+                            string fext = Core.Helpers.MiscHelper.GetFileExtension(frontImage);
+                            string bext = Core.Helpers.MiscHelper.GetFileExtension(backImage);
+                            string ftype = request.IDImageFront.Substring(request.IDImageFront.IndexOf(":") + 1, request.IDImageFront.IndexOf(";") - request.IDImageFront.IndexOf(":") - 1);
+                            string btype = request.IDImageBack.Substring(request.IDImageBack.IndexOf(":") + 1, request.IDImageBack.IndexOf(";") - request.IDImageBack.IndexOf(":") - 1);
+                            BSSAPIHelper bsshelper = new BSSAPIHelper();
+
+                            MiscHelper configHelper = new MiscHelper();
+
+                            UpdateOrderPersonalDetails personalDetails = new UpdateOrderPersonalDetails
+                            {
+                                OrderID = request.OrderID,
+                                Nationality = request.Nationality,
+                                IDNumber = request.IDNumber,
+                                IDType = request.IDType
+                            };
+
+                            //process file if uploaded - non null
+
+                            if (request.IDImageFront != "" && request.IDImageFront != "")
+                            {
+                                DatabaseResponse awsConfigResponse = await _orderAccess.GetConfiguration(ConfiType.AWS.ToString());
+
+                                if (awsConfigResponse != null && awsConfigResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                                {
+                                    GridAWSS3Config awsConfig = configHelper.GetGridAwsConfig((List<Dictionary<string, string>>)awsConfigResponse.Results);
+
+                                    AmazonS3 s3Helper = new AmazonS3(awsConfig);
+
+                                    string fileNameFront = request.IDNumber.Substring(1, request.IDNumber.Length - 2) + "_Front_" + DateTime.Now.ToString("yyMMddhhmmss") + "." + fext; //Grid_IDNUMBER_yyyymmddhhmmss.extension
+
+                                    UploadResponse s3UploadResponse = await s3Helper.UploadByteFile(frontImage, ftype, fileNameFront);
+
+                                    if (s3UploadResponse.HasSucceed)
+                                    {
+                                        personalDetails.IDFrontImageUrl = awsConfig.AWSEndPoint + s3UploadResponse.FileName;
+                                    }
+                                    else
+                                    {
+                                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.S3UploadFailed));
+                                    }
+
+                                    string fileNameBack = request.IDNumber.Substring(1, request.IDNumber.Length - 2) + "_Back_" + DateTime.Now.ToString("yyMMddhhmmss") + "." + bext; //Grid_IDNUMBER_yyyymmddhhmmss.extension
+
+                                    s3UploadResponse = await s3Helper.UploadByteFile(backImage, btype,  fileNameBack);
+
+                                    if (s3UploadResponse.HasSucceed)
+                                    {
+                                        personalDetails.IDBackImageUrl = awsConfig.AWSEndPoint + s3UploadResponse.FileName;
+                                    }
+                                    else
+                                    {
+                                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.S3UploadFailed));
+                                    }
+                                }
+                                else
+                                {
+                                    // unable to get aws config
+                                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.FailedToGetConfiguration));
+
+                                }
+                            }    //file     
+
+
+
+                            //update personal details
+                            DatabaseResponse updatePersoanDetailsResponse = await _orderAccess.UpdateOrderPersonalIdDetails(personalDetails);
+
+                            if (updatePersoanDetailsResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
+                            {
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = true,
+                                    Message = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess),
+                                    IsDomainValidationErrors = false
+                                });
+                            }
+                            else if (updatePersoanDetailsResponse.ResponseCode == (int)DbReturnValue.DuplicateNRICNotAllowed)
+                            {
+                                LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.DuplicateNRICNotAllowed) + "for " + request.OrderID + "Order");
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = false,
+                                    Message = EnumExtensions.GetDescription(DbReturnValue.DuplicateNRICNotAllowed),
+                                    IsDomainValidationErrors = false
+                                });
+                            }
+                            else
+                            {
+                                LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.FailedUpdatePersonalDetails));
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = false,
+                                    Message = EnumExtensions.GetDescription(DbReturnValue.UpdationFailed),
+                                    IsDomainValidationErrors = false
+                                });
+                            }
+                        }
+
+                        else
+                        {
+                            // failed to locate customer
+                            LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.TokenNotMatching));
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(CommonErrors.TokenNotMatching),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
         /// <summary>
         /// This will create a checkout session and returns the details to call MPGS 
         /// </summary>           
         /// <returns>OperationsResponse</returns>
-      
+
 
         /// <summary>
         /// This will update Order subscription details
@@ -7043,6 +7294,7 @@ namespace OrderService.Controllers
                     if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
                     {
                         int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+
                         if (!ModelState.IsValid)
                         {
                             return Ok(new OperationResponse
@@ -7052,6 +7304,17 @@ namespace OrderService.Controllers
                                 Message = string.Join("; ", ModelState.Values
                                                           .SelectMany(x => x.Errors)
                                                           .Select(x => x.ErrorMessage))
+                            });
+                        }
+
+                        if (accountInvoiceRequest.FinalAmount<=0)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = EnumExtensions.GetDescription(CommonErrors.ZeroAmount),
+                                
                             });
                         }
 
@@ -7065,48 +7328,107 @@ namespace OrderService.Controllers
                         {
                             int AccountID = (int)accountIdResponse.Results;
 
-                            DatabaseResponse downloadLinkResponse = ConfigHelper.GetValueByKey(ConfigKeys.BSSInvoiceDownloadLink.ToString(), _iconfiguration);
+                            DatabaseResponse billingAccountResponse = await _orderAccess.GetCustomerBSSAccountNumber(customerID);
 
-                            string downloadLinkPrefix = (string)downloadLinkResponse.Results;
+                            GridAPIHelper gridAPIHelper = new GridAPIHelper();
 
-                            DatabaseResponse accountResponse = await _orderAccess.GetCustomerBSSAccountNumber(customerID);
+                            GridOutstanding gridOutstanding = new GridOutstanding();
 
-                            AccountInvoice accountInvoice = new AccountInvoice
+                            DatabaseResponse gridBillingApiResponse = ConfigHelper.GetValueByKey(ConfigKeys.GridBillingAPIEndPoint.ToString(), _iconfiguration);
+
+                            if (billingAccountResponse.ResponseCode == (int)DbReturnValue.RecordExists)
                             {
-                                AccountID = AccountID,
-                                CreatedBy = customerID,
-                                BSSBillId = accountInvoiceRequest.InvoiceID,
-                                InvoiceName = accountInvoiceRequest.InvoiceName,
-                                FinalAmount = accountInvoiceRequest.FinalAmount,
-                                InvoiceUrl = downloadLinkPrefix + accountInvoiceRequest.InvoiceID,
-                                Remarks = Misc.Account.ToString(),
-                                PaymentSourceID = AccountID, // for outstanding payment its accountID for rescheduling its deliveryIfo ID
-                                OrderStatus = 0
-
-                            };
-
-                            DatabaseResponse createAccountInvoiceResponse = await _orderAccess.CreateAccountInvoice(accountInvoice);
-
-                            if (createAccountInvoiceResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
-                            {
-                                return Ok(new OperationResponse
+                                if (!string.IsNullOrEmpty(((BSSAccount)billingAccountResponse.Results).AccountNumber))
                                 {
-                                    HasSucceeded = true,
-                                    Message = EnumExtensions.GetDescription(DbReturnValue.CreateSuccess),
-                                    IsDomainValidationErrors = false,
-                                    ReturnedObject = new InvoiceOrder { OrderID = (int)createAccountInvoiceResponse.Results }
-                                });
+                                    try
+                                    {
+                                        gridOutstanding = await gridAPIHelper.GetOutstanding((string)gridBillingApiResponse.Results, ((BSSAccount)billingAccountResponse.Results).AccountNumber);
+                                    }
+
+                                    catch (Exception ex)
+                                    {
+                                        LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.GridBillingAPIConnectionFailed));
+
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = false,
+                                            Message = EnumExtensions.GetDescription(CommonErrors.GridBillingAPIConnectionFailed),
+                                            IsDomainValidationErrors = false
+                                        });
+
+                                    }
+                                }
                             }
 
+                            if (gridOutstanding != null && gridOutstanding.BillingAccountNumber != null)
+                            {
+                                if(gridOutstanding.BillingAccountNumber == accountInvoiceRequest.InvoiceID && gridOutstanding.OutstandingAmount == accountInvoiceRequest.FinalAmount)
+                                {
+
+                                    DatabaseResponse accountResponse = await _orderAccess.GetCustomerBSSAccountNumber(customerID);
+
+                                    AccountInvoice accountInvoice = new AccountInvoice
+                                    {
+                                        AccountID = AccountID,
+                                        CreatedBy = customerID,
+                                        BSSBillId = accountInvoiceRequest.InvoiceID,
+                                        InvoiceName = accountInvoiceRequest.InvoiceName,
+                                        FinalAmount = accountInvoiceRequest.FinalAmount,
+                                        InvoiceUrl = null,
+                                        Remarks = Misc.Account.ToString(),
+                                        PaymentSourceID = AccountID, // for outstanding payment its accountID for rescheduling its deliveryIfo ID
+                                        OrderStatus = 0
+
+                                    };
+
+                                    DatabaseResponse createAccountInvoiceResponse = await _orderAccess.CreateAccountInvoice(accountInvoice);
+
+                                    if (createAccountInvoiceResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
+                                    {
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = true,
+                                            Message = EnumExtensions.GetDescription(DbReturnValue.CreateSuccess),
+                                            IsDomainValidationErrors = false,
+                                            ReturnedObject = new InvoiceOrder { OrderID = (int)createAccountInvoiceResponse.Results }
+                                        });
+                                    }
+
+                                    else
+                                    {
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = false,
+                                            Message = EnumExtensions.GetDescription(DbReturnValue.CreationFailed),
+                                            IsDomainValidationErrors = false
+                                        });
+                                    }
+                                }
+                                else
+                                {
+                                    // failed to return outstanding
+                                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.AmountNotMatching));
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = false,
+                                        IsDomainValidationErrors = false,
+                                        Message = EnumExtensions.GetDescription(CommonErrors.AmountNotMatching),
+
+                                    });
+                                }
+                            }
                             else
                             {
+                                // failed to return outstanding
+                                LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.FailedToMatchOutstanding));
                                 return Ok(new OperationResponse
                                 {
                                     HasSucceeded = false,
-                                    Message = EnumExtensions.GetDescription(DbReturnValue.CreationFailed),
-                                    IsDomainValidationErrors = false
+                                    IsDomainValidationErrors = false,
+                                    Message = EnumExtensions.GetDescription(CommonErrors.FailedToMatchOutstanding),
+
                                 });
-                            }
+                            }                            
 
                         }
                         else
