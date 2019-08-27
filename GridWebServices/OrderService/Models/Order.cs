@@ -222,4 +222,12 @@ namespace OrderService.Models
         public string MobileNumber { get; set; }
         public string SIMNumber { get; set; }
     }
+
+    public class SIMCardResponse
+    {
+        public string MobileNumber { get; set; }
+        public string SIMNumber { get; set; }
+        public int IsProcessed { get; set; }
+        public string ErrorReason { get; set; }
+    }
 }

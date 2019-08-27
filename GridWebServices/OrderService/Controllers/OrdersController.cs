@@ -7927,17 +7927,15 @@ namespace OrderService.Controllers
 
                         if (customerResponse.ResponseCode == (int)DbReturnValue.RecordExists && customerID == ((OrderCustomer)customerResponse.Results).CustomerId)
                         {
-
-                            //add remove VAS
-                            DatabaseResponse addRemoveResponse = await _orderAccess.UpdateSIMCardDetails(request.OrderID, request.Details);
+                            DatabaseResponse _SIMUpdateResponse = await _orderAccess.UpdateSIMCardDetails(request.OrderID, request.Details);
                             //100
-                            if (addRemoveResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
+                            if (_SIMUpdateResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                             {
                                 return Ok(new OperationResponse
                                 {
                                     HasSucceeded = true,
-                                    Message = EnumExtensions.GetDescription(DbReturnValue.CreateSuccess),
-                                    IsDomainValidationErrors = false
+                                    Message = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess),
+                                    ReturnedObject = _SIMUpdateResponse.Results
                                 });
                             }
                             else
@@ -7946,8 +7944,7 @@ namespace OrderService.Controllers
                                 return Ok(new OperationResponse
                                 {
                                     HasSucceeded = false,
-                                    Message = EnumExtensions.GetDescription(CommonErrors.OrderNotExists),
-                                    IsDomainValidationErrors = false
+                                    Message = EnumExtensions.GetDescription(CommonErrors.OrderNotExists)
                                 });
                             }
                         }

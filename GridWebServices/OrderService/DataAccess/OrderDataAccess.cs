@@ -4758,9 +4758,24 @@ namespace OrderService.DataAccess
 
                 int result = await _DataHelper.RunAsync(ds); //103/150, 
 
+                List<SIMCardResponse> _SIMCardResponse = new List<SIMCardResponse>();
+
+                if (ds != null && ds.Tables[0] != null && ds.Tables[0].Rows.Count > 0)
+                {
+
+                    _SIMCardResponse = (from model in ds.Tables[0].AsEnumerable()
+                                        select new SIMCardResponse()
+                                        {
+                                            MobileNumber = model.Field<string>("MobileNumber"),
+                                            SIMNumber = model.Field<string>("SIMID"),
+                                            IsProcessed = model.Field<int>("IsProcessed"),
+                                            ErrorReason = model.Field<string>("ErrorReason"),
+
+                                        }).ToList();
+                }
                 DatabaseResponse response = new DatabaseResponse();
 
-                response = new DatabaseResponse { ResponseCode = result };
+                response = new DatabaseResponse { ResponseCode = result, Results = _SIMCardResponse };
 
                 return response;
             }
