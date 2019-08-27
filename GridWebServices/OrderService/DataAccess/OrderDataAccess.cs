@@ -1,4 +1,4 @@
-﻿using OrderService.Models;
+using OrderService.Models;
 using Core.Helpers;
 using Microsoft.Extensions.Configuration;
 using System;
