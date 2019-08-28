@@ -3728,6 +3728,16 @@ namespace OrderService.Controllers
 
                             GridMPGSConfig gatewayConfig = gatewayHelper.GetGridMPGSConfig((List<Dictionary<string, string>>)configResponse.Results);
 
+                            //Direct capture MID config
+
+                            DatabaseResponse configDirectResponse = await _orderAccess.GetConfiguration(ConfiType.MPGSDirect.ToString());
+
+                            GridMPGSDirectMIDConfig gatewayDirectConfig = gatewayHelper.GetGridMPGSDirectMerchant((List<Dictionary<string, string>>)configDirectResponse.Results);
+
+                            gatewayConfig = gatewayHelper.GetGridMPGSCombinedConfig(gatewayConfig, gatewayDirectConfig);
+
+                            // Direct capture MID config end
+
                             customerBilling billingAddress = new customerBilling();
 
                             DatabaseResponse billingResponse = new DatabaseResponse();
@@ -5744,6 +5754,16 @@ namespace OrderService.Controllers
 
                                 GridMPGSConfig gatewayConfig = gatewayHelper.GetGridMPGSConfig((List<Dictionary<string, string>>)configResponse.Results);
 
+                                //Direct capture MID config
+
+                                DatabaseResponse configDirectResponse = await _orderAccess.GetConfiguration(ConfiType.MPGSDirect.ToString());
+
+                                GridMPGSDirectMIDConfig gatewayDirectConfig = gatewayHelper.GetGridMPGSDirectMerchant((List<Dictionary<string, string>>)configDirectResponse.Results);
+
+                                gatewayConfig = gatewayHelper.GetGridMPGSCombinedConfig(gatewayConfig, gatewayDirectConfig);
+
+                                // Direct capture MID config end
+
                                 TokenResponse tokenizeResponse = new TokenResponse();
 
                                 TokenSession tokenSession = new TokenSession();
@@ -5770,8 +5790,8 @@ namespace OrderService.Controllers
 
                                         string captureResponse = gatewayHelper.Capture(gatewayConfig, tokenSession);
 
-                                        if (captureResponse == MPGSAPIResponse.SUCCESS.ToString())
-                                        {
+                                        //if (captureResponse == MPGSAPIResponse.SUCCESS.ToString())
+                                        //{
                                             LogInfo.Information(captureResponse);
                                             //  get the session details and transaction details
 
@@ -5781,7 +5801,7 @@ namespace OrderService.Controllers
 
                                             LogInfo.Information(receipt);
 
-                                            transactionResponse = gatewayHelper.GetCapturedTransaction(receipt);
+                                            transactionResponse = gatewayHelper.GetPaymentTransaction(receipt);
 
                                             LogInfo.Information(transactionResponse.TrasactionResponse.ApiResult + transactionResponse.TrasactionResponse.PaymentStatus + transactionResponse.TrasactionResponse.OrderId);
 
@@ -5790,8 +5810,11 @@ namespace OrderService.Controllers
                                             DatabaseResponse paymentProcessingRespose = new DatabaseResponse();
 
                                             transactionResponse.TrasactionResponse.Token = tokenSession.Token;
+
                                             LogInfo.Information("Processing the order payment: and calling UpdateCheckOutReceipt");
+
                                             paymentProcessingRespose = await _orderAccess.UpdateCheckOutReceipt(transactionResponse.TrasactionResponse);
+
                                             DatabaseResponse updatePaymentResponse = await _orderAccess.UpdatePaymentResponse(updateRequest.MPGSOrderID, receipt);
 
                                             tokenDetailsUpdateResponse = await _orderAccess.UpdatePaymentMethodDetails(transactionResponse.TrasactionResponse, customerID, tokenSession.Token);
@@ -5904,17 +5927,17 @@ namespace OrderService.Controllers
                                                     IsDomainValidationErrors = false
                                                 });
                                             }
-                                        }
-                                        else
-                                        {
-                                            return Ok(new OperationResponse
-                                            {
-                                                HasSucceeded = false,
-                                                Message = EnumExtensions.GetDescription(CommonErrors.CaptureFailed),
-                                                IsDomainValidationErrors = false
-                                            });
+                                        //}
+                                        //else
+                                        //{
+                                        //    return Ok(new OperationResponse
+                                        //    {
+                                        //        HasSucceeded = false,
+                                        //        Message = EnumExtensions.GetDescription(CommonErrors.CaptureFailed),
+                                        //        IsDomainValidationErrors = false
+                                        //    });
 
-                                        }
+                                        //}
                                     }
 
                                     else
@@ -6240,6 +6263,16 @@ namespace OrderService.Controllers
 
                                 GridMPGSConfig gatewayConfig = gatewayHelper.GetGridMPGSConfig((List<Dictionary<string, string>>)configResponse.Results);
 
+                                //Direct capture MID config
+
+                                DatabaseResponse configDirectResponse = await _orderAccess.GetConfiguration(ConfiType.MPGSDirect.ToString());
+
+                                GridMPGSDirectMIDConfig gatewayDirectConfig = gatewayHelper.GetGridMPGSDirectMerchant((List<Dictionary<string, string>>)configDirectResponse.Results);
+
+                                gatewayConfig = gatewayHelper.GetGridMPGSCombinedConfig(gatewayConfig, gatewayDirectConfig);
+
+                                // Direct capture MID config end
+
                                 customerBilling billingAddress = new customerBilling();
 
                                 DatabaseResponse billingResponse = new DatabaseResponse();
@@ -6304,23 +6337,21 @@ namespace OrderService.Controllers
 
                                         checkoutDetails.ReceiptNumber = ((Checkout)checkOutAmountResponse.Results).ReceiptNumber;
 
-                                        checkoutDetails.OrderNumber= ((Checkout)checkOutAmountResponse.Results).OrderNumber;
+                                        checkoutDetails.OrderNumber= ((Checkout)checkOutAmountResponse.Results).OrderNumber;    
+                                        
+                                        // MPGS API operation - PAY
 
-                                        string authorizeResponse = gatewayHelper.Authorize(gatewayConfig, checkoutDetails, paymentMethod);
+                                        string paywithTokenResponse = gatewayHelper.PayWithToken(gatewayConfig, paymentMethod.Token, checkoutUpdateModel.CheckOutSessionID, checkoutUpdateModel.MPGSOrderID, checkoutUpdateModel.TransactionID, checkoutDetails.Amount.ToString());
 
-                                        if (authorizeResponse == MPGSAPIResponse.SUCCESS.ToString())
-                                        {
-                                            string captureResponse = gatewayHelper.Capture(gatewayConfig, new TokenSession { Amount = checkoutDetails.Amount, MPGSOrderID = checkoutDetails.OrderId, Token = paymentMethod.Token, SourceOfFundType = paymentMethod.SourceType });
-
-                                            if (captureResponse == MPGSAPIResponse.SUCCESS.ToString())
+                                        if (paywithTokenResponse == MPGSAPIResponse.SUCCESS.ToString())
                                             {
                                                 TransactionRetrieveResponseOperation transactionResponse = new TransactionRetrieveResponseOperation();
 
-                                                CheckOutResponseUpdate updateRequest = new CheckOutResponseUpdate { MPGSOrderID = checkoutDetails.OrderId, Result = captureResponse };
+                                                CheckOutResponseUpdate updateRequest = new CheckOutResponseUpdate { MPGSOrderID = checkoutDetails.OrderId, Result = paywithTokenResponse };
                                                     
                                                 string receipt = gatewayHelper.RetrieveCheckOutTransaction(gatewayConfig, updateRequest);
 
-                                                transactionResponse = gatewayHelper.GetCapturedTransaction(receipt);                                                
+                                                transactionResponse = gatewayHelper.GetPaymentTransaction(receipt);                                                
 
                                                 transactionResponse.TrasactionResponse.CardType = paymentMethod.CardType;
 
@@ -6442,20 +6473,7 @@ namespace OrderService.Controllers
                                                     IsDomainValidationErrors = false
                                                 });
 
-                                            }
-                                        }
-                                        else
-                                        {
-                                            //authorize failed
-
-                                            return Ok(new OperationResponse
-                                            {
-                                                HasSucceeded = false,
-                                                Message = EnumExtensions.GetDescription(CommonErrors.AuthorizeFailed),
-                                                IsDomainValidationErrors = false
-                                            });
-                                        }
-
+                                            }                                        
                                     }
                                     else
                                     {
@@ -7885,114 +7903,55 @@ namespace OrderService.Controllers
             }
         }
 
-
-        [Route("UpdateOrderSIM")]
-        [HttpPost]
-        public async Task<IActionResult> UpdateOrderSIM([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] SIMCardDetails request)
+        [HttpGet]
+        [Route("GetTransRecepit/{MPGSOrderID}")]
+        public async Task<IActionResult> GetTransRecepit([FromRoute]string MPGSOrderID)
         {
             try
             {
-                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
-                {
-                    HasSucceeded = false,
-                    IsDomainValidationErrors = true,
-                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+                OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
 
+                PaymentHelper gatewayHelper = new PaymentHelper();
+
+                DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.MPGS.ToString());
+
+                GridMPGSConfig gatewayConfig = gatewayHelper.GetGridMPGSConfig((List<Dictionary<string, string>>)configResponse.Results);
+
+                //Direct capture MID config
+
+                DatabaseResponse configDirectResponse = await _orderAccess.GetConfiguration(ConfiType.MPGSDirect.ToString());
+
+                GridMPGSDirectMIDConfig gatewayDirectConfig = gatewayHelper.GetGridMPGSDirectMerchant((List<Dictionary<string, string>>)configDirectResponse.Results);
+
+                gatewayConfig = gatewayHelper.GetGridMPGSCombinedConfig(gatewayConfig, gatewayDirectConfig);
+
+                // Direct capture MID config end
+
+                TransactionRetrieveResponseOperation transactionResponse = new TransactionRetrieveResponseOperation();
+
+                CheckOutResponseUpdate updateRequest = new CheckOutResponseUpdate { CheckOutSessionID = "SESSION0002400737034N7458618I04", MPGSOrderID = "S190012617", Result = "CAPTURED" };
+
+                string receipt = gatewayHelper.RetrieveCheckOutTransaction(gatewayConfig, updateRequest);
+
+                LogInfo.Information(receipt);
+
+                transactionResponse = gatewayHelper.GetCapturedTransaction(receipt);
+
+                LogInfo.Information(transactionResponse.TrasactionResponse.ApiResult + transactionResponse.TrasactionResponse.PaymentStatus + transactionResponse.TrasactionResponse.OrderId);
+                 
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = true,
+                    Message = "Success",
+                    IsDomainValidationErrors = false,
+                    ReturnedObject= transactionResponse
                 });
-                AuthHelper helper = new AuthHelper(_iconfiguration);
 
-                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_personaldetails_update);
-
-                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
-                {
-                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
-                    {
-                        int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
-
-                        if (!ModelState.IsValid)
-                        {
-                            return Ok(new OperationResponse
-                            {
-                                HasSucceeded = false,
-                                IsDomainValidationErrors = true,
-                                Message = string.Join("; ", ModelState.Values
-                                                          .SelectMany(x => x.Errors)
-                                                          .Select(x => x.ErrorMessage))
-                            });
-                        }
-
-                        OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
-
-                        DatabaseResponse customerResponse = await _orderAccess.GetCustomerIdFromOrderId(request.OrderID);
-
-                        if (customerResponse.ResponseCode == (int)DbReturnValue.RecordExists && customerID == ((OrderCustomer)customerResponse.Results).CustomerId)
-                        {
-                            DatabaseResponse _SIMUpdateResponse = await _orderAccess.UpdateSIMCardDetails(request.OrderID, request.Details);
-                            //100
-                            if (_SIMUpdateResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
-                            {
-                                return Ok(new OperationResponse
-                                {
-                                    HasSucceeded = true,
-                                    Message = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess),
-                                    ReturnedObject = _SIMUpdateResponse.Results
-                                });
-                            }
-                            else
-                            {
-                                LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.OrderNotExists));
-                                return Ok(new OperationResponse
-                                {
-                                    HasSucceeded = false,
-                                    Message = EnumExtensions.GetDescription(CommonErrors.OrderNotExists)
-                                });
-                            }
-                        }
-
-                        else
-                        {
-                            // failed to locate customer
-                            LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.TokenNotMatching));
-                            return Ok(new OperationResponse
-                            {
-                                HasSucceeded = false,
-                                Message = EnumExtensions.GetDescription(CommonErrors.TokenNotMatching),
-                                IsDomainValidationErrors = false
-                            });
-                        }
-                    }
-
-                    else
-                    {
-                        //Token expired
-
-                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
-
-                        return Ok(new OperationResponse
-                        {
-                            HasSucceeded = false,
-                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
-                            IsDomainValidationErrors = true
-                        });
-
-                    }
-                }
-                else
-                {
-                    // token auth failure
-                    LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
-
-                    return Ok(new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
-                        IsDomainValidationErrors = false
-                    });
-                }
             }
+
             catch (Exception ex)
             {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + ". token:" + token);
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 return Ok(new OperationResponse
                 {
@@ -8000,7 +7959,98 @@ namespace OrderService.Controllers
                     Message = StatusMessages.ServerError,
                     IsDomainValidationErrors = false
                 });
+            }
+        }
 
+
+        [HttpGet]
+        [Route("Tokenize/{MPGSOrderID}")]
+        public async Task<IActionResult> Tokenize([FromRoute]string MPGSOrderID)
+        {
+            try
+            {
+                OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+
+                PaymentHelper gatewayHelper = new PaymentHelper();
+
+                DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.MPGS.ToString());
+
+                GridMPGSConfig gatewayConfig = gatewayHelper.GetGridMPGSConfig((List<Dictionary<string, string>>)configResponse.Results);
+
+                //Direct capture MID config
+
+                DatabaseResponse configDirectResponse = await _orderAccess.GetConfiguration(ConfiType.MPGSDirect.ToString());
+
+                GridMPGSDirectMIDConfig gatewayDirectConfig = gatewayHelper.GetGridMPGSDirectMerchant((List<Dictionary<string, string>>)configDirectResponse.Results);
+
+                gatewayConfig = gatewayHelper.GetGridMPGSCombinedConfig(gatewayConfig, gatewayDirectConfig);
+
+                // Direct capture MID config end
+
+                TokenResponse tokenizeResponse = new TokenResponse();
+
+                TokenSession tokenSession = new TokenSession();
+
+                tokenSession = new TokenSession { Amount = 80.25, CheckOutSessionID = "SESSION0002726000655J7152545H59", MPGSOrderID = "S190012619", SourceOfFundType = "Card" };
+
+                tokenizeResponse = gatewayHelper.Tokenize(gatewayConfig, tokenSession);                 
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = true,
+                    Message = "Success",
+                    IsDomainValidationErrors = false,
+                    ReturnedObject = tokenizeResponse
+                });
+
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+            }
+        }
+
+        [HttpGet]
+        [Route("toRranse/{MPGSOrderID}")]
+        public async Task<IActionResult> toRranse([FromRoute]string MPGSOrderID)
+        {
+            try
+            {
+                string transresp = "{\"authorizationResponse\":{\"commercialCard\":\"888\",\"commercialCardIndicator\":\"3\",\"financialNetworkCode\":\"777\",\"posData\":\"1025100006600\",\"posEntryMode\":\"812\",\"processingCode\":\"003000\",\"responseCode\":\"00\",\"stan\":\"145736\",\"transactionIdentifier\":\"123456789\"},\"billing\":{\"address\":{\"city\":\"Singapore\",\"country\":\"SGP\",\"postcodeZip\":\"408600\",\"stateProvince\":\"Singapore\",\"street\":\"10 EUNOS ROAD 8, SINGAPORE POST CENTRE\"}},\"gatewayEntryPoint\":\"WEB_SERVICES_API\",\"merchant\":\"TEST001500074064\",\"order\":{\"amount\":80.25,\"chargeback\":{\"amount\":0,\"currency\":\"SGD\"},\"creationTime\":\"2019-08-27T14:11:56.345Z\",\"currency\":\"SGD\",\"fundingStatus\":\"NOT_SUPPORTED\",\"id\":\"S190012624\",\"merchantCategoryCode\":\"4814\",\"reference\":\"OS19000000011122\",\"statementDescriptor\":{\"address\":{\"city\":\"Singapore\",\"company\":\"grid mobile\",\"country\":\"SGP\",\"postcodeZip\":\"319637\",\"stateProvince\":\"Singapore\",\"street\":\"1 Lorong 2 Toa Payoh\",\"street2\":\"#03-01 Braddell House\"},\"name\":\"grid mobile S190012624\"},\"status\":\"CAPTURED\",\"totalAuthorizedAmount\":80.25,\"totalCapturedAmount\":80.25,\"totalRefundedAmount\":0.00},\"response\":{\"acquirerCode\":\"00\",\"acquirerMessage\":\"Approved\",\"gatewayCode\":\"APPROVED\"},\"result\":\"SUCCESS\",\"sourceOfFunds\":{\"provided\":{\"card\":{\"brand\":\"MASTERCARD\",\"expiry\":{\"month\":\"5\",\"year\":\"21\"},\"fundingMethod\":\"CREDIT\",\"issuer\":\"BANCO DEL PICHINCHA, C.A.\",\"number\":\"512345xxxxxx0008\",\"scheme\":\"MASTERCARD\"}},\"token\":\"5123452522900008\",\"type\":\"CARD\"},\"timeOfRecord\":\"2019-08-27T14:11:56.345Z\",\"transaction\":{\"acquirer\":{\"batch\":20190827,\"date\":\"0827\",\"id\":\"UOB_S2I\",\"merchantId\":\"001500074064\",\"settlementDate\":\"2019-08-27\",\"timeZone\":\"+0800\",\"transactionId\":\"123456789\"},\"amount\":80.25,\"authorizationCode\":\"145736\",\"currency\":\"SGD\",\"frequency\":\"SINGLE\",\"funding\":{\"status\":\"NOT_SUPPORTED\"},\"id\":\"dfbb8694171d419a8cff31b788c767b5\",\"receipt\":\"923914145736\",\"source\":\"INTERNET\",\"terminal\":\"UOBS2I11\",\"type\":\"PAYMENT\"},\"version\":\"49\"}";
+
+
+              TransactionResponseModel transResponse=   TransactionResponseModel.toPaywithTokenTransactionResponseModel(transresp);
+                
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = true,
+                    Message = "Success",
+                    IsDomainValidationErrors = false,
+                    ReturnedObject= transResponse
+
+                });
+
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
             }
         }
     }

@@ -201,11 +201,21 @@ namespace OrderService.Controllers
 
                 GridMPGSConfig gatewayConfig = gatewayHelper.GetGridMPGSConfig((List<Dictionary<string, string>>)configResponse.Results);
 
+                //Direct capture MID config
+
+                DatabaseResponse configDirectResponse = await _orderAccess.GetConfiguration(ConfiType.MPGSDirect.ToString());
+
+                GridMPGSDirectMIDConfig gatewayDirectConfig = gatewayHelper.GetGridMPGSDirectMerchant((List<Dictionary<string, string>>)configDirectResponse.Results);
+
+                gatewayConfig = gatewayHelper.GetGridMPGSCombinedConfig(gatewayConfig, gatewayDirectConfig);
+
+                // Direct capture MID config end
+
                 TransactionRetrieveResponseOperation transactionResponse = new TransactionRetrieveResponseOperation();
 
                 string receipt =  gatewayHelper.RetrieveCheckOutTransaction(gatewayConfig, updateRequest);
 
-                transactionResponse = gatewayHelper.GetCapturedTransaction(receipt);
+                transactionResponse = gatewayHelper.GetPaymentTransaction(receipt);
 
                 if (webhookLogUpdatedatabaseResponse != null && webhookLogUpdatedatabaseResponse.Results != null)
                 {

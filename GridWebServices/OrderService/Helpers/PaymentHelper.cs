@@ -309,6 +309,15 @@ namespace OrderService.Helpers
             config.WebhooksNotificationSecret = configDict.Single(x => x["key"] == "GatewayGridWebhookSecret")["value"];
             return config;
         }
+
+        public GridMPGSDirectMIDConfig GetGridMPGSDirectMerchant(List<Dictionary<string, string>> configDict)
+        {
+            GridMPGSDirectMIDConfig config = new GridMPGSDirectMIDConfig();           
+            config.MerchantId = configDict.Single(x => x["key"] == "GatewayGridDirectMerchantId")["value"];
+            config.Password = configDict.Single(x => x["key"] == "GatewayGridDirectMerchantPassword")["value"];            
+            config.WebhooksNotificationSecret = configDict.Single(x => x["key"] == "GatewayGridDirectWebhookSecret")["value"];
+            return config;
+        }
         public TokenResponse Tokenize(GridMPGSConfig mpgsConfig, TokenSession tokenSession)
         {
             try
@@ -397,15 +406,12 @@ namespace OrderService.Helpers
             }
         }
 
-        public TransactionResponseModel PayWithToken(GridMPGSConfig mpgsConfig, CreateTokenResponse responseUpdate, CreateTokenUpdatedDetails updateTokenSesisonDetails, TokenResponse tokenResponse)
+        public string PayWithToken(GridMPGSConfig mpgsConfig, string token, string sessionID, string orderID, string transactionID, string amount)
         {
             try
             {
-                LogInfo.Information($"Pay with token:  {JsonConvert.SerializeObject(responseUpdate)}");
+                
                 //payment with token
-
-
-                //update session with order details
 
                 GatewayApiConfig config = new GatewayApiConfig(mpgsConfig);
 
@@ -415,15 +421,15 @@ namespace OrderService.Helpers
 
                 gatewayGeneratePaymentRequest.ApiMethod = GatewayApiClient.PUT;
 
-                gatewayGeneratePaymentRequest.Token = "4440005812700022";//tokenResponse.Token;
+                gatewayGeneratePaymentRequest.Token = token;//tokenResponse.Token;
 
-                gatewayGeneratePaymentRequest.SessionId = "SESSION0002214916962H4081889I95"; // responseUpdate.MPGSResponse.session.id;
+                gatewayGeneratePaymentRequest.SessionId = sessionID; // responseUpdate.MPGSResponse.session.id;
 
-                gatewayGeneratePaymentRequest.OrderId = "394ada3ba1"; //updateTokenSesisonDetails.MPGSOrderID;
+                gatewayGeneratePaymentRequest.OrderId = orderID; //updateTokenSesisonDetails.MPGSOrderID;
 
-                gatewayGeneratePaymentRequest.TransactionId = "0fe262ba19";// updateTokenSesisonDetails.TransactionID;
+                gatewayGeneratePaymentRequest.TransactionId = transactionID;// updateTokenSesisonDetails.TransactionID;
 
-                gatewayGeneratePaymentRequest.OrderAmount = "20";
+                gatewayGeneratePaymentRequest.OrderAmount = amount;
 
                 gatewayGeneratePaymentRequest.buildPayload();
 
@@ -436,21 +442,7 @@ namespace OrderService.Helpers
 
                 LogInfo.Information($" {EnumExtensions.GetDescription(MPGSAPIResponse.HostedCheckoutRetrieveReceipt) + " " + response}");
 
-                TransactionResponseModel transactionResponseModel = null;
-
-                try
-                {
-                    transactionResponseModel = TransactionResponseModel.toTransactionResponseModel(response);
-
-                    return transactionResponseModel;
-
-                }
-                catch (Exception ex)
-                {
-                    LogInfo.Error($" : { EnumExtensions.GetDescription(MPGSAPIResponse.HostedCheckoutReceiptError) + " " + JsonConvert.SerializeObject(ex)}");
-
-                    throw ex;
-                }
+                return TokenResponse.GetResponseResult(response);
 
             }
             catch (Exception ex)
@@ -673,5 +665,34 @@ namespace OrderService.Helpers
             return new TransactionRetrieveResponseOperation { TrasactionResponse = transactionResponseModel };
 
         }
+
+        public TransactionRetrieveResponseOperation GetPaymentTransaction(string receiptResponse)
+        {
+            TransactionResponseModel transactionResponseModel = null;
+
+            try
+            {
+                transactionResponseModel = TransactionResponseModel.toPaywithTokenTransactionResponseModel(receiptResponse);
+
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error($" : { EnumExtensions.GetDescription(MPGSAPIResponse.HostedCheckoutReceiptError) + " " + JsonConvert.SerializeObject(ex)}");
+
+                throw ex;
+            }
+
+            return new TransactionRetrieveResponseOperation { TrasactionResponse = transactionResponseModel };
+
+        }
+
+        public GridMPGSConfig GetGridMPGSCombinedConfig(GridMPGSConfig config, GridMPGSDirectMIDConfig directMID )
+        {
+            config.MerchantId = directMID.MerchantId;
+            config.Password = directMID.Password;
+            config.WebhooksNotificationSecret = directMID.WebhooksNotificationSecret;            
+            return config;
+        }
+
     }
 }
