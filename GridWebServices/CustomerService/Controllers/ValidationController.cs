@@ -386,7 +386,7 @@ namespace CustomerService.Controllers
                     {
                         HasSucceeded = true,
                         Message = StatusMessages.ValidMessage,
-                        IsDomainValidationErrors = false
+                        ReturnedObject = response.Results
                     });
                 }
                 else
@@ -395,7 +395,7 @@ namespace CustomerService.Controllers
                     {
                         HasSucceeded = false,
                         Message = StatusMessages.InvalidMessage,
-                        IsDomainValidationErrors = false
+                        ReturnedObject = response.Results
                     });
                 }
             }

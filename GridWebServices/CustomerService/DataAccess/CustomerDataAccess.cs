@@ -118,7 +118,7 @@ namespace CustomerService.DataAccess
 
                 parameters[0].Value = customerId;
 
-                _DataHelper = new DataAccessHelper("Customer_GetDetails", parameters, _configuration);
+                _DataHelper = new DataAccessHelper("Customer_GetDetails_v2", parameters, _configuration);
 
                 DataTable dt = new DataTable();
 
@@ -149,7 +149,8 @@ namespace CustomerService.DataAccess
                                     JoinedOn = model.Field<DateTime>("JoinedOn"),
                                     OrderCount = model.Field<int>("OrderCount"),
                                     BillingAccountNumber = model.Field<string>("BillingAccountNumber"),
-                                    PendingAllowedSubscribers = model.Field<int>("PendingAllowedSubscribers")
+                                    PendingAllowedSubscribers = model.Field<int>("PendingAllowedSubscribers"),
+                                    PendingSIMCount = model.Field<int>("PendingSIMCount")
                                 }).FirstOrDefault();
                 }
 

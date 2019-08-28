@@ -130,6 +130,7 @@ namespace CustomerService.Models
         public int PendingAllowedSubscribers { get; set; }
 
         public string BillingAccountNumber { get; set; }
+        public int PendingSIMCount { get; set; }
     }
 
     /// <summary>
