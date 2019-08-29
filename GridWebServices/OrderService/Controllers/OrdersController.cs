@@ -230,7 +230,7 @@ namespace OrderService.Controllers
 
                         CreateOrder order = new CreateOrder();
 
-                        order = new CreateOrder { BundleID = request.BundleID, PromotionCode = request.PromotionCode, ReferralCode = request.ReferralCode, CustomerID = customerID };
+                        order = new CreateOrder { BundleID = request.BundleID, PromotionCode = request.PromotionCode, ReferralCode = request.ReferralCode, UserCode = request.UserCode, CustomerID = customerID };
 
                         DatabaseResponse createOrderRresponse = await _orderAccess.CreateOrder_V2(order);
 

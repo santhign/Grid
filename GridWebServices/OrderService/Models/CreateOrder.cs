@@ -134,6 +134,7 @@ namespace OrderService.Models
         /// The promotion code.
         /// </value>
         public string PromotionCode { get; set; }
+        public string UserCode { get; set; }
 
     }
 

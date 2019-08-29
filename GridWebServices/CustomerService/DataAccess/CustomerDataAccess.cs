@@ -150,7 +150,8 @@ namespace CustomerService.DataAccess
                                     OrderCount = model.Field<int>("OrderCount"),
                                     BillingAccountNumber = model.Field<string>("BillingAccountNumber"),
                                     PendingAllowedSubscribers = model.Field<int>("PendingAllowedSubscribers"),
-                                    PendingSIMCount = model.Field<int>("PendingSIMCount")
+                                    PendingSIMCount = model.Field<int>("PendingSIMCount"),
+                                    PendingSIMOrderID = model.Field<int?>("PendingSIMOrderID")
                                 }).FirstOrDefault();
                 }
 

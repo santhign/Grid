@@ -131,6 +131,8 @@ namespace CustomerService.Models
 
         public string BillingAccountNumber { get; set; }
         public int PendingSIMCount { get; set; }
+
+        public int? PendingSIMOrderID { get; set; }
     }
 
     /// <summary>
