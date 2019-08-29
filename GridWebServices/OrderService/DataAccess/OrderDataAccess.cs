@@ -3955,13 +3955,15 @@ namespace OrderService.DataAccess
                     new SqlParameter( "@CustomerID",  SqlDbType.Int ),
                     new SqlParameter( "@BundleID",  SqlDbType.Int ),
                     new SqlParameter( "@ReferralCode",  SqlDbType.NVarChar),
-                    new SqlParameter( "@PromotionCode",  SqlDbType.NVarChar)
+                    new SqlParameter( "@PromotionCode",  SqlDbType.NVarChar),
+                    new SqlParameter( "@UserCode",  SqlDbType.NVarChar)
                 };
 
                 parameters[0].Value = order.CustomerID;
                 parameters[1].Value = order.BundleID;
                 parameters[2].Value = order.ReferralCode;
-                parameters[3].Value = order.PromotionCode;              
+                parameters[3].Value = order.PromotionCode;
+                parameters[4].Value = order.UserCode;
 
                 _DataHelper = new DataAccessHelper("Orders_CreateOrder_v2", parameters, _configuration);
 
