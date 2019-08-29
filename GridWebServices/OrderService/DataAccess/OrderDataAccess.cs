@@ -4750,7 +4750,7 @@ namespace OrderService.DataAccess
                 SqlParameter[] parameters =
                 {
                     new SqlParameter( "@OrderID",  SqlDbType.Int ),
-                    new SqlParameter( "@@SIMList",  SqlDbType.Structured )
+                    new SqlParameter( "@SIMList",  SqlDbType.Structured )
                 };
 
                 parameters[0].Value = OrderID;
