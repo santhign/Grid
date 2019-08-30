@@ -272,6 +272,14 @@ namespace Core.Enums
         [EnumMember(Value = "VasNotInAddedList")]
         [Description("Vas not in added list")]
         VasNotInAddedList = 171,
+
+        [EnumMember(Value = "InvalidPromoCode")]
+        [Description("Order creation failed due to invalid promotion code.")]
+        InvalidPromoCode = 172,
+
+        [EnumMember(Value = "PendingOrderSIM")]
+        [Description("SIM allocation is pending for the roadshow order")]
+        PendingOrderSIM = 173,
     }
 }
 

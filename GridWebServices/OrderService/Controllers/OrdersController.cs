@@ -247,6 +247,32 @@ namespace OrderService.Controllers
                                 IsDomainValidationErrors = true
                             });
                         }
+                        else if (createOrderRresponse.ResponseCode == ((int)DbReturnValue.InvalidPromoCode))
+                        {
+                            // order creation failed
+
+                            LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.InvalidPromoCode) + " for customer:" + customerID + ". Payload:" + JsonConvert.SerializeObject(request) + "\n");
+
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.InvalidPromoCode),
+                                IsDomainValidationErrors = true
+                            });
+                        }
+                        else if (createOrderRresponse.ResponseCode == ((int)DbReturnValue.PendingOrderSIM))
+                        {
+                            // order creation failed
+
+                            LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.PendingOrderSIM) + " for customer:" + customerID + ". Payload:" + JsonConvert.SerializeObject(request) + "\n");
+
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.PendingOrderSIM),
+                                IsDomainValidationErrors = true
+                            });
+                        }
                         else
                         {
                             // order creation Success                           
@@ -8099,9 +8125,17 @@ namespace OrderService.Controllers
                             //100
                             if (_SIMUpdateResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                             {
+                                bool flag = true;
+                                foreach (SIMCardResponse res in ((List<SIMCardResponse>)_SIMUpdateResponse.Results))
+                                {
+                                    if (res.IsProcessed == 0)
+                                    {
+                                        flag = false;
+                                    }
+                                }
                                 return Ok(new OperationResponse
                                 {
-                                    HasSucceeded = true,
+                                    HasSucceeded = flag,
                                     Message = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess),
                                     ReturnedObject = _SIMUpdateResponse.Results
                                 });
