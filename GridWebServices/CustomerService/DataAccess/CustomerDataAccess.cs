@@ -901,7 +901,10 @@ namespace CustomerService.DataAccess
                             orderDetails.Email = dr["Email"].ToString();
                             orderDetails.IDType = dr["IDType"].ToString();
                             orderDetails.IDNumber = dr["IDNumber"].ToString();
-                            orderDetails.IsSameAsBilling = Convert.ToInt32(dr["IsSameAsBilling"]);
+                            if (dr["IsSameAsBilling"] != DBNull.Value)
+                            {
+                                orderDetails.IsSameAsBilling = Convert.ToInt32(dr["IsSameAsBilling"]);
+                            }
                             orderDetails.ShippingUnit = dr["ShippingUnit"].ToString();
                             orderDetails.ShippingFloor = dr["ShippingFloor"].ToString();
                             orderDetails.ShippingBuildingNumber = dr["ShippingBuildingNumber"].ToString();
@@ -914,6 +917,7 @@ namespace CustomerService.DataAccess
                             orderDetails.AlternateRecipientEmail = dr["AlternateRecipientEmail"].ToString();
                             orderDetails.PortalSlotID = dr["PortalSlotID"].ToString();
                             orderDetails.RecieptNumber = dr["RecieptNumber"].ToString();
+                            orderDetails.EventSalesRepresentativeID = (dr["EventSalesRepresentativeID"] == DBNull.Value ? (int?)null : ((int)dr["EventSalesRepresentativeID"]));
                             orderDetails.SlotDate = (dr["SlotDate"] == DBNull.Value) ? (DateTime?)null : ((DateTime)dr["SlotDate"]);
                             //dr["SlotDate"] != null  Convert.ToDateTime(dr["SlotDate"]);
                             TimeSpan val;

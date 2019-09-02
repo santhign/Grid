@@ -8125,18 +8125,20 @@ namespace OrderService.Controllers
                             //100
                             if (_SIMUpdateResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                             {
+                                string msg = "";
                                 bool flag = true;
                                 foreach (SIMCardResponse res in ((List<SIMCardResponse>)_SIMUpdateResponse.Results))
                                 {
                                     if (res.IsProcessed == 0)
                                     {
+                                        msg = "Some of the SIM card number(s) entered are invalid.";
                                         flag = false;
                                     }
                                 }
                                 return Ok(new OperationResponse
                                 {
                                     HasSucceeded = flag,
-                                    Message = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess),
+                                    Message = (msg == "" ? EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess) : msg),
                                     ReturnedObject = _SIMUpdateResponse.Results
                                 });
                             }
