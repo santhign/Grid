@@ -317,7 +317,7 @@ namespace OrderService.Controllers
                                         {
                                             LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
 
-                                            DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID);
+                                            DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID, "Getting main line number failed");
 
                                             return Ok(new OperationResponse
                                             {
@@ -336,7 +336,7 @@ namespace OrderService.Controllers
                                         {
                                             LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
 
-                                            DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID);
+                                            DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID, "Getting the buddy line number failed");
 
                                             return Ok(new OperationResponse
                                             {
@@ -387,7 +387,7 @@ namespace OrderService.Controllers
                                             {
                                                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
 
-                                                DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID);
+                                                DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID, "Main line number blocking failed");
 
                                                 return Ok(new OperationResponse
                                                 {
@@ -422,7 +422,7 @@ namespace OrderService.Controllers
 
                                                 finally
                                                 {                                                   
-                                                    DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID);
+                                                    DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID, "Buddy line number blocking failed");
                                                 }
                                                 
                                                 return Ok(new OperationResponse
@@ -515,7 +515,7 @@ namespace OrderService.Controllers
 
                                                         finally
                                                         {
-                                                            DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID);
+                                                            DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID, "Buddy creation failed");
                                                         }
 
                                                         return Ok(new OperationResponse
@@ -561,7 +561,7 @@ namespace OrderService.Controllers
 
                                                     finally
                                                     {
-                                                        rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID);
+                                                        rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID, "mainline creation failed");
                                                     }                                                    
 
                                                     if (rollbackResponse.ResponseCode == (int)DbReturnValue.DeleteSuccess)
@@ -624,7 +624,7 @@ namespace OrderService.Controllers
                                                 LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.UpdateAssetBlockingFailed) + "\n");
 
                                                 //ROLLBACK ORDER
-                                                DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID);
+                                                DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID, "Blocking of main or buddy failed");
 
                                                 if (rollbackResponse.ResponseCode == (int)DbReturnValue.DeleteSuccess)
                                                 {
@@ -653,7 +653,7 @@ namespace OrderService.Controllers
 
                                             LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.GetAssetFailed) + "\n");
 
-                                            DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID);
+                                            DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID, "numbers retrival failed");
 
                                             if (rollbackResponse.ResponseCode == (int)DbReturnValue.DeleteSuccess)
                                             {
@@ -691,7 +691,7 @@ namespace OrderService.Controllers
                                         {
                                             LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
 
-                                            DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID);
+                                            DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID, "non-buddy number retrival failed");
 
                                             return Ok(new OperationResponse
                                             {
@@ -734,7 +734,7 @@ namespace OrderService.Controllers
                                             {
                                                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
 
-                                                DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID);
+                                                DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID, "non-buddy number blocking exception");
 
                                                 return Ok(new OperationResponse
                                                 {
@@ -773,7 +773,7 @@ namespace OrderService.Controllers
 
                                                     LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.CreateSubscriptionFailed) + "\n");
 
-                                                    DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID);
+                                                    DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID, "non-buddy subcriber creation failed");
 
                                                     if (rollbackResponse.ResponseCode == (int)DbReturnValue.DeleteSuccess)
                                                     {
@@ -803,7 +803,7 @@ namespace OrderService.Controllers
                                                 LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.UpdateAssetBlockingFailed) + "\n");
 
                                                 //ROLLBACK ORDER
-                                                DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID);
+                                                DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID, "non - buddy number blocking failed");
 
                                                 if (rollbackResponse.ResponseCode == (int)DbReturnValue.DeleteSuccess)
                                                 {
@@ -832,7 +832,7 @@ namespace OrderService.Controllers
 
                                             LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.GetAssetFailed) + "\n");
 
-                                            DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID);
+                                            DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID, "non-buddy getting number failed");
 
                                             if (rollbackResponse.ResponseCode == (int)DbReturnValue.DeleteSuccess)
                                             {
@@ -863,7 +863,7 @@ namespace OrderService.Controllers
 
                                     LogInfo.Fatal(ex, EnumExtensions.GetDescription(CommonErrors.GetAssetFailed) + "\n");
 
-                                    DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID);
+                                    DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID, "unidentified exception - " + ex.Message);
 
                                     if (rollbackResponse.ResponseCode == (int)DbReturnValue.DeleteSuccess)
                                     {

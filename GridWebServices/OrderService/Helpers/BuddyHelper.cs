@@ -376,7 +376,7 @@ namespace OrderService.Helpers
                 DatabaseResponse removeAdditionalBuddyRes = await _orderAccess.RemoveAdditionalBuddyOnRollBackOrder(orderID);
 
                //rollback order
-                DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(orderID);
+                DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(orderID, "Rollback while processing additional buddy line");
 
                 return 1;
             }
