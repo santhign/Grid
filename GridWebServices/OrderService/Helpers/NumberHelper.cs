@@ -94,5 +94,22 @@ namespace OrderService.Helpers
                 return false;
             }
         }
+
+        public async Task<bool> UnBlockMultipleNumbers(int CustomerID, List<NumberDetails> numbers)
+        {
+            try
+            {
+                foreach (NumberDetails number in numbers)
+                {
+                    await UnblockNumber(CustomerID, number.Number);
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+                return false;
+            }
+        }
     }
 }

@@ -163,6 +163,7 @@ namespace OrderService.Controllers
             }
         }
 
+
         /// <summary>
         /// This will Create an order for the logged in customer with the bundle selected.
         /// </summary>
@@ -178,820 +179,6 @@ namespace OrderService.Controllers
         // POST: api/Orders
         [HttpPost]
         public async Task<IActionResult> Post([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] CreateOrderRequest request)
-        {
-
-            try
-            {
-                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
-                {
-                    HasSucceeded = false,
-                    IsDomainValidationErrors = true,
-                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
-
-                });
-                AuthHelper helper = new AuthHelper(_iconfiguration);
-
-                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_CreateOrder);
-
-                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
-                {
-                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
-                    {
-                        int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
-                        if (!ModelState.IsValid)
-                        {
-                            return Ok(new OperationResponse
-                            {
-                                HasSucceeded = false,
-                                IsDomainValidationErrors = true,
-                                Message = string.Join("; ", ModelState.Values
-                                                         .SelectMany(x => x.Errors)
-                                                         .Select(x => x.ErrorMessage))
-                            });
-                        }
-
-                        EmailValidationHelper _helper = new EmailValidationHelper();
-
-                        bool AllowSubscriber = await _helper.AllowSubscribers(customerID, (int)SubscriberCheckType.CustomerLevel, _iconfiguration);
-
-                        if (!AllowSubscriber)
-                        {
-                            LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.NotAllowSubscribers) + " for customer:" + customerID + ". Payload:" + JsonConvert.SerializeObject(request)+ "\n");
-
-                            return Ok(new OperationResponse
-                            {
-                                HasSucceeded = false,
-                                Message = EnumExtensions.GetDescription(DbReturnValue.NotAllowSubscribers),
-                                IsDomainValidationErrors = false
-                            });
-                        }
-
-                        OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
-
-                        CreateOrder order = new CreateOrder();
-
-                        order = new CreateOrder { BundleID = request.BundleID, PromotionCode = request.PromotionCode, ReferralCode = request.ReferralCode, UserCode = request.UserCode, CustomerID = customerID };
-
-                        DatabaseResponse createOrderRresponse = await _orderAccess.CreateOrder_V2(order);
-
-                        if (createOrderRresponse.ResponseCode == ((int)DbReturnValue.CreationFailed))
-                        {
-                            // order creation failed
-
-                            LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.CreateOrderFailed) + " for customer:" + customerID+ ". Payload:" + JsonConvert.SerializeObject(request) + "\n");
-
-                            return Ok(new OperationResponse
-                            {
-                                HasSucceeded = false,
-                                Message = EnumExtensions.GetDescription(DbReturnValue.CreationFailed),
-                                IsDomainValidationErrors = true
-                            });
-                        }
-                        else if (createOrderRresponse.ResponseCode == ((int)DbReturnValue.InvalidPromoCode))
-                        {
-                            // order creation failed
-
-                            LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.InvalidPromoCode) + " for customer:" + customerID + ". Payload:" + JsonConvert.SerializeObject(request) + "\n");
-
-                            return Ok(new OperationResponse
-                            {
-                                HasSucceeded = false,
-                                Message = EnumExtensions.GetDescription(DbReturnValue.InvalidPromoCode),
-                                IsDomainValidationErrors = true
-                            });
-                        }
-                        else if (createOrderRresponse.ResponseCode == ((int)DbReturnValue.PendingOrderSIM))
-                        {
-                            // order creation failed
-
-                            LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.PendingOrderSIM) + " for customer:" + customerID + ". Payload:" + JsonConvert.SerializeObject(request) + "\n");
-
-                            return Ok(new OperationResponse
-                            {
-                                HasSucceeded = false,
-                                Message = EnumExtensions.GetDescription(DbReturnValue.PendingOrderSIM),
-                                IsDomainValidationErrors = true
-                            });
-                        }
-                        else
-                        {
-                            // order creation Success                           
-
-                            if (((OrderInit)createOrderRresponse.Results).Status == OrderStatus.NewOrder.ToString())
-                            {
-                                // if its new order call GetAssets BSSAPI
-
-                                try
-                                {
-
-                                    BSSAPIHelper bsshelper = new BSSAPIHelper();
-
-                                    DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
-
-                                    GridBSSConfi config = bsshelper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
-
-                                    DatabaseResponse serviceCAF = await _orderAccess.GetBSSServiceCategoryAndFee(ServiceTypes.Free.ToString());
-
-                                    DatabaseResponse requestIdRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.GetAssets.ToString(), customerID, (int)BSSCalls.NewSession, "");
-
-                                    DatabaseResponse requestIdResforBuddy = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.GetAssets.ToString(), customerID, (int)BSSCalls.NewSession, "");
-
-                                    DatabaseResponse buddyCheckResponse = new DatabaseResponse();
-
-                                    buddyCheckResponse = await _orderAccess.IsBuddyBundle(request.BundleID);
-
-                                    if (buddyCheckResponse.ResponseCode == (int)DbReturnValue.RecordExists && ((IsBuddyBundle)buddyCheckResponse.Results).HasBuddyPromotion ==1)
-                                    {
-                                        // buddy bundle- get 2 numbers and process buddy - v2
-
-                                        ResponseObject res = new ResponseObject();
-
-                                        ResponseObject res1 = new ResponseObject();
-
-                                        try
-                                        {
-                                            res = await bsshelper.GetAssetInventory(config, (((List<ServiceFees>)serviceCAF.Results)).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdRes.Results);
-                                        }
-
-                                        catch (Exception ex)
-                                        {
-                                            LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
-
-                                            DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID);
-
-                                            return Ok(new OperationResponse
-                                            {
-                                                HasSucceeded = false,
-                                                Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed) + ". " + EnumExtensions.GetDescription(CommonErrors.OrderRolledBack),
-                                                IsDomainValidationErrors = false
-                                            });
-                                        }
-
-                                        try
-                                        {
-                                            res1 = await bsshelper.GetAssetInventory(config, (((List<ServiceFees>)serviceCAF.Results)).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdResforBuddy.Results);
-                                        }
-
-                                        catch (Exception ex)
-                                        {
-                                            LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
-
-                                            DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID);
-
-                                            return Ok(new OperationResponse
-                                            {
-                                                HasSucceeded = false,
-                                                Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed) + ". " + EnumExtensions.GetDescription(CommonErrors.OrderRolledBack),
-                                                IsDomainValidationErrors = false
-                                            });
-                                        }
-
-                                        if ((res != null && res.Response != null && res.Response.asset_details != null && (int.Parse(res.Response.asset_details.total_record_count) > 0)) && (res1 != null && res1.Response != null && res1.Response.asset_details != null && (int.Parse(res1.Response.asset_details.total_record_count) > 0)))
-                                        {                                           
-                                            BSSNumbers numbers = new BSSNumbers();
-
-                                            numbers.FreeNumbers = bsshelper.GetFreeNumbers(res);
-
-                                            string mainLine = numbers.FreeNumbers[0].MobileNumber;
-
-                                            string json = bsshelper.GetJsonString(numbers.FreeNumbers); // json insert
-
-                                            DatabaseResponse updateBssCallFreeNumbers = await _orderAccess.UpdateBSSCallNumbers(json, ((BSSAssetRequest)requestIdRes.Results).userid, ((BSSAssetRequest)requestIdRes.Results).BSSCallLogID);
-
-                                            numbers.FreeNumbers = bsshelper.GetFreeNumbers(res1);
-
-                                            string buddyLine = numbers.FreeNumbers[0].MobileNumber;
-
-                                            json = bsshelper.GetJsonString(numbers.FreeNumbers); // json insert
-
-                                            updateBssCallFreeNumbers = await _orderAccess.UpdateBSSCallNumbers(json, ((BSSAssetRequest)requestIdResforBuddy.Results).userid, ((BSSAssetRequest)requestIdResforBuddy.Results).BSSCallLogID);
-
-                                            //insert these number into database
-
-
-                                            DatabaseResponse requestIdToUpdateMainLineRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.ExistingSession, mainLine);
-
-                                            BSSUpdateResponseObject bssUpdateResponse = new BSSUpdateResponseObject();
-
-                                            DatabaseResponse requestIdToUpdateBuddyLineRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.ExistingSession, buddyLine);
-
-                                            BSSUpdateResponseObject bssUpdateBuddyResponse = new BSSUpdateResponseObject();
-
-                                            try
-                                            {
-                                                // mainline blocking
-                                                bssUpdateResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateMainLineRes.Results, mainLine, false);
-                                            }
-
-                                            catch (Exception ex)
-                                            {
-                                                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
-
-                                                DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID);
-
-                                                return Ok(new OperationResponse
-                                                {
-                                                    HasSucceeded = false,
-                                                    Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed) + ". " + EnumExtensions.GetDescription(CommonErrors.OrderRolledBack),
-                                                    IsDomainValidationErrors = false
-                                                });
-                                            }
-
-                                            try
-                                            {
-                                                // buddy blocking
-                                                bssUpdateBuddyResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateBuddyLineRes.Results, buddyLine, false);
-                                            }
-
-                                            catch (Exception ex)
-                                            {
-                                                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
-
-                                                requestIdToUpdateMainLineRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.ExistingSession, mainLine);
-
-                                                try
-                                                {
-                                                    // Unblock main line
-                                                    bssUpdateBuddyResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateMainLineRes.Results, mainLine, true);
-                                                }
-
-                                                catch (Exception exi)
-                                                {
-                                                    LogInfo.Error(new ExceptionHelper().GetLogString(exi, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
-                                                }
-
-                                                finally
-                                                {                                                   
-                                                    DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID);
-                                                }
-                                                
-                                                return Ok(new OperationResponse
-                                                {
-                                                    HasSucceeded = false,
-                                                    Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed) + ". " + EnumExtensions.GetDescription(CommonErrors.OrderRolledBack),
-                                                    IsDomainValidationErrors = false
-                                                });
-                                            }
-
-                                            // blocked both main and buddy lines - create subscribers 
-                                            if (bsshelper.GetResponseCode(bssUpdateResponse) == "0" && bsshelper.GetResponseCode(bssUpdateBuddyResponse) == "0")
-                                            {
-                                                // create subscription for main line
-                                                CreateSubscriber subscriberToCreate = new CreateSubscriber { BundleID = request.BundleID, OrderID = ((OrderInit)createOrderRresponse.Results).OrderID, MobileNumber = mainLine, PromotionCode = request.PromotionCode };
-
-                                                DatabaseResponse createSubscriberResponse = await _orderAccess.CreateSubscriber(subscriberToCreate, ((BSSAssetRequest)requestIdToUpdateMainLineRes.Results).userid);
-
-                                                if (createSubscriberResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
-                                                {
-                                                    //CreateBuddySubscriber-Order_CreateBuddySubscriber                                                       
-
-                                                    CreateBuddySubscriber buddySubscriberToCreate = new CreateBuddySubscriber { OrderID = ((OrderInit)createOrderRresponse.Results).OrderID, MobileNumber = buddyLine, MainLineMobileNumber = mainLine, UserId = ((BSSAssetRequest)requestIdToUpdateBuddyLineRes.Results).userid };
-
-                                                    DatabaseResponse createBuddySubscriberResponse = await _orderAccess.CreateBuddySubscriber(buddySubscriberToCreate);
-
-                                                    if (createBuddySubscriberResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
-                                                    {
-                                                        DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails_V2(((OrderInit)createOrderRresponse.Results).OrderID);
-
-                                                        return Ok(new OperationResponse
-                                                        {
-                                                            HasSucceeded = true,
-                                                            Message = EnumExtensions.GetDescription(DbReturnValue.CreateSuccess),
-                                                            IsDomainValidationErrors = false,
-                                                            ReturnedObject = orderDetailsResponse.Results
-
-                                                        });
-                                                    }
-                                                    else if (createBuddySubscriberResponse.ResponseCode == (int)DbReturnValue.NotBuddyBundle)
-                                                    {
-                                                        try
-                                                        {
-                                                            requestIdToUpdateBuddyLineRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.ExistingSession, buddyLine);
-                                                           
-                                                            //un reachable condition, but for safety
-                                                            bssUpdateBuddyResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateBuddyLineRes.Results, buddyLine, true);
-                                                        }
-                                                        catch (Exception exi)
-                                                        {
-                                                            LogInfo.Error(new ExceptionHelper().GetLogString(exi, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
-                                                        }
-                                                        DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails_V2(((OrderInit)createOrderRresponse.Results).OrderID);
-
-                                                        return Ok(new OperationResponse
-                                                        {
-                                                            HasSucceeded = true,
-                                                            Message = EnumExtensions.GetDescription(DbReturnValue.CreateSuccess),
-                                                            IsDomainValidationErrors = false,
-                                                            ReturnedObject = orderDetailsResponse.Results
-
-                                                        });                                                      
-                                                    }
-                                                    else
-                                                    {
-                                                        // buddy subscriber creation failed - need to unblock both buddy and main line and rollback order
-
-                                                        try
-                                                        {
-                                                            requestIdToUpdateBuddyLineRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.ExistingSession, buddyLine);
-
-                                                            bssUpdateBuddyResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateBuddyLineRes.Results, buddyLine, true);
-                                                        }
-                                                        catch (Exception exi)
-                                                        {
-                                                            LogInfo.Error(new ExceptionHelper().GetLogString(exi, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
-                                                        }
-
-                                                        try
-                                                        {
-                                                            requestIdToUpdateMainLineRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.ExistingSession, mainLine);
-                                                            // Unblock main line
-                                                            bssUpdateBuddyResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateMainLineRes.Results, mainLine, true);
-                                                        }
-
-                                                        catch (Exception exi)
-                                                        {
-                                                            LogInfo.Error(new ExceptionHelper().GetLogString(exi, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
-                                                        }
-
-                                                        finally
-                                                        {
-                                                            DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID);
-                                                        }
-
-                                                        return Ok(new OperationResponse
-                                                        {
-                                                            HasSucceeded = false,
-                                                            Message = EnumExtensions.GetDescription(CommonErrors.BuddySubscriberCreationFailed),
-                                                            IsDomainValidationErrors = false                                                           
-
-                                                        });
-                                                    }
-
-                                                }
-
-                                                else
-                                                {
-                                                    // create subscription failed
-                                                    //unblock both lines and rollback order
-                                                    DatabaseResponse rollbackResponse = new DatabaseResponse();
-                                                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.CreateSubscriptionFailed) + "\n");
-
-                                                    try
-                                                    {
-                                                        requestIdToUpdateBuddyLineRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.ExistingSession, buddyLine);
-
-                                                        bssUpdateBuddyResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateBuddyLineRes.Results, buddyLine, true);
-                                                    }
-                                                    catch (Exception exi)
-                                                    {
-                                                        LogInfo.Error(new ExceptionHelper().GetLogString(exi, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
-                                                    }
-
-                                                    try
-                                                    {
-                                                        requestIdToUpdateMainLineRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.ExistingSession, mainLine);
-                                                        // Unblock main line
-                                                        bssUpdateBuddyResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateMainLineRes.Results, mainLine, true);
-                                                    }
-
-                                                    catch (Exception exi)
-                                                    {
-                                                        LogInfo.Error(new ExceptionHelper().GetLogString(exi, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
-                                                    }                                                    
-
-                                                    finally
-                                                    {
-                                                        rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID);
-                                                    }                                                    
-
-                                                    if (rollbackResponse.ResponseCode == (int)DbReturnValue.DeleteSuccess)
-                                                    {
-                                                        return Ok(new OperationResponse
-                                                        {
-                                                            HasSucceeded = false,
-                                                            Message = EnumExtensions.GetDescription(CommonErrors.CreateSubscriptionFailed) + " " + EnumExtensions.GetDescription(CommonErrors.OrderRolledBack),
-                                                            IsDomainValidationErrors = false
-                                                        });
-                                                    }
-
-                                                    else
-                                                    {
-                                                        return Ok(new OperationResponse
-                                                        {
-                                                            HasSucceeded = false,
-                                                            Message = EnumExtensions.GetDescription(CommonErrors.CreateSubscriptionFailed) + " " + EnumExtensions.GetDescription(CommonErrors.OrderRolledBackFailed),
-                                                            IsDomainValidationErrors = false
-                                                        });
-                                                    }
-                                                }
-                                            }
-                                            else
-                                            {
-                                                //one or both blocking failed
-                                                //bsshelper.GetResponseCode(bssUpdateResponse) == "0" && bsshelper.GetResponseCode(bssUpdateBuddyResponse
-
-                                                if(bsshelper.GetResponseCode(bssUpdateResponse) == "0")
-                                                {
-                                                    try
-                                                    {
-                                                        // Unblock main line if blocked
-                                                        requestIdToUpdateMainLineRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.ExistingSession, mainLine);
-
-                                                        bssUpdateBuddyResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateMainLineRes.Results, mainLine, true);
-                                                    }
-
-                                                    catch (Exception exi)
-                                                    {
-                                                        LogInfo.Error(new ExceptionHelper().GetLogString(exi, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
-                                                    }
-                                                }
-
-                                                if (bsshelper.GetResponseCode(bssUpdateBuddyResponse) == "0")
-                                                {
-                                                    try
-                                                    {
-                                                        // Unblock buddy line if blocked
-                                                        requestIdToUpdateBuddyLineRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.ExistingSession, buddyLine);
-
-                                                        bssUpdateBuddyResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateBuddyLineRes.Results, buddyLine, true);
-                                                    }
-
-                                                    catch (Exception exi)
-                                                    {
-                                                        LogInfo.Error(new ExceptionHelper().GetLogString(exi, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
-                                                    }
-                                                }
-                                                LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.UpdateAssetBlockingFailed) + "\n");
-
-                                                //ROLLBACK ORDER
-                                                DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID);
-
-                                                if (rollbackResponse.ResponseCode == (int)DbReturnValue.DeleteSuccess)
-                                                {
-                                                    return Ok(new OperationResponse
-                                                    {
-                                                        HasSucceeded = false,
-                                                        Message = EnumExtensions.GetDescription(DbReturnValue.BlockingFailed) + " " + EnumExtensions.GetDescription(CommonErrors.OrderRolledBack),
-                                                        IsDomainValidationErrors = false
-                                                    });
-                                                }
-                                                else
-                                                {
-                                                    return Ok(new OperationResponse
-                                                    {
-                                                        HasSucceeded = false,
-                                                        Message = EnumExtensions.GetDescription(DbReturnValue.BlockingFailed) + " " + EnumExtensions.GetDescription(CommonErrors.OrderRolledBackFailed),
-                                                        IsDomainValidationErrors = false
-                                                    });
-                                                }
-                                            }
-
-                                        }
-                                        else
-                                        {
-                                            // no assets returned                                   
-
-                                            LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.GetAssetFailed) + "\n");
-
-                                            DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID);
-
-                                            if (rollbackResponse.ResponseCode == (int)DbReturnValue.DeleteSuccess)
-                                            {
-                                                return Ok(new OperationResponse
-                                                {
-                                                    HasSucceeded = false,
-                                                    Message = EnumExtensions.GetDescription(CommonErrors.GetAssetFailed) + " " + EnumExtensions.GetDescription(CommonErrors.OrderRolledBack),
-                                                    IsDomainValidationErrors = false
-                                                });
-                                            }
-                                            else
-                                            {
-                                                return Ok(new OperationResponse
-                                                {
-                                                    HasSucceeded = false,
-                                                    Message = EnumExtensions.GetDescription(CommonErrors.GetAssetFailed) + " " + EnumExtensions.GetDescription(CommonErrors.OrderRolledBackFailed),
-                                                    IsDomainValidationErrors = false
-                                                });
-                                            }
-                                        }
-                                    }
-
-                                    else
-                                    {
-                                        // no change as it is in v1
-
-                                        ResponseObject res = new ResponseObject();
-
-                                        try
-                                        {
-                                            res = await bsshelper.GetAssetInventory(config, (((List<ServiceFees>)serviceCAF.Results)).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdRes.Results);
-                                        }
-
-                                        catch (Exception ex)
-                                        {
-                                            LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
-
-                                            DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID);
-
-                                            return Ok(new OperationResponse
-                                            {
-                                                HasSucceeded = false,
-                                                Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed) + ". " + EnumExtensions.GetDescription(CommonErrors.OrderRolledBack),
-                                                IsDomainValidationErrors = false
-                                            });
-
-                                        }
-
-                                        string AssetToSubscribe = bsshelper.GetAssetId(res);
-
-                                        if (res != null)
-                                        {
-                                            BSSNumbers numbers = new BSSNumbers();
-
-                                            numbers.FreeNumbers = bsshelper.GetFreeNumbers(res);
-
-                                            //insert these number into database
-                                            string json = bsshelper.GetJsonString(numbers.FreeNumbers); // json insert
-
-                                            DatabaseResponse updateBssCallFeeNumbers = await _orderAccess.UpdateBSSCallNumbers(json, ((BSSAssetRequest)requestIdRes.Results).userid, ((BSSAssetRequest)requestIdRes.Results).BSSCallLogID);
-                                        }
-
-                                        if (res != null && res.Response != null && res.Response.asset_details !=null &&(int.Parse(res.Response.asset_details.total_record_count) > 0))
-                                        {
-
-                                            //Block number                                    
-
-                                            DatabaseResponse requestIdToUpdateRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), customerID, (int)BSSCalls.ExistingSession, AssetToSubscribe);
-
-                                            BSSUpdateResponseObject bssUpdateResponse = new BSSUpdateResponseObject();
-
-                                            try
-                                            {
-                                                bssUpdateResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateRes.Results, AssetToSubscribe, false);
-                                            }
-
-                                            catch (Exception ex)
-                                            {
-                                                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
-
-                                                DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID);
-
-                                                return Ok(new OperationResponse
-                                                {
-                                                    HasSucceeded = false,
-                                                    Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed) + ". " + EnumExtensions.GetDescription(CommonErrors.OrderRolledBack),
-                                                    IsDomainValidationErrors = false
-                                                });
-                                            }
-
-
-                                            if (bsshelper.GetResponseCode(bssUpdateResponse) == "0")
-                                            {
-                                                // create subscription
-                                                CreateSubscriber subscriberToCreate = new CreateSubscriber { BundleID = request.BundleID, OrderID = ((OrderInit)createOrderRresponse.Results).OrderID, MobileNumber = AssetToSubscribe, PromotionCode = request.PromotionCode }; 
-
-                                                DatabaseResponse createSubscriberResponse = await _orderAccess.CreateSubscriber(subscriberToCreate, ((BSSAssetRequest)requestIdToUpdateRes.Results).userid);
-
-                                                if (createSubscriberResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
-                                                {
-                                                    // Get Order Basic Details
-                                                    DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails_V2(((OrderInit)createOrderRresponse.Results).OrderID);
-
-                                                    return Ok(new OperationResponse
-                                                    {
-                                                        HasSucceeded = true,
-                                                        Message = EnumExtensions.GetDescription(DbReturnValue.CreateSuccess),
-                                                        IsDomainValidationErrors = false,
-                                                        ReturnedObject = orderDetailsResponse.Results
-
-                                                    });
-                                                }
-
-                                                else
-                                                {
-                                                    // create subscription failed
-
-                                                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.CreateSubscriptionFailed) + "\n");
-
-                                                    DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID);
-
-                                                    if (rollbackResponse.ResponseCode == (int)DbReturnValue.DeleteSuccess)
-                                                    {
-                                                        return Ok(new OperationResponse
-                                                        {
-                                                            HasSucceeded = false,
-                                                            Message = EnumExtensions.GetDescription(CommonErrors.CreateSubscriptionFailed) + " " + EnumExtensions.GetDescription(CommonErrors.OrderRolledBack),
-                                                            IsDomainValidationErrors = false
-                                                        });
-                                                    }
-
-                                                    else
-                                                    {
-                                                        return Ok(new OperationResponse
-                                                        {
-                                                            HasSucceeded = false,
-                                                            Message = EnumExtensions.GetDescription(CommonErrors.CreateSubscriptionFailed) + " " + EnumExtensions.GetDescription(CommonErrors.OrderRolledBackFailed),
-                                                            IsDomainValidationErrors = false
-                                                        });
-                                                    }
-                                                }
-                                            }
-                                            else
-                                            {
-                                                //blocking failed
-
-                                                LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.UpdateAssetBlockingFailed) + "\n");
-
-                                                //ROLLBACK ORDER
-                                                DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID);
-
-                                                if (rollbackResponse.ResponseCode == (int)DbReturnValue.DeleteSuccess)
-                                                {
-                                                    return Ok(new OperationResponse
-                                                    {
-                                                        HasSucceeded = false,
-                                                        Message = EnumExtensions.GetDescription(DbReturnValue.BlockingFailed) + " " + EnumExtensions.GetDescription(CommonErrors.OrderRolledBack),
-                                                        IsDomainValidationErrors = false
-                                                    });
-                                                }
-                                                else
-                                                {
-                                                    return Ok(new OperationResponse
-                                                    {
-                                                        HasSucceeded = false,
-                                                        Message = EnumExtensions.GetDescription(DbReturnValue.BlockingFailed) + " " + EnumExtensions.GetDescription(CommonErrors.OrderRolledBackFailed),
-                                                        IsDomainValidationErrors = false
-                                                    });
-                                                }
-                                            }
-
-                                        }
-                                        else
-                                        {
-                                            // no assets returned                                   
-
-                                            LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.GetAssetFailed) + "\n");
-
-                                            DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID);
-
-                                            if (rollbackResponse.ResponseCode == (int)DbReturnValue.DeleteSuccess)
-                                            {
-                                                return Ok(new OperationResponse
-                                                {
-                                                    HasSucceeded = false,
-                                                    Message = EnumExtensions.GetDescription(CommonErrors.GetAssetFailed) + " " + EnumExtensions.GetDescription(CommonErrors.OrderRolledBack),
-                                                    IsDomainValidationErrors = false
-                                                });
-                                            }
-                                            else
-                                            {
-                                                return Ok(new OperationResponse
-                                                {
-                                                    HasSucceeded = false,
-                                                    Message = EnumExtensions.GetDescription(CommonErrors.GetAssetFailed) + " " + EnumExtensions.GetDescription(CommonErrors.OrderRolledBackFailed),
-                                                    IsDomainValidationErrors = false
-                                                });
-                                            }
-
-                                        }
-                                    }                                    
-                                }
-
-                                catch (Exception ex)
-                                {
-                                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.GetAssetFailed) + "\n");
-
-                                    LogInfo.Fatal(ex, EnumExtensions.GetDescription(CommonErrors.GetAssetFailed) + "\n");
-
-                                    DatabaseResponse rollbackResponse = await _orderAccess.RollBackOrder(((OrderInit)createOrderRresponse.Results).OrderID);
-
-                                    if (rollbackResponse.ResponseCode == (int)DbReturnValue.DeleteSuccess)
-                                    {
-                                        return Ok(new OperationResponse
-                                        {
-                                            HasSucceeded = false,
-                                            Message = EnumExtensions.GetDescription(CommonErrors.GetAssetFailed) + " " + EnumExtensions.GetDescription(CommonErrors.OrderRolledBack),
-                                            IsDomainValidationErrors = false
-                                        });
-                                    }
-                                    else
-                                    {
-                                        return Ok(new OperationResponse
-                                        {
-                                            HasSucceeded = false,
-                                            Message = EnumExtensions.GetDescription(CommonErrors.GetAssetFailed) + " " + EnumExtensions.GetDescription(CommonErrors.OrderRolledBackFailed),
-                                            IsDomainValidationErrors = false
-                                        });
-                                    }
-                                }
-
-                            }
-
-                            else
-                            {
-                                // old order-- return order details
-                                // v2- check for buddy to unblock
-                                // onsuccess update BuddyRemovals table removed =1
-                                //onfailure ignore
-                                //  _orderAccess.CheckBuddyToRemove
-                                // _orderAccess.UpdateBuddyRemoval                               
-
-                                BuddyHelper buddyHelper = new BuddyHelper(_iconfiguration, _messageQueueDataAccess);
-
-                                int buddyHandledResponse = await buddyHelper.AddRemoveBuddyHandler(((OrderInit)createOrderRresponse.Results).OrderID, customerID);
-                              
-                                LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.UnfishedOrderExists));
-
-                                if (buddyHandledResponse == 1)
-                                {
-                                    DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails_V2(((OrderInit)createOrderRresponse.Results).OrderID);
-
-                                    return Ok(new OperationResponse
-                                    {
-                                        HasSucceeded = true,
-                                        Message = EnumExtensions.GetDescription(CommonErrors.UnfishedOrderExists),
-                                        IsDomainValidationErrors = false,
-                                        ReturnedObject = orderDetailsResponse.Results
-
-                                    });
-                                }
-                                else 
-                                { 
-                                    return Ok(new OperationResponse
-                                    {
-                                        HasSucceeded = false,
-                                        Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed) + ". " + EnumExtensions.GetDescription(CommonErrors.OrderRolledBack),
-                                        IsDomainValidationErrors = false,                                       
-
-                                    });
-                                }                               
-
-                            }
-                        }
-                    }
-
-                    else
-                    {
-                        //Token expired
-
-                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.ExpiredToken) + "\n");
-
-                        return Ok(new OperationResponse
-                        {
-                            HasSucceeded = false,
-                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
-                            IsDomainValidationErrors = true
-                        });
-
-                    }
-
-                }
-
-                else
-                {
-                    // token auth failure
-                    LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed) + "\n");
-
-                    return Ok(new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
-                        IsDomainValidationErrors = false
-                    });
-                }
-
-            }
-            catch (Exception ex)
-            {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + " for customer token:" + token + ". Payload:" + JsonConvert.SerializeObject(request) + "\n");
-
-                return Ok(new OperationResponse
-                {
-                    HasSucceeded = false,
-                    Message = StatusMessages.ServerError,
-                    IsDomainValidationErrors = false
-                });
-
-            }
-        }
-
-
-        /// <summary>
-        /// This will Create an order for the logged in customer with the bundle selected.
-        /// </summary>
-        /// <param name="token"></param>
-        /// <param name="request">CreateOrderRequest</param>
-        ///Body: 
-        ///{
-        ///	"BundleID" : "1",
-        ///	"ReferralCode" : "dkfsdsd" --optional
-        ///	"PromotionCode" : "Launch2019" --optional
-        ///}
-        /// <returns>OperationResponse</returns>
-        // POST: api/Orders
-        [HttpPost]
-        [Route("Post_v2")]
-        public async Task<IActionResult> Post_v2([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] CreateOrderRequest request)
         {
 
             try
@@ -1066,7 +253,7 @@ namespace OrderService.Controllers
                             if (createOrderRresponse.ResponseCode == ((int)DbReturnValue.CreationFailed))
                             {
                                 // order creation failed
-
+                                await _numberhelper.UnBlockMultipleNumbers(customerID, numbers);
                                 LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.CreateOrderFailed) + " for customer:" + customerID + ". Payload:" + JsonConvert.SerializeObject(request) + "\n");
 
                                 return Ok(new OperationResponse
@@ -1079,7 +266,7 @@ namespace OrderService.Controllers
                             else if (createOrderRresponse.ResponseCode == ((int)DbReturnValue.InvalidPromoCode))
                             {
                                 // order creation failed
-
+                                await _numberhelper.UnBlockMultipleNumbers(customerID, numbers);
                                 LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.InvalidPromoCode) + " for customer:" + customerID + ". Payload:" + JsonConvert.SerializeObject(request) + "\n");
 
                                 return Ok(new OperationResponse
@@ -1092,7 +279,7 @@ namespace OrderService.Controllers
                             else if (createOrderRresponse.ResponseCode == ((int)DbReturnValue.PendingOrderSIM))
                             {
                                 // order creation failed
-
+                                await _numberhelper.UnBlockMultipleNumbers(customerID, numbers);
                                 LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.PendingOrderSIM) + " for customer:" + customerID + ". Payload:" + JsonConvert.SerializeObject(request) + "\n");
 
                                 return Ok(new OperationResponse
@@ -1102,15 +289,11 @@ namespace OrderService.Controllers
                                     IsDomainValidationErrors = true
                                 });
                             }
-
                             else
                             {
-                                // order creation Success                           
-
+                                // order creation Success
                                 if (((OrderInit)createOrderRresponse.Results).Status == OrderStatus.NewOrder.ToString())
                                 {
-                                    // if its new order call GetAssets BSSAPI
-
                                     try
                                     {
                                         // create subscription for main line
@@ -1184,21 +367,24 @@ namespace OrderService.Controllers
                                                     });
                                                 }
                                             }
+                                            else
+                                            {
+                                                DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails_V2(((OrderInit)createOrderRresponse.Results).OrderID);
+                                                return Ok(new OperationResponse
+                                                {
+                                                    HasSucceeded = true,
+                                                    Message = EnumExtensions.GetDescription(DbReturnValue.CreateSuccess),
+                                                    IsDomainValidationErrors = false,
+                                                    ReturnedObject = orderDetailsResponse.Results
+
+                                                });
+                                            }
                                         }
                                         else
                                         {
                                             // create subscription failed
                                             //unblock both lines and rollback order
-                                            try
-                                            {
-                                                //unblock the blocked buddy
-                                                await _numberhelper.UnblockNumber(customerID, numbers[0].Number);
-                                                await _numberhelper.UnblockNumber(customerID, numbers[1].Number);
-                                            }
-                                            catch (Exception exi)
-                                            {
-                                                LogInfo.Error(new ExceptionHelper().GetLogString(exi, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
-                                            }
+                                            await _numberhelper.UnBlockMultipleNumbers(customerID, numbers);
                                             return Ok(new OperationResponse
                                             {
                                                 HasSucceeded = false,
@@ -1210,6 +396,7 @@ namespace OrderService.Controllers
                                     }
                                     catch (Exception ex)
                                     {
+                                        await _numberhelper.UnBlockMultipleNumbers(customerID, numbers);
                                         LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.GetAssetFailed) + "\n");
 
                                         LogInfo.Fatal(ex, EnumExtensions.GetDescription(CommonErrors.GetAssetFailed) + "\n");
@@ -1262,11 +449,21 @@ namespace OrderService.Controllers
                                 }
                             }
                         }
+                        else
+                        {
+                            await _numberhelper.UnBlockMultipleNumbers(customerID, numbers);
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed),
+                                IsDomainValidationErrors = false,
+
+                            });
+                        }
                     }
                     else
                     {
                         //Token expired
-
                         LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.ExpiredToken) + "\n");
 
                         return Ok(new OperationResponse
