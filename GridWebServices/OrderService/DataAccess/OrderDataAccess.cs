@@ -4732,6 +4732,43 @@ namespace OrderService.DataAccess
             }
         }
 
+        public async Task<DatabaseResponse> GetRequiredNumberCount(int CustomerID, int BundleID)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                   {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+                    new SqlParameter( "@BundleID",  SqlDbType.Int )
+                };
+
+                parameters[0].Value = CustomerID;
+                parameters[1].Value = BundleID;
+
+                _DataHelper = new DataAccessHelper("Orders_GetRequiredNumberCount", parameters, _configuration);
+
+                DataSet ds = new DataSet();
+
+                int result = await _DataHelper.RunAsync(ds); //103/150, 
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                response = new DatabaseResponse { ResponseCode = result, Results=ds.Tables[0].Rows[0][0].ToString().Trim() };
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
         public async Task<DatabaseResponse> UpdateSIMCardDetails(int OrderID, SIMCardDetail[] details)
         {
             try

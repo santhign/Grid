@@ -1159,5 +1159,11 @@ namespace OrderService.Models
         public int BundleID { get; set; }
         public string MobileNumber { get; set; }        
     }
-    
+
+
+    public class NumberDetails
+    {
+        public string Number { get; set; }
+        public string UserSessionID { get; set; }
+    }
 }

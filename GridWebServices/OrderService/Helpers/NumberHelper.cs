@@ -5,6 +5,7 @@ using Core.Models;
 using InfrastructureService;
 using Microsoft.Extensions.Configuration;
 using OrderService.DataAccess;
+using OrderService.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,8 +16,9 @@ namespace OrderService.Helpers
     public class NumberHelper
     {
         IConfiguration _iconfiguration;
-        public async Task<string> GetNumberFromBSS(int CustomerID)
+        public async Task<NumberDetails> GetNumberFromBSS(int CustomerID)
         {
+            NumberDetails _details = new NumberDetails();
             OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
             BSSAPIHelper bsshelper = new BSSAPIHelper();
             DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
@@ -45,28 +47,51 @@ namespace OrderService.Helpers
                         bssUpdateResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateMainLineRes.Results, number, false);
                         if (bsshelper.GetResponseCode(bssUpdateResponse) == "0")
                         {
-                            return number;
+                            _details.Number = number;
+                            _details.UserSessionID = ((BSSAssetRequest)requestIdToUpdateMainLineRes.Results).userid;
+                            return _details;
                         }
                         else
                         {
-                            return "";
+                            return _details;
                         }
                     }
                     catch (Exception ex)
                     {
                         LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
-                        return "";
+                        return _details;
                     }
                 }
                 else
                 {
-                    return "";
+                    return _details;
                 }
             }
             catch (Exception ex)
             {
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
-                return "";
+                return _details;
+            }
+        }
+
+        public async Task<bool> UnblockNumber(int CustomerID, string number)
+        {
+            try
+            {
+                OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+                BSSAPIHelper bsshelper = new BSSAPIHelper();
+                DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
+                GridBSSConfi config = bsshelper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
+                DatabaseResponse requestIdToUpdateLineRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), CustomerID, (int)BSSCalls.ExistingSession, number);
+
+                //un reachable condition, but for safety
+                BSSUpdateResponseObject bssUpdateBuddyResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateLineRes.Results, number, true);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+                return false;
             }
         }
     }

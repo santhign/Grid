@@ -975,6 +975,335 @@ namespace OrderService.Controllers
             }
         }
 
+
+        /// <summary>
+        /// This will Create an order for the logged in customer with the bundle selected.
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="request">CreateOrderRequest</param>
+        ///Body: 
+        ///{
+        ///	"BundleID" : "1",
+        ///	"ReferralCode" : "dkfsdsd" --optional
+        ///	"PromotionCode" : "Launch2019" --optional
+        ///}
+        /// <returns>OperationResponse</returns>
+        // POST: api/Orders
+        [HttpPost]
+        [Route("Post_v2")]
+        public async Task<IActionResult> Post_v2([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] CreateOrderRequest request)
+        {
+
+            try
+            {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+                AuthHelper helper = new AuthHelper(_iconfiguration);
+
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_CreateOrder);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    {
+                        int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+                        if (!ModelState.IsValid)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = string.Join("; ", ModelState.Values
+                                                         .SelectMany(x => x.Errors)
+                                                         .Select(x => x.ErrorMessage))
+                            });
+                        }
+
+                        EmailValidationHelper _helper = new EmailValidationHelper();
+
+                        bool AllowSubscriber = await _helper.AllowSubscribers(customerID, (int)SubscriberCheckType.CustomerLevel, _iconfiguration);
+
+                        if (!AllowSubscriber)
+                        {
+                            LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.NotAllowSubscribers) + " for customer:" + customerID + ". Payload:" + JsonConvert.SerializeObject(request) + "\n");
+
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.NotAllowSubscribers),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+
+                        OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+                        DatabaseResponse OrderSubscriberCount = await _orderAccess.GetRequiredNumberCount(customerID, request.BundleID);
+                        int SubscriberCount = 0;
+                        List<NumberDetails> numbers = new List<NumberDetails>();
+                        int.TryParse((string)OrderSubscriberCount.Results, out SubscriberCount);
+                        NumberHelper _numberhelper = new NumberHelper();
+                        for (int i = 0; i < SubscriberCount; i++)
+                        {
+                            NumberDetails _details = await _numberhelper.GetNumberFromBSS(customerID);
+                            if (_details != null)
+                            {
+                                numbers.Add(_details);
+                            }
+                        }
+                        if (numbers.Count == SubscriberCount)
+                        {
+                            //create order
+                            CreateOrder order = new CreateOrder();
+
+                            order = new CreateOrder { BundleID = request.BundleID, PromotionCode = request.PromotionCode, ReferralCode = request.ReferralCode, UserCode = request.UserCode, CustomerID = customerID };
+
+                            DatabaseResponse createOrderRresponse = await _orderAccess.CreateOrder_V2(order);
+
+                            if (createOrderRresponse.ResponseCode == ((int)DbReturnValue.CreationFailed))
+                            {
+                                // order creation failed
+
+                                LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.CreateOrderFailed) + " for customer:" + customerID + ". Payload:" + JsonConvert.SerializeObject(request) + "\n");
+
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = false,
+                                    Message = EnumExtensions.GetDescription(DbReturnValue.CreationFailed),
+                                    IsDomainValidationErrors = true
+                                });
+                            }
+                            else if (createOrderRresponse.ResponseCode == ((int)DbReturnValue.InvalidPromoCode))
+                            {
+                                // order creation failed
+
+                                LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.InvalidPromoCode) + " for customer:" + customerID + ". Payload:" + JsonConvert.SerializeObject(request) + "\n");
+
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = false,
+                                    Message = EnumExtensions.GetDescription(DbReturnValue.InvalidPromoCode),
+                                    IsDomainValidationErrors = true
+                                });
+                            }
+                            else if (createOrderRresponse.ResponseCode == ((int)DbReturnValue.PendingOrderSIM))
+                            {
+                                // order creation failed
+
+                                LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.PendingOrderSIM) + " for customer:" + customerID + ". Payload:" + JsonConvert.SerializeObject(request) + "\n");
+
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = false,
+                                    Message = EnumExtensions.GetDescription(DbReturnValue.PendingOrderSIM),
+                                    IsDomainValidationErrors = true
+                                });
+                            }
+
+                            else
+                            {
+                                // order creation Success                           
+
+                                if (((OrderInit)createOrderRresponse.Results).Status == OrderStatus.NewOrder.ToString())
+                                {
+                                    // if its new order call GetAssets BSSAPI
+
+                                    try
+                                    {
+                                        // create subscription for main line
+                                        CreateSubscriber subscriberToCreate = new CreateSubscriber { BundleID = request.BundleID, OrderID = ((OrderInit)createOrderRresponse.Results).OrderID, MobileNumber = numbers[0].Number, PromotionCode = request.PromotionCode };
+                                        DatabaseResponse createSubscriberResponse = await _orderAccess.CreateSubscriber(subscriberToCreate, numbers[0].UserSessionID);
+
+                                        if (createSubscriberResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
+                                        {
+                                            //CreateBuddySubscriber-Order_CreateBuddySubscriber                                                       
+                                            DatabaseResponse buddyCheckResponse = new DatabaseResponse();
+                                            buddyCheckResponse = await _orderAccess.IsBuddyBundle(request.BundleID);
+                                            if (buddyCheckResponse.ResponseCode == (int)DbReturnValue.RecordExists && ((IsBuddyBundle)buddyCheckResponse.Results).HasBuddyPromotion == 1)
+                                            {
+                                                CreateBuddySubscriber buddySubscriberToCreate = new CreateBuddySubscriber { OrderID = ((OrderInit)createOrderRresponse.Results).OrderID, MobileNumber = numbers[1].Number, MainLineMobileNumber = numbers[0].Number, UserId = numbers[1].UserSessionID };
+                                                DatabaseResponse createBuddySubscriberResponse = await _orderAccess.CreateBuddySubscriber(buddySubscriberToCreate);
+                                                if (createBuddySubscriberResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
+                                                {
+                                                    DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails_V2(((OrderInit)createOrderRresponse.Results).OrderID);
+
+                                                    return Ok(new OperationResponse
+                                                    {
+                                                        HasSucceeded = true,
+                                                        Message = EnumExtensions.GetDescription(DbReturnValue.CreateSuccess),
+                                                        IsDomainValidationErrors = false,
+                                                        ReturnedObject = orderDetailsResponse.Results
+
+                                                    });
+                                                }
+                                                else if (createBuddySubscriberResponse.ResponseCode == (int)DbReturnValue.NotBuddyBundle)
+                                                {
+                                                    try
+                                                    {
+                                                        //unblock the blocked buddy
+                                                        await _numberhelper.UnblockNumber(customerID, numbers[1].Number);
+                                                    }
+                                                    catch (Exception exi)
+                                                    {
+                                                        LogInfo.Error(new ExceptionHelper().GetLogString(exi, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+                                                    }
+                                                    DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails_V2(((OrderInit)createOrderRresponse.Results).OrderID);
+
+                                                    return Ok(new OperationResponse
+                                                    {
+                                                        HasSucceeded = true,
+                                                        Message = EnumExtensions.GetDescription(DbReturnValue.CreateSuccess),
+                                                        IsDomainValidationErrors = false,
+                                                        ReturnedObject = orderDetailsResponse.Results
+
+                                                    });
+                                                }
+                                                else
+                                                {
+                                                    // buddy subscriber creation failed - need to unblock both buddy and main line and rollback order
+
+                                                    try
+                                                    {
+                                                        //unblock the blocked buddy
+                                                        await _numberhelper.UnblockNumber(customerID, numbers[0].Number);
+                                                        await _numberhelper.UnblockNumber(customerID, numbers[1].Number);
+                                                    }
+                                                    catch (Exception exi)
+                                                    {
+                                                        LogInfo.Error(new ExceptionHelper().GetLogString(exi, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+                                                    }
+                                                    return Ok(new OperationResponse
+                                                    {
+                                                        HasSucceeded = false,
+                                                        Message = EnumExtensions.GetDescription(CommonErrors.BuddySubscriberCreationFailed),
+                                                        IsDomainValidationErrors = false
+
+                                                    });
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            // create subscription failed
+                                            //unblock both lines and rollback order
+                                            try
+                                            {
+                                                //unblock the blocked buddy
+                                                await _numberhelper.UnblockNumber(customerID, numbers[0].Number);
+                                                await _numberhelper.UnblockNumber(customerID, numbers[1].Number);
+                                            }
+                                            catch (Exception exi)
+                                            {
+                                                LogInfo.Error(new ExceptionHelper().GetLogString(exi, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+                                            }
+                                            return Ok(new OperationResponse
+                                            {
+                                                HasSucceeded = false,
+                                                Message = EnumExtensions.GetDescription(CommonErrors.CreateSubscriptionFailed),
+                                                IsDomainValidationErrors = false
+
+                                            });
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.GetAssetFailed) + "\n");
+
+                                        LogInfo.Fatal(ex, EnumExtensions.GetDescription(CommonErrors.GetAssetFailed) + "\n");
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = false,
+                                            Message = EnumExtensions.GetDescription(CommonErrors.GetAssetFailed) + " " + EnumExtensions.GetDescription(CommonErrors.OrderRolledBackFailed),
+                                            IsDomainValidationErrors = false
+                                        });
+                                    }
+                                }
+                                else
+                                {
+                                    // old order-- return order details
+                                    // v2- check for buddy to unblock
+                                    // onsuccess update BuddyRemovals table removed =1
+                                    //onfailure ignore
+                                    //  _orderAccess.CheckBuddyToRemove
+                                    // _orderAccess.UpdateBuddyRemoval                               
+
+                                    BuddyHelper buddyHelper = new BuddyHelper(_iconfiguration, _messageQueueDataAccess);
+
+                                    int buddyHandledResponse = await buddyHelper.AddRemoveBuddyHandler(((OrderInit)createOrderRresponse.Results).OrderID, customerID);
+
+                                    LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.UnfishedOrderExists));
+
+                                    if (buddyHandledResponse == 1)
+                                    {
+                                        DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails_V2(((OrderInit)createOrderRresponse.Results).OrderID);
+
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = true,
+                                            Message = EnumExtensions.GetDescription(CommonErrors.UnfishedOrderExists),
+                                            IsDomainValidationErrors = false,
+                                            ReturnedObject = orderDetailsResponse.Results
+
+                                        });
+                                    }
+                                    else
+                                    {
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = false,
+                                            Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed) + ". " + EnumExtensions.GetDescription(CommonErrors.OrderRolledBack),
+                                            IsDomainValidationErrors = false,
+
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.ExpiredToken) + "\n");
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+                    }
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed) + "\n");
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + " for customer token:" + token + ". Payload:" + JsonConvert.SerializeObject(request) + "\n");
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
+
         /// <summary>
         /// This will Update subscribers existing number with new number selected.
         /// </summary>
