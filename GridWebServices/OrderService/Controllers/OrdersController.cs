@@ -212,13 +212,10 @@ namespace OrderService.Controllers
                         }
 
                         EmailValidationHelper _helper = new EmailValidationHelper();
-
                         bool AllowSubscriber = await _helper.AllowSubscribers(customerID, (int)SubscriberCheckType.CustomerLevel, _iconfiguration);
-
                         if (!AllowSubscriber)
                         {
                             LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.NotAllowSubscribers) + " for customer:" + customerID + ". Payload:" + JsonConvert.SerializeObject(request) + "\n");
-
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = false,
@@ -247,7 +244,6 @@ namespace OrderService.Controllers
                             CreateOrder order = new CreateOrder();
 
                             order = new CreateOrder { BundleID = request.BundleID, PromotionCode = request.PromotionCode, ReferralCode = request.ReferralCode, UserCode = request.UserCode, CustomerID = customerID };
-
                             DatabaseResponse createOrderRresponse = await _orderAccess.CreateOrder_V2(order);
 
                             if (createOrderRresponse.ResponseCode == ((int)DbReturnValue.CreationFailed))
@@ -347,7 +343,6 @@ namespace OrderService.Controllers
                                                 else
                                                 {
                                                     // buddy subscriber creation failed - need to unblock both buddy and main line and rollback order
-
                                                     try
                                                     {
                                                         //unblock the blocked buddy
