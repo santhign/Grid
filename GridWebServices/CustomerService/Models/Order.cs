@@ -58,7 +58,6 @@ namespace CustomerService.Models
         public List<OrderStatuses> OrderStatuses { get; set; }
 
         public string RecieptNumber { get; set; }
-        public int? EventSalesRepresentativeID { get; set; }
         public string EventName { get; set; }
         public string EventCode { get; set; }
     }
