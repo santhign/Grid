@@ -229,7 +229,7 @@ namespace OrderService.Controllers
                         int SubscriberCount = 0;
                         List<NumberDetails> numbers = new List<NumberDetails>();
                         int.TryParse((string)OrderSubscriberCount.Results, out SubscriberCount);
-                        NumberHelper _numberhelper = new NumberHelper();
+                        NumberHelper _numberhelper = new NumberHelper(_iconfiguration);
                         for (int i = 0; i < SubscriberCount; i++)
                         {
                             NumberDetails _details = await _numberhelper.GetNumberFromBSS(customerID);

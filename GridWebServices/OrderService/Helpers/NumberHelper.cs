@@ -16,6 +16,11 @@ namespace OrderService.Helpers
     public class NumberHelper
     {
         IConfiguration _iconfiguration;
+
+        public NumberHelper(IConfiguration configuration)
+        {
+            _iconfiguration = configuration;
+        }
         public async Task<NumberDetails> GetNumberFromBSS(int CustomerID)
         {
             NumberDetails _details = new NumberDetails();

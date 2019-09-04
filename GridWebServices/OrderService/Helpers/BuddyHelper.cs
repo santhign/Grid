@@ -49,7 +49,7 @@ namespace OrderService.Helpers
                     {
                         if (buddy.OrderAdditionalBuddyID > 0 && buddy.IsProcessed == 0)
                         {
-                            NumberHelper _numberhelper = new NumberHelper();
+                            NumberHelper _numberhelper = new NumberHelper(_iconfiguration);
                             NumberDetails _details = await _numberhelper.GetNumberFromBSS(customerID);
 
                             if (_details != null && _details.Number != null)
@@ -87,7 +87,7 @@ namespace OrderService.Helpers
         {
             try
             {
-                NumberHelper _numberhelper = new NumberHelper();
+                NumberHelper _numberhelper = new NumberHelper(_iconfiguration);
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
                 DatabaseResponse checkBuddyResponse = await _orderAccess.CheckBuddyToRemove(orderID);
                 if (checkBuddyResponse.ResponseCode == (int)DbReturnValue.RecordExists && checkBuddyResponse.Results != null)
