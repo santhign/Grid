@@ -50,7 +50,8 @@ namespace OrderService.Models
         public List<ServiceCharge> ServiceCharges { get; set; }
 
         public string RecieptNumber { get; set; }
-        
+        public int? EventSalesRepresentativeID { get; set; }
+        public string SIMIDPrefix { get; set; }
     }
 
     public class ServiceCharge
@@ -89,7 +90,10 @@ namespace OrderService.Models
         public string PortedNumberTransferForm { get; set; }
         public string PortedNumberOwnedBy { get; set; }
         public string PortedNumberOwnerRegistrationID { get; set; }
+        public int? IsBuddyLine { get; set; }
+        public int? GroupNumber { get; set; }
         public List<ServiceCharge> ServiceCharges { get; set; }
+        public List<PromotionalVAS> PromotionalVASes { get; set; }
     }
 
    
@@ -190,5 +194,41 @@ namespace OrderService.Models
     {
         public int AccountInvoiceID { get; set; }
         public double? PayableAmount { get; set; }
+    }
+
+    public class PromotionalVAS
+    {
+        public int OrderSubscriberID { get; set; }
+        public int VASID { get; set; }
+        public string BSSPlanCode { get; set; }
+        public string PortalDescription { get; set; }
+        public string PortalSummaryDescription { get; set; }
+        public string PlanMarketingName { get; set; }
+        public double? Data { get; set; }
+        public double? SMS { get; set; }
+        public double? Voice { get; set; }
+        public double? SubscriptionFee { get; set; }
+        public string IsRecurring { get; set; }
+        public int? SubscriptionCount { get; set; }
+    }
+
+    public class SIMCardDetails
+    {
+        public int OrderID { get; set; }
+        public SIMCardDetail[] Details { get; set; }
+    }
+
+    public class SIMCardDetail
+    {
+        public string MobileNumber { get; set; }
+        public string SIMNumber { get; set; }
+    }
+
+    public class SIMCardResponse
+    {
+        public string MobileNumber { get; set; }
+        public string SIMNumber { get; set; }
+        public int IsProcessed { get; set; }
+        public string ErrorReason { get; set; }
     }
 }

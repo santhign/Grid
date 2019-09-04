@@ -265,6 +265,21 @@ namespace Core.Enums
         [Description("Number ChangeRequest already raised")]
         NumberChangeRequestAlreadyRaised = 165,
 
+        [EnumMember(Value = "NotBuddyBundle")]
+        [Description("Selected Bundle is not a buddy bundle")]
+        NotBuddyBundle = 170,
+
+        [EnumMember(Value = "VasNotInAddedList")]
+        [Description("Vas not in added list")]
+        VasNotInAddedList = 171,
+
+        [EnumMember(Value = "InvalidPromoCode")]
+        [Description("Order creation failed due to invalid promotion code.")]
+        InvalidPromoCode = 172,
+
+        [EnumMember(Value = "PendingOrderSIM")]
+        [Description("SIM allocation is pending for the roadshow order")]
+        PendingOrderSIM = 173,
     }
 }
 

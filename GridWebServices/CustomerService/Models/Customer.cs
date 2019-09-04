@@ -130,6 +130,9 @@ namespace CustomerService.Models
         public int PendingAllowedSubscribers { get; set; }
 
         public string BillingAccountNumber { get; set; }
+        public int PendingSIMCount { get; set; }
+
+        public int? PendingSIMOrderID { get; set; }
     }
 
     /// <summary>
@@ -519,6 +522,10 @@ namespace CustomerService.Models
         public int TerminationAllowed { get; set; }
         public int SIMReplacementAllowed { get; set; }
         public int ChangeNumberRaised { get; set; }
+        public int SubscriberID { get; set; }
+        public int IsBuddyLine { get; set; }
+        public int GroupNumber { get; set; }
+
     }
 
     /// <summary>

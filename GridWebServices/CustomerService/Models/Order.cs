@@ -47,6 +47,7 @@ namespace CustomerService.Models
         public DateTime? ScheduledDate { get; set; }
         public double? ServiceFee { get; set; }
         public string InvoiceNumber { get; set; }
+        public int? EventSalesRepresentativeID { get; set; }
         public string MaskedCardNumber { get; set; }
         public string CardBrand { get; set; }
         public int? ExpiryMonth { get; set; }

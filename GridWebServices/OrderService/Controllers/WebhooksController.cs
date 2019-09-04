@@ -201,11 +201,21 @@ namespace OrderService.Controllers
 
                 GridMPGSConfig gatewayConfig = gatewayHelper.GetGridMPGSConfig((List<Dictionary<string, string>>)configResponse.Results);
 
+                //Direct capture MID config
+
+                DatabaseResponse configDirectResponse = await _orderAccess.GetConfiguration(ConfiType.MPGSDirect.ToString());
+
+                GridMPGSDirectMIDConfig gatewayDirectConfig = gatewayHelper.GetGridMPGSDirectMerchant((List<Dictionary<string, string>>)configDirectResponse.Results);
+
+                gatewayConfig = gatewayHelper.GetGridMPGSCombinedConfig(gatewayConfig, gatewayDirectConfig);
+
+                // Direct capture MID config end
+
                 TransactionRetrieveResponseOperation transactionResponse = new TransactionRetrieveResponseOperation();
 
                 string receipt =  gatewayHelper.RetrieveCheckOutTransaction(gatewayConfig, updateRequest);
 
-                transactionResponse = gatewayHelper.GetCapturedTransaction(receipt);
+                transactionResponse = gatewayHelper.GetPaymentTransaction(receipt);
 
                 if (webhookLogUpdatedatabaseResponse != null && webhookLogUpdatedatabaseResponse.Results != null)
                 {
@@ -238,13 +248,13 @@ namespace OrderService.Controllers
 
                     if (processResult == 1)
                     {
-                        LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(CommonErrors.BuddyProcessed));
+                        LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed));
 
                        
                     }
                     else if (processResult == 2)
                     {
-                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(CommonErrors.BuddyProcessingFailed));
+                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed));
 
                        
                     }
@@ -270,9 +280,8 @@ namespace OrderService.Controllers
                     else
                     {
                         // entry for exceptions from QM Helper, but need to send payment success message to UI as payment already processed
-                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing Buddy/MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.SystemExceptionAfterPayment) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
+                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.SystemExceptionAfterPayment) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
                        
-
                     }
                 }
            

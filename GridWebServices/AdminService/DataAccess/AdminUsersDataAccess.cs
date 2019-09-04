@@ -40,16 +40,16 @@ namespace AdminService.DataAccess
 
                 _DataHelper = new DataAccessHelper("Admin_AuthenticateAdminUser", parameters, _configuration);
 
-                DataTable dt = new DataTable();
+                DataSet ds = new DataSet();
 
-                int result = await _DataHelper.RunAsync(dt);
+                int result = await _DataHelper.RunAsync(ds);
 
                 AdminUsers adminuser = new AdminUsers();
 
-                if (dt != null && dt.Rows.Count > 0)
+                if (ds != null && ds.Tables.Count>0 && ds.Tables[0]!=null && ds.Tables[0].Rows.Count > 0)
                 {
 
-                    adminuser = (from model in dt.AsEnumerable()
+                    adminuser = (from model in ds.Tables[0].AsEnumerable()
                                  select new AdminUsers()
                                  {
                                      AdminUserID = model.Field<int>("AdminUserID"),
@@ -59,6 +59,20 @@ namespace AdminService.DataAccess
                                      Role = model.Field<string>("Role"),
 
                                  }).FirstOrDefault();
+                    List<Permission> permissionList = new List<Permission>();
+
+                    if (ds.Tables[1]!=null && ds.Tables[1].Rows.Count>0)
+                    {
+                      permissionList= (from model in ds.Tables[1].AsEnumerable()
+                                                  select new Permission()
+                                                  {
+                                                       RolePermission = model.Field<string>("Permission"),
+
+                                                  }).ToList();
+                    }
+
+                    adminuser.Permissions= permissionList.Select(item => item.RolePermission).ToList();
+
                 }
 
                 return new DatabaseResponse { ResponseCode = result, Results = adminuser };
@@ -402,6 +416,77 @@ namespace AdminService.DataAccess
             }
         }
 
+        public DatabaseResponse AuthenticateAdminUserTokenPermission(string token)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@Token",  SqlDbType.NVarChar )
+
+                };
+
+                parameters[0].Value = token;
+
+                _DataHelper = new DataAccessHelper("AdminUser_AuthenticateToken", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result =  _DataHelper.Run(dt); // 111 /109
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                AuthTokenResponse tokenResponse = new AuthTokenResponse();
+
+                if (result == 111)
+                {
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+
+                        tokenResponse = (from model in dt.AsEnumerable()
+                                         select new AuthTokenResponse()
+                                         {
+                                             CustomerID = model.Field<int>("AdminUserID"),
+
+                                             CreatedOn = model.Field<DateTime>("CreatedOn")
+
+
+                                         }).FirstOrDefault();
+                    }
+
+                    DatabaseResponse configResponse = ConfigHelper.GetValueByKey(ConfigKeys.CustomerTokenExpiryInDays.ToString(), _configuration);
+
+                    if (configResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+                    {
+                        if (tokenResponse.CreatedOn < DateTime.Now.AddDays(-int.Parse(configResponse.Results.ToString())))
+                        {
+                            tokenResponse.IsExpired = true;
+                        }
+                    }
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = tokenResponse };
+
+                }
+
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
         public async Task<DatabaseResponse> AuthenticateAdminUserToken(string token)
         {
             try
@@ -547,5 +632,60 @@ namespace AdminService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+
+        public DatabaseResponse GetAdminUserPermissionsByToken(string token)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+                 {
+                    new SqlParameter( "@AuthToken",  SqlDbType.VarChar ),
+                };
+
+                parameters[0].Value = token;
+
+                _DataHelper = new DataAccessHelper("Admin_GetPermissionsByToken", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result =  _DataHelper.Run(dt);
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                if (dt != null && dt.Rows.Count > 0)
+                {
+
+                    List<Permission> permissionList = new List<Permission>();
+
+                    permissionList = (from model in dt.AsEnumerable()
+                                      select new Permission()
+                                      {
+                                          RolePermission = model.Field<string>("Permission"),
+
+                                      }).ToList();
+
+
+                    List<string> permissions = permissionList.Select(item => item.RolePermission).ToList();
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = permissions };
+
+                }
+
+                else response = new DatabaseResponse { ResponseCode = result };
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw ex;
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
     }
 }

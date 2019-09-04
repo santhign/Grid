@@ -30,13 +30,24 @@ namespace CatelogService.DataAccess
             _configuration = configuration;
         }
 
-        public async Task<List<Bundle>> GetBundleList()
+        public async Task<List<Bundle>> GetBundleList(string code)
         {
             try
-            {               
+            {
+                if (code != "")
+                {
+                    SqlParameter[] parameters =
+                    {
+                    new SqlParameter( "@UserCode",  SqlDbType.NVarChar )
+                    };
+                    parameters[0].Value = code;
 
-                _DataHelper = new DataAccessHelper("Catelog_GetBundlesListing", _configuration);
-
+                    _DataHelper = new DataAccessHelper("Catelog_GetBundlesListing", parameters, _configuration);
+                }
+                else
+                {
+                    _DataHelper = new DataAccessHelper("Catelog_GetBundlesListing", _configuration);
+                }
                 DataTable dt = new DataTable();
 
                 await _DataHelper.RunAsync(dt);

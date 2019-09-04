@@ -15,7 +15,13 @@ namespace AdminService.Models
         public string Password { get; set; }         
         public string Role { get; set; }
         public int Status { get; set; }
+        public List<string> Permissions { get; set; }
 
+    }
+
+    public class Permission
+    {
+        public string RolePermission { get; set; }
     }
     public class Roles
     {
@@ -83,5 +89,7 @@ namespace AdminService.Models
         /// The token.
         /// </value>
         public string Token { get; set; }
+
+      
     }
 }

@@ -30,6 +30,10 @@ namespace Core.Enums
         [Description("Notification")]
         Notification = 6,
 
+        [EnumMember(Value = "MPGSDirect")]
+        [Description("MPGS Direct Capture MID")]
+        MPGSDirect = 7,
+
     }
 
     public enum ConfigKeys

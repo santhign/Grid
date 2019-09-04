@@ -92,6 +92,8 @@ namespace OrderService.Models
         /// The display name.
         /// </value>
         public string DisplayName { get; set; }
+        public int IsBuddyLine { get; set; }
+        public int GroupNumber { get; set; }
     }
 
     /// <summary>
@@ -132,6 +134,7 @@ namespace OrderService.Models
         /// The promotion code.
         /// </value>
         public string PromotionCode { get; set; }
+        public string UserCode { get; set; }
 
     }
 
@@ -163,6 +166,14 @@ namespace OrderService.Models
         /// The promotion code.
         /// </value>
         public string PromotionCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the user code.
+        /// </summary>
+        /// <value>
+        /// The user code.
+        /// </value>
+        public string UserCode { get; set; }
 
     }
 
@@ -483,7 +494,7 @@ namespace OrderService.Models
         /// <value>
         /// The display name.
         /// </value>
-        [Required(ErrorMessage = "Display Name is required")]
+        //[Required(ErrorMessage = "Display Name is required")]
         public string DisplayName { get; set; }
 
         /// <summary>
@@ -512,10 +523,6 @@ namespace OrderService.Models
         /// The contact number.
         /// </value>
        
-        [RegularExpression(@"^([0-9]{8})$", ErrorMessage = "Invalid Mobile Number")]
-        [MaxLength(8, ErrorMessage = "Maximum 8 digits allowed")]
-        [MinLength(8, ErrorMessage = "Minimum 8 digits Required")]
-        [Required(ErrorMessage = "ContactNumber is required")]
         public string ContactNumber { get; set; }
        
     }
@@ -1110,4 +1117,47 @@ namespace OrderService.Models
         public string MobileNumber { get; set; }
 
     }
+
+    public class CreateBuddySubscriber
+    {       
+        public int OrderID { get; set; }
+        public string UserId { get; set; }        
+        public string MobileNumber { get; set; }      
+        public string MainLineMobileNumber { get; set; }
+    }
+
+    public class BuddyToRemove
+    {
+        public int BuddyRemovalID { get; set; }    
+        public string MobileNumber { get; set; }
+        public int? IsPorted { get; set; }
+        public int? IsRemoved { get; set; }      
+    }
+
+    public class AdditionalBuddy
+    {
+        public int OrderAdditionalBuddyID { get; set; }
+        public string MobileNumber { get; set; }
+        public int? IsProcessed { get; set; }
+        public int? IsPorted { get; set; }
+
+        
+
+    }
+
+    public class VasAddRemoveRequest
+    {
+        public int OrderID { get; set; }
+        public int BundleID { get; set; }
+        public string MobileNumber { get; set; }
+        public int? IsRemove { get; set; }
+    }
+
+    public class VasToProcess
+    {
+        public int OrderSubscriberVASBundleID { get; set; }
+        public int BundleID { get; set; }
+        public string MobileNumber { get; set; }        
+    }
+    
 }

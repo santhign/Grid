@@ -121,4 +121,17 @@ namespace OrderService.Models
         [DataMember(Name = "WebhooksNotificationSecret")]
         public string WebhooksNotificationSecret { get; set; }
     }
+
+    [DataContract]
+    public class GridMPGSDirectMIDConfig    {
+        
+        [DataMember(Name = "MerchantId")]
+        public string MerchantId { get; set; }
+
+        [DataMember(Name = "Password")]
+        public string Password { get; set; }       
+
+        [DataMember(Name = "WebhooksNotificationSecret")]
+        public string WebhooksNotificationSecret { get; set; }
+    }
 }

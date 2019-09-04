@@ -12,6 +12,7 @@ using InfrastructureService;
 using AdminService.DataAccess;
 using AdminService.Models;
 using Microsoft.Extensions.Configuration;
+using AdminService.Filters;
 
 
 namespace AdminService.Controllers
@@ -40,6 +41,7 @@ namespace AdminService.Controllers
         /// <param name="token" in="Header"></param>
         /// <returns></returns>
         [HttpGet]
+        [HasPermissionAttribute(AdminServiceUserPermissions.CustomersList)]
         public async Task<IActionResult> GetCustomers([FromHeader(Name = "Grid-Authorization-Token")] string token)
         {
             try
@@ -152,6 +154,7 @@ namespace AdminService.Controllers
         /// <param name="id">The identifier.</param>
         /// <returns></returns>
         [HttpGet("{id}")]
+        [HasPermissionAttribute(AdminServiceUserPermissions.CustomersList)]
         public async Task<IActionResult> GetCustomer([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int id)
         {
             try
@@ -261,6 +264,7 @@ namespace AdminService.Controllers
         /// <param name="SearchValue">The search value.</param>
         /// <returns></returns>
         [HttpGet("SearchCustomer/{SearchValue}")]
+        [HasPermissionAttribute(AdminServiceUserPermissions.CustomersList)]
         public async Task<IActionResult> SearchCustomer([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] string SearchValue)
         {
             try
@@ -371,6 +375,8 @@ namespace AdminService.Controllers
         /// <param name="CustomerID">The identifier.</param>
         /// <returns></returns>
         [HttpGet("Orders/{CustomerID}")]
+
+        [HasPermissionAttribute(AdminServiceUserPermissions.OrdersList)]
         public async Task<IActionResult> GetCustomerOrders([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int CustomerID)
         {
             try
@@ -479,6 +485,8 @@ namespace AdminService.Controllers
         /// <param name="CustomerID">The identifier.</param>
         /// <returns></returns>
         [HttpGet("GetCustomerAccess/{CustomerID}")]
+
+        [HasPermissionAttribute(AdminServiceUserPermissions.CustomersEdit)]
         public async Task<IActionResult> GetCustomerAccess([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int CustomerID)
         {
             try
@@ -975,7 +983,6 @@ namespace AdminService.Controllers
                         }
 
                         var customerAccess = new CustomerDataAccess(_iconfiguration);
-
                         var aTokenResp = (AuthTokenResponse)tokenAuthResponse.Results;
                         var getSubscriber = await customerAccess.GetSubscribers(CustomerID);
                         if (getSubscriber.ResponseCode == (int)DbReturnValue.RecordExists)
@@ -1164,6 +1171,7 @@ namespace AdminService.Controllers
         /// <returns></returns>
         /// 
         [HttpGet("UpdateCustomerAccountAccessibility/{CustomerID}/{Status}")]
+        [HasPermissionAttribute(AdminServiceUserPermissions.CustomersEdit)]
         public async Task<IActionResult> UpdateCustomerAccountAccessibility([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int CustomerID, int Status)
         {
             try

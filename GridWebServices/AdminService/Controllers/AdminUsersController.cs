@@ -16,6 +16,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
+using AdminService.Filters;
 
 namespace AdminService.Controllers
 {
@@ -132,7 +133,9 @@ namespace AdminService.Controllers
                         {
                              new Claim(ClaimTypes.Name, adminuser.AdminUserID.ToString())
                         }),
+
                         Expires = DateTime.Now.AddDays(expiryDay), //  need to check with business needs
+
                         SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
                     };
 
@@ -183,7 +186,6 @@ namespace AdminService.Controllers
 
         }
 
-
         /// <summary>
         /// This will create new admin user
         /// </summary>
@@ -198,7 +200,7 @@ namespace AdminService.Controllers
         ///	"RoleID" : 1
         ///}
         [HttpPost]
-        [Route("Create")]
+        [Route("Create")]     
         public async Task<IActionResult> Create([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] RegisterAdminUser adminuser)
         {
             try
@@ -313,6 +315,7 @@ namespace AdminService.Controllers
         // GET: api/GetAdminUser/1
         [HttpGet]
         [Route("{UserID}")]
+        [HasPermission(AdminServiceUserPermissions.AdminUserList)]
         public async Task<IActionResult> GetAdminUser([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int UserID)
         {
             try
@@ -422,6 +425,7 @@ namespace AdminService.Controllers
         /// 
         // GET: api/GetAdminusers
         [HttpGet]
+        [HasPermission(AdminServiceUserPermissions.AdminUserList)]
         public async Task<IActionResult> GetAdminusers([FromHeader(Name = "Grid-Authorization-Token")] string token)
         {
             try

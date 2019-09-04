@@ -21,4 +21,11 @@ namespace Core.Models
         public string NewMobileNumber { get; set; }
 
     }
+
+    public class IsBuddyBundle
+    {
+        public int BundleID { get; set; }
+        public int HasBuddyPromotion { get; set; }        
+
+    }
 }

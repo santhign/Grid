@@ -118,7 +118,7 @@ namespace CustomerService.DataAccess
 
                 parameters[0].Value = customerId;
 
-                _DataHelper = new DataAccessHelper("Customer_GetDetails", parameters, _configuration);
+                _DataHelper = new DataAccessHelper("Customer_GetDetails_v2", parameters, _configuration);
 
                 DataTable dt = new DataTable();
 
@@ -149,7 +149,9 @@ namespace CustomerService.DataAccess
                                     JoinedOn = model.Field<DateTime>("JoinedOn"),
                                     OrderCount = model.Field<int>("OrderCount"),
                                     BillingAccountNumber = model.Field<string>("BillingAccountNumber"),
-                                    PendingAllowedSubscribers = model.Field<int>("PendingAllowedSubscribers")
+                                    PendingAllowedSubscribers = model.Field<int>("PendingAllowedSubscribers"),
+                                    PendingSIMCount = model.Field<int>("PendingSIMCount"),
+                                    PendingSIMOrderID = model.Field<int?>("PendingSIMOrderID")
                                 }).FirstOrDefault();
                 }
 
@@ -537,6 +539,7 @@ namespace CustomerService.DataAccess
                         subscriber = (from model in dt.AsEnumerable()
                                       select new Subscriber()
                                       {
+                                          SubscriberID = model.Field<int>("SubscriberID"),
                                           MobileNumber = model.Field<string>("MobileNumber"),
                                           DisplayName = model.Field<string>("DisplayName"),
                                           SIMID = model.Field<string>("SIMID"),
@@ -560,7 +563,9 @@ namespace CustomerService.DataAccess
                                           SuspensionAllowed = model.Field<int>("SuspensionAllowed"),
                                           UnsuspensionAllowed = model.Field<int>("UnsuspensionAllowed"),
                                           TerminationAllowed = model.Field<int>("TerminationAllowed"),
-                                          SIMReplacementAllowed = model.Field<int>("SIMReplacementAllowed")
+                                          SIMReplacementAllowed = model.Field<int>("SIMReplacementAllowed"),
+                                          IsBuddyLine = model.Field<int>("IsBuddyLine"),
+                                          GroupNumber = model.Field<int>("GroupNumber")
                                       }).ToList();
                     }
 
@@ -896,7 +901,10 @@ namespace CustomerService.DataAccess
                             orderDetails.Email = dr["Email"].ToString();
                             orderDetails.IDType = dr["IDType"].ToString();
                             orderDetails.IDNumber = dr["IDNumber"].ToString();
-                            orderDetails.IsSameAsBilling = Convert.ToInt32(dr["IsSameAsBilling"]);
+                            if (dr["IsSameAsBilling"] != DBNull.Value)
+                            {
+                                orderDetails.IsSameAsBilling = Convert.ToInt32(dr["IsSameAsBilling"]);
+                            }
                             orderDetails.ShippingUnit = dr["ShippingUnit"].ToString();
                             orderDetails.ShippingFloor = dr["ShippingFloor"].ToString();
                             orderDetails.ShippingBuildingNumber = dr["ShippingBuildingNumber"].ToString();
@@ -909,9 +917,7 @@ namespace CustomerService.DataAccess
                             orderDetails.AlternateRecipientEmail = dr["AlternateRecipientEmail"].ToString();
                             orderDetails.PortalSlotID = dr["PortalSlotID"].ToString();
                             orderDetails.RecieptNumber = dr["RecieptNumber"].ToString();
-                            orderDetails.EventName = dr["EventName"].ToString();
-                            orderDetails.EventCode = dr["EventCode"].ToString();
-                            orderDetails.EventSalesRepresentativeID = (dr["EventSalesRepresentativeID"] == DBNull.Value) ? (int?)null : ((int)dr["EventSalesRepresentativeID"]);
+                            orderDetails.EventSalesRepresentativeID = (dr["EventSalesRepresentativeID"] == DBNull.Value ? (int?)null : ((int)dr["EventSalesRepresentativeID"]));
                             orderDetails.SlotDate = (dr["SlotDate"] == DBNull.Value) ? (DateTime?)null : ((DateTime)dr["SlotDate"]);
                             //dr["SlotDate"] != null  Convert.ToDateTime(dr["SlotDate"]);
                             TimeSpan val;
@@ -947,7 +953,6 @@ namespace CustomerService.DataAccess
                                 { _subscriber.DepositFee = Convert.ToDouble(osdr["DepositFee"]); }
                                 catch { }
                                 _subscriber.IsBuddyLine = Convert.ToInt32(osdr["IsBuddyLine"]);
-                                _subscriber.GroupNumber = Convert.ToInt32(osdr["GroupNumber"]);
                                 _subscriber.PremiumType = Convert.ToInt32(osdr["PremiumType"]);
                                 _subscriber.PremiumName = osdr["PremiumName"].ToString();
                                 _subscriber.IsPorted = Convert.ToInt32(osdr["IsPorted"]);
