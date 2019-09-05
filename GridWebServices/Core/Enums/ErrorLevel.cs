@@ -425,5 +425,9 @@ namespace Core.Enums
         [EnumMember(Value = "Mandatory Record Empty")]
         [Description("Mandatory RecordEmpty")]
         MandatoryRecordEmpty = 26,
+
+        [EnumMember(Value = "OrderIsAlreadyDelivered")]
+        [Description("Order status is already delivered.")]
+        OrderIsAlreadyDelivered = 94,
     }
 }

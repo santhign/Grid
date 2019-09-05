@@ -24,15 +24,34 @@ using Microsoft.AspNetCore.Http.Internal;
 
 namespace OrderService.Controllers
 {
+    /// <summary>
+    /// Order Controller
+    /// </summary>
+    /// <seealso cref="Microsoft.AspNetCore.Mvc.ControllerBase" />
     [Route("api/[controller]")]
     [ApiController]
     public class OrdersController : ControllerBase
     {
+        /// <summary>
+        /// The iconfiguration
+        /// </summary>
         IConfiguration _iconfiguration;
+        /// <summary>
+        /// The message queue data access
+        /// </summary>
         private readonly IMessageQueueDataAccess _messageQueueDataAccess;
 
+        /// <summary>
+        /// The change request data access
+        /// </summary>
         private readonly IChangeRequestDataAccess _changeRequestDataAccess;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OrdersController"/> class.
+        /// </summary>
+        /// <param name="configuration">The configuration.</param>
+        /// <param name="messageQueueDataAccess">The message queue data access.</param>
+        /// <param name="changeRequestDataAccess">The change request data access.</param>
         public OrdersController(IConfiguration configuration, IMessageQueueDataAccess messageQueueDataAccess, IChangeRequestDataAccess changeRequestDataAccess)
         {
             _iconfiguration = configuration;
@@ -40,11 +59,13 @@ namespace OrderService.Controllers
             _changeRequestDataAccess = changeRequestDataAccess;
         }
         /// <summary>
-        /// This will return Order details for specific ID passed 
-        /// </summary>       
-        /// <param name="token"></param>
+        /// This will return Order details for specific ID passed
+        /// </summary>
+        /// <param name="token">The token.</param>
         /// <param name="id">OrderID</param>
-        /// <returns>OperationsResponse</returns>
+        /// <returns>
+        /// OperationsResponse
+        /// </returns>
         // GET: api/Orders/5
         [HttpGet("{id}")]
         public async Task<IActionResult> Get([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int id)
@@ -167,15 +188,17 @@ namespace OrderService.Controllers
         /// <summary>
         /// This will Create an order for the logged in customer with the bundle selected.
         /// </summary>
-        /// <param name="token"></param>
+        /// <param name="token">The token.</param>
         /// <param name="request">CreateOrderRequest</param>
-        ///Body: 
-        ///{
-        ///	"BundleID" : "1",
-        ///	"ReferralCode" : "dkfsdsd" --optional
-        ///	"PromotionCode" : "Launch2019" --optional
-        ///}
-        /// <returns>OperationResponse</returns>
+        /// <returns>
+        /// OperationResponse
+        /// </returns>
+        /// Body:
+        /// {
+        /// "BundleID" : "1",
+        /// "ReferralCode" : "dkfsdsd" --optional
+        /// "PromotionCode" : "Launch2019" --optional
+        /// }
         // POST: api/Orders
         [HttpPost]
         public async Task<IActionResult> Post([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] CreateOrderRequest request)
@@ -499,19 +522,19 @@ namespace OrderService.Controllers
         /// <summary>
         /// This will Update subscribers existing number with new number selected.
         /// </summary>
-        /// <param name="token"></param>
-        /// <param name="request">
-        /// body{
+        /// <param name="token">The token.</param>
+        /// <param name="request">body{
         /// "OrderID" :1,
         /// "OldMobileNumber" :"97854562",
         /// "NewNumber" :{
-        ///             "MobileNumber":"97854572",
-        ///             "ServiceCode" :39
-        ///             },
-        /// "DisplayName" : "shortname"       
-        /// }
-        /// </param>
-        /// <returns>OperationResponse</returns>       
+        /// "MobileNumber":"97854572",
+        /// "ServiceCode" :39
+        /// },
+        /// "DisplayName" : "shortname"
+        /// }</param>
+        /// <returns>
+        /// OperationResponse
+        /// </returns>
         [HttpPost]
         [Route("UpdateSubscriberNumber")]
         public async Task<IActionResult> UpdateSubscriberNumber([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] UpdateSubscriberNumber request)
@@ -854,9 +877,8 @@ namespace OrderService.Controllers
         /// <summary>
         /// This will Update subscribers existing number with new number selected.
         /// </summary>
-        /// <param name="token"></param>
-        /// <param name="request">
-        /// Form{
+        /// <param name="token">The token.</param>
+        /// <param name="request">Form{
         /// "OrderID" :1,
         /// "OldMobileNumber" :"97854562",
         /// "NewMobileNumber":"97854572",
@@ -866,10 +888,10 @@ namespace OrderService.Controllers
         /// "PortedNumberTransferForm":"", //optional
         /// "PortedNumberOwnedBy":"", //optional
         /// "PortedNumberOwnerRegistrationID":"", //optional
-        /// 
-        /// }
-        /// </param>
-        /// <returns>OperationResponse</returns> 
+        /// }</param>
+        /// <returns>
+        /// OperationResponse
+        /// </returns>
         [Route("PortingNumber")]
         [HttpPost, DisableRequestSizeLimit]
         public async Task<IActionResult> PortingNumber([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromForm] UpdateSubscriberPortingNumberRequest request)
@@ -1150,16 +1172,16 @@ namespace OrderService.Controllers
         /// <summary>
         /// This will create an additional subscriber for the orderID input with the selected Bundle
         /// </summary>
-        /// <param name="token"></param>
-        /// <param name="request">
-        /// body
+        /// <param name="token">The token.</param>
+        /// <param name="request">body
         /// {
-        ///  "Token":"auth token",
+        /// "Token":"auth token",
         /// "OrderID" :1,
-        /// "BundleID" :"1"        
-        /// }
-        /// </param>
-        /// <returns>OperationResponse</returns>
+        /// "BundleID" :"1"
+        /// }</param>
+        /// <returns>
+        /// OperationResponse
+        /// </returns>
         //[HttpPost]
         //[Route("CreateSubscriber")]
         //public async Task<IActionResult> CreateSubscriber([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] AdditionalSubscriberRequest request)
@@ -1987,8 +2009,10 @@ namespace OrderService.Controllers
         /// <summary>
         /// This will returns a set of available delivery slots
         /// </summary>
-        /// <param name="token"></param>
-        /// <returns>OperationResponse</returns>
+        /// <param name="token">The token.</param>
+        /// <returns>
+        /// OperationResponse
+        /// </returns>
 
         [HttpGet]
         [Route("GetAvailableSlots")]
@@ -2097,19 +2121,18 @@ namespace OrderService.Controllers
         /// <summary>
         /// This will update personal details of the customer for the order
         /// </summary>
-        /// <param name="token"></param>
-        /// <param name="request">
-        /// Form{
+        /// <param name="token">The token.</param>
+        /// <param name="request">Form{
         /// "OrderID" :1,
         /// "NameInNRIC" : "Name as in NRIC",
         /// "DisplayName" : "DisplayName",
         /// "Gender":"Male",
         /// "DOB":"15/12/2000", //dd/MM/yyyy
         /// "ContactNumber":"95421232"
-        /// 
-        /// }
-        /// </param>
-        /// <returns>OperationResponse</returns>
+        /// }</param>
+        /// <returns>
+        /// OperationResponse
+        /// </returns>
         [Route("updateorderpersonaldetails")]    
         [HttpPost]
         public async Task<IActionResult> UpdateOrderPersonalDetails([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] UpdateOrderPersonalDetailsRequest request)
@@ -2248,20 +2271,20 @@ namespace OrderService.Controllers
         /// <summary>
         /// This will update billing details of the customer for the order
         /// </summary>
-        /// <param name="token"></param>
-        /// <param name="request">
-        /// body{
+        /// <param name="token">The token.</param>
+        /// <param name="request">body{
         /// "OrderID" :1,
         /// "Postcode" :"4563",
         /// "BlockNumber":"P23FD",
         /// "Unit" : "",
         /// "Floor" : "Name as in NRIC",
         /// "BuildingName":"Male",
-        /// "StreetName":"", 
-        /// "ContactNumber":"95421232", 
-        /// }
-        /// </param>
-        /// <returns>OperationResponse</returns>
+        /// "StreetName":"",
+        /// "ContactNumber":"95421232",
+        /// }</param>
+        /// <returns>
+        /// OperationResponse
+        /// </returns>
         [Route("updateorderbillingdetails")]
         [HttpPost]
         public async Task<IActionResult> UpdateOrderBillingDetails([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] UpdateOrderBillingDetailsRequest request)
@@ -2384,22 +2407,22 @@ namespace OrderService.Controllers
         /// <summary>
         /// This will update Shipping details of the customer for the order
         /// </summary>
-        /// <param name="token"></param>
-        /// <param name="request">
-        /// body{
+        /// <param name="token">The token.</param>
+        /// <param name="request">body{
         /// "OrderID" :1,
         /// "Postcode" :"4563",
         /// "BlockNumber":"P23FD",
         /// "Unit" : "",
         /// "Floor" : "Name as in NRIC",
         /// "BuildingName":"Male",
-        /// "StreetName":"", 
-        /// "ContactNumber":"95421232", 
-        /// "IsBillingSame":1, 
-        /// "PortalSlotID":"12dfsf", 
-        /// }
-        /// </param>
-        /// <returns>OperationResponse</returns>
+        /// "StreetName":"",
+        /// "ContactNumber":"95421232",
+        /// "IsBillingSame":1,
+        /// "PortalSlotID":"12dfsf",
+        /// }</param>
+        /// <returns>
+        /// OperationResponse
+        /// </returns>
         [Route("updateordershippingdetails")]
         [HttpPost]
         public async Task<IActionResult> UpdateOrderShippingDetails([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] UpdateOrderShippingDetailsRequest request)
@@ -2522,18 +2545,18 @@ namespace OrderService.Controllers
         /// <summary>
         /// This will update LOA details of the customer for the order
         /// </summary>
-        /// <param name="token"></param>
-        /// <param name="request">
-        /// body{
+        /// <param name="token">The token.</param>
+        /// <param name="request">body{
         /// "OrderID" :1,
         /// "RecipientName" :"4563",
         /// "IDType":"P23FD",
-        /// "IDNumber" : "",      
-        /// "ContactNumber":"95421232", 
-        /// "EmailAdddress":"",        
-        /// }
-        /// </param>
-        /// <returns>OperationResponse</returns>
+        /// "IDNumber" : "",
+        /// "ContactNumber":"95421232",
+        /// "EmailAdddress":"",
+        /// }</param>
+        /// <returns>
+        /// OperationResponse
+        /// </returns>
         [Route("updateorderloadetails")]
         [HttpPost]
         public async Task<IActionResult> UpdateOrderLOADetails([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] UpdateOrderLOADetailsRequest request)
@@ -2679,14 +2702,14 @@ namespace OrderService.Controllers
         /// <summary>
         /// This will validate referral code for the order
         /// </summary>
-        /// <param name="token"></param>
-        /// <param name="request">
-        /// body{
+        /// <param name="token">The token.</param>
+        /// <param name="request">body{
         /// "OrderID" :1,
-        /// "ReferralCode" :"A4EDFE23",       
-        /// }
-        /// </param>
-        /// <returns>OperationResponse</returns>
+        /// "ReferralCode" :"A4EDFE23",
+        /// }</param>
+        /// <returns>
+        /// OperationResponse
+        /// </returns>
         [Route("validateorderreferralcode")]
         [HttpPost]
         public async Task<IActionResult> ValidateOrderReferralCode([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] ValidateOrderReferralCodeRequest request)
@@ -2805,13 +2828,13 @@ namespace OrderService.Controllers
         /// <summary>
         /// This will return all subscriptions/numbers for the given OrderID
         /// </summary>
-        /// <param name="token"></param>
-        /// <param name="request">
-        /// body{
-        /// "OrderID" :1             
-        /// }
-        /// </param>
-        /// <returns>OperationResponse</returns>
+        /// <param name="token">The token.</param>
+        /// <param name="request">body{
+        /// "OrderID" :1
+        /// }</param>
+        /// <returns>
+        /// OperationResponse
+        /// </returns>
 
         [Route("getorderednumbers")]
         [HttpPost]
@@ -2933,17 +2956,17 @@ namespace OrderService.Controllers
         /// <summary>
         /// This will update Order subscription details
         /// </summary>
-        /// <param name="token"></param>
-        /// <param name="request">
-        /// body{
+        /// <param name="token">The token.</param>
+        /// <param name="request">body{
         /// "OrderID" :1,
         /// "ContactNumber" :"95421232", // optional
         /// "Terms":"1",
-        /// "PaymentSubscription" : "1",      
-        /// "PromotionMessage":"1",             
-        /// }
-        /// </param>
-        /// <returns>OperationResponse</returns>
+        /// "PaymentSubscription" : "1",
+        /// "PromotionMessage":"1",
+        /// }</param>
+        /// <returns>
+        /// OperationResponse
+        /// </returns>
         [Route("updateordersubscriptiondetails")]
         [HttpPost]
         public async Task<IActionResult> UpdateOrderSubscriptionDetails([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] UpdateOrderSubcriptionDetailsRequest request)
@@ -3104,8 +3127,10 @@ namespace OrderService.Controllers
         /// <summary>
         /// This will return OrderID, OrderNumber, OrderDate in pending order Details
         /// </summary>
-        /// <param name="token"></param>
-        /// <returns>OperationResponse</returns>
+        /// <param name="token">The token.</param>
+        /// <returns>
+        /// OperationResponse
+        /// </returns>
         [HttpGet("GetPendingOrderDetails")]
         public async Task<IActionResult> GetPendingOrderDetails([FromHeader(Name = "Grid-Authorization-Token")] string token)
         {
@@ -3208,12 +3233,14 @@ namespace OrderService.Controllers
         }
 
         /// <summary>
-        /// This will create a checkout session and returns the details to call MPGS 
+        /// This will create a checkout session and returns the details to call MPGS
         /// </summary>
-        /// <param name="token" in="Header"></param>     
+        /// <param name="token">The token.</param>
         /// <param name="orderId">Initial OrderID/ChangeRequestID in case of sim replacement/planchange/numberchange</param>
-        /// <param name="orderType"> Initial Order = 1, ChangeRequest = 2, AccountInvoices = 3</param>
-        /// <returns>OperationsResponse</returns>
+        /// <param name="orderType">Initial Order = 1, ChangeRequest = 2, AccountInvoices = 3</param>
+        /// <returns>
+        /// OperationsResponse
+        /// </returns>
         [HttpGet("GetCheckOutDetails/{orderId}/{orderType}")]
         public async Task<IActionResult> GetCheckOutDetails([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute]int orderId, [FromRoute]int orderType)
         {
@@ -3460,14 +3487,14 @@ namespace OrderService.Controllers
         /// <summary>
         /// This will remove the added additional lines from the order
         /// </summary>
-        /// <param name="token"></param>
-        /// <param name="request">
-        /// body{
+        /// <param name="token">The token.</param>
+        /// <param name="request">body{
         /// "OrderID" :1,
         /// "MobileNumber" :"99999999"
-        /// }
-        /// </param>
-        /// <returns>OperationResponse</returns>
+        /// }</param>
+        /// <returns>
+        /// OperationResponse
+        /// </returns>
         [Route("RemoveAdditionalLine")]
         [HttpPost]
         public async Task<IActionResult> RemoveAdditionalLine([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] RemoveAdditionalLineRequest request)
@@ -3768,14 +3795,14 @@ namespace OrderService.Controllers
         /// <summary>
         /// This will remove the added additional lines from the order
         /// </summary>
-        /// <param name="token"></param>
-        /// <param name="request">
-        /// body{
+        /// <param name="token">The token.</param>
+        /// <param name="request">body{
         /// "OrderID" :1,
         /// "OldMobileNumber" :"99999999"
-        /// }
-        /// </param>
-        /// <returns>OperationResponse</returns>
+        /// }</param>
+        /// <returns>
+        /// OperationResponse
+        /// </returns>
         [Route("AssignNewNumberToSubscriber")]
         [HttpPost]
         public async Task<IActionResult> AssignNewNumberToSubscriber([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] AssignNewNumberRequest request)
@@ -4043,9 +4070,11 @@ namespace OrderService.Controllers
         /// <summary>
         /// This will returns Customer ID Image as well as details of the ID
         /// </summary>
-        /// <param name="token" in="Header"></param>
-        /// <param name="OrderID"></param>
-        /// <returns>OperationResponse</returns>
+        /// <param name="token">The token.</param>
+        /// <param name="OrderID">The order identifier.</param>
+        /// <returns>
+        /// OperationResponse
+        /// </returns>
         [Route("GetCustomerIDImages/{OrderID}")]
         [HttpGet]
         public async Task<IActionResult> GetCustomerIDImages([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int OrderID)
@@ -4203,18 +4232,18 @@ namespace OrderService.Controllers
         /// <summary>
         /// This will update personal ID details of the customer for the order
         /// </summary>
-        /// <param name="token"></param>
-        /// <param name="request">
-        /// Form{
+        /// <param name="token">The token.</param>
+        /// <param name="request">Form{
         /// "OrderID" :1,
         /// "Nationality": "Singaporean"
         /// "IDType" :"PAN",
         /// "IDNumber":"P23FD",
         /// "IDImageFront" : FileInput,
-        /// "IDImageBack" : FileInput        
-        /// }
-        /// </param>
-        /// <returns>OperationResponse</returns>
+        /// "IDImageBack" : FileInput
+        /// }</param>
+        /// <returns>
+        /// OperationResponse
+        /// </returns>
         [Route("updateorderpersonalIDdetails")]
         [HttpPost, DisableRequestSizeLimit]
         public async Task<IActionResult> UpdateOrderPersonalIDDetails([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromForm] UpdateOrderPersonalIDDetailsRequest request)
@@ -4445,18 +4474,18 @@ namespace OrderService.Controllers
         /// <summary>
         /// This will update personal ID details of the customer for the order
         /// </summary>
-        /// <param name="token"></param>
-        /// <param name="request">
-        /// Form{
+        /// <param name="token">The token.</param>
+        /// <param name="request">Form{
         /// "OrderID" :1,
         /// "Nationality": "Singaporean"
         /// "IDType" :"PAN",
         /// "IDNumber":"P23FD",
         /// "IDImageFront" : FileInput,
-        /// "IDImageBack" : FileInput        
-        /// }
-        /// </param>
-        /// <returns>OperationResponse</returns>
+        /// "IDImageBack" : FileInput
+        /// }</param>
+        /// <returns>
+        /// OperationResponse
+        /// </returns>
         [Route("UpdateOrderPersonalIDDetails_base64")]
         [HttpPost, DisableRequestSizeLimit]
         public async Task<IActionResult> UpdateOrderPersonalIDDetails_base64([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] UpdateOrderPersonalIDDetailsRequest_base64 request)
@@ -4672,24 +4701,18 @@ namespace OrderService.Controllers
             }
         }
         /// <summary>
-        /// This will create a checkout session and returns the details to call MPGS 
-        /// </summary>           
-        /// <returns>OperationsResponse</returns>
-
-
-        /// <summary>
-        /// This will update Order subscription details
+        /// This will create a checkout session and returns the details to call MPGS
         /// </summary>
-        /// <param name="token"></param>
-        /// <param name="request">
-        /// body{
+        /// <param name="token">The token.</param>
+        /// <param name="request">body{
         /// "OrderID" :1,
-        /// "BundleID" :1, 
-        /// "DisplayName" : "test",      
-        /// "MobileNumber":"98745632",             
-        /// }
-        /// </param>
-        /// <returns>OperationResponse</returns>
+        /// "BundleID" :1,
+        /// "DisplayName" : "test",
+        /// "MobileNumber":"98745632",
+        /// }</param>
+        /// <returns>
+        /// OperationsResponse
+        /// </returns>
         [Route("UpdateSubscriberBasicDetails")]
         [HttpPost]
         public async Task<IActionResult> UpdateSubscriberBasicDetails([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] UpdateSubscriberBasicDetails request)
@@ -4832,12 +4855,14 @@ namespace OrderService.Controllers
 
             }
         }
-        
+
         /// <summary>
         /// This will returns a set of available delivery slots
         /// </summary>
-        /// <param name="token"></param>
-        /// <returns>OperationResponse</returns>
+        /// <param name="token">The token.</param>
+        /// <returns>
+        /// OperationResponse
+        /// </returns>
 
         [HttpGet]
         [Route("GetRescheduleAvailableSlots")]
@@ -4946,9 +4971,11 @@ namespace OrderService.Controllers
         /// <summary>
         /// This will returns a set of available delivery slots
         /// </summary>
-        /// <param name="token"></param>
-        /// <param name="OrderID"></param>
-        /// <returns>OperationResponse</returns>
+        /// <param name="token">The token.</param>
+        /// <param name="OrderID">The order identifier.</param>
+        /// <returns>
+        /// OperationResponse
+        /// </returns>
         [HttpGet]
         [Route("RemoveLOADetails/{OrderID}")]
         public async Task<IActionResult> RemoveLOADetails([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int OrderID)
@@ -5066,6 +5093,12 @@ namespace OrderService.Controllers
             }
         }
 
+        /// <summary>
+        /// Cancels the order.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="orderId">The order identifier.</param>
+        /// <returns></returns>
         [HttpPost]
         [Route("CancelOrder/{orderId}")]
         public async Task<IActionResult> CancelOrder([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int orderId)
@@ -5250,9 +5283,11 @@ namespace OrderService.Controllers
         /// <summary>
         /// Update authorization status after a payment checkout with new card details, generate token for the card, and capture the authorized amount
         /// </summary>
-        /// <param name="token"></param>
-        /// <param name="updateRequest"></param>
-        /// <returns>OperationResponse</returns>
+        /// <param name="token">The token.</param>
+        /// <param name="updateRequest">The update request.</param>
+        /// <returns>
+        /// OperationResponse
+        /// </returns>
         [Route("UpdateTokenizeCheckOutResponse")]
         [HttpPost]
         public async Task<IActionResult> UpdateTokenizeCheckOutResponse([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] CheckOutResponseUpdate updateRequest)
@@ -5590,6 +5625,12 @@ namespace OrderService.Controllers
             }
         }
 
+        /// <summary>
+        /// Removes the payment method.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="paymentMethodId">The payment method identifier.</param>
+        /// <returns></returns>
         [NonAction]
         public async Task<IActionResult> RemovePaymentMethod([FromHeader(Name = "Grid-Authorization-Token")] string token, int paymentMethodId)
         {
@@ -5737,9 +5778,9 @@ namespace OrderService.Controllers
         /// <summary>
         /// To pay the chekout amount with the token against the default payment method of the customer
         /// </summary>
-        /// <param name="token"></param>
-        /// <param name="orderId"></param>
-        /// <param name="orderType"></param>
+        /// <param name="token">The token.</param>
+        /// <param name="orderId">The order identifier.</param>
+        /// <param name="orderType">Type of the order.</param>
         /// <returns></returns>
         [HttpGet("PaywithToken/{orderId}/{orderType}")]
         public async Task<IActionResult> PaywithToken([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute]int orderId, [FromRoute]int orderType)
@@ -6112,6 +6153,12 @@ namespace OrderService.Controllers
             }
         }
 
+        /// <summary>
+        /// Reschedules the delivery.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="detailsrequest">The detailsrequest.</param>
+        /// <returns></returns>
         [HttpPost]
         [Route("RescheduleDelivery")]
         public async Task<IActionResult> RescheduleDelivery([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] OrderRescheduleDeliveryRequest detailsrequest)
@@ -6330,8 +6377,8 @@ namespace OrderService.Controllers
         /// <summary>
         /// Create a payment gateway session for the customer to change existing card details
         /// </summary>
-        /// <param name="token"></param>
-        /// <param name="customerID"></param>
+        /// <param name="token">The token.</param>
+        /// <param name="customerID">The customer identifier.</param>
         /// <returns></returns>
         [HttpGet("GetChangePaymentMethodSession/{customerID}")]
         public async Task<IActionResult> GetChangePaymentMethodSession([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int customerID)
@@ -6543,8 +6590,8 @@ namespace OrderService.Controllers
         /// <summary>
         /// Update change card details status, and upon success, will tokenize the new card and remove the existing one from gateway
         /// </summary>
-        /// <param name="token"></param>
-        /// <param name="updateRequest"></param>
+        /// <param name="token">The token.</param>
+        /// <param name="updateRequest">The update request.</param>
         /// <returns></returns>
         [HttpPost("UpdateChangePaymentMethodStatus")]
         public async Task<IActionResult> UpdateChangePaymentMethodStatus([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] CheckOutResponseUpdate updateRequest)
@@ -6811,14 +6858,12 @@ namespace OrderService.Controllers
         /// <summary>
         /// Create an account Invoce Entry, which inturn is used for outstanding invoice/bill payment
         /// </summary>
-        /// <param name="token"></param>
-        /// <param name="accountInvoiceRequest">
-        /// body{
+        /// <param name="token">The token.</param>
+        /// <param name="accountInvoiceRequest">body{
         /// "InvoiceID" :"3000001", //bill_id
-        /// "InvoiceName" :"3123201", 
-        /// "FinalAmount":20       
-        /// }
-        /// </param>
+        /// "InvoiceName" :"3123201",
+        /// "FinalAmount":20
+        /// }</param>
         /// <returns></returns>
         [HttpPost("CreateAccountInvoice")]
         public async Task<IActionResult> CreateAccountInvoice([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] CreateAccountInvoiceRequest accountInvoiceRequest)
@@ -7034,13 +7079,15 @@ namespace OrderService.Controllers
 
             }
         }
-        
+
         /// <summary>
         /// This will remove the LOA details from rescheduled delivery information
         /// </summary>
-        /// <param name="token"></param>
-        /// <param name="rescheduleDeliveryInformationID"></param>       
-        /// <returns>OperationResponse</returns>
+        /// <param name="token">The token.</param>
+        /// <param name="rescheduleDeliveryInformationID">The reschedule delivery information identifier.</param>
+        /// <returns>
+        /// OperationResponse
+        /// </returns>
         [HttpGet]
         [Route("RemoveLOADetailsForRescheduledDelivery/{rescheduleDeliveryInformationID}")]
         public async Task<IActionResult> RemoveLOADetailsForRescheduledDelivery([FromHeader(Name = "Grid-Authorization-Token")] string token, int rescheduleDeliveryInformationID)
@@ -7161,6 +7208,12 @@ namespace OrderService.Controllers
         }
 
 
+        /// <summary>
+        /// Gets the mq body.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="OrderID">The order identifier.</param>
+        /// <returns></returns>
         [HttpGet]
         [Route("GetMQBody/{OrderID}")]
         public async Task<IActionResult> GetMQBody([FromHeader(Name = "Grid-Authorization-Token")] string token, int OrderID)
@@ -7266,18 +7319,20 @@ namespace OrderService.Controllers
         }
 
         /// <summary>
-        /// 
+        /// Adds the remove vas.
         /// </summary>
-        /// <param name="token"></param>
+        /// <param name="token">The token.</param>
         /// <param name="request">CreateOrderRequest</param>
-        ///Body: 
-        ///{
+        /// <returns>
+        /// OperationResponse
+        /// </returns>
+        /// Body:
+        /// {
         /// "OrderID" : "1",
-        ///	"BundleID" : "1",
-        ///	"MobileNumber" : '84456545'
-        ///	"IsRemove" : 1-to remove, 0- to add
-        ///}
-        /// <returns>OperationResponse</returns>
+        /// "BundleID" : "1",
+        /// "MobileNumber" : '84456545'
+        /// "IsRemove" : 1-to remove, 0- to add
+        /// }
         [Route("AddRemoveVas")]
         [HttpPost]
         public async Task<IActionResult> AddRemoveVas([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] VasAddRemoveRequest request)
@@ -7450,6 +7505,11 @@ namespace OrderService.Controllers
             }
         }
 
+        /// <summary>
+        /// Gets the trans recepit.
+        /// </summary>
+        /// <param name="MPGSOrderID">The MPGS order identifier.</param>
+        /// <returns></returns>
         [HttpGet]
         [Route("GetTransRecepit/{MPGSOrderID}")]
         public async Task<IActionResult> GetTransRecepit([FromRoute]string MPGSOrderID)
@@ -7510,6 +7570,11 @@ namespace OrderService.Controllers
         }
 
 
+        /// <summary>
+        /// Tokenizes the specified MPGS order identifier.
+        /// </summary>
+        /// <param name="MPGSOrderID">The MPGS order identifier.</param>
+        /// <returns></returns>
         [HttpGet]
         [Route("Tokenize/{MPGSOrderID}")]
         public async Task<IActionResult> Tokenize([FromRoute]string MPGSOrderID)
@@ -7565,6 +7630,11 @@ namespace OrderService.Controllers
             }
         }
 
+        /// <summary>
+        /// To the rranse.
+        /// </summary>
+        /// <param name="MPGSOrderID">The MPGS order identifier.</param>
+        /// <returns></returns>
         [HttpGet]
         [Route("toRranse/{MPGSOrderID}")]
         public async Task<IActionResult> toRranse([FromRoute]string MPGSOrderID)
@@ -7601,6 +7671,12 @@ namespace OrderService.Controllers
             }
         }
 
+        /// <summary>
+        /// Updates the order sim.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="request">The request.</param>
+        /// <returns></returns>
         [Route("UpdateOrderSIM")]
         [HttpPost]
         public async Task<IActionResult> UpdateOrderSIM([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] SIMCardDetails request)
@@ -7661,6 +7737,139 @@ namespace OrderService.Controllers
                                     HasSucceeded = flag,
                                     Message = (msg == "" ? EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess) : msg),
                                     ReturnedObject = _SIMUpdateResponse.Results
+                                });
+                            }
+                            else
+                            {
+                                LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.OrderNotExists));
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = false,
+                                    Message = EnumExtensions.GetDescription(CommonErrors.OrderNotExists)
+                                });
+                            }
+                        }
+
+                        else
+                        {
+                            // failed to locate customer
+                            LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.TokenNotMatching));
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(CommonErrors.TokenNotMatching),
+                                IsDomainValidationErrors = false
+                            });
+                        }
+                    }
+
+                    else
+                    {
+                        //Token expired
+
+                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
+
+                        return Ok(new OperationResponse
+                        {
+                            HasSucceeded = false,
+                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
+                            IsDomainValidationErrors = true
+                        });
+
+                    }
+                }
+                else
+                {
+                    // token auth failure
+                    LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + ". token:" + token);
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+
+            }
+        }
+
+        /// <summary>Updates the order eloa details.</summary>
+        /// <param name="token">The token.</param>
+        /// <param name="request">The request.</param>
+        /// <returns></returns>
+        [Route("UpdateOrderELOA")]
+        [HttpPost]
+        
+        public async Task<IActionResult> UpdateOrderELOA([FromHeader(Name = "Grid-Authorization-Token")] string token, UpdateOrderELOARequest request )
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    IsDomainValidationErrors = true,
+                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+
+                });
+                AuthHelper helper = new AuthHelper(_iconfiguration);
+                //Need to change this
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_personaldetails_update);
+
+                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                {
+                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    {
+                        int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
+
+                        if (!ModelState.IsValid)
+                        {
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = true,
+                                Message = string.Join("; ", ModelState.Values
+                                                          .SelectMany(x => x.Errors)
+                                                          .Select(x => x.ErrorMessage))
+                            });
+                        }
+
+                        OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+
+                        DatabaseResponse customerResponse = await _orderAccess.GetCustomerIdFromOrderId(request.OrderID);
+
+                        if (customerResponse.ResponseCode == (int)DbReturnValue.RecordExists && customerID == ((OrderCustomer)customerResponse.Results).CustomerId)
+                        {
+                            DatabaseResponse databaseResponse = await _orderAccess.UpdateOrderELOA(request);
+                            //100
+                            if (databaseResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
+                            {
+                               
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = true,
+                                    Message = EnumExtensions.GetDescription(DbReturnValue.UpdateSuccess),
+                                    //ReturnedObject = _SIMUpdateResponse.Results
+                                });
+                            }
+                            else if(databaseResponse.ResponseCode == (int)DbReturnValue.UpdateNotAllowed)
+                            {
+                                LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.OrderIsAlreadyDelivered));
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = false,
+                                    Message = EnumExtensions.GetDescription(CommonErrors.OrderIsAlreadyDelivered)
                                 });
                             }
                             else
