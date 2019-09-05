@@ -77,6 +77,7 @@ namespace OrderService.Helpers
             }
             catch (Exception ex)
             {
+                int buddyRollback = await HandleRollbackOnAdditionalBuddyProcessingFailure(customerID, orderID, additionalBuddies);
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
 
                 return 0;
