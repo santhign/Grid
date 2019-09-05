@@ -4255,6 +4255,7 @@ namespace OrderService.DataAccess
                                             RecieptNumber = model.Field<string>("RecieptNumber"),
                                             EventSalesRepresentativeID = model.Field<int?>("EventSalesRepresentativeID"),
                                             SIMIDPrefix = model.Field<string>("SIMIDPrefix"),
+                                            IsELOAUpdateAllowed = model.Field<bool?>("IsELOAUpdateAllowed")
                                         }).FirstOrDefault();
 
                         List<Bundle> orderBundles = new List<Bundle>();
@@ -4796,5 +4797,60 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+
+        /// <summary>
+        /// Updates the order eloa.
+        /// </summary>
+        /// <param name="details">The details.</param>
+        /// <returns></returns>
+        public async Task<DatabaseResponse> UpdateOrderELOA(UpdateOrderELOARequest details)
+        {
+            try
+            {
+                
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@OrderID",  SqlDbType.Int ),
+                    new SqlParameter( "@OrderType",  SqlDbType.Int ),
+                    new SqlParameter( "@AlternateRecioientIDNumber",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@AlternateRecioientIDType",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@AlternateRecipientContact",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@AlternateRecipientEmail",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@AlternateRecipientName",  SqlDbType.NVarChar )
+                };
+
+                parameters[0].Value = details.OrderID;
+                parameters[1].Value = details.OrderType;
+                parameters[2].Value = details.AlternateRecioientIDNumber;
+                parameters[3].Value = details.AlternateRecioientIDType;
+                parameters[4].Value = details.AlternateRecipientContact;
+                parameters[5].Value = details.AlternateRecipientEmail;
+                parameters[6].Value = details.AlternateRecipientName;
+
+                _DataHelper = new DataAccessHelper("Orders_UpdateLOADetails", parameters, _configuration);
+
+                DataSet ds = new DataSet();
+
+                int result = await _DataHelper.RunAsync(ds); 
+
+               
+
+                var response = new DatabaseResponse { ResponseCode = result };
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
     }
+
 }

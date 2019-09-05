@@ -52,6 +52,7 @@ namespace OrderService.Models
         public string RecieptNumber { get; set; }
         public int? EventSalesRepresentativeID { get; set; }
         public string SIMIDPrefix { get; set; }
+        public bool ? IsELOAUpdateAllowed { get; set; }
     }
 
     public class ServiceCharge
@@ -94,9 +95,7 @@ namespace OrderService.Models
         public int? GroupNumber { get; set; }
         public List<ServiceCharge> ServiceCharges { get; set; }
         public List<PromotionalVAS> PromotionalVASes { get; set; }
-    }
-
-   
+    }  
 
     public class InvoiceOrder
     {
@@ -112,17 +111,20 @@ namespace OrderService.Models
         public string Slot { get; set; }
         public double AdditionalCharge { get; set; }
     }
+
     public class OrderPending
     {
         public int OrderID { get; set; }
         public string OrderNumber { get; set; }
         public DateTime OrderDate { get; set; }
     }
+
     public class BSSAccount
     {
         public int AccountID { get; set; }
         public string AccountNumber { get; set; }
     }
+
     public class OrderedNumbers
     {
         public string MobileNumber { get; set; }
@@ -230,5 +232,16 @@ namespace OrderService.Models
         public string SIMNumber { get; set; }
         public int IsProcessed { get; set; }
         public string ErrorReason { get; set; }
+    }
+
+    public class UpdateOrderELOARequest
+    {
+        public int OrderID { get; set; }
+        public int OrderType { get; set; }
+        public string AlternateRecipientContact { get; set; }
+        public string AlternateRecipientName { get; set; }
+        public string AlternateRecipientEmail { get; set; }
+        public string AlternateRecioientIDType { get; set; }
+        public string AlternateRecioientIDNumber { get; set; }
     }
 }
