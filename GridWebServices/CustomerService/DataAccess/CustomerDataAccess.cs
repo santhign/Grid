@@ -917,6 +917,8 @@ namespace CustomerService.DataAccess
                             orderDetails.AlternateRecipientEmail = dr["AlternateRecipientEmail"].ToString();
                             orderDetails.PortalSlotID = dr["PortalSlotID"].ToString();
                             orderDetails.RecieptNumber = dr["RecieptNumber"].ToString();
+                            orderDetails.EventName = dr["EventName"].ToString();
+                            orderDetails.EventCode = dr["EventCode"].ToString();
                             orderDetails.EventSalesRepresentativeID = (dr["EventSalesRepresentativeID"] == DBNull.Value ? (int?)null : ((int)dr["EventSalesRepresentativeID"]));
                             orderDetails.SlotDate = (dr["SlotDate"] == DBNull.Value) ? (DateTime?)null : ((DateTime)dr["SlotDate"]);
                             //dr["SlotDate"] != null  Convert.ToDateTime(dr["SlotDate"]);
@@ -953,6 +955,7 @@ namespace CustomerService.DataAccess
                                 { _subscriber.DepositFee = Convert.ToDouble(osdr["DepositFee"]); }
                                 catch { }
                                 _subscriber.IsBuddyLine = Convert.ToInt32(osdr["IsBuddyLine"]);
+                                _subscriber.GroupNumber = Convert.ToInt32(osdr["GroupNumber"]);
                                 _subscriber.PremiumType = Convert.ToInt32(osdr["PremiumType"]);
                                 _subscriber.PremiumName = osdr["PremiumName"].ToString();
                                 _subscriber.IsPorted = Convert.ToInt32(osdr["IsPorted"]);
