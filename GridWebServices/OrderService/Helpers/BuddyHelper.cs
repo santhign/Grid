@@ -31,6 +31,7 @@ namespace OrderService.Helpers
 
         public async Task<int> AddRemoveBuddyHandler(int orderID, int customerID)
         {
+            List<AdditionalBuddy> additionalBuddies = new List<AdditionalBuddy>();
             try
             {
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);             
@@ -43,7 +44,7 @@ namespace OrderService.Helpers
                 // check additional Buddy
                 if (checkAdditionalBuddyResponse.ResponseCode == (int)DbReturnValue.RecordExists && checkAdditionalBuddyResponse.Results != null)
                 {
-                    List<AdditionalBuddy> additionalBuddies = (List<AdditionalBuddy>)checkAdditionalBuddyResponse.Results;
+                    additionalBuddies = (List<AdditionalBuddy>)checkAdditionalBuddyResponse.Results;
 
                     foreach (AdditionalBuddy buddy in additionalBuddies)
                     {
