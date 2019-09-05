@@ -84,6 +84,9 @@ namespace OrderService.Helpers
             try
             {
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+                DatabaseResponse numberlog = await _orderAccess.LogUnblockNumber(CustomerID, number);
+
+                //to be removed once number unblocking console app is implemented.
                 BSSAPIHelper bsshelper = new BSSAPIHelper();
                 DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
                 GridBSSConfi config = bsshelper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);

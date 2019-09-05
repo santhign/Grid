@@ -4888,6 +4888,48 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
-    }
 
+
+
+        /// <summary>
+        /// Register number for unblocking.
+        /// </summary>
+        /// <param name="CustomerID">CustomerID.</param>
+        /// <param name="number">Mobile Number.</param>
+        /// <returns></returns>
+        public async Task<DatabaseResponse> LogUnblockNumber(int CustomerID, string number)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+                    new SqlParameter( "@Number",  SqlDbType.NVarChar )
+
+                };
+
+                parameters[0].Value = CustomerID;
+                parameters[0].Value = number;
+
+                _DataHelper = new DataAccessHelper("Orders_LogUnBlockNumber", parameters, _configuration);
+
+                int result = await _DataHelper.RunAsync(); // 102 /105
+
+                DatabaseResponse response = new DatabaseResponse { ResponseCode = result };
+
+                return response;
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+    }
 }
