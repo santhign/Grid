@@ -58,6 +58,8 @@ namespace CustomerService.Models
         public List<OrderStatuses> OrderStatuses { get; set; }
 
         public string RecieptNumber { get; set; }
+        public string EventName { get; set; }
+        public string EventCode { get; set; }
     }
     public class OrderStatuses
     {
@@ -78,6 +80,7 @@ namespace CustomerService.Models
         public string PremiumName { get; set; }
         public int? PremiumType { get; set; }
         public int? IsBuddyLine { get; set; }
+        public int? GroupNumber { get; set; }
         public int? IsPorted { get; set; }
         public double? DepositFee { get; set; }
         public List<Bundle> Bundles { get; set; }
