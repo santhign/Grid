@@ -9,6 +9,8 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Net.Http;
 using Serilog;
+using System.Net;
+using System.IO;
 
 namespace Core.Helpers
 {
@@ -20,41 +22,56 @@ namespace Core.Helpers
             try
             {
                 ApiClient client = new ApiClient(new Uri(confi.BSSAPIUrl));
-
-                BSSAssetRequest request = new BSSAssetRequest();
-
-                SetParam param = new SetParam();
-
-                RequestObject req = new RequestObject();
-
                 var requestUrl = GetRequestUrl(confi.BSSAPIUrl, ref client);
 
+                RequestObject req = new RequestObject();
                 SetParams(confi, serviceCode);
-
+                BSSAssetRequest request = new BSSAssetRequest();
+                SetParam param = new SetParam();
                 param.param = paramList;
 
                 request.request_id = assetRequest.request_id;
-
                 request.request_timestamp = DateTime.Now.ToString("ddMMyyyyhhmmss");
-
                 request.action = BSSApis.GetAssets.ToString();
-
                 request.userid = assetRequest.userid;
-
                 request.username = confi.GridUserName;
-
                 request.source_node = confi.GridSourceNode;
-
                 request.dataset = param;
-
                 req.Request = request;
+                string html = string.Empty;
+                byte[] buffer;
+                buffer = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(req));
+                HttpWebRequest httprequest = (HttpWebRequest)WebRequest.Create(requestUrl);
+                httprequest.AutomaticDecompression = DecompressionMethods.GZip;
+                httprequest.Method = "POST";
+                httprequest.ContentType = "application/x-www-form-urlencoded";
+                httprequest.ContentLength = buffer.Length;
+                Stream newStream = httprequest.GetRequestStream();
+                await newStream.WriteAsync(buffer, 0, buffer.Length);
+                newStream.Close();
+                using (HttpWebResponse response = (HttpWebResponse)httprequest.GetResponse())
+                using (Stream stream = response.GetResponseStream())
+                using (StreamReader reader = new StreamReader(stream))
+                {
+                    html = reader.ReadToEnd();
+                }
+                ResponseObject _resp = JsonConvert.DeserializeObject<ResponseObject>(html);
+                //return _resp.Result;
+
+
+
+                
+
+                
 
                 Log.Information(JsonConvert.SerializeObject(req));
+                Log.Information(JsonConvert.SerializeObject(html));
 
-                return await client.PostAsync<ResponseObject, RequestObject>(requestUrl, req);
+                return _resp;
             }
             catch (Exception ex)
             {
+                Log.Information("POST exception - " + ex.Message);
                 throw ex;
             }
         }

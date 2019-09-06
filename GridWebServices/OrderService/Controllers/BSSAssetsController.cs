@@ -13,6 +13,7 @@ using OrderService.Enums;
 using Core.Extensions;
 using InfrastructureService;
 using Core.Helpers;
+using Newtonsoft.Json;
 
 namespace OrderService.Controllers
 {
@@ -83,6 +84,7 @@ namespace OrderService.Controllers
                         try
                         {
                             res=await bsshelper.GetAssetInventory(config, ((List<ServiceFees>)serviceCAF.Results).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdRes.Results);
+                            LogInfo.Information(JsonConvert.SerializeObject(res));
                         }
 
                         catch (Exception ex)
