@@ -4909,7 +4909,7 @@ namespace OrderService.DataAccess
                 };
 
                 parameters[0].Value = CustomerID;
-                parameters[0].Value = number;
+                parameters[1].Value = number;
 
                 _DataHelper = new DataAccessHelper("Orders_LogUnBlockNumber", parameters, _configuration);
 
