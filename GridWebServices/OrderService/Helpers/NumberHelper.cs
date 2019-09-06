@@ -28,6 +28,7 @@ namespace OrderService.Helpers
             BSSAPIHelper bsshelper = new BSSAPIHelper();
             DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
             GridBSSConfi config = bsshelper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
+            config.GridDefaultAssetLimit = 1;
             DatabaseResponse serviceCAF = await _orderAccess.GetBSSServiceCategoryAndFee(ServiceTypes.Free.ToString());
             DatabaseResponse requestIdRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.GetAssets.ToString(), CustomerID, (int)BSSCalls.NewSession, "");
             ResponseObject res = new ResponseObject();
@@ -66,6 +67,38 @@ namespace OrderService.Helpers
                         LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
                         return _details;
                     }
+                }
+                else
+                {
+                    return _details;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+                return _details;
+            }
+        }
+
+        public async Task<NumberDetails> BlockNumber(int CustomerID, string number)
+        {
+            NumberDetails _details = new NumberDetails();
+            BSSAPIHelper bsshelper = new BSSAPIHelper();
+            OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+            DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
+            GridBSSConfi config = bsshelper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
+            DatabaseResponse requestIdToUpdateMainLineRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), CustomerID, (int)BSSCalls.ExistingSession, number);
+
+            BSSUpdateResponseObject bssUpdateResponse = new BSSUpdateResponseObject();
+            try
+            {
+                //line blocking
+                bssUpdateResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateMainLineRes.Results, number, false);
+                if (bsshelper.GetResponseCode(bssUpdateResponse) == "0")
+                {
+                    _details.Number = number;
+                    _details.UserSessionID = ((BSSAssetRequest)requestIdToUpdateMainLineRes.Results).userid;
+                    return _details;
                 }
                 else
                 {

@@ -38,7 +38,6 @@ namespace BuddyProcessingApp
         {
             try
             {
-
                 BSSAPIHelper bsshelper = new BSSAPIHelper();
 
                 BuddyDataAccess _buddyAccess = new BuddyDataAccess();
