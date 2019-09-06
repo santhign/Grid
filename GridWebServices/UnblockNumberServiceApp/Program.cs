@@ -82,9 +82,8 @@ namespace UnblockNumberServiceApp
                 Console.WriteLine("Start TimerCallback: " + DateTime.Now);
                 LogInfo.Information("Start TimerCallback: " + DateTime.Now);
                 var result = await GetCustomerNumber();
-                if(result != null)
-
-                await UnblockNumber(result.CustomerID, result.MobileNumber);
+                if(result != null && result.CustomerID != 0 && string.IsNullOrEmpty(result.MobileNumber))
+                    await UnblockNumber(result.CustomerID, result.MobileNumber);
                 Console.WriteLine("End TimerCallback: " + DateTime.Now);
                 LogInfo.Information("End TimerCallback: " + DateTime.Now);
                 // Force a garbage collection to occur for this demo.
