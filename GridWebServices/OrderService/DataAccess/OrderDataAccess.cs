@@ -4931,5 +4931,254 @@ namespace OrderService.DataAccess
                 _DataHelper.Dispose();
             }
         }
+        public async Task<DatabaseResponse> UpdateBSSSelectionNumbers(string json, string userID, int callLogId, int customerID, string portalServiceName, double price)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                     new SqlParameter("@UserID",  SqlDbType.NVarChar ),
+                     new SqlParameter("@Json",  SqlDbType.NVarChar ),
+                     new SqlParameter("@BSSCallLogID",  SqlDbType.Int ),
+                     new SqlParameter("@CustomerID",  SqlDbType.Int ),
+                     new SqlParameter("@PortalServiceName",  SqlDbType.NVarChar ),
+                     new SqlParameter("@Price",  SqlDbType.Float )
+                };
+
+                parameters[0].Value = userID;
+                parameters[1].Value = json;
+                parameters[2].Value = callLogId;
+                parameters[3].Value = customerID;
+                parameters[4].Value = portalServiceName;
+                parameters[5].Value = price;
+
+                _DataHelper = new DataAccessHelper("Orders_UpdateBSSSelectionNumbers", parameters, _configuration);
+
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync();    // 105 / 102
+
+                DatabaseResponse response = new DatabaseResponse();
+
+                response = new DatabaseResponse { ResponseCode = result };
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+        public async Task<DatabaseResponse> GetSelectionNumbers(int customerID)
+        {
+            try
+            {
+                SqlParameter[] parameters =
+               {
+                     new SqlParameter("@CustomerID",  SqlDbType.Int )
+                };
+
+                parameters[0].Value = customerID;
+
+                _DataHelper = new DataAccessHelper("Orders_GetBSSSelectionNumbers", parameters, _configuration);
+
+                DataSet ds = new DataSet("ds");
+
+                int result = await _DataHelper.RunAsync(ds);    // 105 / 102
+                BSSNumbers numbers = new BSSNumbers();
+                if (ds != null)
+                {
+                    if (ds.Tables.Count > 0)
+                    {
+                        foreach (DataRow dr in ds.Tables[0].Rows)
+                        {
+                            FreeNumber _number = new FreeNumber();
+                            _number.MobileNumber = dr["Number"].ToString().Trim();
+                            _number.ServiceCode = dr["ServiceCode"].ToString().Trim();
+                            numbers.FreeNumbers.Add(_number);
+                        }
+                    }
+                    if (ds.Tables.Count > 1)
+                    {
+                        foreach (DataRow dr in ds.Tables[1].Rows)
+                        {
+                            PremiumNumbers _number = new PremiumNumbers();
+                            _number.MobileNumber = dr["Number"].ToString().Trim();
+                            _number.ServiceCode = ((int)dr["ServiceCode"]);
+                            _number.PortalServiceName = dr["PortalServiceName"].ToString().Trim();
+                            _number.Price = ((double)dr["Price"]);
+                            numbers.PremiumNumbers.Add(_number);
+                        }
+                    }
+                }
+                DatabaseResponse response = new DatabaseResponse();
+
+                response = new DatabaseResponse { ResponseCode = result, Results =  numbers};
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<bool> GetBSSNumbersInitially(int customerID)
+        {
+            BSSAPIHelper bsshelper = new BSSAPIHelper();
+            DatabaseResponse systemConfigResponse = await GetConfiguration(ConfiType.System.ToString());
+
+            DatabaseResponse bssConfigResponse = await GetConfiguration(ConfiType.BSS.ToString());
+
+            GridBSSConfi bssConfig = bsshelper.GetGridConfig((List<Dictionary<string, string>>)bssConfigResponse.Results);
+
+            GridSystemConfig systemConfig = bsshelper.GetGridSystemConfig((List<Dictionary<string, string>>)systemConfigResponse.Results);
+
+            DatabaseResponse serviceCAF = await GetBSSServiceCategoryAndFee(ServiceTypes.Free.ToString());
+
+            DatabaseResponse requestIdResForFreeNumber = await GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.GetAssets.ToString(), customerID, (int)BSSCalls.NewSession, "");
+
+            ResponseObject res = new ResponseObject();
+
+            //Getting FreeNumbers
+            try
+            {
+                res = await bsshelper.GetAssetInventory(bssConfig, ((List<ServiceFees>)serviceCAF.Results).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdResForFreeNumber.Results, systemConfig.FreeNumberListCount);
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+                return false;
+            }
+
+            BSSNumbers numbers = new BSSNumbers();
+
+            if (res != null)
+            {
+                numbers.FreeNumbers = bsshelper.GetFreeNumbers(res);
+
+                //insert these number into database
+                string json = bsshelper.GetJsonString(numbers.FreeNumbers); // json insert
+                await UpdateBSSSelectionNumbers(json, ((BSSAssetRequest)requestIdResForFreeNumber.Results).userid, ((BSSAssetRequest)requestIdResForFreeNumber.Results).BSSCallLogID, customerID, "Free", 0);
+                DatabaseResponse updateBssCallFeeNumbers = await UpdateBSSCallNumbers(json, ((BSSAssetRequest)requestIdResForFreeNumber.Results).userid, ((BSSAssetRequest)requestIdResForFreeNumber.Results).BSSCallLogID);
+
+                if (updateBssCallFeeNumbers.ResponseCode == (int)DbReturnValue.CreateSuccess)
+                {
+                    // get Premium Numbers
+
+                    DatabaseResponse serviceCAFPremium = await GetBSSServiceCategoryAndFee(ServiceTypes.Premium.ToString());
+
+                    if (serviceCAFPremium != null && serviceCAFPremium.ResponseCode == (int)DbReturnValue.RecordExists)
+                    {
+                        List<ServiceFees> premiumServiceFeeList = new List<ServiceFees>();
+
+                        premiumServiceFeeList = (List<ServiceFees>)serviceCAFPremium.Results;
+
+                        int countPerPremium = (systemConfig.PremiumNumberListCount / premiumServiceFeeList.Count);
+
+                        int countBalance = systemConfig.PremiumNumberListCount % premiumServiceFeeList.Count;
+
+                        if (countBalance > 0)
+                        {
+                            countPerPremium = countPerPremium + countBalance;
+                        }
+
+                        int loopCount = premiumServiceFeeList.Count;
+
+                        int iterator = 0;
+
+                        foreach (ServiceFees fee in premiumServiceFeeList)
+                        {
+                            //get code and call premum 
+                            //  fee.PortalServiceName
+
+                            DatabaseResponse requestIdResForPremium = await GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.GetAssets.ToString(), customerID, (int)BSSCalls.NewSession, "");
+
+                            ResponseObject premumResponse = new ResponseObject();
+
+                            try
+                            {
+                                premumResponse = await bsshelper.GetAssetInventory(bssConfig, fee.ServiceCode, (BSSAssetRequest)requestIdResForPremium.Results, countPerPremium);
+                            }
+
+                            catch (Exception ex)
+                            {
+                                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+
+                            }
+
+                            if (premumResponse != null && premumResponse.Response != null && premumResponse.Response.asset_details != null)
+                            {
+                                await UpdateBSSSelectionNumbers(json, ((BSSAssetRequest)requestIdResForFreeNumber.Results).userid, ((BSSAssetRequest)requestIdResForFreeNumber.Results).BSSCallLogID, customerID, fee.PortalServiceName, fee.ServiceFee);
+                                List<PremiumNumbers> premiumNumbers = bsshelper.GetPremiumNumbers(premumResponse, fee);
+
+                                List<FreeNumber> premiumToLogNumbers = bsshelper.GetFreeNumbers(premumResponse);
+
+                                string jsonPremium = bsshelper.GetJsonString(premiumToLogNumbers);
+
+                                DatabaseResponse updateBssCallPremiumNumbers = await UpdateBSSCallNumbers(jsonPremium, ((BSSAssetRequest)requestIdResForPremium.Results).userid, ((BSSAssetRequest)requestIdResForPremium.Results).BSSCallLogID);
+
+                                foreach (PremiumNumbers premium in premiumNumbers)
+                                {
+                                    numbers.PremiumNumbers.Add(premium);
+                                }
+
+                            }
+                            else
+                            {
+                                //failed to get premium
+
+                                if (iterator == 0)
+                                {
+                                    countPerPremium = (systemConfig.PremiumNumberListCount / (premiumServiceFeeList.Count - 1));
+                                }
+                                else if (iterator == 1)
+                                {
+                                    if (numbers.PremiumNumbers.Count < countPerPremium * (iterator + 1))
+
+                                        countPerPremium = (systemConfig.PremiumNumberListCount / (premiumServiceFeeList.Count - 2));
+                                    else
+                                        countPerPremium = (systemConfig.PremiumNumberListCount / (premiumServiceFeeList.Count - 1));
+                                }
+                            }
+
+                            iterator++;
+
+                        }  // for
+
+                        if (numbers.PremiumNumbers.Count > systemConfig.PremiumNumberListCount)
+                        {
+                            int extrPremiumCount = numbers.PremiumNumbers.Count - systemConfig.PremiumNumberListCount;
+
+                            numbers.PremiumNumbers.RemoveRange(numbers.PremiumNumbers.Count - (extrPremiumCount + 1), extrPremiumCount);
+                        }
+                    }
+                    return true;
+                }
+                else
+                {
+                    //failded to update BSS call numbers so returning
+                    return false;
+                }
+            }
+            else
+            {
+                //failed to get free numbers
+                return false;
+            }
+        }
     }
 }

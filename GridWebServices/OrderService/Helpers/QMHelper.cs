@@ -515,117 +515,43 @@ namespace OrderService.Helpers
         {
             try
             {
-               
-                BSSAPIHelper bsshelper = new BSSAPIHelper();
-
+                NumberHelper numberHelper = new NumberHelper(_iconfiguration);
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
 
-                DatabaseResponse requestIdRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.GetAssets.ToString(), buddy.CustomerID, (int)BSSCalls.NewSession, "");
-
-                ResponseObject res = new ResponseObject();
-
-                try
+                //Block number                                    
+                NumberDetails number = await numberHelper.GetNumberFromBSS(buddy.CustomerID);
+                if (number != null)
                 {
-                    res = await bsshelper.GetAssetInventory(config, serviceCode, (BSSAssetRequest)requestIdRes.Results);
-                }
-
-                catch (Exception ex)
-                {
-                    LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
-
-                    buddy.IsProcessed = false;
-
-                    return 0;
-                }
-
-                string AssetToSubscribe = string.Empty;
-
-                if (res != null)
-                {
-                    AssetToSubscribe = bsshelper.GetAssetId(res);
-
-                    BSSNumbers numbers = new BSSNumbers();
-
-                    numbers.FreeNumbers = bsshelper.GetFreeNumbers(res);
-
-                    //insert these number into database
-                    string json = bsshelper.GetJsonString(numbers.FreeNumbers); // json insert
-
-                    DatabaseResponse updateBssCallFeeNumbers = await _orderAccess.UpdateBSSCallNumbers(json, ((BSSAssetRequest)requestIdRes.Results).userid, ((BSSAssetRequest)requestIdRes.Results).BSSCallLogID);
-                }
-
-                else
-                {
-                    return 0;
-                }
-
-                if (res != null && (int.Parse(res.Response.asset_details.total_record_count) > 0))
-                {
-                    //Block number                                    
-
-                    DatabaseResponse requestIdToUpdateRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), buddy.CustomerID, (int)BSSCalls.ExistingSession, AssetToSubscribe);
-
-                    BSSUpdateResponseObject bssUpdateResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateRes.Results, AssetToSubscribe, false);
-
-                    if (bsshelper.GetResponseCode(bssUpdateResponse) == "0")
+                    // update buddy process
+                    BuddyNumberUpdate buddyToProcess = new BuddyNumberUpdate { OrderSubscriberID = buddy.OrderSubscriberID, UserId = number.UserSessionID, NewMobileNumber = number.Number };
+                    DatabaseResponse buddyProcessResponse = await _orderAccess.ProcessBuddyPlan(buddyToProcess);
+                    if (buddyProcessResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
                     {
-                        // update buddy process
-
-                        BuddyNumberUpdate buddyToProcess = new BuddyNumberUpdate { OrderSubscriberID = buddy.OrderSubscriberID, UserId = ((BSSAssetRequest)requestIdRes.Results).userid, NewMobileNumber = AssetToSubscribe };
-
-                        DatabaseResponse buddyProcessResponse = await _orderAccess.ProcessBuddyPlan(buddyToProcess);
-
-                        if (buddyProcessResponse.ResponseCode == (int)DbReturnValue.CreateSuccess)
-                        {
-                            // update process status
-
-                            buddy.IsProcessed = true;
-
-                            return 1;
-                            
-                        }
-
-                        else
-                        {
-                            // buddy process failed
-                            buddy.IsProcessed = false;
-
-                            return 0;
-                        }
-
-                       
+                        // update process status
+                        buddy.IsProcessed = true;
+                        return 1;
                     }
                     else
                     {
-                        // buddy block failed
+                        // buddy process failed
                         buddy.IsProcessed = false;
-
-                        LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateAssetBlockingFailed));
-
                         return 0;
                     }
-
                 }
                 else
                 {
-                    // no assets returned                                   
+                    // buddy block failed
                     buddy.IsProcessed = false;
-                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.GetAssetFailed));
-
+                    LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.UpdateAssetBlockingFailed));
                     return 0;
                 }
-               
-
             }
             catch (Exception ex)
             {
                 buddy.IsProcessed = false;
-
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-
                 return 0;
-            }
-           
+            }           
         }
 
         public async Task<List<Recordset>> GetInvoiceList(int customerID)
