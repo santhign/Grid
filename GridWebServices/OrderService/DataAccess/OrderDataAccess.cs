@@ -4996,16 +4996,19 @@ namespace OrderService.DataAccess
                 {
                     if (ds.Tables.Count > 0)
                     {
+                        List<FreeNumber> _numbers = new List<FreeNumber>();
                         foreach (DataRow dr in ds.Tables[0].Rows)
                         {
                             FreeNumber _number = new FreeNumber();
                             _number.MobileNumber = dr["Number"].ToString().Trim();
                             _number.ServiceCode = dr["ServiceCode"].ToString().Trim();
-                            numbers.FreeNumbers.Add(_number);
+                            _numbers.Add(_number);
                         }
+                        numbers.FreeNumbers = _numbers;
                     }
                     if (ds.Tables.Count > 1)
                     {
+                        List<PremiumNumbers> _premiumnumbers = new List<PremiumNumbers>();
                         foreach (DataRow dr in ds.Tables[1].Rows)
                         {
                             PremiumNumbers _number = new PremiumNumbers();
@@ -5013,8 +5016,9 @@ namespace OrderService.DataAccess
                             _number.ServiceCode = ((int)dr["ServiceCode"]);
                             _number.PortalServiceName = dr["PortalServiceName"].ToString().Trim();
                             _number.Price = ((double)dr["Price"]);
-                            numbers.PremiumNumbers.Add(_number);
+                            _premiumnumbers.Add(_number);
                         }
+                        numbers.PremiumNumbers = _premiumnumbers;
                     }
                 }
                 DatabaseResponse response = new DatabaseResponse();
@@ -5122,12 +5126,12 @@ namespace OrderService.DataAccess
 
                             if (premumResponse != null && premumResponse.Response != null && premumResponse.Response.asset_details != null)
                             {
-                                await UpdateBSSSelectionNumbers(json, ((BSSAssetRequest)requestIdResForFreeNumber.Results).userid, ((BSSAssetRequest)requestIdResForFreeNumber.Results).BSSCallLogID, customerID, fee.PortalServiceName, fee.ServiceFee);
                                 List<PremiumNumbers> premiumNumbers = bsshelper.GetPremiumNumbers(premumResponse, fee);
 
                                 List<FreeNumber> premiumToLogNumbers = bsshelper.GetFreeNumbers(premumResponse);
 
                                 string jsonPremium = bsshelper.GetJsonString(premiumToLogNumbers);
+                                await UpdateBSSSelectionNumbers(jsonPremium, ((BSSAssetRequest)requestIdResForFreeNumber.Results).userid, ((BSSAssetRequest)requestIdResForFreeNumber.Results).BSSCallLogID, customerID, fee.PortalServiceName, fee.ServiceFee);
 
                                 DatabaseResponse updateBssCallPremiumNumbers = await UpdateBSSCallNumbers(jsonPremium, ((BSSAssetRequest)requestIdResForPremium.Results).userid, ((BSSAssetRequest)requestIdResForPremium.Results).BSSCallLogID);
 
