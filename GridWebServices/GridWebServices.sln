@@ -51,7 +51,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageQueueConsoleAppServi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BuddyProcessingApp", "BuddyProcessingApp\BuddyProcessingApp.csproj", "{7FA1628E-9CBF-46DA-ACB8-E1E0D65A3870}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GRIDService", "GRIDService\GRIDService.csproj", "{90667332-EDC6-4B99-A0CF-6CABF401A257}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GRIDService", "GRIDService\GRIDService.csproj", "{90667332-EDC6-4B99-A0CF-6CABF401A257}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnblockNumberServiceApp", "UnblockNumberServiceApp\UnblockNumberServiceApp.csproj", "{4AC5890E-F169-4CAA-A4FA-2A3781EEFBAB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -127,6 +129,10 @@ Global
 		{90667332-EDC6-4B99-A0CF-6CABF401A257}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{90667332-EDC6-4B99-A0CF-6CABF401A257}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{90667332-EDC6-4B99-A0CF-6CABF401A257}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4AC5890E-F169-4CAA-A4FA-2A3781EEFBAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4AC5890E-F169-4CAA-A4FA-2A3781EEFBAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4AC5890E-F169-4CAA-A4FA-2A3781EEFBAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4AC5890E-F169-4CAA-A4FA-2A3781EEFBAB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
