@@ -951,6 +951,16 @@ namespace OrderService.Controllers
                                         });
                                     }
                                 }
+                                else if (updateSubscriberResponse.ResponseCode == (int)DbReturnValue.DuplicateNumber)
+                                {
+                                    LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.DuplicateNumber));
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = false,
+                                        Message = EnumExtensions.GetDescription(DbReturnValue.DuplicateNumber),
+                                        IsDomainValidationErrors = false
+                                    });
+                                }
                                 else
                                 {
                                     LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.UpdateSubscriptionFailed));

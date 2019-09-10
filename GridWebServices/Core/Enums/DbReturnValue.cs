@@ -280,6 +280,10 @@ namespace Core.Enums
         [EnumMember(Value = "PendingOrderSIM")]
         [Description("SIM allocation is pending for the roadshow order")]
         PendingOrderSIM = 173,
+
+        [EnumMember(Value = "DuplicateNumber")]
+        [Description("Selected number is already used for another line.")]
+        DuplicateNumber = 174,
     }
 }
 
