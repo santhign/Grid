@@ -5076,6 +5076,7 @@ namespace OrderService.DataAccess
 
                 //insert these number into database
                 string json = bsshelper.GetJsonString(numbers.FreeNumbers); // json insert
+                LogInfo.Information("step1 : " + json);
                 await UpdateBSSSelectionNumbers(json, ((BSSAssetRequest)requestIdResForFreeNumber.Results).userid, ((BSSAssetRequest)requestIdResForFreeNumber.Results).BSSCallLogID, customerID, "Free", 0);
                 DatabaseResponse updateBssCallFeeNumbers = await UpdateBSSCallNumbers(json, ((BSSAssetRequest)requestIdResForFreeNumber.Results).userid, ((BSSAssetRequest)requestIdResForFreeNumber.Results).BSSCallLogID);
 
@@ -5131,15 +5132,17 @@ namespace OrderService.DataAccess
                                 List<FreeNumber> premiumToLogNumbers = bsshelper.GetFreeNumbers(premumResponse);
 
                                 string jsonPremium = bsshelper.GetJsonString(premiumToLogNumbers);
+
+                                LogInfo.Information("step2 : " + jsonPremium);
                                 await UpdateBSSSelectionNumbers(jsonPremium, ((BSSAssetRequest)requestIdResForFreeNumber.Results).userid, ((BSSAssetRequest)requestIdResForFreeNumber.Results).BSSCallLogID, customerID, fee.PortalServiceName, fee.ServiceFee);
 
                                 DatabaseResponse updateBssCallPremiumNumbers = await UpdateBSSCallNumbers(jsonPremium, ((BSSAssetRequest)requestIdResForPremium.Results).userid, ((BSSAssetRequest)requestIdResForPremium.Results).BSSCallLogID);
-
+                                List<PremiumNumbers> pnumbers = new List<PremiumNumbers>();
                                 foreach (PremiumNumbers premium in premiumNumbers)
                                 {
-                                    numbers.PremiumNumbers.Add(premium);
+                                    pnumbers.Add(premium);
                                 }
-
+                                numbers.PremiumNumbers = pnumbers;
                             }
                             else
                             {

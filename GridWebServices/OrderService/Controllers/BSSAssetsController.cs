@@ -242,7 +242,11 @@ namespace OrderService.Controllers
                         else
                         {
                             await _orderAccess.GetBSSNumbersInitially(customerID);
+                            LogInfo.Information("Numbers recieved successfully");
+                            _selectionNumbersResponse = await _orderAccess.GetSelectionNumbers(customerID);
+                            LogInfo.Information("Numbers retrived from DB");
                             BSSNumbers _selectionNumbers = ((BSSNumbers)_selectionNumbersResponse.Results);
+                            LogInfo.Information("Numbers assigned to array" + _selectionNumbers.FreeNumbers.Count);
                             if (_selectionNumbers.FreeNumbers.Count > 0)
                             {
                                 return Ok(new OperationResponse
