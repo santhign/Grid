@@ -70,7 +70,7 @@ namespace Core.Enums
         GetAssetsFailed = 115,
 
         [EnumMember(Value = "Blocking Failed")]
-        [Description("Phone number blocking failed at service provider")]
+        [Description("Selected mobile number has been selected by another customer, please try selecting another number.")]
         BlockingFailed = 117,
 
         [EnumMember(Value = "Un Blocking Failed")]
