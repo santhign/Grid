@@ -5041,149 +5041,171 @@ namespace OrderService.DataAccess
 
         public async Task<bool> GetBSSNumbersInitially(int customerID)
         {
-            BSSAPIHelper bsshelper = new BSSAPIHelper();
-            DatabaseResponse systemConfigResponse = await GetConfiguration(ConfiType.System.ToString());
-
-            DatabaseResponse bssConfigResponse = await GetConfiguration(ConfiType.BSS.ToString());
-
-            GridBSSConfi bssConfig = bsshelper.GetGridConfig((List<Dictionary<string, string>>)bssConfigResponse.Results);
-
-            GridSystemConfig systemConfig = bsshelper.GetGridSystemConfig((List<Dictionary<string, string>>)systemConfigResponse.Results);
-
-            DatabaseResponse serviceCAF = await GetBSSServiceCategoryAndFee(ServiceTypes.Free.ToString());
-
-            DatabaseResponse requestIdResForFreeNumber = await GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.GetAssets.ToString(), customerID, (int)BSSCalls.NewSession, "");
-
-            ResponseObject res = new ResponseObject();
-
-            //Getting FreeNumbers
             try
             {
-                res = await bsshelper.GetAssetInventory(bssConfig, ((List<ServiceFees>)serviceCAF.Results).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdResForFreeNumber.Results, systemConfig.FreeNumberListCount);
-            }
+                BSSAPIHelper bsshelper = new BSSAPIHelper();
+                DatabaseResponse systemConfigResponse = await GetConfiguration(ConfiType.System.ToString());
 
-            catch (Exception ex)
-            {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
-                return false;
-            }
+                DatabaseResponse bssConfigResponse = await GetConfiguration(ConfiType.BSS.ToString());
 
-            BSSNumbers numbers = new BSSNumbers();
+                GridBSSConfi bssConfig = bsshelper.GetGridConfig((List<Dictionary<string, string>>)bssConfigResponse.Results);
 
-            if (res != null)
-            {
-                numbers.FreeNumbers = bsshelper.GetFreeNumbers(res);
+                GridSystemConfig systemConfig = bsshelper.GetGridSystemConfig((List<Dictionary<string, string>>)systemConfigResponse.Results);
 
-                //insert these number into database
-                string json = bsshelper.GetJsonString(numbers.FreeNumbers); // json insert
-                LogInfo.Information("step1 : " + json);
-                await UpdateBSSSelectionNumbers(json, ((BSSAssetRequest)requestIdResForFreeNumber.Results).userid, ((BSSAssetRequest)requestIdResForFreeNumber.Results).BSSCallLogID, customerID, "Free", 0);
-                DatabaseResponse updateBssCallFeeNumbers = await UpdateBSSCallNumbers(json, ((BSSAssetRequest)requestIdResForFreeNumber.Results).userid, ((BSSAssetRequest)requestIdResForFreeNumber.Results).BSSCallLogID);
+                DatabaseResponse serviceCAF = await GetBSSServiceCategoryAndFee(ServiceTypes.Free.ToString());
 
-                if (updateBssCallFeeNumbers.ResponseCode == (int)DbReturnValue.CreateSuccess)
+                DatabaseResponse requestIdResForFreeNumber = await GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.GetAssets.ToString(), customerID, (int)BSSCalls.NewSession, "");
+
+                ResponseObject res = new ResponseObject();
+
+                //Getting FreeNumbers
+                try
                 {
-                    // get Premium Numbers
+                    res = await bsshelper.GetAssetInventory(bssConfig, ((List<ServiceFees>)serviceCAF.Results).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdResForFreeNumber.Results, systemConfig.FreeNumberListCount);
+                }
 
-                    DatabaseResponse serviceCAFPremium = await GetBSSServiceCategoryAndFee(ServiceTypes.Premium.ToString());
+                catch (Exception ex)
+                {
+                    LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+                    return false;
+                }
 
-                    if (serviceCAFPremium != null && serviceCAFPremium.ResponseCode == (int)DbReturnValue.RecordExists)
+                BSSNumbers numbers = new BSSNumbers();
+
+                if (res != null)
+                {
+                    numbers.FreeNumbers = bsshelper.GetFreeNumbers(res);
+
+                    //insert these number into database
+                    string json = bsshelper.GetJsonString(numbers.FreeNumbers); // json insert
+                    LogInfo.Information("step1 : " + json);
+                    await UpdateBSSSelectionNumbers(json, ((BSSAssetRequest)requestIdResForFreeNumber.Results).userid, ((BSSAssetRequest)requestIdResForFreeNumber.Results).BSSCallLogID, customerID, "Free", 0);
+                    DatabaseResponse updateBssCallFeeNumbers = await UpdateBSSCallNumbers(json, ((BSSAssetRequest)requestIdResForFreeNumber.Results).userid, ((BSSAssetRequest)requestIdResForFreeNumber.Results).BSSCallLogID);
+
+                    if (updateBssCallFeeNumbers.ResponseCode == (int)DbReturnValue.CreateSuccess)
                     {
-                        List<ServiceFees> premiumServiceFeeList = new List<ServiceFees>();
+                        // get Premium Numbers
 
-                        premiumServiceFeeList = (List<ServiceFees>)serviceCAFPremium.Results;
+                        DatabaseResponse serviceCAFPremium = await GetBSSServiceCategoryAndFee(ServiceTypes.Premium.ToString());
 
-                        int countPerPremium = (systemConfig.PremiumNumberListCount / premiumServiceFeeList.Count);
-
-                        int countBalance = systemConfig.PremiumNumberListCount % premiumServiceFeeList.Count;
-
-                        if (countBalance > 0)
+                        if (serviceCAFPremium != null && serviceCAFPremium.ResponseCode == (int)DbReturnValue.RecordExists)
                         {
-                            countPerPremium = countPerPremium + countBalance;
-                        }
+                            List<ServiceFees> premiumServiceFeeList = new List<ServiceFees>();
 
-                        int loopCount = premiumServiceFeeList.Count;
+                            premiumServiceFeeList = (List<ServiceFees>)serviceCAFPremium.Results;
 
-                        int iterator = 0;
+                            int countPerPremium = (systemConfig.PremiumNumberListCount / premiumServiceFeeList.Count);
 
-                        foreach (ServiceFees fee in premiumServiceFeeList)
-                        {
-                            //get code and call premum 
-                            //  fee.PortalServiceName
+                            int countBalance = systemConfig.PremiumNumberListCount % premiumServiceFeeList.Count;
 
-                            DatabaseResponse requestIdResForPremium = await GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.GetAssets.ToString(), customerID, (int)BSSCalls.NewSession, "");
+                            if (countBalance > 0)
+                            {
+                                countPerPremium = countPerPremium + countBalance;
+                            }
 
-                            ResponseObject premumResponse = new ResponseObject();
+                            int loopCount = premiumServiceFeeList.Count;
+
+                            int iterator = 0;
 
                             try
                             {
-                                premumResponse = await bsshelper.GetAssetInventory(bssConfig, fee.ServiceCode, (BSSAssetRequest)requestIdResForPremium.Results, countPerPremium);
-                            }
+                                foreach (ServiceFees fee in premiumServiceFeeList)
+                                {
+                                    //get code and call premum 
+                                    //  fee.PortalServiceName
 
+                                    DatabaseResponse requestIdResForPremium = await GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.GetAssets.ToString(), customerID, (int)BSSCalls.NewSession, "");
+
+                                    ResponseObject premumResponse = new ResponseObject();
+
+                                    try
+                                    {
+                                        premumResponse = await bsshelper.GetAssetInventory(bssConfig, fee.ServiceCode, (BSSAssetRequest)requestIdResForPremium.Results, countPerPremium);
+                                    }
+
+                                    catch (Exception ex)
+                                    {
+                                        LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+
+                                    }
+
+                                    if (premumResponse != null && premumResponse.Response != null && premumResponse.Response.asset_details != null)
+                                    {
+                                        List<PremiumNumbers> premiumNumbers = bsshelper.GetPremiumNumbers(premumResponse, fee);
+
+                                        List<FreeNumber> premiumToLogNumbers = bsshelper.GetFreeNumbers(premumResponse);
+
+                                        string jsonPremium = bsshelper.GetJsonString(premiumToLogNumbers);
+
+                                        LogInfo.Information("step2 : " + jsonPremium);
+                                        await UpdateBSSSelectionNumbers(jsonPremium, ((BSSAssetRequest)requestIdResForFreeNumber.Results).userid, ((BSSAssetRequest)requestIdResForFreeNumber.Results).BSSCallLogID, customerID, fee.PortalServiceName, fee.ServiceFee);
+
+                                        LogInfo.Information("step3 : log the premium numbers");
+                                        DatabaseResponse updateBssCallPremiumNumbers = await UpdateBSSCallNumbers(jsonPremium, ((BSSAssetRequest)requestIdResForPremium.Results).userid, ((BSSAssetRequest)requestIdResForPremium.Results).BSSCallLogID);
+
+                                        LogInfo.Information("step4 : log the premium numbers for generic logs");
+                                        foreach (PremiumNumbers premium in premiumNumbers)
+                                        {
+                                            numbers.PremiumNumbers.Add(premium);
+                                        }
+                                        LogInfo.Information("step5 : " + numbers.PremiumNumbers.Count.ToString());
+                                    }
+                                    else
+                                    {
+                                        //failed to get premium
+
+                                        LogInfo.Information("failed to get premium numbers");
+                                        if (iterator == 0)
+                                        {
+                                            countPerPremium = (systemConfig.PremiumNumberListCount / (premiumServiceFeeList.Count - 1));
+                                        }
+                                        else if (iterator == 1)
+                                        {
+                                            if (numbers.PremiumNumbers.Count < countPerPremium * (iterator + 1))
+
+                                                countPerPremium = (systemConfig.PremiumNumberListCount / (premiumServiceFeeList.Count - 2));
+                                            else
+                                                countPerPremium = (systemConfig.PremiumNumberListCount / (premiumServiceFeeList.Count - 1));
+                                        }
+                                    }
+
+                                    iterator++;
+
+                                }  // for
+
+                                LogInfo.Information("before assigning the numbers to final array");
+                                LogInfo.Information("final counts " + numbers.FreeNumbers.Count.ToString() + "- premium - " + numbers.PremiumNumbers.Count.ToString());
+                                if (numbers.PremiumNumbers.Count > systemConfig.PremiumNumberListCount)
+                                {
+                                    int extrPremiumCount = numbers.PremiumNumbers.Count - systemConfig.PremiumNumberListCount;
+
+                                    LogInfo.Information("before assigning the numbers to final array" + extrPremiumCount + " additional");
+                                    numbers.PremiumNumbers.RemoveRange(numbers.PremiumNumbers.Count - (extrPremiumCount + 1), extrPremiumCount);
+                                }
+                            }
                             catch (Exception ex)
                             {
-                                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
-
+                                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                                return false;
                             }
-
-                            if (premumResponse != null && premumResponse.Response != null && premumResponse.Response.asset_details != null)
-                            {
-                                List<PremiumNumbers> premiumNumbers = bsshelper.GetPremiumNumbers(premumResponse, fee);
-
-                                List<FreeNumber> premiumToLogNumbers = bsshelper.GetFreeNumbers(premumResponse);
-
-                                string jsonPremium = bsshelper.GetJsonString(premiumToLogNumbers);
-
-                                LogInfo.Information("step2 : " + jsonPremium);
-                                await UpdateBSSSelectionNumbers(jsonPremium, ((BSSAssetRequest)requestIdResForFreeNumber.Results).userid, ((BSSAssetRequest)requestIdResForFreeNumber.Results).BSSCallLogID, customerID, fee.PortalServiceName, fee.ServiceFee);
-
-                                DatabaseResponse updateBssCallPremiumNumbers = await UpdateBSSCallNumbers(jsonPremium, ((BSSAssetRequest)requestIdResForPremium.Results).userid, ((BSSAssetRequest)requestIdResForPremium.Results).BSSCallLogID);
-                                List<PremiumNumbers> pnumbers = new List<PremiumNumbers>();
-                                foreach (PremiumNumbers premium in premiumNumbers)
-                                {
-                                    pnumbers.Add(premium);
-                                }
-                                numbers.PremiumNumbers = pnumbers;
-                            }
-                            else
-                            {
-                                //failed to get premium
-
-                                if (iterator == 0)
-                                {
-                                    countPerPremium = (systemConfig.PremiumNumberListCount / (premiumServiceFeeList.Count - 1));
-                                }
-                                else if (iterator == 1)
-                                {
-                                    if (numbers.PremiumNumbers.Count < countPerPremium * (iterator + 1))
-
-                                        countPerPremium = (systemConfig.PremiumNumberListCount / (premiumServiceFeeList.Count - 2));
-                                    else
-                                        countPerPremium = (systemConfig.PremiumNumberListCount / (premiumServiceFeeList.Count - 1));
-                                }
-                            }
-
-                            iterator++;
-
-                        }  // for
-
-                        if (numbers.PremiumNumbers.Count > systemConfig.PremiumNumberListCount)
-                        {
-                            int extrPremiumCount = numbers.PremiumNumbers.Count - systemConfig.PremiumNumberListCount;
-
-                            numbers.PremiumNumbers.RemoveRange(numbers.PremiumNumbers.Count - (extrPremiumCount + 1), extrPremiumCount);
                         }
+                        return true;
                     }
-                    return true;
+                    else
+                    {
+                        //failded to update BSS call numbers so returning
+                        return false;
+                    }
                 }
                 else
                 {
-                    //failded to update BSS call numbers so returning
+                    //failed to get free numbers
                     return false;
                 }
             }
-            else
+            catch (Exception ex)
             {
-                //failed to get free numbers
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
                 return false;
             }
         }

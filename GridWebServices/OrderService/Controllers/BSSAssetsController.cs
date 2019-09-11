@@ -218,6 +218,8 @@ namespace OrderService.Controllers
                             else
                             {
                                 await _orderAccess.GetBSSNumbersInitially(customerID);
+                                LogInfo.Information("Numbers recieved successfully");
+                                _selectionNumbersResponse = await _orderAccess.GetSelectionNumbers(customerID);
                                 _selectionNumbers = ((BSSNumbers)_selectionNumbersResponse.Results);
                                 if (_selectionNumbers.FreeNumbers.Count > 0)
                                 {
@@ -262,7 +264,7 @@ namespace OrderService.Controllers
                                 {
                                     HasSucceeded = false,
                                     IsDomainValidationErrors = false,
-                                    Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed)
+                                    Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed) + "test"
                                 });
                             }
                         }
