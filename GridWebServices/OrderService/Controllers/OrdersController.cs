@@ -8304,7 +8304,7 @@ namespace OrderService.Controllers
                 });
                 AuthHelper helper = new AuthHelper(_iconfiguration);
                 //Need to change this
-                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_personaldetails_update);
+                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Orders_eloa_update);
 
                 if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
                 {

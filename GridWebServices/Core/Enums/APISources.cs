@@ -63,6 +63,7 @@ namespace Core.Enums
         public const string Orders_RescheduleDelivery = "Orders_RescheduleDelivery";
         public const string CR_loa_update = "CR_loa_update";
         public const string Orders_ID_Verification = "Orders_ID_Verification";
+        public const string Orders_eloa_update = "Orders_eloa_update";
 
     }
 }
