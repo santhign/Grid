@@ -4,6 +4,7 @@ using Core.Helpers;
 using Core.Models;
 using InfrastructureService;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using OrderService.DataAccess;
 using OrderService.Models;
 using System;
@@ -94,14 +95,17 @@ namespace OrderService.Helpers
             {
                 //line blocking
                 bssUpdateResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateMainLineRes.Results, number, false);
+                LogInfo.Information(JsonConvert.SerializeObject(bssUpdateResponse.Response));
                 if (bsshelper.GetResponseCode(bssUpdateResponse) == "0")
                 {
+                    LogInfo.Information("Number assigned to order subscriber");
                     _details.Number = number;
                     _details.UserSessionID = ((BSSAssetRequest)requestIdToUpdateMainLineRes.Results).userid;
                     return _details;
                 }
                 else
                 {
+                    LogInfo.Information("Number assign failed" + bsshelper.GetResponseCode(bssUpdateResponse));
                     return _details;
                 }
             }

@@ -603,7 +603,7 @@ namespace OrderService.Controllers
                                     try
                                     {
                                         NumberDetails number = await numberHelper.BlockNumber(customer.CustomerId, request.NewNumber.MobileNumber);
-                                        if (number != null)
+                                        if (number != null && !string.IsNullOrEmpty(number.Number))
                                         {
                                             DatabaseResponse updateSubscriberResponse = await _orderAccess.UpdateSubscriberNumber(request);
 
@@ -674,7 +674,7 @@ namespace OrderService.Controllers
                                     try
                                     {
                                         NumberDetails number = await numberHelper.BlockNumber(customer.CustomerId, request.NewNumber.MobileNumber);
-                                        if (number != null)
+                                        if (number != null && !string.IsNullOrEmpty(number.Number))
                                         {
                                             DatabaseResponse updateSubscriberResponse = await _orderAccess.UpdateSubscriberNumber(request);
                                             if (updateSubscriberResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
