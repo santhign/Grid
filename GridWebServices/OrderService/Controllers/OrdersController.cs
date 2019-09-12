@@ -583,23 +583,6 @@ namespace OrderService.Controllers
                             {
                                 if (((int)isPortedResponse.Results) != 1)
                                 {
-                                    // Unblock
-                                    try
-                                    {
-                                        await numberHelper.UnblockNumber(customer.CustomerId, request.OldMobileNumber);
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + " " + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
-
-                                        return Ok(new OperationResponse
-                                        {
-                                            HasSucceeded = false,
-                                            Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed),
-                                            IsDomainValidationErrors = false
-                                        });
-                                    }
-
                                     try
                                     {
                                         NumberDetails number = await numberHelper.BlockNumber(customer.CustomerId, request.NewNumber.MobileNumber);
@@ -609,6 +592,22 @@ namespace OrderService.Controllers
 
                                             if (updateSubscriberResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
                                             {
+                                                // Unblock
+                                                try
+                                                {
+                                                    await numberHelper.UnblockNumber(customer.CustomerId, request.OldMobileNumber);
+                                                }
+                                                catch (Exception ex)
+                                                {
+                                                    LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + " " + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+
+                                                    return Ok(new OperationResponse
+                                                    {
+                                                        HasSucceeded = false,
+                                                        Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed),
+                                                        IsDomainValidationErrors = false
+                                                    });
+                                                }
                                                 // Get Order Basic Details
                                                 DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails_V2(request.OrderID);
                                                 if (orderDetailsResponse.ResponseCode == (int)DbReturnValue.RecordExists)
@@ -905,28 +904,28 @@ namespace OrderService.Controllers
                         {
                             if (portResponse.Results != null && portResponse.Results.ToString().Trim() == "0")
                             {
-                                customer = (OrderCustomer)customerResponse.Results;
-                                // Unblock
-                                try
-                                {
-                                    await numberHelper.UnblockNumber(customer.CustomerId, request.OldMobileNumber);
-                                }
-                                catch (Exception ex)
-                                {
-                                    LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + " " + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
-
-                                    return Ok(new OperationResponse
-                                    {
-                                        HasSucceeded = false,
-                                        Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed),
-                                        IsDomainValidationErrors = false
-                                    });
-                                }
+                                customer = (OrderCustomer)customerResponse.Results;                               
 
                                 //update subscription porting
                                 DatabaseResponse updateSubscriberResponse = await _orderAccess.UpdateSubscriberPortingNumber(portingRequest);
                                 if (updateSubscriberResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
-                                {
+                                { 
+                                    // Unblock
+                                    try
+                                    {
+                                        await numberHelper.UnblockNumber(customer.CustomerId, request.OldMobileNumber);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + " " + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = false,
+                                            Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed),
+                                            IsDomainValidationErrors = false
+                                        });
+                                    }
                                     // Get Order Basic Details
                                     DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderBasicDetails_V2(request.OrderID);
                                     if (orderDetailsResponse.ResponseCode == (int)DbReturnValue.RecordExists)

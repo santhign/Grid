@@ -122,12 +122,14 @@ namespace OrderService.Helpers
             {
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
                 DatabaseResponse numberlog = await _orderAccess.LogUnblockNumber(CustomerID, number);
-                DatabaseResponse configResponse = ConfigHelper.GetValueByKey("UnBlockingApp", _iconfiguration);
-                if (!(bool)configResponse.Results)
+                string configValue = ConfigHelper.GetValueByKey("UnBlockingApp", _iconfiguration).Results.ToString();
+                bool haveApp = false;
+                bool.TryParse(configValue, out haveApp);
+                if (!haveApp)
                 {
                     //to be removed once number unblocking console app is implemented.
                     BSSAPIHelper bsshelper = new BSSAPIHelper();
-                    configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
+                    DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
                     GridBSSConfi config = bsshelper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
                     DatabaseResponse requestIdToUpdateLineRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), CustomerID, (int)BSSCalls.ExistingSession, number);
 
