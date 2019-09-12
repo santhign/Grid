@@ -13,6 +13,7 @@ namespace UnblockNumberServiceApp
     /// </summary>
     public class NumberDetails
     {
+        public int ID { get; set; }
         public int CustomerID { get; set; }
         public string MobileNumber { get; set; }
     }
@@ -86,11 +87,11 @@ namespace UnblockNumberServiceApp
                         var response = await unblockNumberDataAccess.UnblockNumber(result.CustomerID, result.MobileNumber);
                         if (response)
                         {
-                            await unblockNumberDataAccess.UpdateUnBlockNumberDetails(result.CustomerID, result.MobileNumber, null, 1);
+                            await unblockNumberDataAccess.UpdateUnBlockNumberDetails(result.CustomerID, result.MobileNumber, null, 1, result.ID);
                         }
                         else
                         {
-                            await unblockNumberDataAccess.UpdateUnBlockNumberDetails(result.CustomerID, result.MobileNumber, null, 0);
+                            await unblockNumberDataAccess.UpdateUnBlockNumberDetails(result.CustomerID, result.MobileNumber, null, 0, result.ID);
                         }
 
                     }
