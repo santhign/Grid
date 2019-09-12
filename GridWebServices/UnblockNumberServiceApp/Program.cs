@@ -76,19 +76,24 @@ namespace UnblockNumberServiceApp
                 // Display the date/time when this method got called.
                 Console.WriteLine("Start TimerCallback: " + DateTime.Now);
                 LogInfo.Information("Start TimerCallback: " + DateTime.Now);
-                var result = await unblockNumberDataAccess.GetCustomerNumber();
-                if (result != null && result.CustomerID != 0 && !string.IsNullOrEmpty(result.MobileNumber))
+                var resultList = await unblockNumberDataAccess.GetCustomerNumber();
+                foreach (var result in resultList)
                 {
-                    var response = await unblockNumberDataAccess.UnblockNumber(result.CustomerID, result.MobileNumber);
-                    if(response)
-                    {
-                        await unblockNumberDataAccess.UpdateUnBlockNumberDetails(result.CustomerID, result.MobileNumber, "Processed at " + DateTime.Now, 1);
-                    }
-                    else
-                    {
-                        await unblockNumberDataAccess.UpdateUnBlockNumberDetails(result.CustomerID, result.MobileNumber, "Tried to processed at " + DateTime.Now + " but failed", 0);
-                    }
 
+
+                    if (result != null && result.CustomerID != 0 && !string.IsNullOrEmpty(result.MobileNumber))
+                    {
+                        var response = await unblockNumberDataAccess.UnblockNumber(result.CustomerID, result.MobileNumber);
+                        if (response)
+                        {
+                            await unblockNumberDataAccess.UpdateUnBlockNumberDetails(result.CustomerID, result.MobileNumber, null, 1);
+                        }
+                        else
+                        {
+                            await unblockNumberDataAccess.UpdateUnBlockNumberDetails(result.CustomerID, result.MobileNumber, null, 0);
+                        }
+
+                    }
                 }
                 Console.WriteLine("End TimerCallback: " + DateTime.Now);
                 LogInfo.Information("End TimerCallback: " + DateTime.Now);

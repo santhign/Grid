@@ -27,7 +27,7 @@ namespace UnblockNumberServiceApp
         {
             DatabaseResponse intervelConfigResponse = new DatabaseResponse();
 
-            intervelConfigResponse = ConfigHelper.GetValueByKey(ConfigKeys.MQConsoleInterval.ToString(), _connectionString);
+            intervelConfigResponse = ConfigHelper.GetValueByKey(ConfigKeys.UN_TimeInterval.ToString(), _connectionString);
 
             if (intervelConfigResponse != null && intervelConfigResponse.ResponseCode == (int)DbReturnValue.RecordExists)
             {
@@ -73,10 +73,10 @@ namespace UnblockNumberServiceApp
         /// Gets the customer number.
         /// </summary>
         /// <returns></returns>
-        public async Task<NumberDetails> GetCustomerNumber()
+        public async Task<List<NumberDetails>> GetCustomerNumber()
         {
             DataAccessHelper _DataHelper = null;
-            NumberDetails numberDetails = new NumberDetails();
+            List<NumberDetails> numberDetails = new List<NumberDetails>();
             try
             {
                 _DataHelper = new DataAccessHelper("Orders_GetUnBlockNumbers", _connectionString);
@@ -91,7 +91,7 @@ namespace UnblockNumberServiceApp
                                          MobileNumber = model.Field<string>("MobileNumber"),
                                          CustomerID = model.Field<int>("CustomerID")
 
-                                     }).FirstOrDefault();
+                                     }).ToList();
 
                 }
 
