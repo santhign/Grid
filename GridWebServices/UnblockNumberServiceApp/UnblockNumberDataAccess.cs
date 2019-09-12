@@ -89,7 +89,8 @@ namespace UnblockNumberServiceApp
                                      select new NumberDetails()
                                      {
                                          MobileNumber = model.Field<string>("MobileNumber"),
-                                         CustomerID = model.Field<int>("CustomerID")
+                                         CustomerID = model.Field<int>("CustomerID"),
+                                         ID = model.Field<int>("ID")
 
                                      }).ToList();
 
@@ -250,7 +251,7 @@ namespace UnblockNumberServiceApp
         /// <param name="remarks">The remarks.</param>
         /// <param name="isProcessed">The is processed.</param>
         /// <returns></returns>
-        public async Task<DatabaseResponse> UpdateUnBlockNumberDetails(int CustomerID, string number, string remarks, int isProcessed)
+        public async Task<DatabaseResponse> UpdateUnBlockNumberDetails(int CustomerID, string number, string remarks, int isProcessed, int ID)
         {
             DataAccessHelper _DataHelper = null;
             try
@@ -260,13 +261,15 @@ namespace UnblockNumberServiceApp
                     new SqlParameter( "@CustomerID",  SqlDbType.Int ),
                     new SqlParameter( "@Number",  SqlDbType.NVarChar ),
                     new SqlParameter( "@Remarks",  SqlDbType.NVarChar ),
-                    new SqlParameter( "@IsProcessed",  SqlDbType.Int )
+                    new SqlParameter( "@IsProcessed",  SqlDbType.Int ),
+                    new SqlParameter( "@ID",  SqlDbType.Int )
                 };
 
                 parameters[0].Value = CustomerID;
                 parameters[1].Value = number;
                 parameters[2].Value = remarks;
                 parameters[3].Value = isProcessed;
+                parameters[4].Value = ID;
 
                 _DataHelper = new DataAccessHelper("Orders_UpdateUnBlockNumberDetails", parameters, _connectionString);
 
