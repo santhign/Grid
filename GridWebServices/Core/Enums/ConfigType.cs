@@ -75,6 +75,10 @@ namespace Core.Enums
         [Description("GridBillingAPIEndPoint")]
         GridBillingAPIEndPoint = 9,
 
+        [EnumMember(Value = "UN_TimeInterval")]
+        [Description("Time Interval for UnBlock Application Service")]
+        UN_TimeInterval = 10,
+
     }
 
     public enum OrderStatus
