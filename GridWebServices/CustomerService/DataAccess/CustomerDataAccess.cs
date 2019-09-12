@@ -932,6 +932,7 @@ namespace CustomerService.DataAccess
                             try { orderDetails.ServiceFee = Convert.ToDouble(dr["ServiceFee"]); }
                             catch { }
                             orderDetails.InvoiceNumber = dr["InvoiceNumber"].ToString();
+                            orderDetails.IsELOAUpdateAllowed = (dr["IsELOAUpdateAllowed"] == DBNull.Value) ? (bool?)null : ((bool)dr["IsELOAUpdateAllowed"]);
                             orderDetails.MaskedCardNumber = dr["MaskedCardNumber"].ToString();
                             orderDetails.CardBrand = dr["CardBrand"].ToString();
                             orderDetails.ExpiryMonth = Convert.ToInt32(dr["ExpiryMonth"].ToString());

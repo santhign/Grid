@@ -1148,7 +1148,7 @@ namespace OrderService.Controllers
                                 try
                                 {
                                     NumberDetails number = await numberHelper.BlockNumber(request.CustomerID, request.NewMobileNumber);
-                                    if (number != null)
+                                    if (number != null && !string.IsNullOrEmpty(number.Number))
                                     {
                                         DatabaseResponse statusResponse = await _changeRequestDataAccess.ChangePhoneRequest(request, customerID);
 
@@ -1246,7 +1246,7 @@ namespace OrderService.Controllers
                                 try
                                 {
                                     NumberDetails number = await numberHelper.BlockNumber(request.CustomerID, request.NewMobileNumber);
-                                    if(number != null)
+                                    if(number != null && !string.IsNullOrEmpty(number.Number))
                                     {
                                         DatabaseResponse statusResponse = await _changeRequestDataAccess.ChangePhoneRequest(request, customerID);
 

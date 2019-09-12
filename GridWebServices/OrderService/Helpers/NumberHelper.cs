@@ -4,6 +4,7 @@ using Core.Helpers;
 using Core.Models;
 using InfrastructureService;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using OrderService.DataAccess;
 using OrderService.Models;
 using System;
@@ -94,14 +95,17 @@ namespace OrderService.Helpers
             {
                 //line blocking
                 bssUpdateResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateMainLineRes.Results, number, false);
+                LogInfo.Information(JsonConvert.SerializeObject(bssUpdateResponse.Response));
                 if (bsshelper.GetResponseCode(bssUpdateResponse) == "0")
                 {
+                    LogInfo.Information("Number assigned to order subscriber");
                     _details.Number = number;
                     _details.UserSessionID = ((BSSAssetRequest)requestIdToUpdateMainLineRes.Results).userid;
                     return _details;
                 }
                 else
                 {
+                    LogInfo.Information("Number assign failed" + bsshelper.GetResponseCode(bssUpdateResponse));
                     return _details;
                 }
             }
@@ -118,15 +122,18 @@ namespace OrderService.Helpers
             {
                 OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
                 DatabaseResponse numberlog = await _orderAccess.LogUnblockNumber(CustomerID, number);
+                DatabaseResponse configResponse = ConfigHelper.GetValueByKey("UnBlockingApp", _iconfiguration);
+                if (!(bool)configResponse.Results)
+                {
+                    //to be removed once number unblocking console app is implemented.
+                    BSSAPIHelper bsshelper = new BSSAPIHelper();
+                    configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
+                    GridBSSConfi config = bsshelper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
+                    DatabaseResponse requestIdToUpdateLineRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), CustomerID, (int)BSSCalls.ExistingSession, number);
 
-                //to be removed once number unblocking console app is implemented.
-                BSSAPIHelper bsshelper = new BSSAPIHelper();
-                DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
-                GridBSSConfi config = bsshelper.GetGridConfig((List<Dictionary<string, string>>)configResponse.Results);
-                DatabaseResponse requestIdToUpdateLineRes = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.UpdateAssetStatus.ToString(), CustomerID, (int)BSSCalls.ExistingSession, number);
-
-                //un reachable condition, but for safety
-                BSSUpdateResponseObject bssUpdateBuddyResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateLineRes.Results, number, true);
+                    //un reachable condition, but for safety
+                    BSSUpdateResponseObject bssUpdateBuddyResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateLineRes.Results, number, true);
+                }
                 return true;
             }
             catch (Exception ex)

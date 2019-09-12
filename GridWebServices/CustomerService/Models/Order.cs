@@ -53,6 +53,7 @@ namespace CustomerService.Models
         public int? ExpiryMonth { get; set; }
         public int? ExpiryYear { get; set; }
         public DateTime? PaymentOn { get; set; }
+        public bool ? IsELOAUpdateAllowed { get; set; }
         public List<Subscribers> Subscribers { get; set; }
         public List<ServiceCharge> ServiceCharges { get; set; }
         public List<OrderStatuses> OrderStatuses { get; set; }

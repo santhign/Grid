@@ -70,7 +70,7 @@ namespace Core.Enums
         GetAssetsFailed = 115,
 
         [EnumMember(Value = "Blocking Failed")]
-        [Description("Phone number blocking failed at service provider")]
+        [Description("Selected mobile number has been selected by another customer, please try selecting another number.")]
         BlockingFailed = 117,
 
         [EnumMember(Value = "Un Blocking Failed")]
@@ -280,6 +280,10 @@ namespace Core.Enums
         [EnumMember(Value = "PendingOrderSIM")]
         [Description("SIM allocation is pending for the roadshow order")]
         PendingOrderSIM = 173,
+
+        [EnumMember(Value = "DuplicateNumber")]
+        [Description("Selected number is already used for another line.")]
+        DuplicateNumber = 174,
     }
 }
 

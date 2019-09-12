@@ -201,170 +201,77 @@ namespace OrderService.Controllers
                                                            .Select(x => x.ErrorMessage))
                             });
                         }
-                        BSSAPIHelper bsshelper = new BSSAPIHelper();
-
                         OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
-
-                        DatabaseResponse systemConfigResponse = await _orderAccess.GetConfiguration(ConfiType.System.ToString());
-
-                        DatabaseResponse bssConfigResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
-
-                        GridBSSConfi bssConfig = bsshelper.GetGridConfig((List<Dictionary<string, string>>)bssConfigResponse.Results);
-
-                        GridSystemConfig systemConfig = bsshelper.GetGridSystemConfig((List<Dictionary<string, string>>)systemConfigResponse.Results);
-
-                        DatabaseResponse serviceCAF = await _orderAccess.GetBSSServiceCategoryAndFee(ServiceTypes.Free.ToString());
-
-                        DatabaseResponse requestIdResForFreeNumber = await _orderAccess.GetBssApiRequestId(GridMicroservices.Customer.ToString(), BSSApis.GetAssets.ToString(), customerID, (int)BSSCalls.NewSession, "");
-
-                        ResponseObject res = new ResponseObject();
-
-                        //Getting FreeNumbers
-                        try
+                        DatabaseResponse _selectionNumbersResponse = await _orderAccess.GetSelectionNumbers(customerID);
+                        if (_selectionNumbersResponse.ResponseCode == 100)
                         {
-                            res= await bsshelper.GetAssetInventory(bssConfig, ((List<ServiceFees>)serviceCAF.Results).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdResForFreeNumber.Results, systemConfig.FreeNumberListCount);
-                        }
-
-                        catch (Exception ex)
-                        {
-                            LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
-
-                            return Ok(new OperationResponse
+                            BSSNumbers _selectionNumbers = ((BSSNumbers)_selectionNumbersResponse.Results);
+                            if (_selectionNumbers.FreeNumbers.Count > 0)
                             {
-                                HasSucceeded = false,
-                                Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed),
-                                IsDomainValidationErrors = false
-                            });
-
-                        }                       
-
-                        BSSNumbers numbers = new BSSNumbers();
-
-                        if (res != null)
-                        {
-                            numbers.FreeNumbers = bsshelper.GetFreeNumbers(res);
-
-                            //insert these number into database
-                            string json = bsshelper.GetJsonString(numbers.FreeNumbers); // json insert
-
-                            DatabaseResponse updateBssCallFeeNumbers = await _orderAccess.UpdateBSSCallNumbers(json, ((BSSAssetRequest)requestIdResForFreeNumber.Results).userid, ((BSSAssetRequest)requestIdResForFreeNumber.Results).BSSCallLogID);
-
-                            if (updateBssCallFeeNumbers.ResponseCode == (int)DbReturnValue.CreateSuccess)
-                            {
-                                // get Premium Numbers
-
-                                DatabaseResponse serviceCAFPremium = await _orderAccess.GetBSSServiceCategoryAndFee(ServiceTypes.Premium.ToString());
-
-                                if (serviceCAFPremium != null && serviceCAFPremium.ResponseCode == (int)DbReturnValue.RecordExists)
+                                return Ok(new OperationResponse
                                 {
-                                    List<ServiceFees> premiumServiceFeeList = new List<ServiceFees>();
-
-                                    premiumServiceFeeList = (List<ServiceFees>)serviceCAFPremium.Results;
-
-                                    int countPerPremium = (systemConfig.PremiumNumberListCount / premiumServiceFeeList.Count);
-
-                                    int countBalance = systemConfig.PremiumNumberListCount % premiumServiceFeeList.Count;
-
-                                    if (countBalance > 0)
-                                    {
-                                        countPerPremium = countPerPremium + countBalance;
-                                    }
-
-                                    int loopCount = premiumServiceFeeList.Count;
-
-                                    int iterator = 0;
-
-                                    foreach (ServiceFees fee in premiumServiceFeeList)
-                                    {
-                                        //get code and call premum 
-                                        //  fee.PortalServiceName
-
-                                        DatabaseResponse requestIdResForPremium = await _orderAccess.GetBssApiRequestId(GridMicroservices.Order.ToString(), BSSApis.GetAssets.ToString(), customerID, (int)BSSCalls.NewSession, "");
-
-                                        ResponseObject premumResponse = new ResponseObject();
-
-                                        try
-                                        {
-                                            premumResponse= await bsshelper.GetAssetInventory(bssConfig, fee.ServiceCode, (BSSAssetRequest)requestIdResForPremium.Results, countPerPremium);
-                                        }
-
-                                        catch (Exception ex)
-                                        {
-                                            LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
-
-                                        }                                        
-
-                                        if (premumResponse != null && premumResponse.Response!=null && premumResponse.Response.asset_details != null)
-                                        {
-                                            List<PremiumNumbers> premiumNumbers = bsshelper.GetPremiumNumbers(premumResponse, fee);
-
-                                            List<FreeNumber> premiumToLogNumbers = bsshelper.GetFreeNumbers(premumResponse);
-
-                                            string jsonPremium = bsshelper.GetJsonString(premiumToLogNumbers);
-
-                                            DatabaseResponse updateBssCallPremiumNumbers = await _orderAccess.UpdateBSSCallNumbers(jsonPremium, ((BSSAssetRequest)requestIdResForPremium.Results).userid, ((BSSAssetRequest)requestIdResForPremium.Results).BSSCallLogID);
-
-                                            foreach (PremiumNumbers premium in premiumNumbers)
-                                            {
-                                                numbers.PremiumNumbers.Add(premium);
-                                            }
-
-                                        }
-                                        else
-                                        {
-                                            //failed to get premium
-
-                                            if (iterator == 0)
-                                            {
-                                                countPerPremium = (systemConfig.PremiumNumberListCount / (premiumServiceFeeList.Count - 1));
-                                            }
-                                            else if (iterator == 1)
-                                            {
-                                                if (numbers.PremiumNumbers.Count < countPerPremium * (iterator + 1))
-
-                                                    countPerPremium = (systemConfig.PremiumNumberListCount / (premiumServiceFeeList.Count - 2));
-                                                else
-                                                    countPerPremium = (systemConfig.PremiumNumberListCount / (premiumServiceFeeList.Count - 1));
-                                            }
-                                        }
-
-                                        iterator++;
-
-                                    }  // for
-
-                                    if (numbers.PremiumNumbers.Count > systemConfig.PremiumNumberListCount)
-                                    {
-                                        int extrPremiumCount = numbers.PremiumNumbers.Count - systemConfig.PremiumNumberListCount;
-
-                                        numbers.PremiumNumbers.RemoveRange(numbers.PremiumNumbers.Count - (extrPremiumCount + 1), extrPremiumCount);
-                                    }
-                                }
-
+                                    HasSucceeded = true,
+                                    IsDomainValidationErrors = false,
+                                    ReturnedObject = _selectionNumbers
+                                });
                             }
                             else
                             {
-                                //failded to update BSS call numbers so returning
+                                await _orderAccess.GetBSSNumbersInitially(customerID);
+                                LogInfo.Information("Numbers recieved successfully");
+                                _selectionNumbersResponse = await _orderAccess.GetSelectionNumbers(customerID);
+                                _selectionNumbers = ((BSSNumbers)_selectionNumbersResponse.Results);
+                                if (_selectionNumbers.FreeNumbers.Count > 0)
+                                {
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = true,
+                                        IsDomainValidationErrors = false,
+                                        ReturnedObject = _selectionNumbers
+                                    });
+                                }
+                                else
+                                {
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = false,
+                                        IsDomainValidationErrors = false,
+                                        Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed)
+                                    });
+                                }
                             }
-
                         }
                         else
                         {
-                            //failed to get free numbers
+                            await _orderAccess.GetBSSNumbersInitially(customerID);
+                            LogInfo.Information("Numbers recieved successfully");
+                            _selectionNumbersResponse = await _orderAccess.GetSelectionNumbers(customerID);
+                            LogInfo.Information("Numbers retrived from DB");
+                            BSSNumbers _selectionNumbers = ((BSSNumbers)_selectionNumbersResponse.Results);
+                            LogInfo.Information("Numbers assigned to array" + _selectionNumbers.FreeNumbers.Count);
+                            if (_selectionNumbers.FreeNumbers.Count > 0)
+                            {
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = true,
+                                    IsDomainValidationErrors = false,
+                                    ReturnedObject = _selectionNumbers
+                                });
+                            }
+                            else
+                            {
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = false,
+                                    IsDomainValidationErrors = false,
+                                    Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed) + "test"
+                                });
+                            }
                         }
-
-                        return Ok(new OperationResponse
-                        {
-                            HasSucceeded = true,
-                            IsDomainValidationErrors = false,
-                            ReturnedObject = numbers
-
-                        });
                     }
-
                     else
                     {
                         //Token expired
-
                         LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
 
                         return Ok(new OperationResponse
@@ -373,11 +280,8 @@ namespace OrderService.Controllers
                             Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
                             IsDomainValidationErrors = true
                         });
-
                     }
-
                 }
-
                 else
                 {
                     // token auth failure
@@ -390,9 +294,6 @@ namespace OrderService.Controllers
                         IsDomainValidationErrors = false
                     });
                 }
-
-
-
             }
             catch (Exception ex)
             {

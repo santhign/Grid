@@ -603,7 +603,7 @@ namespace OrderService.Controllers
                                     try
                                     {
                                         NumberDetails number = await numberHelper.BlockNumber(customer.CustomerId, request.NewNumber.MobileNumber);
-                                        if (number != null)
+                                        if (number != null && !string.IsNullOrEmpty(number.Number))
                                         {
                                             DatabaseResponse updateSubscriberResponse = await _orderAccess.UpdateSubscriberNumber(request);
 
@@ -674,7 +674,7 @@ namespace OrderService.Controllers
                                     try
                                     {
                                         NumberDetails number = await numberHelper.BlockNumber(customer.CustomerId, request.NewNumber.MobileNumber);
-                                        if (number != null)
+                                        if (number != null && !string.IsNullOrEmpty(number.Number))
                                         {
                                             DatabaseResponse updateSubscriberResponse = await _orderAccess.UpdateSubscriberNumber(request);
                                             if (updateSubscriberResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
@@ -950,6 +950,16 @@ namespace OrderService.Controllers
                                             IsDomainValidationErrors = false,
                                         });
                                     }
+                                }
+                                else if (updateSubscriberResponse.ResponseCode == (int)DbReturnValue.DuplicateNumber)
+                                {
+                                    LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.DuplicateNumber));
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = false,
+                                        Message = EnumExtensions.GetDescription(DbReturnValue.DuplicateNumber),
+                                        IsDomainValidationErrors = false
+                                    });
                                 }
                                 else
                                 {
@@ -7129,5 +7139,4 @@ namespace OrderService.Controllers
             }
         }
     }
-
 }
