@@ -9,6 +9,8 @@ using OrderService.DataAccess;
 using OrderService.Models;
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -159,6 +161,43 @@ namespace OrderService.Helpers
             {
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
                 return false;
+            }
+        }
+
+        public async Task<bool> IsValidNumberForExisitingReference(int CustomerID, string number)
+        {
+            DataAccessHelper _DataHelper = null;
+            try
+            {
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int ),
+                    new SqlParameter( "@Number",  SqlDbType.NVarChar )
+
+                };
+                parameters[0].Value = CustomerID;
+                parameters[1].Value = number;
+                _DataHelper = new DataAccessHelper("Orders_ValidateNumberForExisitingReference", parameters, _iconfiguration);
+                int result = await _DataHelper.RunAsync(); // 102 /105
+                if (result == (int)DbReturnValue.RecordExists)
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
             }
         }
     }

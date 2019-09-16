@@ -585,6 +585,16 @@ namespace OrderService.Controllers
                                 {
                                     try
                                     {
+                                        bool isValid = await numberHelper.IsValidNumberForExisitingReference(customerID, request.NewNumber.MobileNumber);
+                                        if (!isValid)
+                                        {
+                                            return Ok(new OperationResponse
+                                            {
+                                                HasSucceeded = false,
+                                                Message = EnumExtensions.GetDescription(DbReturnValue.DuplicateNumber),
+                                                IsDomainValidationErrors = false
+                                            });
+                                        }
                                         NumberDetails number = await numberHelper.BlockNumber(customer.CustomerId, request.NewNumber.MobileNumber);
                                         if (number != null && !string.IsNullOrEmpty(number.Number))
                                         {
@@ -672,6 +682,16 @@ namespace OrderService.Controllers
                                     // ported number just block new number
                                     try
                                     {
+                                        bool isValid = await numberHelper.IsValidNumberForExisitingReference(customerID, request.NewNumber.MobileNumber);
+                                        if (!isValid)
+                                        {
+                                            return Ok(new OperationResponse
+                                            {
+                                                HasSucceeded = false,
+                                                Message = EnumExtensions.GetDescription(DbReturnValue.DuplicateNumber),
+                                                IsDomainValidationErrors = false
+                                            });
+                                        }
                                         NumberDetails number = await numberHelper.BlockNumber(customer.CustomerId, request.NewNumber.MobileNumber);
                                         if (number != null && !string.IsNullOrEmpty(number.Number))
                                         {

@@ -126,11 +126,11 @@ namespace Core.Enums
         MandatoryFieldMissing = 26,
 
         [EnumMember(Value = "Order Rolled Back")]
-        [Description("Order Rolled Back")]
+        [Description("Unable to assign the subscriber details. Please try again.")]
         OrderRolledBack = 27,
 
         [EnumMember(Value = "Order Rolled Back Failed")]
-        [Description("Order Rolled Back Failed")]
+        [Description("Unable to assign the subscriber details. Please try again.")]
         OrderRolledBackFailed = 28,
 
         [EnumMember(Value = "Invalid email address")]
@@ -415,7 +415,7 @@ namespace Core.Enums
         RemoveSuccess = 90,
 
         [EnumMember(Value = "BuddySubscriberCreationFailed")]
-        [Description("Buddy subscriber creationfailed. Order rolled backed")]
+        [Description("Unable to assign the subscriber details. Please try again.")]
         BuddySubscriberCreationFailed = 88,
 
         [EnumMember(Value = "BuddyRemovalFailed")]
