@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Net.Http;
 using Serilog;
+using System.Threading;
 
 namespace Core.Helpers
 {
@@ -50,11 +51,14 @@ namespace Core.Helpers
                 req.Request = request;
 
                 Log.Information(JsonConvert.SerializeObject(req));
-
-                return await client.PostAsync<ResponseObject, RequestObject>(requestUrl, req);
+                Log.Information("Inside - Before the BSS get inventory is called - " + DateTime.Now.ToString());
+                ResponseObject _response = await client.PostAsync<ResponseObject, RequestObject>(requestUrl, req);
+                Log.Information("Inside - After the BSS get inventory is called - " + DateTime.Now.ToString());
+                return _response;
             }
             catch (Exception ex)
             {
+                Log.Error(ex, "Exception");
                 throw ex;
             }
         }
@@ -201,10 +205,12 @@ namespace Core.Helpers
 
                 Log.Information(JsonConvert.SerializeObject(req));
 
-                return await client.PostAsync<BSSUpdateResponseObject, UpdateRequestObject>(requestUrl, req);
+                BSSUpdateResponseObject _response = await client.PostAsync<BSSUpdateResponseObject, UpdateRequestObject>(requestUrl, req);
+                return _response;
             }
             catch (Exception ex)
             {
+                Log.Error(ex, "Exception");
                 throw ex;
             }
         }
@@ -310,11 +316,13 @@ namespace Core.Helpers
 
                 Log.Information(JsonConvert.SerializeObject(req));
 
-                return await client.PostAsync<ResponseObject, RequestObject>(requestUrl, req);
+                ResponseObject _response = await client.PostAsync<ResponseObject, RequestObject>(requestUrl, req);
+                return _response;
 
             }
             catch (Exception ex)
             {
+                Log.Error(ex, "Exception");
                 throw ex;
             }
         }

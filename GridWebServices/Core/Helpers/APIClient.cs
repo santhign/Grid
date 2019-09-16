@@ -8,13 +8,14 @@ using System.Runtime.Serialization.Json;
 using System.IO;
 using System.Net;
 using Serilog;
+using System.Threading;
 
 namespace Core.Helpers
 {
     public  class ApiClient
     {
 
-        private readonly HttpClient _httpClient;
+        private HttpClient _httpClient;
         private Uri BaseEndpoint { get; set; }
 
         public ApiClient(Uri baseEndpoint)
@@ -25,6 +26,7 @@ namespace Core.Helpers
             }
             BaseEndpoint = baseEndpoint;
             _httpClient = new HttpClient();
+            _httpClient.Timeout = TimeSpan.FromSeconds(10);
         }
 
         /// <summary>  
@@ -53,12 +55,21 @@ namespace Core.Helpers
         }
         public async Task<T1> PostAsync<T1, T2>(Uri requestUrl, T2 content)
         {
-            addHeaders();
-            var response = await _httpClient.PostAsync(requestUrl.ToString(), CreateHttpContent<T2>(content));
-            response.EnsureSuccessStatusCode();
-            var data = await response.Content.ReadAsStringAsync();
-            Log.Information(JsonConvert.SerializeObject(data));
-            return JsonConvert.DeserializeObject<T1>(data);
+            try
+            {
+                addHeaders();
+                Thread.Sleep(300);
+                var response = _httpClient.PostAsync(requestUrl.ToString(), CreateHttpContent<T2>(content));
+                
+                response.Wait();
+                var data = await response.Result.Content.ReadAsStringAsync();
+                Log.Information(JsonConvert.SerializeObject(data));
+                return JsonConvert.DeserializeObject<T1>(data);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("BSS post failed on base class", ex);
+            }
         } 
         public async Task<byte[]> DownloadAsync(string requestUri)
         {

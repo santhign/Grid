@@ -14,6 +14,7 @@ using Core.Extensions;
 using OrderService.Enums;
 using Newtonsoft.Json;
 using OrderService.Models.Transaction;
+using System.Threading;
 
 namespace OrderService.DataAccess
 {
@@ -5061,7 +5062,11 @@ namespace OrderService.DataAccess
                 //Getting FreeNumbers
                 try
                 {
+                    LogInfo.Information("1 Before the BSS get inventory is called - " + DateTime.Now.ToString());
+                    LogInfo.Information("Before: " + (String.IsNullOrEmpty(JsonConvert.SerializeObject(res)) ? "Empty" : JsonConvert.SerializeObject(res)));
                     res = await bsshelper.GetAssetInventory(bssConfig, ((List<ServiceFees>)serviceCAF.Results).FirstOrDefault().ServiceCode, (BSSAssetRequest)requestIdResForFreeNumber.Results, systemConfig.FreeNumberListCount);
+                    LogInfo.Information("After: " + (String.IsNullOrEmpty(JsonConvert.SerializeObject(res)) ? "Empty" : JsonConvert.SerializeObject(res)));
+                    LogInfo.Information("2 After the BSS get inventory is called - " + DateTime.Now.ToString());
                 }
 
                 catch (Exception ex)

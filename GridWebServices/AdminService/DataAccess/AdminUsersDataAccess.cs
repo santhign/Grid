@@ -349,15 +349,13 @@ namespace AdminService.DataAccess
                      new SqlParameter("@AdminID", SqlDbType.Int),
                     new SqlParameter( "@Name",  SqlDbType.NVarChar ),
                     new SqlParameter( "@Email",  SqlDbType.NVarChar ),
-                    new SqlParameter( "@NewPassword",  SqlDbType.NVarChar ) ,
                     new SqlParameter( "@RoleID",  SqlDbType.Int )
                 };
   
                 parameters[0].Value = adminuser.AdminUserID;
                 parameters[1].Value = adminuser.Name;
                 parameters[2].Value = adminuser.Email;
-                parameters[3].Value = new Sha2().Hash(adminuser.NewPassword);
-                parameters[4].Value = adminuser.RoleID; 
+                parameters[3].Value = adminuser.RoleID; 
 
                 _DataHelper = new DataAccessHelper("Admin_UpdateUserProfile", parameters, _configuration);
                 DataTable dt = new DataTable();
@@ -379,6 +377,39 @@ namespace AdminService.DataAccess
             }
         }
 
+        public async Task<DatabaseResponse> UpdateAdminUserPassword(AdminUserResetPassword adminpassword)
+        {
+            try
+            {
+
+                SqlParameter[] parameters =
+               {
+                     new SqlParameter("@AdminID", SqlDbType.Int),
+                    new SqlParameter( "@Password",  SqlDbType.NVarChar )
+                };
+
+                parameters[0].Value = adminpassword.AdminUserID;
+                parameters[1].Value = new Sha2().Hash(adminpassword.NewPassword);
+
+                _DataHelper = new DataAccessHelper("Admin_UpdateUserPassword", parameters, _configuration);
+                DataTable dt = new DataTable();
+
+                int result = await _DataHelper.RunAsync(dt);
+
+                return new DatabaseResponse { ResponseCode = result };
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
 
         public async Task<DatabaseResponse> UpdateAdminProfile(int AdminUserID, AdminProfile adminuser)
         {

@@ -13,6 +13,10 @@ using OrderService.Enums;
 using Core.Extensions;
 using InfrastructureService;
 using Core.Helpers;
+using Newtonsoft.Json;
+using System.Net.Http;
+using System.Text;
+using System.Threading;
 
 namespace OrderService.Controllers
 {
@@ -1543,6 +1547,134 @@ namespace OrderService.Controllers
                     Message = StatusMessages.ServerError,
                     IsDomainValidationErrors = false
                 });
+            }
+        }
+
+
+
+        // GET: api/Orders/token
+
+        [HttpGet("GetAssetNumbers")]
+
+        public async Task<IActionResult> GetAssetNumbers()
+        {
+            try
+            {
+                BSSAPIHelper bsshelper = new BSSAPIHelper();
+                ResponseObject res = new ResponseObject();
+
+                //Getting FreeNumbers
+                try
+                {
+                    List<RequestParam> paramList = new List<RequestParam>();
+
+                    BSSAssetRequest request = new BSSAssetRequest();
+
+                    SetParam param = new SetParam();
+
+                    RequestObject req = new RequestObject();
+
+                    Uri requestUrl = new Uri("http://10.184.3.10:18080/APIGateway/APIRequest/Submit", UriKind.Absolute);
+                    BSSParams bssParams = new BSSParams();
+                    paramList.Add(new RequestParam { id = bssParams.AssetStatus, value = ((int)AssetStatus.New).ToString() });
+                    paramList.Add(new RequestParam { id = bssParams.CategoryId, value = "39" });
+                    paramList.Add(new RequestParam { id = bssParams.ProductId, value = "41328" });
+                    paramList.Add(new RequestParam { id = bssParams.Offset, value = "1" });
+                    paramList.Add(new RequestParam { id = bssParams.Limit, value = "1" });
+                    paramList.Add(new RequestParam { id = bssParams.EntityId, value = "41001343" });
+
+                    param.param = paramList;
+
+                    request.request_id = "TR000000012300012";
+
+                    request.request_timestamp = DateTime.Now.ToString("ddMMyyyyhhmmss");
+
+                    request.action = BSSApis.GetAssets.ToString();
+
+                    request.userid = DateTime.Now.ToString("ddMMyyyyHHmmssms");
+
+                    request.username = "griduser";
+
+                    request.source_node = "griduser";
+
+                    request.dataset = param;
+
+                    req.Request = request;
+
+                    LogInfo.Information(JsonConvert.SerializeObject(req) + "-GetAssetNumbers");
+                    LogInfo.Information("Inside - Before the BSS get inventory is called - " + DateTime.Now.ToString() + "-GetAssetNumbers");
+                    HttpClient _httpClient = new HttpClient();
+                    _httpClient.Timeout = TimeSpan.FromSeconds(30);
+                    var content = new StringContent(JsonConvert.SerializeObject(req, MicrosoftDateFormatSettings), Encoding.UTF8, "application/json");
+                    Thread.Sleep(300);
+                    var response = _httpClient.PostAsync(requestUrl.ToString(), content);
+                    
+                    response.Wait();
+                    var data = await response.Result.Content.ReadAsStringAsync();
+                    LogInfo.Information(JsonConvert.SerializeObject(data) + "-GetAssetNumbers");
+                    res = JsonConvert.DeserializeObject<ResponseObject>(data);
+                    LogInfo.Information("Inside - After the BSS get inventory is called - " + DateTime.Now.ToString() + "-GetAssetNumbers");
+                }
+                catch (TaskCanceledException ex)
+                {
+                    LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + "-GetAssetNumbers");
+                }
+
+
+                if (res != null)
+                {
+                    //insert these number into database
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = true,
+                        IsDomainValidationErrors = false,
+                        ReturnedObject = res
+                    });
+
+                }
+                else
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = "response was null",
+                        IsDomainValidationErrors = false
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + "-GetAssetNumbers");
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+            }
+        }
+        private Uri GetRequestUrl(string url, ref ApiClient client)
+        {
+            try
+            {
+                return client.CreateRequestUri(
+                 string.Format(System.Globalization.CultureInfo.InvariantCulture, url)
+                 );
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public static JsonSerializerSettings MicrosoftDateFormatSettings
+        {
+            get
+            {
+                return new JsonSerializerSettings
+                {
+                    DateFormatHandling = DateFormatHandling.MicrosoftDateFormat
+                };
             }
         }
     }

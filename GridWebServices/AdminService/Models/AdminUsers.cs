@@ -60,10 +60,17 @@ namespace AdminService.Models
     {
         public int AdminUserID { get; set; }
         public string Name { get; set; }
+        [Required(ErrorMessage = "Email address required")]
+        [EmailAddress(ErrorMessage = "Enter valid email address")]
         public string Email { get; set; }
+        public int RoleID { get; set; }
+    }
+    public class AdminUserResetPassword
+    {
+        public int AdminUserID { get; set; }
+        [Required(ErrorMessage = "Password is required")]
         [RegularExpression(@"(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}", ErrorMessage = "Please enter a valid password")]
         public string NewPassword { get; set; }
-        public int RoleID { get; set; }
     }
 
     public class LoggedInPrinciple
