@@ -5040,8 +5040,9 @@ namespace OrderService.DataAccess
             }
         }
 
-        public async Task<bool> GetBSSNumbersInitially(int customerID)
+        public async Task<BSSNumbers> GetBSSNumbersInitially(int customerID)
         {
+            BSSNumbers _selectionNumbers = new BSSNumbers();
             try
             {
                 BSSAPIHelper bsshelper = new BSSAPIHelper();
@@ -5072,7 +5073,7 @@ namespace OrderService.DataAccess
                 catch (Exception ex)
                 {
                     LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
-                    return false;
+                    return _selectionNumbers;
                 }
 
                 BSSNumbers numbers = new BSSNumbers();
@@ -5191,27 +5192,29 @@ namespace OrderService.DataAccess
                             catch (Exception ex)
                             {
                                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-                                return false;
+                                return _selectionNumbers;
                             }
                         }
-                        return true;
+                        DatabaseResponse _selectionNumbersResponse = await GetSelectionNumbers(customerID);
+                        _selectionNumbers = ((BSSNumbers)_selectionNumbersResponse.Results);
+                        return _selectionNumbers;
                     }
                     else
                     {
                         //failded to update BSS call numbers so returning
-                        return false;
+                        return _selectionNumbers;
                     }
                 }
                 else
                 {
                     //failed to get free numbers
-                    return false;
+                    return _selectionNumbers;
                 }
             }
             catch (Exception ex)
             {
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-                return false;
+                return _selectionNumbers;
             }
         }
     }

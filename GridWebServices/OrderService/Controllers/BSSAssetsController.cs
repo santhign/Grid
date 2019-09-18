@@ -210,7 +210,7 @@ namespace OrderService.Controllers
                         if (_selectionNumbersResponse.ResponseCode == 100)
                         {
                             BSSNumbers _selectionNumbers = ((BSSNumbers)_selectionNumbersResponse.Results);
-                            if (_selectionNumbers.FreeNumbers.Count > 0)
+                            if (_selectionNumbers.FreeNumbers != null && _selectionNumbers.FreeNumbers.Count > 0)
                             {
                                 return Ok(new OperationResponse
                                 {
@@ -221,11 +221,8 @@ namespace OrderService.Controllers
                             }
                             else
                             {
-                                await _orderAccess.GetBSSNumbersInitially(customerID);
-                                LogInfo.Information("Numbers recieved successfully");
-                                _selectionNumbersResponse = await _orderAccess.GetSelectionNumbers(customerID);
-                                _selectionNumbers = ((BSSNumbers)_selectionNumbersResponse.Results);
-                                if (_selectionNumbers.FreeNumbers.Count > 0)
+                                _selectionNumbers =  await _orderAccess.GetBSSNumbersInitially(customerID);                           
+                                if (_selectionNumbers.FreeNumbers != null && _selectionNumbers.FreeNumbers.Count > 0)
                                 {
                                     return Ok(new OperationResponse
                                     {
@@ -247,13 +244,8 @@ namespace OrderService.Controllers
                         }
                         else
                         {
-                            await _orderAccess.GetBSSNumbersInitially(customerID);
-                            LogInfo.Information("Numbers recieved successfully");
-                            _selectionNumbersResponse = await _orderAccess.GetSelectionNumbers(customerID);
-                            LogInfo.Information("Numbers retrived from DB");
-                            BSSNumbers _selectionNumbers = ((BSSNumbers)_selectionNumbersResponse.Results);
-                            LogInfo.Information("Numbers assigned to array" + _selectionNumbers.FreeNumbers.Count);
-                            if (_selectionNumbers.FreeNumbers.Count > 0)
+                            BSSNumbers _selectionNumbers = await _orderAccess.GetBSSNumbersInitially(customerID);                            
+                            if (_selectionNumbers.FreeNumbers != null && _selectionNumbers.FreeNumbers.Count > 0)
                             {
                                 return Ok(new OperationResponse
                                 {
@@ -268,7 +260,7 @@ namespace OrderService.Controllers
                                 {
                                     HasSucceeded = false,
                                     IsDomainValidationErrors = false,
-                                    Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed) + "test"
+                                    Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed) + " upon retry"
                                 });
                             }
                         }
