@@ -65,12 +65,12 @@ namespace AdminService.Models
         public string Email { get; set; }
         public int RoleID { get; set; }
     }
-    public class AdminUserResetPassword
+    public class AdminUserPassword
     {
         public int AdminUserID { get; set; }
         [Required(ErrorMessage = "Password is required")]
         [RegularExpression(@"(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}", ErrorMessage = "Please enter a valid password")]
-        public string NewPassword { get; set; }
+        public string Password { get; set; }
     }
 
     public class LoggedInPrinciple

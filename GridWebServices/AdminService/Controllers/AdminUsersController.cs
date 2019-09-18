@@ -741,7 +741,7 @@ namespace AdminService.Controllers
         /// 
         [HttpPost]
         [Route("UpdateAdminUserPassword")]
-        public async Task<IActionResult> UpdateAdminUserPassword([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] AdminUserResetPassword adminuser)
+        public async Task<IActionResult> UpdateAdminUserPassword([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] AdminUserPassword adminuser)
         {
             try
             {
@@ -955,8 +955,8 @@ namespace AdminService.Controllers
         /// <param name="token" in="Header"></param>
         /// <param name="Password">The Password.</param>
         /// <returns></returns>
-        [HttpGet("ValidatePassword/{Password}")]
-        public async Task<IActionResult> ValidatePassword([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] string Password)
+        [HttpPost("ValidatePassword")]
+        public async Task<IActionResult> ValidatePassword([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] string Password)
         {
             try
             {
@@ -1047,11 +1047,10 @@ namespace AdminService.Controllers
         /// Gets the customer.
         /// </summary>
         /// <param name="token" in="Header"></param>
-        /// <param name="AdminUserID">The AdminUserID.</param>
-        /// <param name="Password">The Password.</param>
+        /// <param name="adminPassword">The AdminUserID & Password.</param>
         /// <returns></returns>
-        [HttpGet("ValidateAdminUserPassword/{AdminUserID}/{Password}")]
-        public async Task<IActionResult> ValidateAdminUserPassword([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int AdminUserID, [FromRoute] string Password)
+        [HttpPost("ValidateAdminUserPassword")]
+        public async Task<IActionResult> ValidateAdminUserPassword([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] AdminUserPassword adminPassword)
         {
             try
             {
@@ -1082,7 +1081,7 @@ namespace AdminService.Controllers
                             });
                         }
 
-                        DatabaseResponse orderDetailsResponse = await _adminUsersDataAccess.ValidatePassword(AdminUserID, Password);
+                        DatabaseResponse orderDetailsResponse = await _adminUsersDataAccess.ValidatePassword(adminPassword.AdminUserID, adminPassword.Password);
 
                         return Ok(new ServerResponse
                         {

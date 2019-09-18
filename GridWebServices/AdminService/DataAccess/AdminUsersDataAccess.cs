@@ -377,7 +377,7 @@ namespace AdminService.DataAccess
             }
         }
 
-        public async Task<DatabaseResponse> UpdateAdminUserPassword(AdminUserResetPassword adminpassword)
+        public async Task<DatabaseResponse> UpdateAdminUserPassword(AdminUserPassword adminpassword)
         {
             try
             {
@@ -389,7 +389,7 @@ namespace AdminService.DataAccess
                 };
 
                 parameters[0].Value = adminpassword.AdminUserID;
-                parameters[1].Value = new Sha2().Hash(adminpassword.NewPassword);
+                parameters[1].Value = new Sha2().Hash(adminpassword.Password);
 
                 _DataHelper = new DataAccessHelper("Admin_UpdateUserPassword", parameters, _configuration);
                 DataTable dt = new DataTable();

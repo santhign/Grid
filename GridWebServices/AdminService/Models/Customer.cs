@@ -207,4 +207,9 @@ namespace AdminService.Models
         public int? GroupNumber { get; set; }       
 
     }
+
+    public class CustomerSearchValue
+    {
+        public string SearchString { get; set; }
+    }
 }

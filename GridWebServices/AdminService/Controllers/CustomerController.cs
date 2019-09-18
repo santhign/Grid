@@ -263,9 +263,9 @@ namespace AdminService.Controllers
         /// <param name="token" in="Header"></param>
         /// <param name="SearchValue">The search value.</param>
         /// <returns></returns>
-        [HttpGet("SearchCustomer/{SearchValue}")]
+        [HttpPost("SearchCustomer")]
         [HasPermissionAttribute(AdminServiceUserPermissions.CustomersList)]
-        public async Task<IActionResult> SearchCustomer([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] string SearchValue)
+        public async Task<IActionResult> SearchCustomer([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] CustomerSearchValue SearchValue)
         {
             try
             {
@@ -299,7 +299,7 @@ namespace AdminService.Controllers
 
                         CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
 
-                        List<CustomerSearch> customersearchlist = await _customerAccess.GetSearchCustomers(SearchValue);
+                        List<CustomerSearch> customersearchlist = await _customerAccess.GetSearchCustomers(SearchValue.SearchString);
 
                         if (customersearchlist == null || customersearchlist.Count == 0)
                         {
