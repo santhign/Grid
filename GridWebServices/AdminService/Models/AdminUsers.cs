@@ -73,6 +73,13 @@ namespace AdminService.Models
         public string Password { get; set; }
     }
 
+    public class AdminPassword
+    {
+        [Required(ErrorMessage = "Password is required")]
+        [RegularExpression(@"(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}", ErrorMessage = "Please enter a valid password")]
+        public string Password { get; set; }
+    }
+
     public class LoggedInPrinciple
     {
         /// <summary>

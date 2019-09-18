@@ -235,8 +235,8 @@ namespace OrderService.Controllers
                         }
 
                         EmailValidationHelper _helper = new EmailValidationHelper();
-                        bool AllowSubscriber = await _helper.AllowSubscribers(customerID, (int)SubscriberCheckType.CustomerLevel, _iconfiguration);
-                        if (!AllowSubscriber)
+                        DatabaseResponse AllowSubscriberResponse = await _helper.AllowSubscribers(customerID, (int)SubscriberCheckType.CustomerLevel, _iconfiguration);
+                        if (AllowSubscriberResponse.ResponseCode == (int)DbReturnValue.NotAllowSubscribers)
                         {
                             LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.NotAllowSubscribers) + " for customer:" + customerID + ". Payload:" + JsonConvert.SerializeObject(request) + "\n");
                             return Ok(new OperationResponse
@@ -246,12 +246,22 @@ namespace OrderService.Controllers
                                 IsDomainValidationErrors = false
                             });
                         }
-
+                        DatabaseResponse requiredSubscriberResponse = await _helper.RequiredSubscribersForBundle(request.BundleID, customerID, _iconfiguration);
+                        int SubscriberCount = (int)requiredSubscriberResponse.Results;
+                        if (SubscriberCount > (int)AllowSubscriberResponse.Results)
+                        {
+                            LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.UnableToCreateRequiredSubscribers) + " for customer:" + customerID + ". Payload:" + JsonConvert.SerializeObject(request) + "\n");
+                            return Ok(new OperationResponse
+                            {
+                                HasSucceeded = false,
+                                Message = EnumExtensions.GetDescription(DbReturnValue.UnableToCreateRequiredSubscribers),
+                                IsDomainValidationErrors = false
+                            });
+                        }
                         OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
                         DatabaseResponse OrderSubscriberCount = await _orderAccess.GetRequiredNumberCount(customerID, request.BundleID);
-                        int SubscriberCount = 0;
                         List<NumberDetails> numbers = new List<NumberDetails>();
-                        int.TryParse((string)OrderSubscriberCount.Results, out SubscriberCount);
+                        
                         NumberHelper _numberhelper = new NumberHelper(_iconfiguration);
                         for (int i = 0; i < SubscriberCount; i++)
                         {
@@ -1151,8 +1161,8 @@ namespace OrderService.Controllers
                         {
                             // call GetAssets BSSAPI
                             Core.Helpers.EmailValidationHelper _helper = new EmailValidationHelper();
-                            bool AllowSrubscriber = await _helper.AllowSubscribers(customerID, (int)SubscriberCheckType.OrderLevel, _iconfiguration);
-                            if (!AllowSrubscriber)
+                            DatabaseResponse AllowSubscriberResponse = await _helper.AllowSubscribers(customerID, (int)SubscriberCheckType.OrderLevel, _iconfiguration);
+                            if (AllowSubscriberResponse.ResponseCode == (int)DbReturnValue.NotAllowSubscribers)
                             {
                                 LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.NotAllowSubscribers));
 
@@ -1164,6 +1174,18 @@ namespace OrderService.Controllers
                                 });
                             }
 
+                            DatabaseResponse requiredSubscriberResponse = await _helper.RequiredSubscribersForBundle(request.BundleID, -1,  _iconfiguration);
+                            int SubscriberCount = (int)requiredSubscriberResponse.Results;
+                            if (SubscriberCount > (int)AllowSubscriberResponse.Results)
+                            {
+                                LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.UnableToCreateRequiredSubscribers) + " for customer:" + customerID + ". Payload:" + JsonConvert.SerializeObject(request) + "\n");
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = false,
+                                    Message = EnumExtensions.GetDescription(DbReturnValue.UnableToCreateRequiredSubscribers),
+                                    IsDomainValidationErrors = false
+                                });
+                            }
                             // version 2 to handle buddy
                             DatabaseResponse buddyCheckResponse = new DatabaseResponse();
                             buddyCheckResponse = await _orderAccess.IsBuddyBundle(request.BundleID);
@@ -1174,7 +1196,7 @@ namespace OrderService.Controllers
                                 // buddy bundle- get 2 numbers and process buddy - v2                                
                                 NumberDetails buddyNumber = await numberHelper.GetNumberFromBSS(customerID);
 
-                                if (mainNumber != null && buddyNumber != null)
+                                if (!String.IsNullOrEmpty(mainNumber.Number) && !String.IsNullOrEmpty(buddyNumber.Number))
                                 {
                                     // create subscription
                                     CreateSubscriber subscriberToCreate = new CreateSubscriber { BundleID = request.BundleID, OrderID = request.OrderID, MobileNumber = mainNumber.Number, PromotionCode = "" };
@@ -1250,7 +1272,7 @@ namespace OrderService.Controllers
                                 {
                                     //one or both blocking failed
                                     //bsshelper.GetResponseCode(bssUpdateResponse) == "0" && bsshelper.GetResponseCode(bssUpdateBuddyResponse
-                                    if (mainNumber == null)
+                                    if (String.IsNullOrEmpty(mainNumber.Number))
                                     {
                                         try
                                         {
@@ -1263,7 +1285,7 @@ namespace OrderService.Controllers
                                         }
                                     }
 
-                                    if (buddyNumber == null)
+                                    if (String.IsNullOrEmpty(buddyNumber.Number))
                                     {
                                         try
                                         {
@@ -1286,7 +1308,7 @@ namespace OrderService.Controllers
                             else
                             {
                                 // if not buddy bundle
-                                if (mainNumber != null)
+                                if (!String.IsNullOrEmpty(mainNumber.Number))
                                 {
                                     // create subscription
                                     CreateSubscriber subscriberToCreate = new CreateSubscriber { BundleID = request.BundleID, OrderID = request.OrderID, MobileNumber = mainNumber.Number, PromotionCode = "" };
@@ -3973,6 +3995,21 @@ namespace OrderService.Controllers
 
                         if (customerResponse.ResponseCode == (int)DbReturnValue.RecordExists && customerID == ((OrderCustomer)customerResponse.Results).CustomerId)
                         {
+                            Core.Helpers.EmailValidationHelper _helper = new EmailValidationHelper();
+                            DatabaseResponse AllowSubscriberResponse = await _helper.AllowSubscribers(customerID, (int)SubscriberCheckType.OrderLevel, _iconfiguration);
+                            DatabaseResponse requiredSubscriberResponse = await _helper.RequiredSubscribersForBundle(request.BundleID, -1, _iconfiguration);
+                            int SubscriberCount = (int)requiredSubscriberResponse.Results;
+                            SubscriberCount = SubscriberCount - 1;
+                            if (SubscriberCount > (int)AllowSubscriberResponse.Results)
+                            {
+                                LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.UnableToCreateRequiredSubscribers) + " for customer:" + customerID + ". Payload:" + JsonConvert.SerializeObject(request) + "\n");
+                                return Ok(new OperationResponse
+                                {
+                                    HasSucceeded = false,
+                                    Message = EnumExtensions.GetDescription(DbReturnValue.UnableToCreateRequiredSubscribers),
+                                    IsDomainValidationErrors = false
+                                });
+                            }
                             //update shipping details
                             DatabaseResponse updatePersoanDetailsResponse = await _orderAccess.UpdateSubscriberDetails(request);
 

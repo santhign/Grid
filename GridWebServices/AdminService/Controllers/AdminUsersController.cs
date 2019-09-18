@@ -956,7 +956,7 @@ namespace AdminService.Controllers
         /// <param name="Password">The Password.</param>
         /// <returns></returns>
         [HttpPost("ValidatePassword")]
-        public async Task<IActionResult> ValidatePassword([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] string Password)
+        public async Task<IActionResult> ValidatePassword([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] AdminPassword Password)
         {
             try
             {
@@ -988,7 +988,7 @@ namespace AdminService.Controllers
                             });
                         }
 
-                        DatabaseResponse orderDetailsResponse = await _adminUsersDataAccess.ValidatePassword(AdminUserID, Password);
+                        DatabaseResponse orderDetailsResponse = await _adminUsersDataAccess.ValidatePassword(AdminUserID, Password.Password);
 
                         return Ok(new ServerResponse
                         {

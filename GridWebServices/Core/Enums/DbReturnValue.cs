@@ -284,6 +284,10 @@ namespace Core.Enums
         [EnumMember(Value = "DuplicateNumber")]
         [Description("Selected number is already used for another line.")]
         DuplicateNumber = 174,
+
+        [EnumMember(Value = "UnableToCreateRequiredSubscribers")]
+        [Description("Unable to add required number of subscriber lines due to maximum limit set.")]
+        UnableToCreateRequiredSubscribers = 175,
     }
 }
 

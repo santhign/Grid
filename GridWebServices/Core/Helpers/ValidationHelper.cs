@@ -55,9 +55,9 @@ namespace Core.Helpers
                 );
         }
 
-        public async Task<bool> AllowSubscribers(int CustomerID, int Type, IConfiguration _configuration)
+        public async Task<DatabaseResponse> AllowSubscribers(int CustomerID, int Type, IConfiguration _configuration)
         {
-            bool allowed = false;
+            DatabaseResponse response = null;
             DataAccessHelper _DataHelper = null;
             try
             {
@@ -69,14 +69,18 @@ namespace Core.Helpers
 
                 parameters[0].Value = CustomerID;
                 parameters[1].Value = Type;
-                _DataHelper = new DataAccessHelper("Customers_IsAdditionalSubscriberAllowed", parameters, _configuration);
-
-                int response = await _DataHelper.RunAsync();
-
-                if (response == 140)
-                    allowed = true;
-                else
-                    allowed = false;
+                _DataHelper = new DataAccessHelper("Customers_IsAdditionalSubscriberAllowed_v2", parameters, _configuration);
+                DataSet ds = new DataSet("ds");
+                int result = await _DataHelper.RunAsync(ds);
+                int allowedCount = 0;
+                if (ds != null)
+                {
+                    if (ds.Tables[0].Rows.Count > 0)
+                    {
+                        int.TryParse(ds.Tables[0].Rows[0][0].ToString().Trim(), out allowedCount);
+                    }
+                }
+                response = new DatabaseResponse { ResponseCode = result, Results = allowedCount };
             }
 
             catch (Exception ex)
@@ -87,7 +91,53 @@ namespace Core.Helpers
             {
                 _DataHelper.Dispose();
             }
-            return allowed;
+            return response;
+        }
+
+        public async Task<DatabaseResponse> RequiredSubscribersForBundle(int BundleID, int CustomerID, IConfiguration _configuration)
+        {
+            DatabaseResponse response = null;
+            DataAccessHelper _DataHelper = null;
+            try
+            {
+                SqlParameter[] parameters =
+                    {
+                    new SqlParameter("@BundleID", SqlDbType.Int),
+                    new SqlParameter("@CustomerID", SqlDbType.Int)
+                    };
+
+                parameters[0].Value = BundleID;
+                if (CustomerID != -1)
+                {
+                    parameters[1].Value = CustomerID;
+                }
+                else
+                {
+                    parameters[1].Value = DBNull.Value;
+                }
+                _DataHelper = new DataAccessHelper("Orders_GetRequiredNumberCountForBundle", parameters, _configuration);
+                DataSet ds = new DataSet("ds");
+                int result = await _DataHelper.RunAsync(ds);
+                int requirededCount = 0;
+                if (ds != null)
+                {
+                    if (ds.Tables[0].Rows.Count > 0)
+                    {
+                        int.TryParse(ds.Tables[0].Rows[0][0].ToString().Trim(), out requirededCount);
+                    }
+                }
+                response = new DatabaseResponse { ResponseCode = result, Results = requirededCount };
+            }
+
+            catch (Exception ex)
+            {
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+            return response;
         }
 
         public bool NRICValidation(string IDType, string NRIC, out string _warningmsg)
