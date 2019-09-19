@@ -35,10 +35,9 @@ namespace UnblockNumberServiceApp
 
                 return int.Parse(configValue);
             }
-
             else
             {
-                return 0;
+                return 60000;
             }
         }
 
@@ -93,7 +92,6 @@ namespace UnblockNumberServiceApp
                                          ID = model.Field<int>("ID")
 
                                      }).ToList();
-
                 }
 
                 //DatabaseResponse response = new DatabaseResponse { ResponseCode = result,Results = number };

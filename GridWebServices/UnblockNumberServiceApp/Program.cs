@@ -75,42 +75,37 @@ namespace UnblockNumberServiceApp
             {
                 UnblockNumberDataAccess unblockNumberDataAccess = new UnblockNumberDataAccess(_connectionString);
                 // Display the date/time when this method got called.
-                Console.WriteLine("Start TimerCallback: " + DateTime.Now);
                 LogInfo.Information("Start TimerCallback: " + DateTime.Now);
                 var resultList = await unblockNumberDataAccess.GetCustomerNumber();
                 foreach (var result in resultList)
                 {
-
-
                     if (result != null && result.CustomerID != 0 && !string.IsNullOrEmpty(result.MobileNumber))
                     {
-                        var response = await unblockNumberDataAccess.UnblockNumber(result.CustomerID, result.MobileNumber);
-                        if (response)
+                        try
                         {
-                            await unblockNumberDataAccess.UpdateUnBlockNumberDetails(result.CustomerID, result.MobileNumber, null, 1, result.ID);
+                            var response = await unblockNumberDataAccess.UnblockNumber(result.CustomerID, result.MobileNumber);
+                            if (response)
+                            {
+                                await unblockNumberDataAccess.UpdateUnBlockNumberDetails(result.CustomerID, result.MobileNumber, null, 1, result.ID);
+                            }
+                            else
+                            {
+                                await unblockNumberDataAccess.UpdateUnBlockNumberDetails(result.CustomerID, result.MobileNumber, null, 0, result.ID);
+                            }
                         }
-                        else
+                        catch (Exception ex)
                         {
+                            LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
                             await unblockNumberDataAccess.UpdateUnBlockNumberDetails(result.CustomerID, result.MobileNumber, null, 0, result.ID);
                         }
-
                     }
                 }
-                Console.WriteLine("End TimerCallback: " + DateTime.Now);
                 LogInfo.Information("End TimerCallback: " + DateTime.Now);
-                // Force a garbage collection to occur for this demo.
-                //GC.Collect();
             }
             catch (Exception ex)
             {
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
             }
-        }
-
-        /// <summary>
-        /// Gets the intervel time.
-        /// </summary>
-        /// <returns></returns>
-        
+        }        
     }
 }
