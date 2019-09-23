@@ -206,63 +206,24 @@ namespace OrderService.Controllers
                             });
                         }
                         OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
-                        DatabaseResponse _selectionNumbersResponse = await _orderAccess.GetSelectionNumbers(customerID);
-                        if (_selectionNumbersResponse.ResponseCode == 100)
+                        BSSNumbers _selectionNumbers = await _orderAccess.GetBSSNumbersInitially(customerID);
+                        if (_selectionNumbers.FreeNumbers != null && _selectionNumbers.FreeNumbers.Count > 0)
                         {
-                            BSSNumbers _selectionNumbers = ((BSSNumbers)_selectionNumbersResponse.Results);
-                            if (_selectionNumbers.FreeNumbers != null && _selectionNumbers.FreeNumbers.Count > 0)
+                            return Ok(new OperationResponse
                             {
-                                return Ok(new OperationResponse
-                                {
-                                    HasSucceeded = true,
-                                    IsDomainValidationErrors = false,
-                                    ReturnedObject = _selectionNumbers
-                                });
-                            }
-                            else
-                            {
-                                _selectionNumbers =  await _orderAccess.GetBSSNumbersInitially(customerID);                           
-                                if (_selectionNumbers.FreeNumbers != null && _selectionNumbers.FreeNumbers.Count > 0)
-                                {
-                                    return Ok(new OperationResponse
-                                    {
-                                        HasSucceeded = true,
-                                        IsDomainValidationErrors = false,
-                                        ReturnedObject = _selectionNumbers
-                                    });
-                                }
-                                else
-                                {
-                                    return Ok(new OperationResponse
-                                    {
-                                        HasSucceeded = false,
-                                        IsDomainValidationErrors = false,
-                                        Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed)
-                                    });
-                                }
-                            }
+                                HasSucceeded = true,
+                                IsDomainValidationErrors = false,
+                                ReturnedObject = _selectionNumbers
+                            });
                         }
                         else
                         {
-                            BSSNumbers _selectionNumbers = await _orderAccess.GetBSSNumbersInitially(customerID);                            
-                            if (_selectionNumbers.FreeNumbers != null && _selectionNumbers.FreeNumbers.Count > 0)
+                            return Ok(new OperationResponse
                             {
-                                return Ok(new OperationResponse
-                                {
-                                    HasSucceeded = true,
-                                    IsDomainValidationErrors = false,
-                                    ReturnedObject = _selectionNumbers
-                                });
-                            }
-                            else
-                            {
-                                return Ok(new OperationResponse
-                                {
-                                    HasSucceeded = false,
-                                    IsDomainValidationErrors = false,
-                                    Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed) + " upon retry"
-                                });
-                            }
+                                HasSucceeded = false,
+                                IsDomainValidationErrors = false,
+                                Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed)
+                            });
                         }
                     }
                     else
