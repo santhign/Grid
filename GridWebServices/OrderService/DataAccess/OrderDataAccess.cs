@@ -5184,7 +5184,7 @@ namespace OrderService.DataAccess
                         }  // for
 
                         LogInfo.Information("before assigning the numbers to final array");
-                        LogInfo.Information("final counts " + numbers.FreeNumbers.Count.ToString() + "- premium - " + numbers.PremiumNumbers.Count.ToString());
+                        //LogInfo.Information("final counts " + numbers.FreeNumbers.Count.ToString() + "- premium - " + numbers.PremiumNumbers.Count.ToString());
                         if (numbers.PremiumNumbers.Count > systemConfig.PremiumNumberListCount)
                         {
                             int extrPremiumCount = numbers.PremiumNumbers.Count - systemConfig.PremiumNumberListCount;
