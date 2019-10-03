@@ -121,7 +121,7 @@ namespace InfrastructureService
                             ref string requestBody,
                             ref string responseBody)
         {
-            int limit = 500;
+            int limit = 5000;
 
             if (requestBody.Length > limit)
             {

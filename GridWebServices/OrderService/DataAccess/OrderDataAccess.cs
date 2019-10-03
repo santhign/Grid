@@ -4898,10 +4898,16 @@ namespace OrderService.DataAccess
         /// <param name="CustomerID">CustomerID.</param>
         /// <param name="number">Mobile Number.</param>
         /// <returns></returns>
-        public async Task<DatabaseResponse> LogUnblockNumber(int CustomerID, string number)
+        public async Task<DatabaseResponse> LogUnblockNumber(int CustomerID, string number, string source)
         {
             try
             {
+                DatabaseResponse response = null;
+                if (String.IsNullOrEmpty(number))
+                {
+                    LogInfo.Error("Number for unblocking is empty from source - " + source);
+                    return response;
+                }
                 SqlParameter[] parameters =
                {
                     new SqlParameter( "@CustomerID",  SqlDbType.Int ),
@@ -4916,7 +4922,7 @@ namespace OrderService.DataAccess
 
                 int result = await _DataHelper.RunAsync(); // 102 /105
 
-                DatabaseResponse response = new DatabaseResponse { ResponseCode = result };
+                response = new DatabaseResponse { ResponseCode = result };
 
                 return response;
             }

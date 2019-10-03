@@ -100,7 +100,7 @@ namespace OrderService.Helpers
                     {                        
                         try
                         {
-                            bool removalFlag = await _numberhelper.UnblockNumber(customerID, buddyToRemove.MobileNumber);
+                            bool removalFlag = await _numberhelper.UnblockNumber(customerID, buddyToRemove.MobileNumber, "Remove buddy handler");
                             DatabaseResponse updateBuddyRemoval = await _orderAccess.UpdateBuddyRemoval(buddyToRemove.BuddyRemovalID);
                         }
                         catch (Exception ex)

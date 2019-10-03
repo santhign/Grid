@@ -268,7 +268,10 @@ namespace OrderService.Controllers
                             NumberDetails _details = await _numberhelper.GetNumberFromBSS(customerID);
                             if (_details != null)
                             {
-                                numbers.Add(_details);
+                                if (!String.IsNullOrEmpty(_details.Number))
+                                {
+                                    numbers.Add(_details);
+                                }
                             }
                         }
                         if (numbers.Count == SubscriberCount)
@@ -282,7 +285,7 @@ namespace OrderService.Controllers
                             if (createOrderRresponse.ResponseCode == ((int)DbReturnValue.CreationFailed))
                             {
                                 // order creation failed
-                                await _numberhelper.UnBlockMultipleNumbers(customerID, numbers);
+                                await _numberhelper.UnBlockMultipleNumbers(customerID, numbers, "Create order DB failure, release numbers");
                                 LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.CreateOrderFailed) + " for customer:" + customerID + ". Payload:" + JsonConvert.SerializeObject(request) + "\n");
 
                                 return Ok(new OperationResponse
@@ -295,7 +298,7 @@ namespace OrderService.Controllers
                             else if (createOrderRresponse.ResponseCode == ((int)DbReturnValue.InvalidPromoCode))
                             {
                                 // order creation failed
-                                await _numberhelper.UnBlockMultipleNumbers(customerID, numbers);
+                                await _numberhelper.UnBlockMultipleNumbers(customerID, numbers, "Create order promo failure, release numbers");
                                 LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.InvalidPromoCode) + " for customer:" + customerID + ". Payload:" + JsonConvert.SerializeObject(request) + "\n");
 
                                 return Ok(new OperationResponse
@@ -308,7 +311,7 @@ namespace OrderService.Controllers
                             else if (createOrderRresponse.ResponseCode == ((int)DbReturnValue.PendingOrderSIM))
                             {
                                 // order creation failed
-                                await _numberhelper.UnBlockMultipleNumbers(customerID, numbers);
+                                await _numberhelper.UnBlockMultipleNumbers(customerID, numbers, "Create order roadshow sim failure, release numbers");
                                 LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.PendingOrderSIM) + " for customer:" + customerID + ". Payload:" + JsonConvert.SerializeObject(request) + "\n");
 
                                 return Ok(new OperationResponse
@@ -325,6 +328,16 @@ namespace OrderService.Controllers
                                 {
                                     try
                                     {
+                                        if (String.IsNullOrEmpty(numbers[0].Number))
+                                        {
+                                            LogInfo.Error("Number retrival for subscriber creation main line failed"); 
+                                            return Ok(new OperationResponse
+                                            {
+                                                HasSucceeded = false,
+                                                Message = EnumExtensions.GetDescription(CommonErrors.GetAssetFailed) + " " + EnumExtensions.GetDescription(CommonErrors.OrderRolledBackFailed),
+                                                IsDomainValidationErrors = false
+                                            });
+                                        }
                                         // create subscription for main line
                                         CreateSubscriber subscriberToCreate = new CreateSubscriber { BundleID = request.BundleID, OrderID = ((OrderInit)createOrderRresponse.Results).OrderID, MobileNumber = numbers[0].Number, PromotionCode = request.PromotionCode };
                                         DatabaseResponse createSubscriberResponse = await _orderAccess.CreateSubscriber(subscriberToCreate, numbers[0].UserSessionID);
@@ -356,7 +369,7 @@ namespace OrderService.Controllers
                                                     try
                                                     {
                                                         //unblock the blocked buddy
-                                                        await _numberhelper.UnblockNumber(customerID, numbers[1].Number);
+                                                        await _numberhelper.UnblockNumber(customerID, numbers[1].Number, "Not a buddy bundle but pulled buddy");
                                                     }
                                                     catch (Exception exi)
                                                     {
@@ -379,8 +392,8 @@ namespace OrderService.Controllers
                                                     try
                                                     {
                                                         //unblock the blocked buddy
-                                                        await _numberhelper.UnblockNumber(customerID, numbers[0].Number);
-                                                        await _numberhelper.UnblockNumber(customerID, numbers[1].Number);
+                                                        await _numberhelper.UnblockNumber(customerID, numbers[0].Number, "Failed to create subscriber release main line");
+                                                        await _numberhelper.UnblockNumber(customerID, numbers[1].Number, "Failed to create subscriber release buddy line");
                                                     }
                                                     catch (Exception exi)
                                                     {
@@ -412,7 +425,7 @@ namespace OrderService.Controllers
                                         {
                                             // create subscription failed
                                             //unblock both lines and rollback order
-                                            await _numberhelper.UnBlockMultipleNumbers(customerID, numbers);
+                                            await _numberhelper.UnBlockMultipleNumbers(customerID, numbers, "Create order subscriber creation failure - release numbers");
                                             return Ok(new OperationResponse
                                             {
                                                 HasSucceeded = false,
@@ -424,7 +437,7 @@ namespace OrderService.Controllers
                                     }
                                     catch (Exception ex)
                                     {
-                                        await _numberhelper.UnBlockMultipleNumbers(customerID, numbers);
+                                        await _numberhelper.UnBlockMultipleNumbers(customerID, numbers, "create order unhandled exception -  release numbers" );
                                         LogInfo.Error(EnumExtensions.GetDescription(CommonErrors.GetAssetFailed) + "\n");
 
                                         LogInfo.Fatal(ex, EnumExtensions.GetDescription(CommonErrors.GetAssetFailed) + "\n");
@@ -479,7 +492,7 @@ namespace OrderService.Controllers
                         }
                         else
                         {
-                            await _numberhelper.UnBlockMultipleNumbers(customerID, numbers);
+                            await _numberhelper.UnBlockMultipleNumbers(customerID, numbers, "Create order - cannot retrive reuired subscribers - release numbers");
                             return Ok(new OperationResponse
                             {
                                 HasSucceeded = false,
@@ -615,7 +628,7 @@ namespace OrderService.Controllers
                                                 // Unblock
                                                 try
                                                 {
-                                                    await numberHelper.UnblockNumber(customer.CustomerId, request.OldMobileNumber);
+                                                    await numberHelper.UnblockNumber(customer.CustomerId, request.OldMobileNumber, "Update subscriber number - release old number");
                                                 }
                                                 catch (Exception ex)
                                                 {
@@ -943,7 +956,7 @@ namespace OrderService.Controllers
                                     // Unblock
                                     try
                                     {
-                                        await numberHelper.UnblockNumber(customer.CustomerId, request.OldMobileNumber);
+                                        await numberHelper.UnblockNumber(customer.CustomerId, request.OldMobileNumber, "Portin number relase old number");
                                     }
                                     catch (Exception ex)
                                     {
@@ -1222,7 +1235,7 @@ namespace OrderService.Controllers
                                         {
                                             try
                                             {
-                                                await numberHelper.UnblockNumber(customerID, buddyNumber.Number);
+                                                await numberHelper.UnblockNumber(customerID, buddyNumber.Number, "Additional line - not a buddy bundle");
                                             }
                                             catch (Exception exi)
                                             {
@@ -1241,8 +1254,8 @@ namespace OrderService.Controllers
                                         else
                                         {
                                             // buddy subscriber creation failed - need to unblock both buddy and main line and rollback order
-                                            await numberHelper.UnblockNumber(customerID, mainNumber.Number);
-                                            await numberHelper.UnblockNumber(customerID, buddyNumber.Number);
+                                            await numberHelper.UnblockNumber(customerID, mainNumber.Number, "additional line - failed to create - release main");
+                                            await numberHelper.UnblockNumber(customerID, buddyNumber.Number, "additional line - failed to create - release buddy");
                                             return Ok(new OperationResponse
                                             {
                                                 HasSucceeded = false,
@@ -1257,8 +1270,8 @@ namespace OrderService.Controllers
                                     {
                                         // create subscription failed
                                         //unblock both lines and rollback order
-                                        await numberHelper.UnblockNumber(customerID, mainNumber.Number);
-                                        await numberHelper.UnblockNumber(customerID, buddyNumber.Number);
+                                        await numberHelper.UnblockNumber(customerID, mainNumber.Number, "additional line - failed to create DB insert - release main");
+                                        await numberHelper.UnblockNumber(customerID, buddyNumber.Number, "additional line - failed to create DB insert - release buddy");
                                         LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.CreateSubscriptionFailed) + "\n");
                                         return Ok(new OperationResponse
                                         {
@@ -1277,7 +1290,7 @@ namespace OrderService.Controllers
                                         try
                                         {
                                             // Unblock main line if blocked
-                                            await numberHelper.UnblockNumber(customerID, mainNumber.Number);
+                                            await numberHelper.UnblockNumber(customerID, mainNumber.Number, "additional line - failed to buddy - release main");
                                         }
                                         catch (Exception exi)
                                         {
@@ -1289,7 +1302,7 @@ namespace OrderService.Controllers
                                     {
                                         try
                                         {
-                                            await numberHelper.UnblockNumber(customerID, buddyNumber.Number);
+                                            await numberHelper.UnblockNumber(customerID, buddyNumber.Number, "additional line - failed to get main - release buddy");
                                         }
                                         catch (Exception exi)
                                         {
@@ -1328,7 +1341,7 @@ namespace OrderService.Controllers
                                     else
                                     {
                                         // Create subscriber failed
-                                        await numberHelper.UnblockNumber(customerID, mainNumber.Number);
+                                        await numberHelper.UnblockNumber(customerID, mainNumber.Number, "additional line - failed to create non buddy main DB - release main");
                                         LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.CreateSubscriptionFailed));
                                         return Ok(new OperationResponse
                                         {
@@ -2941,7 +2954,7 @@ namespace OrderService.Controllers
                                     // unblock needed only if number not ported
                                     try
                                     {
-                                        await numberHelper.UnblockNumber(customerID, request.MobileNumber);
+                                        await numberHelper.UnblockNumber(customerID, request.MobileNumber, "Remove additional line - release main");
                                     }
                                     catch (Exception ex)
                                     {
@@ -3201,7 +3214,7 @@ namespace OrderService.Controllers
                                             // Unblock
                                             try
                                             {
-                                                await numberHelper.UnblockNumber(customerID, request.OldNumber);
+                                                await numberHelper.UnblockNumber(customerID, request.OldNumber, "Assign new number relase old number");
                                             }
                                             catch (Exception ex)
                                             {

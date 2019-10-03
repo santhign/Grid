@@ -58,7 +58,7 @@ namespace Core.Helpers
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Exception");
+                Log.Error(ex, "Exception - GetAssetInventory");
                 throw ex;
             }
         }
@@ -210,7 +210,7 @@ namespace Core.Helpers
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Exception");
+                Log.Error(ex, "Exception - UpdateAssetBlockNumber");
                 throw ex;
             }
         }
@@ -453,6 +453,7 @@ namespace Core.Helpers
             }
             catch (Exception ex)
             {
+                Log.Error(ex, "Exception - GetUsageHistory");
                 throw ex;
             }
         }
@@ -562,6 +563,7 @@ namespace Core.Helpers
             }
             catch (Exception ex)
             {
+                Log.Error(ex, "Exception - GetBSSCustomerInvoice");
                 throw ex;
             }
         }
@@ -661,6 +663,7 @@ namespace Core.Helpers
             }
             catch (Exception ex)
             {
+                Log.Error(ex, "Exception - GetBSSOutstandingPayment");
                 throw ex;
             }
         }
