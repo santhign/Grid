@@ -18,6 +18,7 @@ namespace Core.Helpers
         List<RequestParam> paramList = new List<RequestParam>();
         public async Task<ResponseObject> GetAssetInventory(GridBSSConfi confi, int serviceCode, BSSAssetRequest assetRequest)
         {
+            ResponseObject _response = null;
             try
             {
                 ApiClient client = new ApiClient(new Uri(confi.BSSAPIUrl));
@@ -51,15 +52,25 @@ namespace Core.Helpers
                 req.Request = request;
 
                 Log.Information(JsonConvert.SerializeObject(req));
-                Log.Information("Inside - Before the BSS get inventory is called - " + DateTime.Now.ToString());
-                ResponseObject _response = await client.PostAsync<ResponseObject, RequestObject>(requestUrl, req);
-                Log.Information("Inside - After the BSS get inventory is called - " + DateTime.Now.ToString());
+                try
+                {
+                    _response = await client.PostAsync<ResponseObject, RequestObject>(requestUrl, req);
+                }
+                catch (TimeoutException ex)
+                {
+                    Log.Error(JsonConvert.SerializeObject(req) + " Exception : " + ex.InnerException);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(JsonConvert.SerializeObject(req) + " : Response : " + JsonConvert.SerializeObject(_response.Response) + " Exception : " + ex.InnerException);
+                }
+
                 return _response;
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Exception - GetAssetInventory");
-                throw ex;
+                Log.Error(ex, "Exception");
+                return _response;
             }
         }
 
@@ -158,6 +169,7 @@ namespace Core.Helpers
 
         public async Task<BSSUpdateResponseObject> UpdateAssetBlockNumber(GridBSSConfi confi, BSSAssetRequest assetReq, string asset, bool unblock)
         {
+            BSSUpdateResponseObject _response = null;
             try
             {
                 ApiClient client = new ApiClient(new Uri(confi.BSSAPIUrl));
@@ -204,13 +216,23 @@ namespace Core.Helpers
                 req.Request = request;
 
                 Log.Information(JsonConvert.SerializeObject(req));
-
-                BSSUpdateResponseObject _response = await client.PostAsync<BSSUpdateResponseObject, UpdateRequestObject>(requestUrl, req);
+                try 
+                { 
+                    _response = await client.PostAsync<BSSUpdateResponseObject, UpdateRequestObject>(requestUrl, req);
+                }
+                catch (TimeoutException ex)
+                {
+                    Log.Error(JsonConvert.SerializeObject(req) + " Exception : " + ex.InnerException);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(JsonConvert.SerializeObject(req) + " : Response : " + JsonConvert.SerializeObject(_response.Response) + " Exception : " + ex.InnerException);
+                }
                 return _response;
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Exception - UpdateAssetBlockNumber");
+                Log.Error(ex, "Exception");
                 throw ex;
             }
         }
