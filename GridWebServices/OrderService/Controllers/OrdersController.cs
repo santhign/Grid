@@ -261,7 +261,7 @@ namespace OrderService.Controllers
                         OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
                         DatabaseResponse OrderSubscriberCount = await _orderAccess.GetRequiredNumberCount(customerID, request.BundleID);
                         List<NumberDetails> numbers = new List<NumberDetails>();
-                        
+                        SubscriberCount = (int)OrderSubscriberCount.Results;
                         NumberHelper _numberhelper = new NumberHelper(_iconfiguration);
                         for (int i = 0; i < SubscriberCount; i++)
                         {
