@@ -244,4 +244,10 @@ namespace OrderService.Models
         public string AlternateRecioientIDType { get; set; }
         public string AlternateRecioientIDNumber { get; set; }
     }
+
+    public class ExistingNumber
+    {
+        public string MobileNumber { get; set; }
+        public string SessionID { get; set; }
+    }
 }

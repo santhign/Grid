@@ -1203,7 +1203,7 @@ namespace OrderService.Controllers
                                     return Ok(new OperationResponse
                                     {
                                         HasSucceeded = false,
-                                        Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed),
+                                        Message = EnumExtensions.GetDescription(CommonErrors.BlockingException),
                                         IsDomainValidationErrors = false
                                     });
 
@@ -1310,7 +1310,7 @@ namespace OrderService.Controllers
                                     return Ok(new OperationResponse
                                     {
                                         HasSucceeded = false,
-                                        Message = EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed),
+                                        Message = EnumExtensions.GetDescription(CommonErrors.BlockingException),
                                         IsDomainValidationErrors = false
                                     });
                                 }

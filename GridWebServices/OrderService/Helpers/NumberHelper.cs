@@ -27,6 +27,21 @@ namespace OrderService.Helpers
         public async Task<NumberDetails> GetNumberFromBSS(int CustomerID)
         {
             NumberDetails _details = new NumberDetails();
+            DatabaseResponse NumberResponse = await GetExistingBSSBlockedNumber(CustomerID);
+            if (NumberResponse != null && NumberResponse.ResponseCode == (int)DbReturnValue.RecordExists)
+            {
+                ExistingNumber _number = new ExistingNumber();
+                _number = (ExistingNumber)NumberResponse.Results;
+                if (!String.IsNullOrEmpty(_number.MobileNumber))
+                {
+                    _details.Number = _number.MobileNumber;
+                    _details.UserSessionID = _number.SessionID;
+                }
+            }
+            if (!String.IsNullOrEmpty(_details.Number))
+            {
+                return _details;
+            }
             OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
             BSSAPIHelper bsshelper = new BSSAPIHelper();
             DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.BSS.ToString());
@@ -105,6 +120,12 @@ namespace OrderService.Helpers
                     _details.UserSessionID = ((BSSAssetRequest)requestIdToUpdateMainLineRes.Results).userid;
                     return _details;
                 }
+                else if (bsshelper.GetResponseCode(bssUpdateResponse) == "008")
+                {
+                    //delete number stored for user id
+                    await RemoveExpiredSelectionNumbers(((BSSAssetRequest)requestIdToUpdateMainLineRes.Results).userid);
+                    return _details;
+                }
                 else
                 {
                     LogInfo.Information("Number assign failed" + bsshelper.GetResponseCode(bssUpdateResponse));
@@ -114,7 +135,7 @@ namespace OrderService.Helpers
             catch (Exception ex)
             {
                 LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
-                return _details;
+                throw ex;
             }
         }
 
@@ -186,6 +207,89 @@ namespace OrderService.Helpers
                 else
                 {
                     return true;
+                }
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<DatabaseResponse> GetExistingBSSBlockedNumber(int CustomerID)
+        {
+            DataAccessHelper _DataHelper = null;
+            try
+            {
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@CustomerID",  SqlDbType.Int )
+                };
+                parameters[0].Value = CustomerID;
+
+                _DataHelper = new DataAccessHelper("Orders_GetBSSBlockedNumber", parameters, _iconfiguration);
+                DataTable dt = new DataTable("dt");
+                int result = await _DataHelper.RunAsync(dt); // 102 /105
+                DatabaseResponse _numberResponse = null;
+                if (result == (int)DbReturnValue.RecordExists)
+                {
+                    ExistingNumber _existingNumber = new ExistingNumber();
+                    if (dt.Rows.Count > 0)
+                    {
+
+                        _existingNumber = (from model in dt.AsEnumerable()
+                                        select new ExistingNumber()
+                                        {
+                                            MobileNumber = model.Field<string>("MobileNumber"),
+                                            SessionID = model.Field<string>("SessionID")
+                                        }).FirstOrDefault();
+                    }
+                    _numberResponse = new DatabaseResponse { ResponseCode = result, Results = _existingNumber };
+                    return _numberResponse;
+                }
+                else
+                {
+                    return _numberResponse;
+                }
+            }
+
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+        }
+
+        public async Task<bool> RemoveExpiredSelectionNumbers(string UserID)
+        {
+            DataAccessHelper _DataHelper = null;
+            try
+            {
+                SqlParameter[] parameters =
+                {
+                    new SqlParameter( "@UserID",  SqlDbType.NVarChar )
+                };
+                parameters[0].Value = UserID;
+                _DataHelper = new DataAccessHelper("Orders_RemoveExireSelectionNumbers", parameters, _iconfiguration);
+                int result = await _DataHelper.RunAsync(); // 102 /105
+                if (result == (int)DbReturnValue.RecordExists)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
                 }
             }
 

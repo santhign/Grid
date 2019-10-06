@@ -429,5 +429,9 @@ namespace Core.Enums
         [EnumMember(Value = "OrderIsAlreadyDelivered")]
         [Description("Order status is already delivered.")]
         OrderIsAlreadyDelivered = 94,
+
+        [EnumMember(Value = "BlockingException")]
+        [Description("Failed to assign the number, please try again.")]
+        BlockingException = 95,
     }
 }

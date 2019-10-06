@@ -62,7 +62,7 @@ namespace Core.Helpers
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(JsonConvert.SerializeObject(req) + " : Response : " + JsonConvert.SerializeObject(_response.Response) + " Exception : " + ex.InnerException);
+                    Log.Error(JsonConvert.SerializeObject(req) + " : Response : " + JsonConvert.SerializeObject(_response) + " Exception : " + ex.InnerException);
                 }
 
                 return _response;
@@ -226,7 +226,7 @@ namespace Core.Helpers
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(JsonConvert.SerializeObject(req) + " : Response : " + JsonConvert.SerializeObject(_response.Response) + " Exception : " + ex.InnerException);
+                    Log.Error(JsonConvert.SerializeObject(req) + " : Response : " + JsonConvert.SerializeObject(_response) + " Exception : " + ex.InnerException);
                 }
                 return _response;
             }
