@@ -88,6 +88,11 @@ namespace Core.Helpers
                         throw exp;
                     }
                 }
+                catch (Exception ex)
+                {
+                    Log.Error(JsonConvert.SerializeObject(content) + " Exception retry : " + ex.InnerException);
+                    throw ex;
+                }
             }
             catch (Exception ex)
             {
