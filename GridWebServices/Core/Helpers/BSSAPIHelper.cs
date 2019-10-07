@@ -56,6 +56,10 @@ namespace Core.Helpers
                 {
                     _response = await client.PostAsync<ResponseObject, RequestObject>(requestUrl, req);
                 }
+                catch (TaskCanceledException ex)
+                {
+                    Log.Error(JsonConvert.SerializeObject(req) + " Exception : " + ex.InnerException);
+                }
                 catch (TimeoutException ex)
                 {
                     Log.Error(JsonConvert.SerializeObject(req) + " Exception : " + ex.InnerException);
@@ -304,6 +308,7 @@ namespace Core.Helpers
 
         public async Task<ResponseObject> GetAssetInventory(GridBSSConfi confi, int serviceCode, BSSAssetRequest assetRequest, int count)
         {
+            ResponseObject _response = null;
             try
             {
                 ApiClient client = new ApiClient(new Uri(confi.BSSAPIUrl));
@@ -337,15 +342,24 @@ namespace Core.Helpers
                 req.Request = request;
 
                 Log.Information(JsonConvert.SerializeObject(req));
-
-                ResponseObject _response = await client.PostAsync<ResponseObject, RequestObject>(requestUrl, req);
+                try
+                {
+                    _response = await client.PostAsync<ResponseObject, RequestObject>(requestUrl, req);
+                }
+                catch (TaskCanceledException ex)
+                {
+                    Log.Error(ex, "Exception");
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Exception");
+                }
                 return _response;
-
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "Exception");
-                throw ex;
+                return _response;
             }
         }
 
