@@ -27,7 +27,7 @@ namespace Core.Helpers
             //NeverBounceSdk _neverbounce = new NeverBounceSdk(config.key);
             //SingleResponseModel _response = await _neverbounce.Single.Check(_model);
             //return _response.result;
-            ApiClient client = new ApiClient(new Uri(config.EmailAPIUrl));
+            ApiClient client = new ApiClient();
 
             var requestUrl = GetRequestUrl(config.EmailAPIUrl, ref client);
 
@@ -50,7 +50,7 @@ namespace Core.Helpers
 
         private Uri GetRequestUrl(string url, ref ApiClient client)
         {
-            return client.CreateRequestUri(
+            return client.CreateRequestUri(new Uri(url),
                 string.Format(System.Globalization.CultureInfo.InvariantCulture, url)
                 );
         }

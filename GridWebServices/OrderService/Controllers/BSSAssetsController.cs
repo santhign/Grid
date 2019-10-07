@@ -1606,11 +1606,11 @@ namespace OrderService.Controllers
                 });
             }
         }
-        private Uri GetRequestUrl(string url, ref ApiClient client)
+        private Uri GetRequestUrl(GridBSSConfi confi, string url, ref ApiClient client)
         {
             try
             {
-                return client.CreateRequestUri(
+                return client.CreateRequestUri(new Uri(confi.BSSAPIUrl),
                  string.Format(System.Globalization.CultureInfo.InvariantCulture, url)
                  );
             }

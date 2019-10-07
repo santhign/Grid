@@ -12,19 +12,14 @@ using System.Threading;
 
 namespace Core.Helpers
 {
-    public  class ApiClient
+    public class ApiClient
     {
 
-        private HttpClient _httpClient;
+        private static readonly HttpClient _httpClient;
         private Uri BaseEndpoint { get; set; }
 
-        public ApiClient(Uri baseEndpoint)
+        static ApiClient()
         {
-            if (baseEndpoint == null)
-            {
-                throw new ArgumentNullException("baseEndpoint");
-            }
-            BaseEndpoint = baseEndpoint;
             _httpClient = new HttpClient();
             _httpClient.Timeout = TimeSpan.FromSeconds(10);
         }
@@ -59,12 +54,40 @@ namespace Core.Helpers
             {
                 addHeaders();
                 Thread.Sleep(300);
-                var response = _httpClient.PostAsync(requestUrl.ToString(), CreateHttpContent<T2>(content));
-                
-                response.Wait();
-                var data = await response.Result.Content.ReadAsStringAsync();
-                Log.Information(JsonConvert.SerializeObject(data));
-                return JsonConvert.DeserializeObject<T1>(data);
+                try
+                {
+                    var response = _httpClient.PostAsync(requestUrl.ToString(), CreateHttpContent<T2>(content));
+
+                    response.Wait();
+                    var data = await response.Result.Content.ReadAsStringAsync();
+                    Log.Information(JsonConvert.SerializeObject(data));
+                    return JsonConvert.DeserializeObject<T1>(data);
+                }
+                catch (TaskCanceledException ex)
+                {
+                    Log.Error(JsonConvert.SerializeObject(content) + " Exception : " + ex.InnerException);
+                    //retry for the post
+                    Log.Information("retring for the BSS post");
+                    try
+                    {
+                        var response = _httpClient.PostAsync(requestUrl.ToString(), CreateHttpContent<T2>(content));
+
+                        response.Wait();
+                        var data = await response.Result.Content.ReadAsStringAsync();
+                        Log.Information(JsonConvert.SerializeObject(data));
+                        return JsonConvert.DeserializeObject<T1>(data);
+                    }
+                    catch (TaskCanceledException exp)
+                    {
+                        Log.Error(JsonConvert.SerializeObject(content) + " Exception retry : " + exp.InnerException);
+                        throw exp;
+                    }
+                    catch (Exception exp)
+                    {
+                        Log.Error(JsonConvert.SerializeObject(content) + " Exception retry : " + exp.InnerException);
+                        throw exp;
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -98,8 +121,13 @@ namespace Core.Helpers
             return JsonConvert.DeserializeObject<T>(data);
         }
 
-        public Uri CreateRequestUri(string relativePath, string queryString = "")
+        public Uri CreateRequestUri(Uri baseEndpoint, string relativePath, string queryString = "")
         {
+            if (baseEndpoint == null)
+            {
+                throw new ArgumentNullException("baseEndpoint");
+            }
+            BaseEndpoint = baseEndpoint;
             var endpoint = new Uri(BaseEndpoint, relativePath);
             var uriBuilder = new UriBuilder(endpoint);
             uriBuilder.Query = queryString;

@@ -19,7 +19,7 @@ namespace Core.Helpers
         {
             try
             {
-                ApiClient client = new ApiClient(new Uri(gridBillingAPIEndpoint));             
+                ApiClient client = new ApiClient();             
 
                 return  await client.GetAsync<GridOutstanding>(new Uri(gridBillingAPIEndpoint + "balance/" + billingAccountNumber));
             }
@@ -34,7 +34,7 @@ namespace Core.Helpers
         {
             try
             {
-                ApiClient client = new ApiClient(new Uri(gridBillingAPIEndpoint));
+                ApiClient client = new ApiClient();
 
                 return await client.GetAsync<CustomerBillHistory>(new Uri(gridBillingAPIEndpoint + "history/" + billingAccountNumber));
             }

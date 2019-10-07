@@ -21,48 +21,27 @@ namespace Core.Helpers
             ResponseObject _response = null;
             try
             {
-                ApiClient client = new ApiClient(new Uri(confi.BSSAPIUrl));
-
+                ApiClient client = new ApiClient();
                 BSSAssetRequest request = new BSSAssetRequest();
-
                 SetParam param = new SetParam();
-
                 RequestObject req = new RequestObject();
-
-                var requestUrl = GetRequestUrl(confi.BSSAPIUrl, ref client);
+                var requestUrl = GetRequestUrl(confi, confi.BSSAPIUrl, ref client);
 
                 SetParams(confi, serviceCode);
-
                 param.param = paramList;
-
                 request.request_id = assetRequest.request_id;
-
                 request.request_timestamp = DateTime.Now.ToString("ddMMyyyyhhmmss");
-
                 request.action = BSSApis.GetAssets.ToString();
-
                 request.userid = assetRequest.userid;
-
                 request.username = confi.GridUserName;
-
                 request.source_node = confi.GridSourceNode;
-
                 request.dataset = param;
-
                 req.Request = request;
 
                 Log.Information(JsonConvert.SerializeObject(req));
                 try
                 {
                     _response = await client.PostAsync<ResponseObject, RequestObject>(requestUrl, req);
-                }
-                catch (TaskCanceledException ex)
-                {
-                    Log.Error(JsonConvert.SerializeObject(req) + " Exception : " + ex.InnerException);
-                }
-                catch (TimeoutException ex)
-                {
-                    Log.Error(JsonConvert.SerializeObject(req) + " Exception : " + ex.InnerException);
                 }
                 catch (Exception ex)
                 {
@@ -117,11 +96,11 @@ namespace Core.Helpers
             }
 
         }
-        private Uri GetRequestUrl(string url, ref ApiClient client)
+        private Uri GetRequestUrl(GridBSSConfi confi, string url, ref ApiClient client)
         {
             try
             {
-                return client.CreateRequestUri(
+                return client.CreateRequestUri(new Uri(confi.BSSAPIUrl), 
                  string.Format(System.Globalization.CultureInfo.InvariantCulture, url)
                  );
             }
@@ -176,57 +155,35 @@ namespace Core.Helpers
             BSSUpdateResponseObject _response = null;
             try
             {
-                ApiClient client = new ApiClient(new Uri(confi.BSSAPIUrl));
-
+                ApiClient client = new ApiClient();
                 BSSUpdateRequest request = new BSSUpdateRequest();
-
                 SetParam param = new SetParam();
-
                 UpdateRequestObject req = new UpdateRequestObject();
-
                 BSSOrderInformation orderInformation = new BSSOrderInformation();
-
-                var requestUrl = GetRequestUrl(confi.BSSAPIUrl, ref client);
+                var requestUrl = GetRequestUrl(confi, confi.BSSAPIUrl, ref client);
 
                 // set param list
                 SetParamsBlockNumber(confi, asset, unblock);
-
                 param.param = paramList;
-
                 request.request_id = assetReq.request_id;
-
                 request.request_timestamp = DateTime.Now.ToString("ddMMyyyyhhmmss");
-
                 request.action = BSSApis.UpdateAssetStatus.ToString();
-
                 request.userid = assetReq.userid;
-
                 request.username = confi.GridUserName;
-
                 request.source_node = confi.GridSourceNode;
-
                 // set order information
-
                 orderInformation.customer_name = "";
-
                 orderInformation.order_type = BSSApis.UpdateAssetStatus.ToString();
-
                 // sert parameter list in order information
                 orderInformation.dataset = param;
-
                 // set order information to request
                 request.order_information = orderInformation;
-
                 req.Request = request;
 
                 Log.Information(JsonConvert.SerializeObject(req));
                 try 
                 { 
                     _response = await client.PostAsync<BSSUpdateResponseObject, UpdateRequestObject>(requestUrl, req);
-                }
-                catch (TimeoutException ex)
-                {
-                    Log.Error(JsonConvert.SerializeObject(req) + " Exception : " + ex.InnerException);
                 }
                 catch (Exception ex)
                 {
@@ -311,44 +268,28 @@ namespace Core.Helpers
             ResponseObject _response = null;
             try
             {
-                ApiClient client = new ApiClient(new Uri(confi.BSSAPIUrl));
-
+                ApiClient client = new ApiClient();
                 BSSAssetRequest request = new BSSAssetRequest();
-
                 SetParam param = new SetParam();
-
                 RequestObject req = new RequestObject();
 
-                var requestUrl = GetRequestUrl(confi.BSSAPIUrl, ref client);
-
+                var requestUrl = GetRequestUrl(confi, confi.BSSAPIUrl, ref client);
                 SetParams(confi, serviceCode, count);
 
                 param.param = paramList;
-
                 request.request_id = assetRequest.request_id;
-
                 request.request_timestamp = DateTime.Now.ToString("ddMMyyyyhhmmss");
-
                 request.action = BSSApis.GetAssets.ToString();
-
                 request.userid = assetRequest.userid;
-
                 request.username = confi.GridUserName;
-
                 request.source_node = confi.GridSourceNode;
-
                 request.dataset = param;
-
                 req.Request = request;
 
                 Log.Information(JsonConvert.SerializeObject(req));
                 try
                 {
                     _response = await client.PostAsync<ResponseObject, RequestObject>(requestUrl, req);
-                }
-                catch (TaskCanceledException ex)
-                {
-                    Log.Error(ex, "Exception");
                 }
                 catch (Exception ex)
                 {
@@ -447,7 +388,7 @@ namespace Core.Helpers
         {
             try
             {
-                ApiClient client = new ApiClient(new Uri(confi.BSSAPIUrl));
+                ApiClient client = new ApiClient();
 
                 BSSQueryPlanRequest request = new BSSQueryPlanRequest();
 
@@ -455,7 +396,7 @@ namespace Core.Helpers
 
                 QueryPlanDataset dataset = new QueryPlanDataset();
 
-                var requestUrl = GetRequestUrl(confi.BSSAPIUrl, ref client);
+                var requestUrl = GetRequestUrl(confi, confi.BSSAPIUrl, ref client);
 
                 SetParamsForUsageRequest(confi, mobileNumber);
 
@@ -562,7 +503,7 @@ namespace Core.Helpers
             try
 
             {
-                ApiClient client = new ApiClient(new Uri(confi.BSSAPIUrl));
+                ApiClient client = new ApiClient();
 
                 BSSInvoiceRequest request = new BSSInvoiceRequest();
 
@@ -570,7 +511,7 @@ namespace Core.Helpers
 
                 SetParam dataset = new SetParam();
 
-                var requestUrl = GetRequestUrl(confi.BSSAPIUrl, ref client);
+                var requestUrl = GetRequestUrl(confi, confi.BSSAPIUrl, ref client);
 
                 SetParamsForInvoiceRequest(confi, accountNumber, dateRange);
 
@@ -656,7 +597,7 @@ namespace Core.Helpers
             try
 
             {
-                ApiClient client = new ApiClient(new Uri(confi.BSSAPIUrl));
+                ApiClient client = new ApiClient();
 
                 BSSQueryPlanRequest request = new BSSQueryPlanRequest();
 
@@ -664,7 +605,7 @@ namespace Core.Helpers
 
                 QueryPlanDataset dataset = new QueryPlanDataset();
 
-                var requestUrl = GetRequestUrl(confi.BSSAPIUrl, ref client);
+                var requestUrl = GetRequestUrl(confi, confi.BSSAPIUrl, ref client);
 
                 SetParamsOutstandingPaymentRequest(confi, accountNumber);
 
@@ -726,7 +667,7 @@ namespace Core.Helpers
             try
 
             {
-                ApiClient client = new ApiClient(new Uri(url)); 
+                ApiClient client = new ApiClient(); 
 
                 return await client.DownloadAsync(url);
 

@@ -20,7 +20,7 @@ namespace CustomerService.DataAccess
             Rewards _resp = null;
             try
             {
-                ApiClient client = new ApiClient(new Uri(RequestUrl));
+                ApiClient client = new ApiClient();
                 var requestUrl = GetRequestUrl(RequestUrl, ref client);
 
                 RequestObject req = new RequestObject();
@@ -50,7 +50,7 @@ namespace CustomerService.DataAccess
             List<RewardDetails> _resp = null;
             try
             {
-                ApiClient client = new ApiClient(new Uri(RequestUrl));
+                ApiClient client = new ApiClient();
                 var requestUrl = GetRequestUrl(RequestUrl, ref client);
 
                 RequestObject req = new RequestObject();
@@ -78,7 +78,7 @@ namespace CustomerService.DataAccess
 
         private Uri GetRequestUrl(string url, ref ApiClient client)
         {
-            return client.CreateRequestUri(
+            return client.CreateRequestUri(new Uri(url),
                 string.Format(System.Globalization.CultureInfo.InvariantCulture, url)
                 );
         }
