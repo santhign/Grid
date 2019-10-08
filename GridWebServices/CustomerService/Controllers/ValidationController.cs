@@ -422,7 +422,7 @@ namespace CustomerService.Controllers
         ///  "APIKey":"xyz","APISecret":"abc","PostcodeNumber":"408600"
         /// }
         [HttpPost]
-        [Route("ValidateSchemeCode/{rscode}")]
+        [Route("ValidateSchemeCode/{schemecode}")]
         public async Task<IActionResult> ValidateSchemeCode([FromHeader(Name = "Grid-General-Token")] string Token, [FromRoute]string schemecode)
         {
             try
