@@ -49,4 +49,10 @@ namespace CatelogService.Models
         public int Status { get; set; }
 
     }
+
+    public class BundleFilter
+    {
+        public string usercode { get; set; }
+        public string schemecode { get; set; }
+    }
 }

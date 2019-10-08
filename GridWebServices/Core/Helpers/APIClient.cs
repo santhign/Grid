@@ -53,7 +53,6 @@ namespace Core.Helpers
             try
             {
                 addHeaders();
-                Thread.Sleep(300);
                 try
                 {
                     var response = _httpClient.PostAsync(requestUrl.ToString(), CreateHttpContent<T2>(content));
@@ -63,7 +62,7 @@ namespace Core.Helpers
                     Log.Information(JsonConvert.SerializeObject(data));
                     return JsonConvert.DeserializeObject<T1>(data);
                 }
-                catch (TaskCanceledException ex)
+                catch (AggregateException ex)
                 {
                     Log.Error(JsonConvert.SerializeObject(content) + " Exception : " + ex.InnerException);
                     //retry for the post
@@ -90,7 +89,7 @@ namespace Core.Helpers
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(JsonConvert.SerializeObject(content) + " Exception retry : " + ex.InnerException);
+                    Log.Error(JsonConvert.SerializeObject(content) + " Exception : " + ex.InnerException);
                     throw ex;
                 }
             }

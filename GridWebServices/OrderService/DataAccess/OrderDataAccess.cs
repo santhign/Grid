@@ -3958,7 +3958,8 @@ namespace OrderService.DataAccess
                     new SqlParameter( "@BundleID",  SqlDbType.Int ),
                     new SqlParameter( "@ReferralCode",  SqlDbType.NVarChar),
                     new SqlParameter( "@PromotionCode",  SqlDbType.NVarChar),
-                    new SqlParameter( "@UserCode",  SqlDbType.NVarChar)
+                    new SqlParameter( "@UserCode",  SqlDbType.NVarChar),
+                    new SqlParameter( "@SchemeCode",  SqlDbType.NVarChar)
                 };
 
                 parameters[0].Value = order.CustomerID;
@@ -3966,6 +3967,7 @@ namespace OrderService.DataAccess
                 parameters[2].Value = order.ReferralCode;
                 parameters[3].Value = order.PromotionCode;
                 parameters[4].Value = order.UserCode;
+                parameters[5].Value = order.SchemeCode;
 
                 _DataHelper = new DataAccessHelper("Orders_CreateOrder_v2", parameters, _configuration);
 

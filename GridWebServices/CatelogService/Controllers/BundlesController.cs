@@ -26,7 +26,7 @@ namespace CatelogService.Controllers
         public BundlesController(IConfiguration configuration)
         {
             _iconfiguration = configuration;
-        }       
+        }
 
         /// <summary>
         /// This will provide the list of all Customer selectable flag enabled Bundles.
@@ -34,7 +34,7 @@ namespace CatelogService.Controllers
         /// <returns>Bundles</returns>
         // GET: api/Bundles
         [HttpGet]
-        public async Task<IActionResult> GetBundles([FromHeader(Name = "Grid-General-Token")] string Token, [FromQuery] string usercode)
+        public async Task<IActionResult> GetBundles([FromHeader(Name = "Grid-General-Token")] string Token)
         {
             try
             {
@@ -50,7 +50,8 @@ namespace CatelogService.Controllers
                 }
 
                 BundleDataAccess _bundleAccess = new BundleDataAccess(_iconfiguration);
-                List<Bundle> returnObj = await _bundleAccess.GetBundleList(usercode);
+                BundleFilter _filter = new BundleFilter();
+                List<Bundle> returnObj = await _bundleAccess.GetBundleList(_filter);
                 if (returnObj.Count > 0)
                 {
                     return Ok(new ServerResponse
@@ -80,7 +81,62 @@ namespace CatelogService.Controllers
                     IsDomainValidationErrors = false
                 });
             }
-           
+
+        }
+
+        /// <summary>
+        /// This will provide the list of all Customer selectable flag enabled Bundles.
+        /// </summary>        
+        /// <returns>Bundles</returns>
+        // POST: api/Bundles
+        [HttpPost]
+        public async Task<IActionResult> GetBundles([FromHeader(Name = "Grid-General-Token")] string Token, [FromBody] BundleFilter filter)
+        {
+            try
+            {
+                TokenValidationHelper tokenValidationHelper = new TokenValidationHelper();
+                if (!tokenValidationHelper.ValidateGenericToken(Token, _iconfiguration))
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = Core.Extensions.EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = true
+                    });
+                }
+
+                BundleDataAccess _bundleAccess = new BundleDataAccess(_iconfiguration);
+                List<Bundle> returnObj = await _bundleAccess.GetBundleList(filter);
+                if (returnObj.Count > 0)
+                {
+                    return Ok(new ServerResponse
+                    {
+                        HasSucceeded = true,
+                        Message = StatusMessages.SuccessMessage,
+                        Result = returnObj
+                    });
+                }
+                else
+                {
+                    return Ok(new ServerResponse
+                    {
+                        HasSucceeded = false,
+                        Message = StatusMessages.NoRecordsFound,
+                        Result = returnObj
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+            }
+
         }
 
         /// <summary>

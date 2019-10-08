@@ -347,8 +347,6 @@ namespace CustomerService.Controllers
 
         }
 
-
-
         /// <summary>
         /// This will validate roadshow user code
         /// </summary>
@@ -380,6 +378,69 @@ namespace CustomerService.Controllers
 
                 ValidationDataAccess _validateDataAccess = new ValidationDataAccess(_iconfiguration);
                 DatabaseResponse response = await _validateDataAccess.ValidateUserCode(rscode);
+                if (response.ResponseCode == (int)DbReturnValue.RecordExists)
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = true,
+                        Message = StatusMessages.ValidMessage,
+                        ReturnedObject = response.Results
+                    });
+                }
+                else
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = StatusMessages.InvalidMessage,
+                        ReturnedObject = response.Results
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+            }
+        }
+
+        /// <summary>
+        /// This will validate scheme code
+        /// </summary>
+        /// <param name="Token"></param>
+        /// <param name="schemecode"></param>
+        /// <returns>validation status</returns>
+        /// POST: api/ValidateAuthenticatedPostcode
+        ///Body: 
+        ///{
+        ///  "APIKey":"xyz","APISecret":"abc","PostcodeNumber":"408600"
+        /// }
+        [HttpPost]
+        [Route("ValidateSchemeCode/{rscode}")]
+        public async Task<IActionResult> ValidateSchemeCode([FromHeader(Name = "Grid-General-Token")] string Token, [FromRoute]string schemecode)
+        {
+            try
+            {
+                TokenValidationHelper tokenValidationHelper = new TokenValidationHelper();
+                if (!tokenValidationHelper.ValidateGenericToken(Token, _iconfiguration))
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = Core.Extensions.EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = true
+                    });
+                }
+
+
+                ValidationDataAccess _validateDataAccess = new ValidationDataAccess(_iconfiguration);
+                DatabaseResponse response = await _validateDataAccess.ValidateSchemeCode(schemecode);
                 if (response.ResponseCode == (int)DbReturnValue.RecordExists)
                 {
                     return Ok(new OperationResponse

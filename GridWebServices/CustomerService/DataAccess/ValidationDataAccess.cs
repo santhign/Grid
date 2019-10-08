@@ -124,5 +124,37 @@ namespace CustomerService.DataAccess
             }
 
         }
+
+        public async Task<DatabaseResponse> ValidateSchemeCode(string SchemeCode)
+        {
+            try
+            {
+                string ename = "";
+                SqlParameter[] parameters =
+                 {
+                    new SqlParameter( "@SchemeCode",  SqlDbType.NVarChar ),
+
+                };
+                parameters[0].Value = SchemeCode;
+                DataSet ds = new DataSet("ds");
+                _DataHelper = new DataAccessHelper("Customers_ValidateSchemeCode", parameters, _configuration);
+                int result = await _DataHelper.RunAsync(ds); //103/150, 
+                if (ds.Tables[0].Rows.Count > 0)
+                {
+                    ename = ds.Tables[0].Rows[0][0].ToString().Trim();
+                }
+                DatabaseResponse response = new DatabaseResponse();
+
+                response = new DatabaseResponse { ResponseCode = result, Results = ename };
+
+                return response;
+            }
+            catch (Exception e)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(e, ErrorLevel.Critical));
+                throw e;
+            }
+
+        }
     }
 }

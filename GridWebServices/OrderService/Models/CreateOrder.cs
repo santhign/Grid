@@ -135,7 +135,7 @@ namespace OrderService.Models
         /// </value>
         public string PromotionCode { get; set; }
         public string UserCode { get; set; }
-
+        public string SchemeCode { get; set; }
     }
 
     /// <summary>
@@ -174,6 +174,14 @@ namespace OrderService.Models
         /// The user code.
         /// </value>
         public string UserCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the scheme code.
+        /// </summary>
+        /// <value>
+        /// The user code.
+        /// </value>
+        public string SchemeCode { get; set; }
 
     }
 
