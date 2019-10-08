@@ -228,6 +228,8 @@ namespace OrderService.Models
         [DataMember]
         public int? SubscriberID { get; set; }
         [DataMember]
+        public int? AdminServiceID { get; set; }
+        [DataMember]
         public string PortalServiceName { get; set; }
         [DataMember]
         public double? ServiceFee { get; set; }

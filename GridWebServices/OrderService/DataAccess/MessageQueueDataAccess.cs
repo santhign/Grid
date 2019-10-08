@@ -171,6 +171,7 @@ namespace OrderService.DataAccess
                                            {
                                                ChangeRequestID = model.Field<int>("ChangeRequestID"),
                                                SubscriberID = model.Field<int?>("SubscriberID"),
+                                               AdminServiceID = model.Field<int?>("AdminServiceID"),
                                                PortalServiceName = model.Field<string>("PortalServiceName"),
                                                ServiceFee = model.Field<double?>("ServiceFee"),
                                                IsRecurring = model.Field<int?>("IsRecurring"),
