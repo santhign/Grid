@@ -107,7 +107,7 @@ namespace CustomerService.DataAccess
                 DataSet ds = new DataSet("ds");
                 _DataHelper = new DataAccessHelper("Customers_ValidateUserCode", parameters, _configuration);
                 int result = await _DataHelper.RunAsync(ds); //103/150, 
-                if (ds.Tables[0].Rows.Count > 0)
+                if (ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
                 {
                     ename = ds.Tables[0].Rows[0][0].ToString().Trim();
                 }
@@ -139,7 +139,7 @@ namespace CustomerService.DataAccess
                 DataSet ds = new DataSet("ds");
                 _DataHelper = new DataAccessHelper("Customers_ValidateSchemeCode", parameters, _configuration);
                 int result = await _DataHelper.RunAsync(ds); //103/150, 
-                if (ds.Tables[0].Rows.Count > 0)
+                if (ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
                 {
                     ename = ds.Tables[0].Rows[0][0].ToString().Trim();
                 }
