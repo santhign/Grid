@@ -112,7 +112,7 @@ namespace OrderService.Helpers
             {
                 //line blocking
                 bssUpdateResponse = await bsshelper.UpdateAssetBlockNumber(config, (BSSAssetRequest)requestIdToUpdateMainLineRes.Results, number, false);
-                LogInfo.Information(JsonConvert.SerializeObject(bssUpdateResponse.Response));
+                LogInfo.Information(JsonConvert.SerializeObject(bssUpdateResponse));
                 if (bsshelper.GetResponseCode(bssUpdateResponse) == "0")
                 {
                     LogInfo.Information("Number assigned to order subscriber");
