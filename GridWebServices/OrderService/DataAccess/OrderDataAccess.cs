@@ -2670,7 +2670,8 @@ namespace OrderService.DataAccess
                      new SqlParameter("@ExpiryMonth",  SqlDbType.Int ),
                      new SqlParameter("@ExpiryYear",  SqlDbType.Int ),
                      new SqlParameter("@CardFundMethod",  SqlDbType.NVarChar ),
-                     new SqlParameter("@CardBrand",  SqlDbType.NVarChar )
+                     new SqlParameter("@CardBrand",  SqlDbType.NVarChar ),
+                     new SqlParameter("@MPGSOrderID", SqlDbType.NVarChar)
                 };
 
 
@@ -2683,6 +2684,7 @@ namespace OrderService.DataAccess
                 parameters[6].Value = tokenResponse.Card.expiry.year;
                 parameters[7].Value = tokenResponse.Card.fundingMethod;
                 parameters[8].Value = tokenResponse.Card.brand;
+                parameters[9].Value = MPGSOrderID;
 
 
                 _DataHelper = new DataAccessHelper("Order_CreateCustomerPaymentMethods", parameters, _configuration);
