@@ -87,17 +87,20 @@ namespace CatelogService.DataAccess
             }
         }
 
-        public async Task<List<Bundle>> GetBundleById(int bundleId)
+        public async Task<List<Bundle>> GetBundleById(BundleDetails details)
         {
             try
             {
                 SqlParameter[] parameters =
                 {
-                    new SqlParameter( "@BundleID",  SqlDbType.Int )
-                   
+                    new SqlParameter( "@BundleID",  SqlDbType.Int ),
+                    new SqlParameter( "@UserCode",  SqlDbType.NVarChar ),
+                    new SqlParameter( "@SchemeCode",  SqlDbType.NVarChar )
                 };
 
-                parameters[0].Value = bundleId;
+                parameters[0].Value = details.BundleID;
+                parameters[1].Value = details.usercode;
+                parameters[2].Value = details.schemecode;
 
                 _DataHelper = new DataAccessHelper("Catelog_GetBundleById", parameters, _configuration);
 

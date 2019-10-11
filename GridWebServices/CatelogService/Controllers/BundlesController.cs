@@ -173,7 +173,8 @@ namespace CatelogService.Controllers
                 }
 
                 BundleDataAccess _bundleAccess = new BundleDataAccess(_iconfiguration);
-                List<Bundle> returnObj = await _bundleAccess.GetBundleById(id);
+                BundleDetails details = new BundleDetails { BundleID = id };
+                List<Bundle> returnObj = await _bundleAccess.GetBundleById(details);
                 if (returnObj.Count > 0)
                 {
                     return Ok(new ServerResponse
@@ -207,6 +208,60 @@ namespace CatelogService.Controllers
             }
 
 
+        }
+
+        /// <summary>
+        /// This will provide the list of all Customer selectable flag enabled Bundles.
+        /// </summary>        
+        /// <returns>Bundles</returns>
+        // POST: api/Bundles
+        [HttpPost("GetBundlesByID")]
+        public async Task<IActionResult> GetBundlesByID([FromHeader(Name = "Grid-General-Token")] string Token, [FromBody] BundleDetails details)
+        {
+            try
+            {
+                TokenValidationHelper tokenValidationHelper = new TokenValidationHelper();
+                if (!tokenValidationHelper.ValidateGenericToken(Token, _iconfiguration))
+                {
+                    return Ok(new OperationResponse
+                    {
+                        HasSucceeded = false,
+                        Message = Core.Extensions.EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
+                        IsDomainValidationErrors = true
+                    });
+                }
+
+                BundleDataAccess _bundleAccess = new BundleDataAccess(_iconfiguration);
+                List<Bundle> returnObj = await _bundleAccess.GetBundleById(details);
+                if (returnObj.Count > 0)
+                {
+                    return Ok(new ServerResponse
+                    {
+                        HasSucceeded = true,
+                        Message = StatusMessages.SuccessMessage,
+                        Result = returnObj.FirstOrDefault()
+                    });
+                }
+                else
+                {
+                    return Ok(new ServerResponse
+                    {
+                        HasSucceeded = false,
+                        Message = StatusMessages.NoRecordsFound,
+                        Result = returnObj.FirstOrDefault()
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                return Ok(new OperationResponse
+                {
+                    HasSucceeded = false,
+                    Message = StatusMessages.ServerError,
+                    IsDomainValidationErrors = false
+                });
+            }
         }
 
         /// <summary>
