@@ -2745,7 +2745,8 @@ namespace OrderService.Controllers
 
                               //  MPGSOrderID = checkoutDetails.OrderId,
 
-                                TransactionID = checkoutDetails.TransactionID
+                                TransactionID = checkoutDetails.TransactionID,
+                                RequireTokenization = 1
                             };
 
                             DatabaseResponse checkOutAmountResponse = await _orderAccess.GetCheckoutRequestDetails(createcheckOutModel);
@@ -2771,6 +2772,8 @@ namespace OrderService.Controllers
                                     MPGSOrderID = checkoutDetails.OrderId,
 
                                     TransactionID = checkoutDetails.TransactionID,
+
+                                    RequireTokenization = 1
                                 };
 
                                 //Update checkout details and return amount
@@ -4601,233 +4604,119 @@ namespace OrderService.Controllers
                             if ((TokenSession)updateCheckoutDetailsResponse.Results != null)
                             {
                                 PaymentHelper gatewayHelper = new PaymentHelper();
-
-                                DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.MPGS.ToString());
-
-                                GridMPGSConfig gatewayConfig = gatewayHelper.GetGridMPGSConfig((List<Dictionary<string, string>>)configResponse.Results);
-
-                                //Direct capture MID config
-
-                                DatabaseResponse configDirectResponse = await _orderAccess.GetConfiguration(ConfiType.MPGSDirect.ToString());
-
-                                GridMPGSDirectMIDConfig gatewayDirectConfig = gatewayHelper.GetGridMPGSDirectMerchant((List<Dictionary<string, string>>)configDirectResponse.Results);
-
-                                gatewayConfig = gatewayHelper.GetGridMPGSCombinedConfig(gatewayConfig, gatewayDirectConfig);
-
-                                // Direct capture MID config end
-
-                                TokenResponse tokenizeResponse = new TokenResponse();
-
-                                TokenSession tokenSession = new TokenSession();
-
-                                tokenSession = (TokenSession)updateCheckoutDetailsResponse.Results;
-
-                                tokenizeResponse = gatewayHelper.Tokenize(gatewayConfig, tokenSession);
-
-                                if (tokenizeResponse != null && !string.IsNullOrEmpty(tokenizeResponse.Token))
+                                DatabaseResponse paymentProcessingRespose = await gatewayHelper.ProcessTransaction(_iconfiguration, updateCheckoutDetailsResponse, updateRequest.MPGSOrderID, updateRequest.Result, "customerid:" + customerID + " - order processing - ");
+                                var sourceTyeResponse = await _orderAccess.GetSourceTypeByMPGSSOrderId(updateRequest.MPGSOrderID);
+                                PaymentSuccessResponse paymentResponse = new PaymentSuccessResponse { Source = ((OrderSource)sourceTyeResponse.Results).SourceType, MPGSOrderID = updateRequest.MPGSOrderID, Amount = ((TokenSession)updateCheckoutDetailsResponse.Results).Amount };
+                                //, Currency = gatewayConfig.Currency
+                                if (paymentProcessingRespose.ResponseCode == (int)DbReturnValue.TransactionSuccess)
                                 {
-                                   // insert token response to payment methods table
+                                    LogInfo.Information(EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess));
 
-                                     DatabaseResponse tokenDetailsCreateResponse = new DatabaseResponse();
+                                    QMHelper qMHelper = new QMHelper(_iconfiguration, _messageQueueDataAccess);
 
-                                    LogInfo.Information(JsonConvert.SerializeObject(tokenizeResponse));
+                                    int processResult = await qMHelper.ProcessSuccessTransaction(updateRequest);
 
-                                    tokenDetailsCreateResponse = await _orderAccess.CreatePaymentMethod(tokenizeResponse, customerID, updateRequest.MPGSOrderID, "UpdateTokenizeCheckOutResponse");
-
-                                    if (tokenDetailsCreateResponse.ResponseCode == (int)DbReturnValue.CreateSuccess || tokenDetailsCreateResponse.ResponseCode == (int)DbReturnValue.ExistingCard)
+                                    if (processResult == 1)
                                     {
-                                        tokenSession.SourceOfFundType = tokenizeResponse.Type;
+                                        LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed));
 
-                                        tokenSession.Token = tokenizeResponse.Token;
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = true,
+                                            Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
+                                            IsDomainValidationErrors = false,
+                                            ReturnedObject = paymentResponse
+                                        });
+                                    }
+                                    else if (processResult == 2)
+                                    {
+                                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed));
 
-                                        string captureResponse = gatewayHelper.Capture(gatewayConfig, tokenSession);
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = true,
+                                            Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
+                                            IsDomainValidationErrors = false,
+                                            ReturnedObject = paymentResponse
+                                        });
+                                    }
+                                    else if (processResult == 3)
+                                    {
+                                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(CommonErrors.MQSent));
 
-                                        //if (captureResponse == MPGSAPIResponse.SUCCESS.ToString())
-                                        //{
-                                            LogInfo.Information(captureResponse);
-                                            //  get the session details and transaction details
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = true,
+                                            Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
+                                            IsDomainValidationErrors = false,
+                                            ReturnedObject = paymentResponse
+                                        });
+                                    }
 
-                                            TransactionRetrieveResponseOperation transactionResponse = new TransactionRetrieveResponseOperation();
+                                    else if (processResult == 4)
+                                    {
+                                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.SourceTypeNotFound) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = true,
+                                            Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
+                                            IsDomainValidationErrors = false,
+                                            ReturnedObject = paymentResponse
+                                        });
+                                    }
 
-                                            string receipt = gatewayHelper.RetrieveCheckOutTransaction(gatewayConfig, updateRequest);
-
-                                            LogInfo.Information(receipt);
-
-                                            transactionResponse = gatewayHelper.GetPaymentTransaction(receipt);
-
-                                            LogInfo.Information(transactionResponse.TrasactionResponse.ApiResult + transactionResponse.TrasactionResponse.PaymentStatus + transactionResponse.TrasactionResponse.OrderId);
-
-                                            DatabaseResponse tokenDetailsUpdateResponse = new DatabaseResponse();
-
-                                            DatabaseResponse paymentProcessingRespose = new DatabaseResponse();
-
-                                            transactionResponse.TrasactionResponse.Token = tokenSession.Token;
-
-                                            LogInfo.Information("Processing the order payment: and calling UpdateCheckOutReceipt");
-
-                                            paymentProcessingRespose = await _orderAccess.UpdateCheckOutReceipt(transactionResponse.TrasactionResponse);
-
-                                            DatabaseResponse updatePaymentResponse = await _orderAccess.UpdatePaymentResponse(updateRequest.MPGSOrderID, receipt);
-
-                                            tokenDetailsUpdateResponse = await _orderAccess.UpdatePaymentMethodDetails(transactionResponse.TrasactionResponse, customerID, tokenSession.Token);
-
-                                            //Get Order Type
-                                            var sourceTyeResponse = await _orderAccess.GetSourceTypeByMPGSSOrderId(updateRequest.MPGSOrderID);
-
-                                            PaymentSuccessResponse paymentResponse = new PaymentSuccessResponse { Source = ((OrderSource)sourceTyeResponse.Results).SourceType, MPGSOrderID = updateRequest.MPGSOrderID, Amount = tokenSession.Amount, Currency = gatewayConfig.Currency };
-
-                                            if (paymentProcessingRespose.ResponseCode == (int)DbReturnValue.TransactionSuccess)
-                                            {
-                                                LogInfo.Information(EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess));
-
-                                                QMHelper qMHelper = new QMHelper(_iconfiguration, _messageQueueDataAccess);
-
-                                                int processResult = await qMHelper.ProcessSuccessTransaction(updateRequest);
-
-                                                if (processResult == 1)
-                                                {
-                                                    LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed));
-
-                                                    return Ok(new OperationResponse
-                                                    {
-                                                        HasSucceeded = true,
-                                                        Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
-                                                        IsDomainValidationErrors = false,
-                                                        ReturnedObject = paymentResponse
-                                                    });
-                                                }
-                                                else if (processResult == 2)
-                                                {
-                                                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed));
-
-                                                    return Ok(new OperationResponse
-                                                    {
-                                                        HasSucceeded = true,
-                                                        Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
-                                                        IsDomainValidationErrors = false,
-                                                        ReturnedObject = paymentResponse
-                                                    });
-                                                }
-                                                else if (processResult == 3)
-                                                {
-                                                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(CommonErrors.MQSent));
-
-                                                    return Ok(new OperationResponse
-                                                    {
-                                                        HasSucceeded = true,
-                                                        Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
-                                                        IsDomainValidationErrors = false,
-                                                        ReturnedObject = paymentResponse
-                                                    });
-                                                }
-
-                                                else if (processResult == 4)
-                                                {
-                                                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.SourceTypeNotFound) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
-                                                    return Ok(new OperationResponse
-                                                    {
-                                                        HasSucceeded = true,
-                                                        Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
-                                                        IsDomainValidationErrors = false,
-                                                        ReturnedObject = paymentResponse
-                                                    });
-                                                }
-
-                                                else if (processResult == 5)
-                                                {
-                                                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing Buddy/MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.InvalidCheckoutType) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
-                                                    return Ok(new OperationResponse
-                                                    {
-                                                        HasSucceeded = true,
-                                                        Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
-                                                        IsDomainValidationErrors = false,
-                                                        ReturnedObject = paymentResponse
-                                                    });
-                                                }
-
-                                                else
-                                                {
-                                                    // entry for exceptions from QM Helper, but need to send payment success message to UI as payment already processed
-                                                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing Buddy/MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.SystemExceptionAfterPayment) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
-                                                    return Ok(new OperationResponse
-                                                    {
-                                                        HasSucceeded = true,
-                                                        Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
-                                                        IsDomainValidationErrors = false,
-                                                        ReturnedObject = paymentResponse
-                                                    });
-
-                                                }
-                                            }
-                                            else if (paymentProcessingRespose.ResponseCode == (int)DbReturnValue.PaymentAlreadyProcessed)
-                                            {
-                                                return Ok(new OperationResponse
-                                                {
-                                                    HasSucceeded = true,
-                                                    Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
-                                                    IsDomainValidationErrors = false,
-                                                    ReturnedObject = paymentResponse
-                                                });
-                                            }
-                                            else
-                                            {
-                                                LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TransactionFailed));
-                                                return Ok(new OperationResponse
-                                                {
-                                                    HasSucceeded = false,
-                                                    Message = EnumExtensions.GetDescription(DbReturnValue.TransactionFailed),
-                                                    IsDomainValidationErrors = false
-                                                });
-                                            }
-                                        //}
-                                        //else
-                                        //{
-                                        //    return Ok(new OperationResponse
-                                        //    {
-                                        //        HasSucceeded = false,
-                                        //        Message = EnumExtensions.GetDescription(CommonErrors.CaptureFailed),
-                                        //        IsDomainValidationErrors = false
-                                        //    });
-
-                                        //}
+                                    else if (processResult == 5)
+                                    {
+                                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing Buddy/MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.InvalidCheckoutType) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
+                                        return Ok(new OperationResponse
+                                        {
+                                            HasSucceeded = true,
+                                            Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
+                                            IsDomainValidationErrors = false,
+                                            ReturnedObject = paymentResponse
+                                        });
                                     }
 
                                     else
                                     {
-                                        // token details update failed
-
-                                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.FailedToCreatePaymentMethod));
-                                        LogInfo.Warning("Create payment method failed - " + JsonConvert.SerializeObject(tokenDetailsCreateResponse));
+                                        // entry for exceptions from QM Helper, but need to send payment success message to UI as payment already processed
+                                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing Buddy/MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.SystemExceptionAfterPayment) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
                                         return Ok(new OperationResponse
                                         {
-                                            HasSucceeded = false,
-                                            Message = EnumExtensions.GetDescription(CommonErrors.FailedToCreatePaymentMethod),
-                                            IsDomainValidationErrors = false
+                                            HasSucceeded = true,
+                                            Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
+                                            IsDomainValidationErrors = false,
+                                            ReturnedObject = paymentResponse
                                         });
+
                                     }
                                 }
-
+                                else if (paymentProcessingRespose.ResponseCode == (int)DbReturnValue.PaymentAlreadyProcessed)
+                                {
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = true,
+                                        Message = EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess),
+                                        IsDomainValidationErrors = false,
+                                        ReturnedObject = paymentResponse
+                                    });
+                                }
                                 else
                                 {
-                                    //failed to create payment token
-
-                                    LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.TokenGenerationFailed) + " for customer:" + customerID);
+                                    LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TransactionFailed));
                                     return Ok(new OperationResponse
                                     {
                                         HasSucceeded = false,
-                                        Message = EnumExtensions.GetDescription(CommonErrors.TokenGenerationFailed),
+                                        Message = EnumExtensions.GetDescription(DbReturnValue.TransactionFailed),
                                         IsDomainValidationErrors = false
                                     });
                                 }
-
+                                /////////////Order Processing////////////// 
                             }
-
                             else
                             {
                                 //unable to get token session
-
                                 LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.UnableToGetTokenSession));
-
                                 return Ok(new OperationResponse
                                 {
                                     HasSucceeded = false,
@@ -4835,12 +4724,10 @@ namespace OrderService.Controllers
                                     IsDomainValidationErrors = false
                                 });
                             }
-
                         }
                         else
                         {
                             // checkout response update failed
-
                             LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.CheckOutDetailsUpdationFailed));
 
                             return Ok(new OperationResponse
@@ -4850,13 +4737,10 @@ namespace OrderService.Controllers
                                 IsDomainValidationErrors = false
                             });
                         }
-
                     }
-
                     else
                     {
                         //Token expired
-
                         LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
 
                         return Ok(new OperationResponse
@@ -4865,7 +4749,6 @@ namespace OrderService.Controllers
                             Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
                             IsDomainValidationErrors = true
                         });
-
                     }
                 }
                 else
@@ -5156,7 +5039,8 @@ namespace OrderService.Controllers
 
                                    // MPGSOrderID = checkoutDetails.OrderId,
 
-                                    TransactionID = checkoutDetails.TransactionID
+                                    TransactionID = checkoutDetails.TransactionID,
+                                    RequireTokenization = 0 
                                 };                               
 
                                 DatabaseResponse checkOutAmountResponse = await _orderAccess.GetCheckoutRequestDetails(createcheckOutModel);
@@ -5182,7 +5066,8 @@ namespace OrderService.Controllers
 
                                         MPGSOrderID = checkoutDetails.OrderId,
 
-                                        TransactionID = checkoutDetails.TransactionID
+                                        TransactionID = checkoutDetails.TransactionID,
+                                        RequireTokenization = 0
                                     };
 
                                     //Update checkout details and return amount

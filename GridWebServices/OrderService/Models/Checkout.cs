@@ -51,6 +51,10 @@ namespace OrderService.Models
         public double Amount { get; set; }
         public string Token { get; set; }
         public string SourceOfFundType { get; set; }
+        public int CustomerID { get; set; }
+        public int RequireTokenization { get; set; }
+        public int OrderStatus { get; set; }
+        public int IsPaid { get; set; }
 
     }
 
@@ -75,6 +79,7 @@ namespace OrderService.Models
         public string CheckoutVersion { get; set; }
 
         public string TransactionID { get; set; }
+        public int RequireTokenization { get; set; }
 
     }
     public class CheckOutResponseUpdate

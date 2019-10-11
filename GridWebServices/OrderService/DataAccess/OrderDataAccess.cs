@@ -1538,8 +1538,8 @@ namespace OrderService.DataAccess
                      new SqlParameter( "@CheckOutSessionID",  SqlDbType.NVarChar ),
                      new SqlParameter( "@SuccessIndicator",  SqlDbType.NVarChar ),
                      new SqlParameter( "@CheckoutVersion",  SqlDbType.NVarChar ),
-                     new SqlParameter( "@TransactionID",  SqlDbType.NVarChar )
-
+                     new SqlParameter( "@TransactionID",  SqlDbType.NVarChar ),
+                     new SqlParameter( "@RequireTokenization",  SqlDbType.NVarChar )
                 };
 
                 parameters[0].Value = checkOutRequest.Source;
@@ -1549,6 +1549,7 @@ namespace OrderService.DataAccess
                 parameters[4].Value = checkOutRequest.SuccessIndicator;
                 parameters[5].Value = checkOutRequest.CheckoutVersion;
                 parameters[6].Value = checkOutRequest.TransactionID;
+                parameters[7].Value = checkOutRequest.RequireTokenization;
 
                 _DataHelper = new DataAccessHelper("Orders_GetCheckoutRequestDetails", parameters, _configuration);
 
@@ -1622,9 +1623,7 @@ namespace OrderService.DataAccess
                 int result = await _DataHelper.RunAsync(dt);    // 106 / 101
 
                 DatabaseResponse response = new DatabaseResponse();
-
                 TokenSession tokenSession = new TokenSession();
-
                 if (dt != null && dt.Rows.Count > 0)
                 {
 
@@ -1633,20 +1632,19 @@ namespace OrderService.DataAccess
                                     {
                                         MPGSOrderID = model.Field<string>("MPGSOrderID"),
                                         CheckOutSessionID = model.Field<string>("CheckOutSessionID"),
-                                        Amount = model.Field<double>("Amount")
+                                        Amount = model.Field<double>("Amount"),
+                                        CustomerID = model.Field<int>("CustomerID"),
+                                        RequireTokenization = model.Field<int>("RequireTokenization"),
+                                        OrderStatus = model.Field<int>("OrderStatus"),
+                                        IsPaid = model.Field<int>("IsPaid")
                                     }).FirstOrDefault();
 
                     response = new DatabaseResponse { ResponseCode = result, Results = tokenSession };
-
                 }
-
                 else
                 {
                     response = new DatabaseResponse { ResponseCode = result };
-
                 }
-
-
 
                 return response;
             }

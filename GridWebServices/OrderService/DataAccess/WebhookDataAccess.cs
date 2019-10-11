@@ -30,7 +30,7 @@ namespace OrderService.DataAccess
             _configuration = configuration;
         }
 
-        public  DatabaseResponse UpdateMPGSWebhookNotification(WebhookNotificationModel notification)
+        public async Task<DatabaseResponse> UpdateMPGSWebhookNotification(WebhookNotificationModel notification)
         {
             try
             {
@@ -54,18 +54,29 @@ namespace OrderService.DataAccess
 
                 DataTable dt = new DataTable();
 
-                int result = _DataHelper.Run(dt);
-
-                int CustomerID=0;
-
-                if(dt!=null && dt.Rows.Count>0)
-                {
-                    CustomerID = int.Parse(dt.Rows[0].ItemArray[0].ToString());
-                }
+                int result = await _DataHelper.RunAsync(dt);
 
                 DatabaseResponse response = new DatabaseResponse();
+                TokenSession tokenSession = new TokenSession();
+                if (dt != null && dt.Rows.Count > 0)
+                {
 
-                response = new DatabaseResponse { ResponseCode = result ,Results= CustomerID };
+                    tokenSession = (from model in dt.AsEnumerable()
+                                    select new TokenSession()
+                                    {
+                                        MPGSOrderID = model.Field<string>("MPGSOrderID"),
+                                        CheckOutSessionID = model.Field<string>("CheckOutSessionID"),
+                                        Amount = model.Field<double>("Amount"),
+                                        CustomerID = model.Field<int>("CustomerID"),
+                                        RequireTokenization = model.Field<int>("RequireTokenization")
+                                    }).FirstOrDefault();
+
+                    response = new DatabaseResponse { ResponseCode = result, Results = tokenSession };
+                }
+                else
+                {
+                    response = new DatabaseResponse { ResponseCode = result };
+                }
 
                 return response;
             }

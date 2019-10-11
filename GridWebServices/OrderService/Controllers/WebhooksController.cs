@@ -69,7 +69,7 @@ namespace OrderService.Controllers
 
                     LogInfo.Information("Webhooks controller ProcessWebhook action");
 
-                    Debug.WriteLine($"-------------GatewayApiConfig.WebhooksNotificationSecret {_gatewayApiConfig.WebhooksNotificationSecret} --- {notificationSecret}");
+                    //Debug.WriteLine($"-------------GatewayApiConfig.WebhooksNotificationSecret {_gatewayApiConfig.WebhooksNotificationSecret} --- {notificationSecret}");
 
                     if (_gatewayApiConfig.WebhooksNotificationSecret == null || notificationSecret == null || notificationSecret != _gatewayApiConfig.WebhooksNotificationSecret)
                     {
@@ -169,130 +169,70 @@ namespace OrderService.Controllers
         [NonAction]
         public async void ProcessPayment(WebhookNotificationModel notification)
         {
+            string logIdentifierinfo = "webhook - ";
             try
             {   
                 string json = JsonConvert.SerializeObject(notification);
-
-                LogInfo.Information($"Webhooks notification model {json}");
-
+                LogInfo.Information($"webhooks notification model {json}");
                 WebhookDataAccess _webhookAccess = new WebhookDataAccess(_iconfiguration);
-
-                DatabaseResponse webhookLogUpdatedatabaseResponse = _webhookAccess.UpdateMPGSWebhookNotification(notification);
+                DatabaseResponse webhookLogUpdatedatabaseResponse = await _webhookAccess.UpdateMPGSWebhookNotification(notification);
 
                 // epoch
-
-
                 System.IO.File.WriteAllText($@"{GatewayApiConfig.WEBHOOKS_NOTIFICATION_FOLDER}/WebHookNotifications_{notification.Timestamp}.json", json);
-
-
-                CheckOutResponseUpdate updateRequest = new CheckOutResponseUpdate { MPGSOrderID = notification.Order.Id, Result = notification.Order.Status };
-
-                OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
-
-                //update checkout details
-
-               // DatabaseResponse updateCheckoutDetailsResponse = await _orderAccess.UpdateCheckOutResponse(updateRequest);
-
-                // retrieve transaction details from MPGS
-
-                DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.MPGS.ToString());
-
-                PaymentHelper gatewayHelper = new PaymentHelper();           
-
-                GridMPGSConfig gatewayConfig = gatewayHelper.GetGridMPGSConfig((List<Dictionary<string, string>>)configResponse.Results);
-
-                //Direct capture MID config
-
-                DatabaseResponse configDirectResponse = await _orderAccess.GetConfiguration(ConfiType.MPGSDirect.ToString());
-
-                GridMPGSDirectMIDConfig gatewayDirectConfig = gatewayHelper.GetGridMPGSDirectMerchant((List<Dictionary<string, string>>)configDirectResponse.Results);
-
-                gatewayConfig = gatewayHelper.GetGridMPGSCombinedConfig(gatewayConfig, gatewayDirectConfig);
-
-                // Direct capture MID config end
-
-                TransactionRetrieveResponseOperation transactionResponse = new TransactionRetrieveResponseOperation();
-
-                string receipt =  gatewayHelper.RetrieveCheckOutTransaction(gatewayConfig, updateRequest);
-
-                transactionResponse = gatewayHelper.GetPaymentTransaction(receipt);
-
-                if (webhookLogUpdatedatabaseResponse != null && webhookLogUpdatedatabaseResponse.Results != null)
+                if (webhookLogUpdatedatabaseResponse != null && ((TokenSession)webhookLogUpdatedatabaseResponse.Results) != null)
                 {
-                    DatabaseResponse paymentMethodResponse = await _orderAccess.GetPaymentMethodToken((int)webhookLogUpdatedatabaseResponse.Results);
+                    CheckOutResponseUpdate updateRequest = new CheckOutResponseUpdate { MPGSOrderID = notification.Order.Id, Result = notification.Order.Status };
+                    OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+                    PaymentHelper gatewayHelper = new PaymentHelper();
+                    DatabaseResponse paymentProcessingRespose = await gatewayHelper.ProcessTransaction(_iconfiguration, webhookLogUpdatedatabaseResponse, updateRequest.MPGSOrderID, updateRequest.Result, "customerid:" + ((TokenSession)webhookLogUpdatedatabaseResponse.Results).CustomerID + " - webhook processing - ");
 
-                    PaymentMethod paymentMethod = new PaymentMethod();
-
-                    paymentMethod = (PaymentMethod)paymentMethodResponse.Results;
-
-                    transactionResponse.TrasactionResponse.CardType = paymentMethod.CardType;
-
-                    transactionResponse.TrasactionResponse.CardHolderName = paymentMethod.CardHolderName;
-
-                    transactionResponse.TrasactionResponse.Token = paymentMethod.Token;
-                }
-
-                DatabaseResponse paymentProcessingRespose = new DatabaseResponse();
-
-                paymentProcessingRespose = await _orderAccess.UpdateCheckOutReceipt(transactionResponse.TrasactionResponse);
-
-                DatabaseResponse updatePaymentResponse = await _orderAccess.UpdatePaymentResponse(updateRequest.MPGSOrderID, receipt);
-
-                if (paymentProcessingRespose.ResponseCode == (int)DbReturnValue.TransactionSuccess)
-                {  
-                    LogInfo.Information(EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess));
-
-                    QMHelper qMHelper = new QMHelper(_iconfiguration, _messageQueueDataAccess);
-
-                    int processResult = await qMHelper.ProcessSuccessTransaction(updateRequest);                   
-
-                    if (processResult == 1)
+                    if (paymentProcessingRespose.ResponseCode == (int)DbReturnValue.TransactionSuccess)
                     {
-                        LogInfo.Information(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed));
+                        LogInfo.Information(logIdentifierinfo + EnumExtensions.GetDescription(DbReturnValue.TransactionSuccess));
 
-                       
+                        QMHelper qMHelper = new QMHelper(_iconfiguration, _messageQueueDataAccess);
+
+                        int processResult = await qMHelper.ProcessSuccessTransaction(updateRequest);
+
+                        if (processResult == 1)
+                        {
+                            LogInfo.Information(logIdentifierinfo + EnumExtensions.GetDescription(CommonErrors.PaymentProcessed));
+                        }
+                        else if (processResult == 2)
+                        {
+                            LogInfo.Warning(logIdentifierinfo + EnumExtensions.GetDescription(CommonErrors.PaymentProcessed));
+                        }
+                        else if (processResult == 3)
+                        {
+                            LogInfo.Warning(logIdentifierinfo + EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(CommonErrors.MQSent));
+                        }
+                        else if (processResult == 4)
+                        {
+                            LogInfo.Warning(logIdentifierinfo + EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing Buddy/MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.SourceTypeNotFound) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
+                        }
+                        else if (processResult == 5)
+                        {
+                            LogInfo.Warning(logIdentifierinfo + EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing Buddy/MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.InvalidCheckoutType) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
+                        }
+                        else
+                        {
+                            // entry for exceptions from QM Helper, but need to send payment success message to UI as payment already processed
+                            LogInfo.Warning(logIdentifierinfo + EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.SystemExceptionAfterPayment) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
+                        }
                     }
-                    else if (processResult == 2)
-                    {
-                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed));
-
-                       
-                    }
-                    else if (processResult == 3)
-                    {
-                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". " + EnumExtensions.GetDescription(CommonErrors.MQSent));
-
-                       
-                    }
-
-                    else if (processResult == 4)
-                    {
-                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing Buddy/MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.SourceTypeNotFound) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
-                       
-                    }
-
-                    else if (processResult == 5)
-                    {
-                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing Buddy/MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.InvalidCheckoutType) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
-                      
-                    }
-
                     else
                     {
-                        // entry for exceptions from QM Helper, but need to send payment success message to UI as payment already processed
-                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.PaymentProcessed) + ". But while processing MQ/EML/SMS " + EnumExtensions.GetDescription(CommonErrors.SystemExceptionAfterPayment) + " for MPGSOrderID" + updateRequest.MPGSOrderID);
-                       
+                        LogInfo.Warning(logIdentifierinfo + EnumExtensions.GetDescription(DbReturnValue.TransactionFailed));
                     }
                 }
-           
                 else
                 {
-                    LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TransactionFailed));
+                    LogInfo.Information(logIdentifierinfo + " transaction is already processed for the order");
                 }
             }
             catch(Exception ex)
             {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                LogInfo.Error(logIdentifierinfo + new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
             }
         }
 

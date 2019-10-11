@@ -356,8 +356,6 @@ namespace OrderService.Helpers
             }
             catch (Exception ex)
             {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-
                 throw ex;
             }
         }
@@ -694,5 +692,138 @@ namespace OrderService.Helpers
             return config;
         }
 
+        public async Task<DatabaseResponse> ProcessTransaction(IConfiguration _iconfiguration, DatabaseResponse CheckoutDetailsResponse, string MPGSOrderID, string Status, string logIdentifierInfo)
+        {
+            LogInfo.Information(logIdentifierInfo + "Processing the payment in payment helper - MPGSOrderID:" + MPGSOrderID + ", Status:" + Status);
+            OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+            PaymentHelper gatewayHelper = new PaymentHelper();
+            DatabaseResponse configResponse = await _orderAccess.GetConfiguration(ConfiType.MPGS.ToString());
+            GridMPGSConfig gatewayConfig = gatewayHelper.GetGridMPGSConfig((List<Dictionary<string, string>>)configResponse.Results);
+
+            //Direct capture MID config
+            DatabaseResponse configDirectResponse = await _orderAccess.GetConfiguration(ConfiType.MPGSDirect.ToString());
+            GridMPGSDirectMIDConfig gatewayDirectConfig = gatewayHelper.GetGridMPGSDirectMerchant((List<Dictionary<string, string>>)configDirectResponse.Results);
+            gatewayConfig = gatewayHelper.GetGridMPGSCombinedConfig(gatewayConfig, gatewayDirectConfig);
+            // Direct capture MID config end
+            string paymenttoken = "";
+            //////token retrival/////
+            TokenResponse tokenizeResponse = new TokenResponse();
+            TokenSession tokenSession = new TokenSession();
+            DatabaseResponse tokenDetailsCreateResponse = new DatabaseResponse();
+            tokenSession = (TokenSession)CheckoutDetailsResponse.Results;
+            int CustomerID = tokenSession.CustomerID;
+            if (tokenSession.RequireTokenization == 1)
+            {
+                //check for token existance
+                try
+                {
+                    tokenizeResponse = gatewayHelper.Tokenize(gatewayConfig, tokenSession);
+                    if (tokenizeResponse != null && !string.IsNullOrEmpty(tokenizeResponse.Token))
+                    {
+                        // insert token response to payment methods table
+                        LogInfo.Information(logIdentifierInfo + JsonConvert.SerializeObject(tokenizeResponse));
+                        tokenDetailsCreateResponse = await _orderAccess.CreatePaymentMethod(tokenizeResponse, CustomerID, MPGSOrderID, "UpdateTokenizeCheckOutResponse");
+                        if (tokenDetailsCreateResponse.ResponseCode == (int)DbReturnValue.CreateSuccess || tokenDetailsCreateResponse.ResponseCode == (int)DbReturnValue.ExistingCard)
+                        {
+                            tokenSession.SourceOfFundType = tokenizeResponse.Type;
+                            tokenSession.Token = tokenizeResponse.Token;
+                        }
+                        else
+                        {
+                            // token details update failed
+                            LogInfo.Warning(logIdentifierInfo + EnumExtensions.GetDescription(CommonErrors.FailedToCreatePaymentMethod));
+                            LogInfo.Warning(logIdentifierInfo + "Create payment method failed - " + JsonConvert.SerializeObject(tokenDetailsCreateResponse));
+                        }
+                    }
+                    else
+                    {
+                        //failed to create payment token
+                        LogInfo.Warning(logIdentifierInfo + EnumExtensions.GetDescription(CommonErrors.TokenGenerationFailed) + " for customer:" + CustomerID);
+
+                        //retry to get the token
+                        System.Threading.Thread.Sleep(100);
+                        tokenSession = (TokenSession)CheckoutDetailsResponse.Results;
+                        tokenizeResponse = gatewayHelper.Tokenize(gatewayConfig, tokenSession);
+                        if (tokenizeResponse != null && !string.IsNullOrEmpty(tokenizeResponse.Token))
+                        {
+                            // insert token response to payment methods table
+                            LogInfo.Information(logIdentifierInfo + "Sucess on retry - " + JsonConvert.SerializeObject(tokenizeResponse));
+                            tokenDetailsCreateResponse = await _orderAccess.CreatePaymentMethod(tokenizeResponse, CustomerID, MPGSOrderID, "UpdateTokenizeCheckOutResponse");
+                            if (tokenDetailsCreateResponse.ResponseCode == (int)DbReturnValue.CreateSuccess || tokenDetailsCreateResponse.ResponseCode == (int)DbReturnValue.ExistingCard)
+                            {
+                                tokenSession.SourceOfFundType = tokenizeResponse.Type;
+                                tokenSession.Token = tokenizeResponse.Token;
+                            }
+                            else
+                            {
+                                // token details update failed
+                                LogInfo.Warning(logIdentifierInfo + EnumExtensions.GetDescription(CommonErrors.FailedToCreatePaymentMethod));
+                                LogInfo.Warning(logIdentifierInfo + "Create payment method failed - " + JsonConvert.SerializeObject(tokenDetailsCreateResponse));
+                            }
+                        }
+                        else
+                        {
+                            paymenttoken = "failed";
+                            //failed to create payment token
+                            LogInfo.Warning(logIdentifierInfo + "Failed on retry" + EnumExtensions.GetDescription(CommonErrors.TokenGenerationFailed));
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogInfo.Error(logIdentifierInfo + new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                }
+            }
+            else
+            {
+                LogInfo.Information(logIdentifierInfo + "Token was already processed");
+            }
+            //////token retrival//////
+
+            //////////////Order Processing////////////  
+
+            DatabaseResponse paymentProcessingRespose = new DatabaseResponse();
+            if (tokenSession.IsPaid == 0 && tokenSession.OrderStatus == 0)
+            {
+                CheckOutResponseUpdate updateRequest = new CheckOutResponseUpdate { MPGSOrderID = MPGSOrderID, Result = Status };
+                TransactionRetrieveResponseOperation transactionResponse = new TransactionRetrieveResponseOperation();
+                string receipt = gatewayHelper.RetrieveCheckOutTransaction(gatewayConfig, updateRequest);
+                LogInfo.Information(logIdentifierInfo + receipt);
+                transactionResponse = gatewayHelper.GetPaymentTransaction(receipt);
+                LogInfo.Information(logIdentifierInfo + transactionResponse.TrasactionResponse.ApiResult + transactionResponse.TrasactionResponse.PaymentStatus + transactionResponse.TrasactionResponse.OrderId);
+                if (tokenSession.RequireTokenization == 1)
+                {
+                    if (tokenSession == null || String.IsNullOrEmpty(tokenSession.Token))
+                    {
+                        paymenttoken = "failed";
+                    }
+                    else
+                    {
+                        paymenttoken = tokenSession.Token;
+                    }
+                }
+                else
+                {
+                    DatabaseResponse paymentMethodResponse = await _orderAccess.GetPaymentMethodToken(CustomerID);
+                    //Get token from paymentmethodID
+                    PaymentMethod paymentMethod = new PaymentMethod();
+
+                    paymentMethod = (PaymentMethod)paymentMethodResponse.Results;
+                    paymenttoken = paymentMethod.Token;
+                }
+                transactionResponse.TrasactionResponse.Token = paymenttoken;
+                LogInfo.Information(logIdentifierInfo + "Processing the order payment: and calling UpdateCheckOutReceipt");
+
+                paymentProcessingRespose = await _orderAccess.UpdateCheckOutReceipt(transactionResponse.TrasactionResponse);
+                await _orderAccess.UpdatePaymentResponse(MPGSOrderID, receipt);
+                await _orderAccess.UpdatePaymentMethodDetails(transactionResponse.TrasactionResponse, CustomerID, paymenttoken);
+            }
+            else
+            {
+                paymentProcessingRespose = new DatabaseResponse { ResponseCode = (int)DbReturnValue.TransactionSuccess };
+                LogInfo.Information(logIdentifierInfo + "Payment was already processed");
+            }
+            return paymentProcessingRespose;
+        }
     }
 }
