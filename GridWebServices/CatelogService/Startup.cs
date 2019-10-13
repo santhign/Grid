@@ -86,6 +86,7 @@ namespace CatelogService
                 app.UseSwaggerUI(c =>
                 {
                     c.SwaggerEndpoint("/swagger/v1/swagger.json", "GRID Catelog API V1");
+                    c.RoutePrefix = string.Empty;
                 });
             }
 

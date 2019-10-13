@@ -8,6 +8,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using InfrastructureService;
+using Serilog;
+using Serilog.Events;
+using Serilog.Exceptions;
 
 namespace CatelogService
 {
@@ -22,14 +25,29 @@ namespace CatelogService
 
         public static void Main(string[] args)
         {
-            LogInfo.Initialize(Configuration);
-            LogInfo.Information("Catelog Service is running");
+            //Log.Logger = new LoggerConfiguration()
+            //        .ReadFrom.Configuration(Configuration)            
+            //        .CreateLogger();
 
-            CreateWebHostBuilder(args).Build().Run();
+            LogInfo.Initialize(Configuration);
+            Log.Information("Catelog Service is running");
+            try
+            {
+                CreateWebHostBuilder(args).Build().Run();
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal(ex, "Host terminated unexpectedly");
+            }
+            finally
+            {
+                Log.CloseAndFlush();
+            }
         }
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
                 .UseUrls(Configuration["hostUrl"])
-                .UseStartup<Startup>();
+                .UseStartup<Startup>()
+                .UseSerilog();
     }
 }
