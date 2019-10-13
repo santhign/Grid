@@ -8,5 +8,6 @@ namespace Core.Models
     public class RequestStatus
     {
         public static string Default = "200";
+        public int _loginUserId { get; set; } = -1;
     }
 }
