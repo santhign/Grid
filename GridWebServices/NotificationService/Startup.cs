@@ -79,6 +79,7 @@ namespace NotificationService
                 app.UseSwaggerUI(c =>
                 {
                     c.SwaggerEndpoint("/swagger/v1/swagger.json", "GRID Notification API V1");
+                    c.RoutePrefix = string.Empty;
                 });
             }
 
