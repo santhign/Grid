@@ -2,6 +2,7 @@
 using Core.Helpers;
 using InfrastructureService;
 using Microsoft.Extensions.Configuration;
+using Serilog;
 using System;
 using System.IO;
 using System.Threading;
@@ -95,7 +96,8 @@ namespace UnblockNumberServiceApp
                         }
                         catch (Exception ex)
                         {
-                            LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                            //LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                            Log.Error("Exception while processing unblocking", ex);
                             await unblockNumberDataAccess.UpdateUnBlockNumberDetails(result.CustomerID, result.MobileNumber, null, 0, result.ID);
                         }
                     }
@@ -104,7 +106,8 @@ namespace UnblockNumberServiceApp
             }
             catch (Exception ex)
             {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                //LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                Log.Error("Exception Application error", ex);
             }
         }        
     }
