@@ -85,6 +85,7 @@ namespace CustomerService
                 app.UseSwaggerUI(c =>
                 {
                     c.SwaggerEndpoint("/swagger/v1/swagger.json", "GRID Customer API V1");
+                    c.RoutePrefix = string.Empty;
                 });
             //}
             if (env.IsDevelopment())
