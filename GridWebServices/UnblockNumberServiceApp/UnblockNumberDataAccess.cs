@@ -4,6 +4,7 @@ using Core.Helpers;
 using Core.Models;
 using InfrastructureService;
 using Microsoft.Extensions.Configuration;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -63,7 +64,8 @@ namespace UnblockNumberServiceApp
             }
             catch (Exception ex)
             {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+                //LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical) + EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
+                Log.Error(ex,"Exception {message}", EnumExtensions.GetDescription(CommonErrors.BSSConnectionFailed));
                 return false;
             }
         }
@@ -101,7 +103,8 @@ namespace UnblockNumberServiceApp
 
             catch (Exception ex)
             {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                //LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                Log.Error(ex, "Exception in GetCustomerNumber");
 
                 throw (ex);
             }
@@ -162,7 +165,8 @@ namespace UnblockNumberServiceApp
 
             catch (Exception ex)
             {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                //LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                Log.Error(ex, "Exception in GetConfiguration");
 
                 throw (ex);
             }
@@ -231,8 +235,8 @@ namespace UnblockNumberServiceApp
 
             catch (Exception ex)
             {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-
+                //LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                Log.Error(ex, "Exception in GetBssApiRequestId");
                 throw (ex);
             }
             finally
@@ -280,8 +284,8 @@ namespace UnblockNumberServiceApp
 
             catch (Exception ex)
             {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-
+                //LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                Log.Error(ex, "Exception in UpdateUnBlockNumberDetails");
                 throw (ex);
             }
             finally
