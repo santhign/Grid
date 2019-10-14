@@ -4,87 +4,719 @@
         <name>AdminService</name>
     </assembly>
     <members>
-        <member name="T:CatelogService.Controllers.BannersController">
+        <member name="F:AdminService.Controllers.AdminOrderController._iconfiguration">
             <summary>
-            This Banner API Process Banner CRUID operations as well as banner conditional/unconditional queries/searches.
+            The iconfiguration
             </summary>
         </member>
-        <member name="M:CatelogService.Controllers.BannersController.#ctor(AdminService.DataAccess.AdminContext,Microsoft.Extensions.Configuration.IConfiguration)">
+        <member name="F:AdminService.Controllers.AdminOrderController._adminOrderDataAccess">
             <summary>
-            Setting context for EF and Configuration for ADO.Net 
-            </summary>
-            <param name="context"></param>
-            <param name="configuration"></param>
-        </member>
-        <member name="T:AdminService.DataAccess.SPHelper">
-            <summary>
-            Helper class to execute stored procedures
+            The admin order data access
             </summary>
         </member>
-        <member name="M:AdminService.DataAccess.SPHelper.GetConnection(Microsoft.Extensions.Configuration.IConfiguration)">
+        <member name="M:AdminService.Controllers.AdminOrderController.#ctor(Microsoft.Extensions.Configuration.IConfiguration,AdminService.DataAccess.Interfaces.IAdminOrderDataAccess)">
             <summary>
-            Returns connneciton string form configuration 
+            Initializes a new instance of the <see cref="T:AdminService.Controllers.AdminOrderController"/> class.
             </summary>
-            <param name="configuration"></param>
+            <param name="configuration">The configuration.</param>
+            <param name="adminOrderDataAccess">The admin order data access.</param>
+        </member>
+        <member name="M:AdminService.Controllers.AdminOrderController.GetOrdersList(System.String,System.String,System.Nullable{System.DateTime},System.Nullable{System.DateTime})">
+            <summary>
+            Gets the orders list.
+            </summary>
+            <param name="token">The token.</param>
+            <param name="deliveryStatus">The delivery status.</param>
+            <param name="fromDate">From date.</param>
+            <param name="toDate">To date.</param>
             <returns></returns>
         </member>
-        <member name="M:AdminService.DataAccess.SPHelper.#ctor(System.String,Microsoft.Extensions.Configuration.IConfiguration)">
+        <member name="M:AdminService.Controllers.AdminOrderController.GetOrderDetails(System.String,System.Int32)">
             <summary>
-            Run SP without parameters
+            Gets the order details.
             </summary>
-            <param name="sprocName"></param>
-            <param name="configuration"></param>
+            <param name="token">The token.</param>
+            <param name="orderID">The order identifier.</param>
+            <returns></returns>
         </member>
-        <member name="M:AdminService.DataAccess.SPHelper.#ctor(System.String,System.Data.SqlClient.SqlParameter[],Microsoft.Extensions.Configuration.IConfiguration)">
+        <member name="M:AdminService.Controllers.AdminOrderController.UpdateNRICDetails(System.String,Core.Models.NRICDetails)">
             <summary>
+            Updates the nric details.
+            </summary>
+            <param name="token">The token.</param>
+            <param name="request">The request.</param>
+            <returns></returns>
+        </member>
+        <member name="M:AdminService.Controllers.AdminOrderController.GetOrderDetailsHistory(System.String,System.Int32)">
+            <summary>
+            Gets the order details history.
+            </summary>
+            <param name="token">The token.</param>
+            <param name="orderID">The order identifier.</param>
+            <returns></returns>
+        </member>
+        <member name="M:AdminService.Controllers.AdminUsersController.GetAdminLoginAuthentication(System.String,AdminService.Models.AdminUserLoginRequest)">
+             <summary>
+             This will check user authentication against email and password
+             </summary>
+             <param name="Token"></param>
+             <param name="userdetails"></param>
+             <returns>LoggedInPrinciple</returns>
+             POST: api/GetAdminLoginAuthentication
+            Body: 
+            {
+            	"Email" : "abcd@gmail.com",
+            	"Password" : "xyz" 
+            }
+        </member>
+        <member name="M:AdminService.Controllers.AdminUsersController.Create(System.String,AdminService.Models.RegisterAdminUser)">
+             <summary>
+             This will create new admin user
+             </summary>
+             <param name="token"></param>
+             <param name="adminuser"></param>
+             <returns>created user details</returns>
+             POST: api/Create
+            Body: 
+            {
+            	"Email" : "abcd@gmail.com",
+            	"Password" : "xyz",
+            	"RoleID" : 1
+            }
+        </member>
+        <member name="M:AdminService.Controllers.AdminUsersController.GetAdminUser(System.String,System.Int32)">
+            <summary>
+            This will  get admin user details based on specific id supplied
+            </summary>
+            <param name="token"></param>
+            <param name="UserID"></param>
+            <returns>get user details with specific id</returns>  
             
-            </summary>
-            <param name="sprocName"></param>
-            <param name="parameters"></param>
-            <param name="configuration"></param>
         </member>
-        <member name="M:AdminService.DataAccess.SPHelper.Run">
+        <member name="M:AdminService.Controllers.AdminUsersController.GetAdminusers(System.String)">
             <summary>
-            Run command with executeNonQuery
+            This will get all admin users
             </summary>
+            <param name="token"></param>
+            <returns>get all user details</returns> 
+            
+        </member>
+        <member name="M:AdminService.Controllers.AdminUsersController.GetAdminRoles(System.String)">
+            <summary>
+            This will get all admin roles
+            </summary>
+            <param name="token"></param>
+            <returns>get all role details</returns> 
+            
+        </member>
+        <member name="M:AdminService.Controllers.AdminUsersController.UpdateAdminUser(System.String,AdminService.Models.AdminUserProfile)">
+            <summary>
+            This will update admin user profile
+            </summary>
+            <param name="token"></param>
+            <param name="adminuser"></param>
+            <returns>get all role details</returns> 
+            
+        </member>
+        <member name="M:AdminService.Controllers.AdminUsersController.UpdateAdminUserPassword(System.String,AdminService.Models.AdminUserPassword)">
+            <summary>
+            This will update admin user profile
+            </summary>
+            <param name="token"></param>
+            <param name="adminuser"></param>
+            <returns>get all role details</returns> 
+            
+        </member>
+        <member name="M:AdminService.Controllers.AdminUsersController.UpdateAdminProfile(System.String,AdminService.Models.AdminProfile)">
+            <summary>
+            This will update admin user profile
+            </summary>
+            <param name="token"></param>
+            <param name="adminuser"></param>
+            <returns>get all role details</returns> 
+            
+        </member>
+        <member name="M:AdminService.Controllers.AdminUsersController.ValidatePassword(System.String,AdminService.Models.AdminPassword)">
+            <summary>
+            Validate passwor.
+            </summary>
+            <param name="token" in="Header"></param>
+            <param name="Password">The Password.</param>
             <returns></returns>
         </member>
-        <member name="M:AdminService.DataAccess.SPHelper.Run(System.Data.DataTable)">
+        <!-- Badly formed XML comment ignored for member "M:AdminService.Controllers.AdminUsersController.ValidateAdminUserPassword(System.String,AdminService.Models.AdminUserPassword)" -->
+        <member name="M:AdminService.Controllers.AdminUsersController.UpdateAdminAccountAccessibility(System.String,System.Int32,System.Int32)">
             <summary>
-            Run command  with data adapter: fill datatable 
+            Update AdminUser Account Accessibility - toggle for activating /deactivating
             </summary>
-            <param name="dataTable"></param>
+            <param name="token">token of the logged in adminUser</param>
+            <param name="AdminUserID">AdminUserID of the account to be activated/deactivated</param>
+            <param name="Status">1-Activate, 0- Deactivate</param>
             <returns></returns>
         </member>
-        <member name="M:AdminService.DataAccess.SPHelper.Run(System.Data.DataSet)">
+        <member name="M:AdminService.Controllers.ConfigController.GetGenericConfigValue(System.String,System.String)">
             <summary>
-            Run command  with data adapter: fill dataset
+            Gets the generic configuration value.
             </summary>
-            <param name="dataSet"></param>
+            <param name="Token">The token.</param>
+            <param name="ConfigKey">The configuration key.</param>
             <returns></returns>
         </member>
-        <member name="M:AdminService.DataAccess.SPHelper.Dispose">
+        <member name="M:AdminService.Controllers.ConfigController.GetConfigValue(System.String,System.String)">
             <summary>
-            Dispose connection and command objects
+            Get config validation details
+            </summary>
+            <param name="ConfigKey"></param>
+            <param name="Token"></param>
+            <returns>config value</returns> 
+            
+        </member>
+        <member name="M:AdminService.Controllers.ConfigController.GetConfigByType(System.String,System.String)">
+            <summary>
+            Get config validation details
+            </summary>
+            <param name="Token"></param>
+            <param name="ConfigType"></param>
+            <returns>config value list</returns> 
+        </member>
+        <member name="F:AdminService.Controllers.CustomerController._iconfiguration">
+            <summary>
+            The iconfiguration
             </summary>
         </member>
-        <member name="T:AdminService.Models.Helper.DataHelper">
+        <member name="M:AdminService.Controllers.CustomerController.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
             <summary>
-            Helper class to pass SAP helper to call
+            Initializes a new instance of the <see cref="T:AdminService.Controllers.CustomerController"/> class.
+            </summary>
+            <param name="configuration">The configuration.</param>
+        </member>
+        <member name="M:AdminService.Controllers.CustomerController.GetCustomers(System.String)">
+            <summary>
+            Gets the customers.
+            </summary>
+            <param name="token" in="Header"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AdminService.Controllers.CustomerController.GetCustomer(System.String,System.Int32)">
+            <summary>
+            Gets the customer.
+            </summary>
+            <param name="token" in="Header"></param>
+            <param name="id">The identifier.</param>
+            <returns></returns>
+        </member>
+        <member name="M:AdminService.Controllers.CustomerController.SearchCustomer(System.String,AdminService.Models.CustomerSearchValue)">
+            <summary>
+            Searches the customer.
+            </summary>
+            <param name="token" in="Header"></param>
+            <param name="SearchValue">The search value.</param>
+            <returns></returns>
+        </member>
+        <member name="M:AdminService.Controllers.CustomerController.GetCustomerOrders(System.String,System.Int32)">
+            <summary>
+            Gets the customer.
+            </summary>
+            <param name="token" in="Header"></param>
+            <param name="CustomerID">The identifier.</param>
+            <returns></returns>
+        </member>
+        <member name="M:AdminService.Controllers.CustomerController.GetCustomerAccess(System.String,System.Int32)">
+            <summary>
+            get dashboard token for the customer.
+            </summary>
+            <param name="token" in="Header"></param>
+            <param name="CustomerID">The identifier.</param>
+            <returns></returns>
+        </member>
+        <member name="M:AdminService.Controllers.CustomerController.GetCustomerChangeRequests(System.String,System.Int32)">
+            <summary>
+            Gets the customer change requests.
+            </summary>
+            <param name="token" in="Header"></param>
+            <param name="CustomerID">The identifier.</param>
+            <returns></returns>
+        </member>
+        <member name="M:AdminService.Controllers.CustomerController.OrderOffsetVoucher(System.String,System.Int32)">
+            <summary>
+            Offset delivery fee for selected Order.
+            </summary>
+            <param name="token" in="Header"></param>
+            <param name="OrderID">The identifier.</param>
+            <returns></returns>
+        </member>
+        <member name="M:AdminService.Controllers.CustomerController.CROffsetVoucher(System.String,System.Int32)">
+            <summary>
+            Offset delivery fee for selected CR.
+            </summary>
+            <param name="token" in="Header"></param>
+            <param name="SubscriberID">The identifier.</param>
+            <returns></returns>
+        </member>
+        <member name="M:AdminService.Controllers.CustomerController.Subscribers(System.String,System.Int32)">
+            <summary>
+            Return Subscribers api with MobileNumber, DisplayName, SIMID, PremiumType, ActivatedOn, IsPrimary
+            </summary>
+            <param name="token" in="Header"></param>
+            <param name="CustomerID">The identifier.</param>
+            <returns>
+            OperationResponse
+            </returns>
+        </member>
+        <member name="M:AdminService.Controllers.CustomerController.GetCustomerSharedChangeRequests(System.String,System.Int32)">
+            <summary>
+            Gets the customer shared change requests.
+            </summary>
+            <param name="token" in="Header"></param>
+            <param name="CustomerID">The identifier.</param>
+            <returns></returns>
+        </member>
+        <member name="M:AdminService.Controllers.CustomerController.UpdateCustomerAccountAccessibility(System.String,System.Int32,System.Int32)">
+            <summary>
+            Update Customer Account Accessibility - toggle for activating /deactivating
+            </summary>
+            <param name="token">token of the logged in adminUser</param>
+            <param name="CustomerID">CustomerID of the account to be activated/deactivated</param>
+            <param name="Status">1-Activate, 3- Deactivate</param>
+            <returns></returns>
+            
+        </member>
+        <member name="M:AdminService.Controllers.FaqPageController.GetPageFAQ(System.String,System.String)">
+            <summary>
+            This will get all FAQ based on pagename
+            </summary>
+            <param name="Token"></param>
+            <param name="Pagename">Page1</param>
+            <returns>LoggedInPrinciple</returns>  
+        </member>
+        <member name="M:AdminService.Controllers.LookupController.GetLookup(System.String,System.String)">
+            <summary>
+            Get Lookup details
+            </summary>
+            <param name="Token"></param>
+            <param name="lookupType"></param>
+            <returns>Lookup details</returns> 
+            
+        </member>
+        <member name="M:AdminService.Controllers.LookupController.EmailValidation(System.String,System.String)">
+             <summary>
+             This will validate the email id
+             </summary> 
+             <param name="token"></param>
+            <param name="emailid">abcd@gmail.com</param>
+             <returns>validation result</returns> 
+        </member>
+        <member name="F:AdminService.DataAccess.AdminOrderDataAccess._DataHelper">
+            <summary>
+            The data helper
             </summary>
         </member>
-        <member name="M:AdminService.Models.Helper.DataHelper.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
+        <member name="F:AdminService.DataAccess.AdminOrderDataAccess._configuration">
+            <summary>
+            The configuration
+            </summary>
+        </member>
+        <member name="M:AdminService.DataAccess.AdminOrderDataAccess.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Constructor setting configuration
+            </summary>
+            <param name="configuration">The configuration.</param>
+        </member>
+        <member name="M:AdminService.DataAccess.AdminOrderDataAccess.GetEmailNotificationTemplate(System.String)">
+            <summary>
+            Gets the email notification template.
+            </summary>
+            <param name="templateName">Name of the template.</param>
+            <returns></returns>
+        </member>
+        <member name="M:AdminService.DataAccess.AdminOrderDataAccess.CreateEMailNotificationLog(Core.Models.NotificationLog)">
+            <summary>
+            Creates the e mail notification log.
+            </summary>
+            <param name="log">The log.</param>
+            <returns></returns>
+        </member>
+        <member name="M:AdminService.DataAccess.AdminOrderDataAccess.CreateEMailNotificationLogForDevPurpose(Core.Models.NotificationLogForDevPurpose)">
+            <summary>
+            Creates the e mail notification log for dev purpose.
+            </summary>
+            <param name="log">The log.</param>
+            <returns></returns>
+        </member>
+        <member name="M:AdminService.DataAccess.BannerDataAccess.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
             <summary>
             Constructor setting configuration
             </summary>
             <param name="configuration"></param>
         </member>
-        <member name="M:AdminService.Models.Helper.DataHelper.GetBannerDetails(AdminService.Models.BannerDetailsRequest)">
+        <member name="M:AdminService.DataAccess.BannerDataAccess.GetBannerDetails(AdminService.Models.BannerDetailsRequest)">
             <summary>
             
             </summary>
             <param name="request"></param>       
             <returns></returns>
+        </member>
+        <member name="M:AdminService.DataAccess.ConfigDataAccess.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Constructor setting configuration
+            </summary>
+            <param name="configuration"></param>
+        </member>
+        <member name="M:AdminService.DataAccess.ConfigDataAccess.GetConfigValue(System.String)">
+            <summary>
+            API to get the generic config values.
+            </summary>
+            <param name="ConfigKey"></param>        
+            <returns></returns>
+        </member>
+        <member name="T:AdminService.DataAccess.CustomerDataAccess">
+            <summary>
+            Customer Data Access class
+            </summary>
+        </member>
+        <member name="F:AdminService.DataAccess.CustomerDataAccess._DataHelper">
+            <summary>
+            The data helper
+            </summary>
+        </member>
+        <member name="F:AdminService.DataAccess.CustomerDataAccess._configuration">
+            <summary>
+            The configuration
+            </summary>
+        </member>
+        <member name="M:AdminService.DataAccess.CustomerDataAccess.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Constructor setting configuration
+            </summary>
+            <param name="configuration">The configuration.</param>
+        </member>
+        <member name="M:AdminService.DataAccess.CustomerDataAccess.GetCustomers">
+            <summary>
+            Gets the customers.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AdminService.DataAccess.CustomerDataAccess.GetCustomer(System.Int32)">
+            <summary>
+            Gets the customer.
+            </summary>
+            <param name="customerId">The customer identifier.</param>
+            <returns></returns>
+        </member>
+        <member name="M:AdminService.DataAccess.CustomerDataAccess.GetSearchCustomers(System.String)">
+            <summary>
+            Gets the search customers.
+            </summary>
+            <param name="SearchValue">The search value.</param>
+            <returns></returns>
+        </member>
+        <member name="M:AdminService.DataAccess.CustomerDataAccess.GetCustomerOrders(System.Int32)">
+            <summary>
+            Gets the customer orders.
+            </summary>
+            <param name="CustomerID">The customer identifier.</param>
+            <returns></returns>
+        </member>
+        <member name="M:AdminService.DataAccess.CustomerDataAccess.GetCustomerAccessToken(System.Int32,System.Int32)">
+            <summary>
+            Gets the customer access token.
+            </summary>
+            <param name="AdminUserID">The admin user identifier.</param>
+            <param name="CustomerID">The customer identifier.</param>
+            <returns></returns>
+        </member>
+        <member name="M:AdminService.DataAccess.CustomerDataAccess.GetCustomerChangeRequests(System.Int32)">
+            <summary>
+            Gets the customer change requests.
+            </summary>
+            <param name="CustomerID">The customer identifier.</param>
+            <returns></returns>
+        </member>
+        <member name="M:AdminService.DataAccess.CustomerDataAccess.OrderOffsetVoucher(System.Int32,System.Int32)">
+            <summary>
+            Orders the offset voucher.
+            </summary>
+            <param name="OrderID">The order identifier.</param>
+            <param name="AdminUserID">The admin user identifier.</param>
+            <returns></returns>
+        </member>
+        <member name="M:AdminService.DataAccess.CustomerDataAccess.ChangeRequestOffsetVoucher(System.Int32,System.Int32)">
+            <summary>
+            Changes the request offset voucher.
+            </summary>
+            <param name="SubscriberID">The subscriber identifier.</param>
+            <param name="AdminUserID">The admin user identifier.</param>
+            <returns></returns>
+        </member>
+        <member name="M:AdminService.DataAccess.CustomerDataAccess.GetSubscribers(System.Int32)">
+            <summary>
+            Gets the subscribers.
+            </summary>
+            <param name="customerId">The customer identifier.</param>
+            <returns></returns>
+        </member>
+        <member name="M:AdminService.DataAccess.CustomerDataAccess.GetCustomerSharedChangeRequests(System.Int32)">
+            <summary>
+            Gets the customer shared change requests.
+            </summary>
+            <param name="CustomerID">The customer identifier.</param>
+            <returns></returns>
+        </member>
+        <member name="M:AdminService.DataAccess.CustomerDataAccess.UpdateCustomerAccountAccessibility(System.String,System.Int32,System.Int32)">
+            <summary>
+            Updates the customer account accessibility.
+            </summary>
+            <param name="Token">The token.</param>
+            <param name="CustomerID">The customer identifier.</param>
+            <param name="Status">The status.</param>
+            <returns></returns>
+        </member>
+        <member name="M:AdminService.DataAccess.LookupDataAccess.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Constructor setting configuration
+            </summary>
+            <param name="configuration"></param>
+        </member>
+        <member name="M:AdminService.DataAccess.LookupDataAccess.GetLookupList(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="LookupType"></param>       
+            <returns></returns>
+        </member>
+        <member name="P:AdminService.Models.LoggedInPrinciple.AdminUser">
+            <summary>
+            Gets or sets the customer.
+            </summary>
+            <value>
+            The customer.
+            </value>
+        </member>
+        <member name="P:AdminService.Models.LoggedInPrinciple.IsAuthenticated">
+            <summary>
+            Gets or sets a value indicating whether this instance is authenticated.
+            </summary>
+            <value>
+              <c>true</c> if this instance is authenticated; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:AdminService.Models.LoggedInPrinciple.Token">
+            <summary>
+            Gets or sets the token.
+            </summary>
+            <value>
+            The token.
+            </value>
+        </member>
+        <member name="T:AdminService.Models.Customer">
+            <summary>
+            Customer class
+            </summary>
+        </member>
+        <member name="P:AdminService.Models.Customer.CustomerID">
+            <summary>
+            Gets or sets the customer identifier.
+            </summary>
+            <value>
+            The customer identifier.
+            </value>
+        </member>
+        <member name="P:AdminService.Models.Customer.Email">
+            <summary>
+            Gets or sets the email.
+            </summary>
+            <value>
+            The email.
+            </value>
+        </member>
+        <member name="P:AdminService.Models.Customer.Password">
+            <summary>
+            Gets or sets the password.
+            </summary>
+            <value>
+            The password.
+            </value>
+        </member>
+        <member name="P:AdminService.Models.Customer.MobileNumber">
+            <summary>
+            Gets or sets the mobile number.
+            </summary>
+            <value>
+            The mobile number.
+            </value>
+        </member>
+        <member name="P:AdminService.Models.Customer.ReferralCode">
+            <summary>
+            Gets or sets the referral code.
+            </summary>
+            <value>
+            The referral code.
+            </value>
+        </member>
+        <member name="P:AdminService.Models.Customer.Nationality">
+            <summary>
+            Gets or sets the nationality.
+            </summary>
+            <value>
+            The nationality.
+            </value>
+        </member>
+        <member name="P:AdminService.Models.Customer.Gender">
+            <summary>
+            Gets or sets the gender.
+            </summary>
+            <value>
+            The gender.
+            </value>
+        </member>
+        <member name="P:AdminService.Models.Customer.DOB">
+            <summary>
+            Gets or sets the DOB.
+            </summary>
+            <value>
+            The DOB.
+            </value>
+        </member>
+        <member name="P:AdminService.Models.Customer.SMSSubscription">
+            <summary>
+            Gets or sets the SMS subscription.
+            </summary>
+            <value>
+            The SMS subscription.
+            </value>
+        </member>
+        <member name="P:AdminService.Models.Customer.EmailSubscription">
+            <summary>
+            Gets or sets the email subscription.
+            </summary>
+            <value>
+            The email subscription.
+            </value>
+        </member>
+        <member name="P:AdminService.Models.Customer.Status">
+            <summary>
+            Gets or sets the status.
+            </summary>
+            <value>
+            The status.
+            </value>
+        </member>
+        <member name="P:AdminService.Models.Customer.JoinedOn">
+            <summary>
+            Gets or sets the joined on.
+            </summary>
+            <value>
+            The joined on.
+            </value>
+        </member>
+        <member name="T:AdminService.Models.CustomerSearch">
+            <summary>
+            CustomerSearch class
+            </summary>
+        </member>
+        <member name="P:AdminService.Models.CustomerSearch.CustomerId">
+            <summary>
+            Gets or sets the customer identifier.
+            </summary>
+            <value>
+            The customer identifier.
+            </value>
+        </member>
+        <member name="P:AdminService.Models.CustomerSearch.CustomerName">
+            <summary>
+            Gets or sets the name of the customer.
+            </summary>
+            <value>
+            The name of the customer.
+            </value>
+        </member>
+        <member name="P:AdminService.Models.CustomerSearch.Email">
+            <summary>
+            Gets or sets the email of the customer.
+            </summary>
+            <value>
+            The email of the customer.
+            </value>
+        </member>
+        <member name="P:AdminService.Models.CustomerSearch.PhoneNumber">
+            <summary>
+            Gets or sets the phone number.
+            </summary>
+            <value>
+            The phone number.
+            </value>
+        </member>
+        <member name="P:AdminService.Models.CustomerSearch.Plan">
+            <summary>
+            Gets or sets the plan.
+            </summary>
+            <value>
+            The plan.
+            </value>
+        </member>
+        <member name="P:AdminService.Models.CustomerSearch.AdditionalLines">
+            <summary>
+            Gets or sets the additional lines.
+            </summary>
+            <value>
+            The additional lines.
+            </value>
+        </member>
+        <member name="P:AdminService.Models.CustomerSearch.JoinedOn">
+            <summary>
+            Gets or sets the joined on.
+            </summary>
+            <value>
+            The joined on.
+            </value>
+        </member>
+        <member name="P:AdminService.Models.CustomerSearch.Status">
+            <summary>
+            Gets or sets the status.
+            </summary>
+            <value>
+            The status.
+            </value>
+        </member>
+        <member name="P:AdminService.Models.CustomerSearch.EmailSubscription">
+            <summary>
+            Gets or sets the email subscription.
+            </summary>
+            <value>
+            The email subscription.
+            </value>
+        </member>
+        <member name="P:AdminService.Models.CustomerSearch.ReferralCode">
+            <summary>
+            Gets or sets the referral code.
+            </summary>
+            <value>
+            The referral code.
+            </value>
+        </member>
+        <member name="P:AdminService.Models.CustomerSearch.Nationality">
+            <summary>
+            Gets or sets the nationality.
+            </summary>
+            <value>
+            The nationality.
+            </value>
+        </member>
+        <member name="P:AdminService.Models.CustomerSearch.Gender">
+            <summary>
+            Gets or sets the gender.
+            </summary>
+            <value>
+            The gender.
+            </value>
+        </member>
+        <member name="P:AdminService.Models.CustomerSearch.DOB">
+            <summary>
+            Gets or sets the DOB.
+            </summary>
+            <value>
+            The DOB.
+            </value>
         </member>
         <member name="T:AdminService.Startup">
             <summary>
@@ -116,6 +748,15 @@
             </summary>
             <param name="app"></param>
             <param name="env"></param>
+        </member>
+        <member name="M:CatelogService.Controllers.BannersController.BannerDetails(System.String,AdminService.Models.BannerDetailsRequest)">
+            <summary>
+            Get banner details
+            </summary>
+            <param name="Token"></param>
+            <param name="request"></param>
+            <returns>banner details</returns> 
+            
         </member>
     </members>
 </doc>

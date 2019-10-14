@@ -4,11 +4,12 @@
         <name>CustomerService</name>
     </assembly>
     <members>
-        <member name="M:CustomerService.Controllers.AccountController.Authenticate(CustomerService.Models.LoginDto)">
+        <member name="M:CustomerService.Controllers.AccountController.Authenticate(System.String,CustomerService.Models.LoginDto)">
             <summary>
             Authenticate customer against Email and Password given.
             Returns logged in Principle with success status, auth token and logged customer details
             </summary>
+            <param name="Token"></param>
             <param name="loginRequest"></param>
             <returns>LoggedInPrinciple</returns>
         </member>
@@ -29,10 +30,11 @@
             OperationsResponse
             </returns>
         </member>
-        <member name="M:CustomerService.Controllers.AccountController.ResetPassword(CustomerService.Models.ResetPassword)">
+        <member name="M:CustomerService.Controllers.AccountController.ResetPassword(System.String,CustomerService.Models.ResetPassword)">
             <summary>
             Reset customer password
             </summary>
+            <param name="Token"></param>
             <param name="passwordResetRequest">
             body{
             "NewPassword" :"",
@@ -91,10 +93,11 @@
             <returns></returns>
             <exception cref="T:System.Exception">Customer record not found for " + token + " token</exception>
         </member>
-        <member name="M:CustomerService.Controllers.CustomersController.Create(CustomerService.Models.RegisterCustomer)">
+        <member name="M:CustomerService.Controllers.CustomersController.Create(System.String,CustomerService.Models.RegisterCustomer)">
             <summary>
-            Creates the specified customer.
-            </summary>     
+            Creates the specified token.
+            </summary>
+            <param name="Token">The token.</param>
             <param name="customer">The customer.</param>
             <returns></returns>
         </member>
@@ -126,16 +129,17 @@
             <param name="SearchValue">The search value.</param>
             <returns></returns>
         </member>
-        <member name="M:CustomerService.Controllers.CustomersController.ForgetPassword(System.String)">
+        <member name="M:CustomerService.Controllers.CustomersController.ForgetPassword(System.String,System.String)">
             <summary>
             This will send forget password mail
             </summary>      
+            <param name="Token"></param>
             <param name="email">abcd@gmail.com</param>
             <returns>
             Customer Id and Token key
             </returns>
         </member>
-        <member name="M:CustomerService.Controllers.CustomersController.UpdateReferralCode(System.String,CustomerService.Models.CustomerNewReferralCode)">
+        <member name="M:CustomerService.Controllers.CustomersController.ValidateUpdateSelfReferralCode(System.String,CustomerService.Models.CustomerNewReferralCode)">
             <summary>
             Updates the referral code.
             </summary>
@@ -188,7 +192,7 @@
             <param name="ToDate"></param>
             <returns></returns>
         </member>
-        <member name="M:CustomerService.Controllers.CustomersController.UpdateBillingDetails(System.String,CustomerService.Models.customerBilling)">
+        <member name="M:CustomerService.Controllers.CustomersController.UpdateBillingDetails(System.String,Core.Models.customerBilling)">
             <summary>
             
             </summary>
@@ -241,7 +245,7 @@
              <summary>
              This will validate the email id
              </summary> 
-             <param name="token"></param>
+             <param name="Token"></param>
             <param name="emailid">abcd@gmail.com</param>
              <returns>validation result</returns> 
         </member>
@@ -258,22 +262,49 @@
               "APIKey":"xyz","APISecret":"abc","PostcodeNumber":"408600"
              }
         </member>
-        <member name="M:CustomerService.Controllers.ValidationController.NRICValidation(System.String)">
+        <member name="M:CustomerService.Controllers.ValidationController.NRICValidation(System.String,System.String)">
             <summary>
             This will check NRIC Validation.
             </summary>
-            <param name="NRIC"></param>
+            <param name="Token"></param>
+            <param name="NRIC">NRIC</param>
             <returns>validtion result</returns>
             POST: api/NRICValidation/S1234567D 
         </member>
-        <member name="M:CustomerService.Controllers.ValidationController.NRICTypeValidation(System.String,System.String)">
+        <member name="M:CustomerService.Controllers.ValidationController.NRICTypeValidation(System.String,CustomerService.Models.NRIC)">
             <summary>
             This will check NRIC Validation: IDType - S=Singaporean;F=Forigner
             </summary>
-            <param name="IDType"></param>
-            <param name="NRIC"></param>
+            <param name="Token"></param>
+            <param name="IDDetails"></param>
             <returns>validtion result</returns>
             POST: api/NRICValidation/S1234567D 
+        </member>
+        <member name="M:CustomerService.Controllers.ValidationController.ValidateRoadShowCode(System.String,System.String)">
+             <summary>
+             This will validate roadshow user code
+             </summary>
+             <param name="Token"></param>
+             <param name="rscode"></param>
+             <returns>validation status</returns>
+             POST: api/ValidateAuthenticatedPostcode
+            Body: 
+            {
+              "APIKey":"xyz","APISecret":"abc","PostcodeNumber":"408600"
+             }
+        </member>
+        <member name="M:CustomerService.Controllers.ValidationController.ValidateSchemeCode(System.String,System.String)">
+             <summary>
+             This will validate scheme code
+             </summary>
+             <param name="Token"></param>
+             <param name="schemecode"></param>
+             <returns>validation status</returns>
+             POST: api/ValidateAuthenticatedPostcode
+            Body: 
+            {
+              "APIKey":"xyz","APISecret":"abc","PostcodeNumber":"408600"
+             }
         </member>
         <member name="M:CustomerService.DataAccess.AccountDataAccess.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
             <summary>
@@ -320,7 +351,7 @@
             <summary>
             Updates the customer profile.
             </summary>
-            <param name="CustomerID"></param>
+            <param name="CustomerID">The customer identifier.</param>
             <param name="customer">The customer.</param>
             <returns></returns>
         </member>
@@ -381,6 +412,107 @@
             <param name="ReferralCode">The referral code.</param>
             <returns></returns>
         </member>
+        <member name="M:CustomerService.DataAccess.CustomerDataAccess.GetPaymentMethod(System.Int32)">
+            <summary>
+            Gets the payment method.
+            </summary>
+            <param name="CustomerID">The customer identifier.</param>
+            <returns></returns>
+        </member>
+        <member name="M:CustomerService.DataAccess.CustomerDataAccess.UpdateEmailSubscriptionDetails(System.Int32,System.Int32)">
+            <summary>
+            Updates the email subscription details.
+            </summary>
+            <param name="CustomerID">The customer identifier.</param>
+            <param name="EmailSubscription">The email subscription.</param>
+            <returns></returns>
+        </member>
+        <member name="M:CustomerService.DataAccess.CustomerDataAccess.GetCustomerOrders(System.Int32)">
+            <summary>
+            Gets the customer orders.
+            </summary>
+            <param name="CustomerID">The customer identifier.</param>
+            <returns></returns>
+        </member>
+        <member name="M:CustomerService.DataAccess.CustomerDataAccess.GetRewardSummary(System.Int32)">
+            <summary>
+            Gets the reward summary.
+            </summary>
+            <param name="CustomerID">The customer identifier.</param>
+            <returns></returns>
+        </member>
+        <member name="M:CustomerService.DataAccess.CustomerDataAccess.GetRewardDetails(System.Int32,System.DateTime,System.DateTime)">
+            <summary>
+            Gets the reward details.
+            </summary>
+            <param name="CustomerID">The customer identifier.</param>
+            <param name="FromDate">From date.</param>
+            <param name="ToDate">To date.</param>
+            <returns></returns>
+        </member>
+        <member name="M:CustomerService.DataAccess.CustomerDataAccess.UpdateBillingDetails(System.Int32,Core.Models.customerBilling)">
+            <summary>
+            Updates the billing details.
+            </summary>
+            <param name="CustomerID">The customer identifier.</param>
+            <param name="_billing">The billing.</param>
+            <returns></returns>
+        </member>
+        <member name="M:CustomerService.DataAccess.CustomerDataAccess.GetBasePlan(System.Int32,System.String)">
+            <summary>
+            Gets the base plan.
+            </summary>
+            <param name="CustomerID">The customer identifier.</param>
+            <param name="MobileNumber">The mobile number.</param>
+            <returns></returns>
+        </member>
+        <member name="M:CustomerService.DataAccess.CustomerDataAccess.UpdateDisplayName(System.Int32,CustomerService.Models.DisplayDetails)">
+            <summary>
+            Updates the display name.
+            </summary>
+            <param name="CustomerID">The customer identifier.</param>
+            <param name="details">The details.</param>
+            <returns></returns>
+        </member>
+        <member name="M:CustomerService.DataAccess.CustomerDataAccess.UpdateSMSSubscriptionDetails(System.Int32,System.String,System.Int32)">
+            <summary>
+            Updates the SMS subscription details.
+            </summary>
+            <param name="CustomerID">The customer identifier.</param>
+            <param name="MobileNumber">The mobile number.</param>
+            <param name="SMSSubscription">The SMS subscription.</param>
+            <returns></returns>
+        </member>
+        <member name="M:CustomerService.DataAccess.CustomerDataAccess.UpdateVoiceSubscriptionDetails(System.Int32,System.String,System.Int32)">
+            <summary>
+            Updates the voice subscription details.
+            </summary>
+            <param name="CustomerID">The customer identifier.</param>
+            <param name="MobileNumber">The mobile number.</param>
+            <param name="VoiceSubscription">The voice subscription.</param>
+            <returns></returns>
+        </member>
+        <member name="M:CustomerService.DataAccess.CustomerDataAccess.GetCustomerShippingDetails(System.Int32)">
+            <summary>
+            Gets the customer shipping details.
+            </summary>
+            <param name="CustomerID">The customer identifier.</param>
+            <returns></returns>
+        </member>
+        <member name="M:CustomerService.DataAccess.CustomerDataAccess.ValidatePassword(CustomerService.Models.LoginDto)">
+            <summary>
+            Validates the password.
+            </summary>
+            <param name="request">The request.</param>
+            <returns></returns>
+        </member>
+        <member name="M:CustomerService.DataAccess.CustomerDataAccess.GetCustomerChangeRequests(System.Int32)">
+            <summary>
+            Gets the customer change requests.
+            </summary>
+            <param name="customerID">The customer identifier.</param>
+            <returns></returns>
+        </member>
         <member name="M:CustomerService.DataAccess.EmailDataAccess.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
             <summary>
             Constructor setting configuration
@@ -399,6 +531,11 @@
             </summary>
             <param name="CustomerID">The change request identifier.</param>
             <returns></returns>
+        </member>
+        <member name="F:CustomerService.DataAccess.ValidationDataAccess._DataHelper">
+            <summary>
+            The data helper
+            </summary>
         </member>
         <member name="M:CustomerService.DataAccess.ValidationDataAccess.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
             <summary>
@@ -459,6 +596,22 @@
             The referral code.
             </value>
         </member>
+        <member name="P:CustomerService.Models.Customer.IdentityCardNumber">
+            <summary>
+            Gets or sets the identity card number.
+            </summary>
+            <value>
+            The identity card number.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.Customer.ReferralCode">
+            <summary>
+            Gets or sets the referral code.
+            </summary>
+            <value>
+            The referral code.
+            </value>
+        </member>
         <member name="P:CustomerService.Models.Customer.Nationality">
             <summary>
             Gets or sets the nationality.
@@ -473,6 +626,14 @@
             </summary>
             <value>
             The gender.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.Customer.DOB">
+            <summary>
+            Gets or sets the dob.
+            </summary>
+            <value>
+            The dob.
             </value>
         </member>
         <member name="P:CustomerService.Models.Customer.SMSSubscription">
@@ -515,41 +676,113 @@
             The number of paid orders if greater then 0 then redirect to dashboard.
             </value>
         </member>
+        <member name="P:CustomerService.Models.Customer.PendingAllowedSubscribers">
+            <summary>
+            Gets or sets the pending allowed subscribers.
+            </summary>
+            <value>
+            The pending allowed subscribers.
+            </value>
+        </member>
         <member name="T:CustomerService.Models.CustomerProfile">
             <summary>
             Customer Profile class
             </summary>
         </member>
+        <member name="P:CustomerService.Models.CustomerProfile.OldPassword">
+            <summary>
+            Gets or sets the old password.
+            </summary>
+            <value>
+            The password.
+            </value>
+            
+        </member>
+        <member name="P:CustomerService.Models.CustomerProfile.NewPassword">
+            <summary>
+            Gets or sets the new password.
+            </summary>
+            <value>
+            The password.
+            </value>
+            
+        </member>
+        <member name="P:CustomerService.Models.CustomerProfile.MobileNumber">
+            <summary>
+            Gets or sets the mobile number.
+            </summary>
+            <value>
+            The mobile number.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.CustomerProfile.Email">
+            <summary>
+            Gets or sets the email.
+            </summary>
+            <value>
+            The email.
+            </value>
+        </member>
         <member name="T:CustomerService.Models.ChangePhoneRequest">
-            <summary>Change Phone Request</summary>
+            <summary>
+            Change Phone Request
+            </summary>
         </member>
         <member name="P:CustomerService.Models.ChangePhoneRequest.CustomerId">
-            <summary>Gets or sets the customer identifier.</summary>
-            <value>The customer identifier.</value>
+            <summary>
+            Gets or sets the customer identifier.
+            </summary>
+            <value>
+            The customer identifier.
+            </value>
         </member>
         <member name="P:CustomerService.Models.ChangePhoneRequest.MobileNumber">
-            <summary>Gets or sets the mobile number.</summary>
-            <value>The mobile number.</value>
+            <summary>
+            Gets or sets the mobile number.
+            </summary>
+            <value>
+            The mobile number.
+            </value>
         </member>
         <member name="P:CustomerService.Models.ChangePhoneRequest.NewMobileNumber">
-            <summary>Creates new mobile number.</summary>
-            <value>The new mobile number.</value>
+            <summary>
+            Creates new mobile number.
+            </summary>
+            <value>
+            The new mobile number.
+            </value>
         </member>
         <member name="P:CustomerService.Models.ChangePhoneRequest.PremiumType">
-            <summary>Gets or sets the type of the premium.</summary>
-            <value>The type of the premium.</value>
+            <summary>
+            Gets or sets the type of the premium.
+            </summary>
+            <value>
+            The type of the premium.
+            </value>
         </member>
         <member name="P:CustomerService.Models.ChangePhoneRequest.PortedNumberTransferForm">
-            <summary>Gets or sets the ported number transfer form.</summary>
-            <value>The ported number transfer form.</value>
+            <summary>
+            Gets or sets the ported number transfer form.
+            </summary>
+            <value>
+            The ported number transfer form.
+            </value>
         </member>
         <member name="P:CustomerService.Models.ChangePhoneRequest.PortedNumberOwnedBy">
-            <summary>Gets or sets the ported number owned by.</summary>
-            <value>The ported number owned by.</value>
+            <summary>
+            Gets or sets the ported number owned by.
+            </summary>
+            <value>
+            The ported number owned by.
+            </value>
         </member>
         <member name="P:CustomerService.Models.ChangePhoneRequest.PortedNumberOwnerRegistrationId">
-            <summary>Gets or sets the ported number owner registration identifier.</summary>
-            <value>The ported number owner registration identifier.</value>
+            <summary>
+            Gets or sets the ported number owner registration identifier.
+            </summary>
+            <value>
+            The ported number owner registration identifier.
+            </value>
         </member>
         <member name="T:CustomerService.Models.RegisterCustomer">
             <summary>
@@ -571,6 +804,11 @@
             <value>
             The password.
             </value>
+        </member>
+        <member name="T:CustomerService.Models.ResetPassword">
+            <summary>
+            
+            </summary>
         </member>
         <member name="P:CustomerService.Models.ResetPassword.NewPassword">
             <summary>
@@ -757,6 +995,78 @@
             The state.
             </value>
         </member>
+        <member name="P:CustomerService.Models.Subscriber.SuspensionRaised">
+            <summary>
+            Gets or sets the suspension raised.
+            </summary>
+            <value>
+            The suspension raised.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.Subscriber.UnsuspensionRaised">
+            <summary>
+            Gets or sets the unsuspension raised.
+            </summary>
+            <value>
+            The unsuspension raised.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.Subscriber.TerminationRaised">
+            <summary>
+            Gets or sets the termination raised.
+            </summary>
+            <value>
+            The termination raised.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.Subscriber.PlanChangeRaised">
+            <summary>
+            Gets or sets the plan change raised.
+            </summary>
+            <value>
+            The plan change raised.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.Subscriber.PlanChangeAllowed">
+            <summary>
+            Gets or sets the plan change allowed.
+            </summary>
+            <value>
+            The plan change allowed.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.Subscriber.PlanChangeMessage">
+            <summary>
+            Gets or sets the plan change message.
+            </summary>
+            <value>
+            The plan change message.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.Subscriber.SIMReplacementRaised">
+            <summary>
+            Gets or sets the sim replacement raised.
+            </summary>
+            <value>
+            The sim replacement raised.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.Subscriber.SMSSubscription">
+            <summary>
+            Gets or sets the SMS subscription.
+            </summary>
+            <value>
+            The SMS subscription.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.Subscriber.VoiceSubscription">
+            <summary>
+            Gets or sets the voice subscription.
+            </summary>
+            <value>
+            The voice subscription.
+            </value>
+        </member>
         <member name="T:CustomerService.Models.CustomerSearch">
             <summary>
             CustomerSearch class
@@ -829,6 +1139,14 @@
             </summary>
             <value>
             The customer identifier.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.CustomerPlans.SubscriptionID">
+            <summary>
+            Gets or sets the subscription identifier.
+            </summary>
+            <value>
+            The subscription identifier.
             </value>
         </member>
         <member name="P:CustomerService.Models.CustomerPlans.PlanId">
@@ -911,6 +1229,22 @@
             1=Yes, 0=N0.
             </value>
         </member>
+        <member name="P:CustomerService.Models.CustomerPlans.SubscriptionDate">
+            <summary>
+            Gets or sets the subscription date.
+            </summary>
+            <value>
+            The subscription date.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.CustomerPlans.SubscriptionFee">
+            <summary>
+            Gets or sets the subscription fee.
+            </summary>
+            <value>
+            The subscription fee.
+            </value>
+        </member>
         <member name="T:CustomerService.Models.CustomerNewReferralCode">
             <summary>
             CustomerNewReferralCode class
@@ -922,6 +1256,96 @@
             </summary>
             <value>
             The status.
+            </value>
+        </member>
+        <member name="T:CustomerService.Models.customerPaymentMethod">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:CustomerService.Models.customerPaymentMethod.CardHolderName">
+            <summary>
+            Gets or sets the name of the card holder.
+            </summary>
+            <value>
+            The name of the card holder.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.customerPaymentMethod.MaskedCardNumer">
+            <summary>
+            Gets or sets the masked card numer.
+            </summary>
+            <value>
+            The masked card numer.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.customerPaymentMethod.CardType">
+            <summary>
+            Gets or sets the type of the card.
+            </summary>
+            <value>
+            The type of the card.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.customerPaymentMethod.IsDefault">
+            <summary>
+            Gets or sets the is default.
+            </summary>
+            <value>
+            The is default.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.customerPaymentMethod.ExpiryMonth">
+            <summary>
+            Gets or sets the expiry month.
+            </summary>
+            <value>
+            The expiry month.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.customerPaymentMethod.ExpiryYear">
+            <summary>
+            Gets or sets the expiry year.
+            </summary>
+            <value>
+            The expiry year.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.customerPaymentMethod.CardFundMethod">
+            <summary>
+            Gets or sets the card fund method.
+            </summary>
+            <value>
+            The card fund method.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.customerPaymentMethod.CardIssuer">
+            <summary>
+            Gets or sets the card issuer.
+            </summary>
+            <value>
+            The card issuer.
+            </value>
+        </member>
+        <member name="T:CustomerService.Models.BasePlans">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:CustomerService.Models.BasePlans.BundleID">
+            <summary>
+            Gets or sets the bundle identifier.
+            </summary>
+            <value>
+            The bundle identifier.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.BasePlans.PlanMarketingName">
+            <summary>
+            Gets or sets the name of the plan marketing.
+            </summary>
+            <value>
+            The name of the plan marketing.
             </value>
         </member>
         <member name="P:CustomerService.Models.BasePlans.PortalSummaryDescription">
@@ -940,12 +1364,443 @@
             The type of the PortalDescription.
             </value>
         </member>
+        <member name="P:CustomerService.Models.BasePlans.MobileNumber">
+            <summary>
+            Gets or sets the mobile number.
+            </summary>
+            <value>
+            The mobile number.
+            </value>
+        </member>
         <member name="P:CustomerService.Models.BasePlans.TotalData">
             <summary>
             Gets or sets the TotalData.
             </summary>
             <value>
             The TotalData.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.BasePlans.TotalSMS">
+            <summary>
+            Gets or sets the total SMS.
+            </summary>
+            <value>
+            The total SMS.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.BasePlans.TotalVoice">
+            <summary>
+            Gets or sets the total voice.
+            </summary>
+            <value>
+            The total voice.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.BasePlans.ActualSubscriptionFee">
+            <summary>
+            Gets or sets the actual subscription fee.
+            </summary>
+            <value>
+            The actual subscription fee.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.BasePlans.ApplicableSubscriptionFee">
+            <summary>
+            Gets or sets the applicable subscription fee.
+            </summary>
+            <value>
+            The applicable subscription fee.
+            </value>
+        </member>
+        <member name="T:CustomerService.Models.DisplayDetails">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:CustomerService.Models.DisplayDetails.MobileNumber">
+            <summary>
+            Gets or sets the mobile number.
+            </summary>
+            <value>
+            The mobile number.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.DisplayDetails.DisplayName">
+            <summary>
+            Gets or sets the display name.
+            </summary>
+            <value>
+            The display name.
+            </value>
+        </member>
+        <member name="T:CustomerService.Models.customerShipping">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:CustomerService.Models.customerShipping.ShippingUnit">
+            <summary>
+            Gets or sets the shipping unit.
+            </summary>
+            <value>
+            The shipping unit.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.customerShipping.ShippingFloor">
+            <summary>
+            Gets or sets the shipping floor.
+            </summary>
+            <value>
+            The shipping floor.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.customerShipping.ShippingStreetName">
+            <summary>
+            Gets or sets the name of the shipping street.
+            </summary>
+            <value>
+            The name of the shipping street.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.customerShipping.ShippingBuildingNumber">
+            <summary>
+            Gets or sets the shipping building number.
+            </summary>
+            <value>
+            The shipping building number.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.customerShipping.ShippingBuildingName">
+            <summary>
+            Gets or sets the name of the shipping building.
+            </summary>
+            <value>
+            The name of the shipping building.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.customerShipping.ShippingContactNumber">
+            <summary>
+            Gets or sets the shipping contact number.
+            </summary>
+            <value>
+            The shipping contact number.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.customerShipping.ShippingPostCode">
+            <summary>
+            Gets or sets the shipping post code.
+            </summary>
+            <value>
+            The shipping post code.
+            </value>
+        </member>
+        <member name="T:CustomerService.Models.ChangeRequest">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:CustomerService.Models.ChangeRequest.ChangeRequestID">
+            <summary>
+            Gets or sets the change request identifier.
+            </summary>
+            <value>
+            The change request identifier.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.ChangeRequest.SubscriberID">
+            <summary>
+            Gets or sets the subscriber identifier.
+            </summary>
+            <value>
+            The subscriber identifier.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.ChangeRequest.MobileNumber">
+            <summary>
+            Gets or sets the mobile number.
+            </summary>
+            <value>
+            The mobile number.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.ChangeRequest.ListingStatus">
+            <summary>
+            Gets or sets the listing status.
+            </summary>
+            <value>
+            The listing status.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.ChangeRequest.OrderNumber">
+            <summary>
+            Gets or sets the order number.
+            </summary>
+            <value>
+            The order number.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.ChangeRequest.RequestType">
+            <summary>
+            Gets or sets the type of the request.
+            </summary>
+            <value>
+            The type of the request.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.ChangeRequest.OrderStatus">
+            <summary>
+            Gets or sets the order status.
+            </summary>
+            <value>
+            The order status.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.ChangeRequest.RequestOn">
+            <summary>
+            Gets or sets the request on.
+            </summary>
+            <value>
+            The request on.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.ChangeRequest.BillingUnit">
+            <summary>
+            Gets or sets the billing unit.
+            </summary>
+            <value>
+            The billing unit.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.ChangeRequest.BillingFloor">
+            <summary>
+            Gets or sets the billing floor.
+            </summary>
+            <value>
+            The billing floor.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.ChangeRequest.BillingBuildingNumber">
+            <summary>
+            Gets or sets the billing building number.
+            </summary>
+            <value>
+            The billing building number.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.ChangeRequest.BillingBuildingName">
+            <summary>
+            Gets or sets the name of the billing building.
+            </summary>
+            <value>
+            The name of the billing building.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.ChangeRequest.BillingStreetName">
+            <summary>
+            Gets or sets the name of the billing street.
+            </summary>
+            <value>
+            The name of the billing street.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.ChangeRequest.BillingPostCode">
+            <summary>
+            Gets or sets the billing post code.
+            </summary>
+            <value>
+            The billing post code.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.ChangeRequest.BillingContactNumber">
+            <summary>
+            Gets or sets the billing contact number.
+            </summary>
+            <value>
+            The billing contact number.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.ChangeRequest.Name">
+            <summary>
+            Gets or sets the name.
+            </summary>
+            <value>
+            The name.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.ChangeRequest.Email">
+            <summary>
+            Gets or sets the email.
+            </summary>
+            <value>
+            The email.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.ChangeRequest.IDType">
+            <summary>
+            Gets or sets the type of the identifier.
+            </summary>
+            <value>
+            The type of the identifier.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.ChangeRequest.IDNumber">
+            <summary>
+            Gets or sets the identifier number.
+            </summary>
+            <value>
+            The identifier number.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.ChangeRequest.IsSameAsBilling">
+            <summary>
+            Gets or sets the is same as billing.
+            </summary>
+            <value>
+            The is same as billing.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.ChangeRequest.ShippingUnit">
+            <summary>
+            Gets or sets the shipping unit.
+            </summary>
+            <value>
+            The shipping unit.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.ChangeRequest.ShippingFloor">
+            <summary>
+            Gets or sets the shipping floor.
+            </summary>
+            <value>
+            The shipping floor.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.ChangeRequest.ShippingBuildingNumber">
+            <summary>
+            Gets or sets the shipping building number.
+            </summary>
+            <value>
+            The shipping building number.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.ChangeRequest.ShippingBuildingName">
+            <summary>
+            Gets or sets the name of the shipping building.
+            </summary>
+            <value>
+            The name of the shipping building.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.ChangeRequest.ShippingStreetName">
+            <summary>
+            Gets or sets the name of the shipping street.
+            </summary>
+            <value>
+            The name of the shipping street.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.ChangeRequest.ShippingPostCode">
+            <summary>
+            Gets or sets the shipping post code.
+            </summary>
+            <value>
+            The shipping post code.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.ChangeRequest.ShippingContactNumber">
+            <summary>
+            Gets or sets the shipping contact number.
+            </summary>
+            <value>
+            The shipping contact number.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.ChangeRequest.AlternateRecipientContact">
+            <summary>
+            Gets or sets the alternate recipient contact.
+            </summary>
+            <value>
+            The alternate recipient contact.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.ChangeRequest.AlternateRecipientName">
+            <summary>
+            Gets or sets the name of the alternate recipient.
+            </summary>
+            <value>
+            The name of the alternate recipient.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.ChangeRequest.AlternateRecipientEmail">
+            <summary>
+            Gets or sets the alternate recipient email.
+            </summary>
+            <value>
+            The alternate recipient email.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.ChangeRequest.PortalSlotID">
+            <summary>
+            Gets or sets the portal slot identifier.
+            </summary>
+            <value>
+            The portal slot identifier.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.ChangeRequest.SlotDate">
+            <summary>
+            Gets or sets the slot date.
+            </summary>
+            <value>
+            The slot date.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.ChangeRequest.SlotFromTime">
+            <summary>
+            Gets or sets the slot from time.
+            </summary>
+            <value>
+            The slot from time.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.ChangeRequest.SlotToTime">
+            <summary>
+            Gets or sets the slot to time.
+            </summary>
+            <value>
+            The slot to time.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.ChangeRequest.ScheduledDate">
+            <summary>
+            Gets or sets the scheduled date.
+            </summary>
+            <value>
+            The scheduled date.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.ChangeRequest.ServiceFee">
+            <summary>
+            Gets or sets the service fee.
+            </summary>
+            <value>
+            The service fee.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.ChangeRequest.AllowRescheduling">
+            <summary>
+            Gets or sets the allow rescheduling.
+            </summary>
+            <value>
+            The allow rescheduling.
+            </value>
+        </member>
+        <member name="P:CustomerService.Models.CustomerPurchasedVASes.StartDate">
+            <summary>
+            Gets or sets the start date.
+            </summary>
+            <value>
+            The start date.
             </value>
         </member>
     </members>

@@ -29,7 +29,7 @@ namespace CustomerService.Services
         public UserService(IConfiguration configuration)
         {
             _configuration = configuration;
-        }
+        }        
         
         public async Task<Customer> Authenticate(LoginDto loginDetails)
         {

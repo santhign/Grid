@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using System.IO.Compression;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Core.Helpers;
+using CustomerService.Services;
 using InfrastructureService;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -15,7 +18,9 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 using Swashbuckle.AspNetCore.Swagger;
+using InfrastructureService;
 
 namespace CustomerService
 {
@@ -62,13 +67,30 @@ namespace CustomerService
                 options.Level = CompressionLevel.Fastest;
             });
 
-            // Register the Swagger generator, defining 1 or more Swagger documents
-            services.AddSwaggerGen(c =>
+            services.AddSwaggerDocumentation("Customer", "v1"); //Code in Infrastructure
+            
+            // configure jwt authentication
+            var key = Encoding.ASCII.GetBytes(Configuration["jwtSecret"]);
+            services.AddAuthentication(x =>
             {
-                c.SwaggerDoc("v1", new Info { Title = "GRID Customer API", Version = "v1" });
-                var xmlDocPath = System.AppDomain.CurrentDomain.BaseDirectory + @"CustomerService.xml";
-                c.IncludeXmlComments(xmlDocPath);
+                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(x =>
+            {
+                x.RequireHttpsMetadata = false;
+                x.SaveToken = true;
+                x.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = false,
+                    ValidateAudience = false
+                };
             });
+
+            // configure DI for application services
+            services.AddScoped<IUserService, UserService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -76,18 +98,8 @@ namespace CustomerService
         {
             // Enable Cors
             app.UseCors("MyPolicy");
-            //if (!env.IsProduction())
-            //{
-                app.UseSwagger();
-
-                // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.), 
-                // specifying the Swagger JSON endpoint.
-                app.UseSwaggerUI(c =>
-                {
-                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "GRID Customer API V1");
-                    c.RoutePrefix = string.Empty;
-                });
-            //}
+            app.UseSwaggerDocumentation("Customer","v1");     //Code in Infrastructure       
+            
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -98,6 +110,8 @@ namespace CustomerService
                 return next(context);
             });
             app.UseMiddleware<LogMiddleware>();
+            
+            app.UseAuthentication();
 
             app.UseMvc();
             app.Run(async (context) =>

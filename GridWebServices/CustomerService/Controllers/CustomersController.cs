@@ -18,6 +18,7 @@ using System.Net.Mail;
 using InfrastructureService.MessageQueue;
 using Newtonsoft.Json;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CustomerService.Controllers
 {
@@ -49,8 +50,9 @@ namespace CustomerService.Controllers
         /// </summary>
         /// <param name="token" in="Header"></param>
         /// <returns></returns>
+        [Authorize]
         [HttpGet]
-        public async Task<IActionResult> GetCustomer([FromHeader(Name = "Grid-Authorization-Token")] string token)
+        public async Task<IActionResult> GetCustomer([FromHeader(Name = "Bearer")] string token)
         {
             try
             {
