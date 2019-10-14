@@ -21,6 +21,9 @@ using Core.DataAccess;
 using InfrastructureService.MessageQueue;
 using System.Net.Mail;
 using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Authorization;
+using Serilog;
+using Serilog.Context;
 
 namespace OrderService.Controllers
 {
@@ -28,6 +31,7 @@ namespace OrderService.Controllers
     /// Order Controller
     /// </summary>
     /// <seealso cref="Microsoft.AspNetCore.Mvc.ControllerBase" />
+
     [Route("api/[controller]")]
     [ApiController]
     public class OrdersController : ControllerBase
@@ -70,118 +74,86 @@ namespace OrderService.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> Get([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int id)
         {
+            //Variables
+            AuthHelper authHelper = new AuthHelper(_iconfiguration);
+            OperationResponse tokenAuthResponse;
+            OperationResponse failedApiResponse = new OperationResponse(false, "");
+            DatabaseResponse customerResponse, orderDetailsResponse;
+            int customerID = -1;  
+
+            //Token Checking
             try
             {
-                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                tokenAuthResponse = await authHelper.AuthenticateLoginToken(token);
+                customerID = tokenAuthResponse._loginUserId;
+                // if failed return the failed message
+                if (tokenAuthResponse.HasSucceeded == false)
                 {
-                    HasSucceeded = false,
-                    IsDomainValidationErrors = true,
-                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
+                    return Ok(tokenAuthResponse);
+                }
+            }
+            catch(Exception ex)
+            {
+                Log.Error(ex, "Exception in {function}","AuthenticateLoginToken");
+                return Ok(failedApiResponse);
+            }
 
-                });
-                AuthHelper helper = new AuthHelper(_iconfiguration);
-
-                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
-
-                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+            using (LogContext.PushProperty("_loginUserId", customerID))
+            {
+                //Order part
+                
+                OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
+                try
                 {
-                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    customerResponse = await _orderAccess.GetCustomerIdFromOrderId(id);
+                    if (customerResponse.ResponseCode != (int)DbReturnValue.RecordExists || customerID != ((OrderCustomer)customerResponse.Results).CustomerId)
                     {
-                        int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
-                        if (!ModelState.IsValid)
-                        {
-                            return Ok(new OperationResponse
-                            {
-                                HasSucceeded = false,
-                                Message = StatusMessages.DomainValidationError,
-                                IsDomainValidationErrors = true
-                            });
-                        }
-                        OrderDataAccess _orderAccess = new OrderDataAccess(_iconfiguration);
-
-                        DatabaseResponse customerResponse = await _orderAccess.GetCustomerIdFromOrderId(id);
-
-                        if (customerResponse.ResponseCode == (int)DbReturnValue.RecordExists && customerID == ((OrderCustomer)customerResponse.Results).CustomerId)
-                        {
-                            DatabaseResponse orderDetailsResponse = await _orderAccess.GetOrderDetails_V2(id);
-
-                            if (orderDetailsResponse.ResponseCode == (int)DbReturnValue.RecordExists)
-                            {
-                                return Ok(new ServerResponse
-                                {
-                                    HasSucceeded = true,
-                                    Message = EnumExtensions.GetDescription(DbReturnValue.RecordExists),
-                                    Result = orderDetailsResponse.Results
-
-                                });
-                            }
-
-                            else
-                            {
-                                return Ok(new ServerResponse
-                                {
-                                    HasSucceeded = false,
-                                    Message = EnumExtensions.GetDescription(DbReturnValue.NotExists)
-                                });
-
-                            }
-                        }
-                        else
-                        {
-                            // failed to locate customer
-                            LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.TokenNotMatching));
-                            return Ok(new OperationResponse
-                            {
-                                HasSucceeded = false,
-                                Message = EnumExtensions.GetDescription(CommonErrors.TokenNotMatching),
-                                IsDomainValidationErrors = false
-                            });
-                        }
-
+                        // failed to locate customer                        
+                        failedApiResponse.Message = EnumExtensions.GetDescription(CommonErrors.TokenNotMatching);
+                        failedApiResponse.IsDomainValidationErrors = false;
+                        failedApiResponse._loginUserId = customerID;
+                        return Ok(failedApiResponse);
                     }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Exception in {function}", "GetCustomerIdFromOrderId");
+                    return Ok(failedApiResponse);
+                }
 
-                    else
+                //Order belongs to custoer. Get order details
+                try
+                {
+                    orderDetailsResponse = await _orderAccess.GetOrderDetails_V2(id);
+                    //If record not found
+                    if (orderDetailsResponse.ResponseCode != (int)DbReturnValue.RecordExists)
                     {
-                        //Token expired
-
-                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
-
-                        return Ok(new OperationResponse
+                        //Return error
+                        return Ok(new ServerResponse
                         {
                             HasSucceeded = false,
-                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
-                            IsDomainValidationErrors = true
-                        });
-
+                            Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
+                            _loginUserId = customerID
+                        }); ;
                     }
-
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Exception in {function}", "GetOrderDetails_V2");
+                    return Ok(failedApiResponse);
                 }
 
-                else
+                //All Good Return Results
+                return Ok(new ServerResponse
                 {
-                    // token auth failure
-                   LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
+                    HasSucceeded = true,
+                    Message = EnumExtensions.GetDescription(DbReturnValue.RecordExists),
+                    Result = orderDetailsResponse.Results,
+                    _loginUserId = customerID
 
-                    return Ok(new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
-                        IsDomainValidationErrors = false
-                    });
-                }
-            }
-
-            catch (Exception ex)
-            {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-
-                return Ok(new OperationResponse
-                {
-                    HasSucceeded = false,
-                    Message = StatusMessages.ServerError,
-                    IsDomainValidationErrors = false
                 });
-            }
+            }           
+            
         }
 
 
