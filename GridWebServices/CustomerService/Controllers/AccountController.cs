@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using InfrastructureService.MessageQueue;
+using CustomerService.Services;
 
 namespace CustomerService.Controllers
 {
@@ -29,10 +30,12 @@ namespace CustomerService.Controllers
     public class AccountController : ControllerBase
     {
         IConfiguration _iconfiguration;
+        private IUserService _userService;
 
         public AccountController(IConfiguration configuration)
         {
             _iconfiguration = configuration;
+           // _userService = userService;
         }
         /// <summary>
         /// Authenticate customer against Email and Password given.
@@ -46,21 +49,8 @@ namespace CustomerService.Controllers
         {
             try
             {
-                
-                if (!ModelState.IsValid)
-                {
-                    new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        IsDomainValidationErrors = true,
-                        Message = string.Join("; ", ModelState.Values
-                                            .SelectMany(x => x.Errors)
-                                            .Select(x => x.ErrorMessage))
-                    };
-                }
-
-                TokenValidationHelper tokenValidationHelper = new TokenValidationHelper();
-                if (!tokenValidationHelper.ValidateGenericToken(Token, _iconfiguration))
+                var customer = await _userService.Authenticate(loginRequest);
+                if (customer == null)
                 {
                     return Ok(new OperationResponse
                     {
@@ -69,113 +59,20 @@ namespace CustomerService.Controllers
                         IsDomainValidationErrors = true
                     });
                 }
-
-                AccountDataAccess _AccountAccess = new AccountDataAccess(_iconfiguration);
-
-                DatabaseResponse response = await _AccountAccess.AuthenticateCustomer(loginRequest);
-
-                if (response.ResponseCode == ((int)DbReturnValue.EmailNotExists))
-                {
-                    return Ok(new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        Message = EnumExtensions.GetDescription(DbReturnValue.EmailNotExists),
-                        IsDomainValidationErrors = true
-                    });
-                }
-                else if (response.ResponseCode == ((int)DbReturnValue.AccountIsLocked))
-                {
-                    return Ok(new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        Message = EnumExtensions.GetDescription(DbReturnValue.AccountIsLocked),
-                        IsDomainValidationErrors = true
-                    });
-                }
-                else if (response.ResponseCode == ((int)DbReturnValue.AccountDeactivated))
-                {
-                    return Ok(new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        Message = EnumExtensions.GetDescription(DbReturnValue.AccountDeactivated),
-                        IsDomainValidationErrors = true
-                    });
-                }
-                else if (response.ResponseCode == ((int)DbReturnValue.PasswordIncorrect))
-                {
-                    return Ok(new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        Message = EnumExtensions.GetDescription(DbReturnValue.PasswordIncorrect),
-                        IsDomainValidationErrors = true
-                    });
-                }
-
-                else if(response.ResponseCode == ((int)DbReturnValue.AuthSuccess))
-                {
-                    //Authentication success
-
-                    var customer = new Customer();
-
-                    customer = (Customer) response.Results;
-
-                    var tokenHandler = new JwtSecurityTokenHandler();
-
-                    var key = Encoding.ASCII.GetBytes("stratagile grid customer signin jwt hashing secret");
-
-                    DatabaseResponse configResponse = ConfigHelper.GetValueByKey(ConfigKeys.CustomerTokenExpiryInDays.ToString(), _iconfiguration);
-
-                    int expiry = 0;
-
-                    if (configResponse.ResponseCode == (int)DbReturnValue.RecordExists)
-                    {
-                        expiry = int.Parse(configResponse.Results.ToString());
-                    }
-
-                    var tokenDescriptor = new SecurityTokenDescriptor
-                    {
-                        Subject = new ClaimsIdentity(new Claim[]
-                        {
-                             new Claim(ClaimTypes.Name, customer.CustomerID.ToString())
-                        }),
-
-                        Expires = DateTime.Now.AddDays(expiry), 
-
-                        SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-                    };
-
-                    var token = tokenHandler.CreateToken(tokenDescriptor);
-
-                    var tokenString = tokenHandler.WriteToken(token);
-
-                    DatabaseResponse tokenResponse = new DatabaseResponse();
-
-                    tokenResponse=await _AccountAccess.LogCustomerToken(customer.CustomerID,tokenString);
-
-                    // return basic user info (without password) and token to store client side
-                    return Ok(new OperationResponse
-                    {     HasSucceeded=true,
-                          Message=EnumExtensions.GetDescription(DbReturnValue.AuthSuccess),
-                           ReturnedObject = new LoggedInPrinciple
-                           {
-                               Customer = customer,
-                               IsAuthenticated = true,
-                               Token = tokenString
-                           }
-                    }                  
-                    );
-                }
-
                 else
                 {
+                    // return basic user info (without password) and token to store client side
                     return Ok(new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        Message = EnumExtensions.GetDescription(DbReturnValue.ReasonUnknown),
-                        IsDomainValidationErrors = true
+                    { HasSucceeded = true,
+                        Message = EnumExtensions.GetDescription(DbReturnValue.AuthSuccess),
+                        ReturnedObject = new LoggedInPrinciple
+                        {
+                            Customer = customer,
+                            IsAuthenticated = true,
+                            Token = customer.Token
+                        }
                     });
-                }
-               
+                }                
             }
             catch (Exception ex)
             {
@@ -187,7 +84,6 @@ namespace CustomerService.Controllers
                     Message = StatusMessages.ServerError,
                     IsDomainValidationErrors = false
                 });
-
             }
         }
 

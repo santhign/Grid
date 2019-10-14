@@ -133,6 +133,7 @@ namespace CustomerService.Models
         public int PendingSIMCount { get; set; }
 
         public int? PendingSIMOrderID { get; set; }
+        public string Token { get; set; }
     }
 
     /// <summary>
