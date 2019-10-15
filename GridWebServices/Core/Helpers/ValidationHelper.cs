@@ -139,6 +139,53 @@ namespace Core.Helpers
             }
             return response;
         }
+        public async Task<DatabaseResponse> SubscriberNumberCountForBundle(int BundleID, int OrderID, string MobileNumber, IConfiguration _configuration)
+        {
+            DatabaseResponse response = null;
+            DataAccessHelper _DataHelper = null;
+            try
+            {
+                SqlParameter[] parameters =
+                    {
+                    new SqlParameter("@BundleID", SqlDbType.Int),
+                    new SqlParameter("@OrderID", SqlDbType.Int),
+                    new SqlParameter("MobileNumber", SqlDbType.NVarChar)
+                    };
+
+                parameters[0].Value = BundleID;
+                if (OrderID != -1)
+                {
+                    parameters[1].Value = OrderID;
+                }
+                else
+                {
+                    parameters[1].Value = DBNull.Value;
+                }
+                parameters[2].Value = MobileNumber;
+                _DataHelper = new DataAccessHelper("Orders_GetSubscriberNumberCountForBundle", parameters, _configuration);
+                DataSet ds = new DataSet("ds");
+                int result = await _DataHelper.RunAsync(ds);
+                int requirededCount = 0;
+                if (ds != null)
+                {
+                    if (ds.Tables[0].Rows.Count > 0)
+                    {
+                        int.TryParse(ds.Tables[0].Rows[0][0].ToString().Trim(), out requirededCount);
+                    }
+                }
+                response = new DatabaseResponse { ResponseCode = result, Results = requirededCount };
+            }
+
+            catch (Exception ex)
+            {
+                throw (ex);
+            }
+            finally
+            {
+                _DataHelper.Dispose();
+            }
+            return response;
+        }
 
         public bool NRICValidation(string IDType, string NRIC, out string _warningmsg)
         {

@@ -1049,6 +1049,16 @@ namespace OrderService.Controllers
                                     }
 
                                 }
+                                else if (updateSubscriberResponse.ResponseCode == (int)DbReturnValue.DuplicateNumber)
+                                {
+                                    LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.DuplicateNumber));
+                                    return Ok(new OperationResponse
+                                    {
+                                        HasSucceeded = false,
+                                        Message = EnumExtensions.GetDescription(DbReturnValue.DuplicateNumber),
+                                        IsDomainValidationErrors = false
+                                    });
+                                }
                                 else
                                 {
                                     LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.UpdateSubscriptionFailed));
@@ -4013,7 +4023,7 @@ namespace OrderService.Controllers
                         {
                             Core.Helpers.EmailValidationHelper _helper = new EmailValidationHelper();
                             DatabaseResponse AllowSubscriberResponse = await _helper.AllowSubscribers(customerID, (int)SubscriberCheckType.OrderLevel, _iconfiguration);
-                            DatabaseResponse requiredSubscriberResponse = await _helper.RequiredSubscribersForBundle(request.BundleID, -1, _iconfiguration);
+                            DatabaseResponse requiredSubscriberResponse = await _helper.SubscriberNumberCountForBundle(request.BundleID, request.OrderID, request.MobileNumber, _iconfiguration);
                             int SubscriberCount = (int)requiredSubscriberResponse.Results;
                             SubscriberCount = SubscriberCount - 1;
                             if (SubscriberCount > (int)AllowSubscriberResponse.Results)

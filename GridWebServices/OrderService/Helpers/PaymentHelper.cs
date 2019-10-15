@@ -783,7 +783,7 @@ namespace OrderService.Helpers
             //////////////Order Processing////////////  
 
             DatabaseResponse paymentProcessingRespose = new DatabaseResponse();
-            if (tokenSession.IsPaid == 0 && tokenSession.OrderStatus == 0)
+            if (tokenSession.IsPaid == 0)
             {
                 CheckOutResponseUpdate updateRequest = new CheckOutResponseUpdate { MPGSOrderID = MPGSOrderID, Result = Status };
                 TransactionRetrieveResponseOperation transactionResponse = new TransactionRetrieveResponseOperation();
