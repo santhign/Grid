@@ -1,33 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO.Compression;
-using System.Linq;
-using System.Threading.Tasks;
-using CatelogService.DataAccess;
+﻿using Core.Helpers;
+using InfrastructureService;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.ResponseCompression;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.Cors.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Swashbuckle.AspNetCore.Swagger;
-using Microsoft.AspNetCore.Mvc.Cors.Internal;
-using Microsoft.Extensions.Logging;
-using InfrastructureService;
-using Microsoft.AspNetCore.Http.Internal;
-using Core.Helpers;
 
 namespace CatelogService
 {
     public class Startup
     {
         public IConfiguration Configuration { get; }
+        public string ServiceName { get; }
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+            ServiceName = "Catelog";
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -52,26 +43,7 @@ namespace CatelogService
                 options.Filters.Add(new CorsAuthorizationFilterFactory("MyPolicy"));
             });
 
-            services.AddResponseCompression(options =>
-            {
-                options.Providers.Add<GzipCompressionProvider>();
-                options.MimeTypes =
-                    ResponseCompressionDefaults.MimeTypes.Concat(
-                        new[] { "image/svg+xml" });
-            });
-
-            services.Configure<GzipCompressionProviderOptions>(options =>
-            {
-                options.Level = CompressionLevel.Fastest;
-            });
-
-            // Register the Swagger generator, defining 1 or more Swagger documents
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new Info { Title = "GRID Catelog API", Version = "v1" });
-                var xmlDocPath = System.AppDomain.CurrentDomain.BaseDirectory + @"CatelogService.xml";
-                c.IncludeXmlComments(xmlDocPath);
-            });
+            services.AddSwaggerDocumentation(ServiceName);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -79,15 +51,7 @@ namespace CatelogService
         {
             if (!env.IsProduction())
             {
-                app.UseSwagger();
-
-                // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.), 
-                // specifying the Swagger JSON endpoint.
-                app.UseSwaggerUI(c =>
-                {
-                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "GRID Catelog API V1");
-                    c.RoutePrefix = string.Empty;
-                });
+                app.UseSwaggerDocumentation(ServiceName, "v1");
             }
 
             if (env.IsDevelopment())
@@ -106,7 +70,7 @@ namespace CatelogService
             app.UseMvc();
             app.Run(async (context) =>
             {
-                await context.Response.WriteAsync("Catalog Service!");
+                await context.Response.WriteAsync(ServiceName +" Service!");
             });
         }
     }

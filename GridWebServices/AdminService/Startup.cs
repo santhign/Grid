@@ -1,20 +1,14 @@
-﻿using AdminService.DataAccess;
-using System.IO.Compression;
+﻿using Core.Helpers;
+using InfrastructureService;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Cors.Internal;
-using Microsoft.AspNetCore.ResponseCompression;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Swashbuckle.AspNetCore.Swagger;
-using Microsoft.AspNetCore.Routing;
-using System.Linq;
-using InfrastructureService;
-using Microsoft.AspNetCore.Http.Internal;
-using Core.Helpers;
 
 namespace AdminService
 {
@@ -27,6 +21,7 @@ namespace AdminService
         /// Application configuration
         /// </summary>
         public IConfiguration Configuration { get; }
+        public string ServiceName { get; }
 
         /// <summary>
         /// Setting configuaration on startup
@@ -35,6 +30,7 @@ namespace AdminService
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+            ServiceName = "Admin";
         }
 
         /// <summary>
@@ -57,34 +53,14 @@ namespace AdminService
           
             //to access configuration from controller
             services.AddSingleton(Configuration);
-
             services.AddScoped<DataAccess.Interfaces.IAdminOrderDataAccess, DataAccess.AdminOrderDataAccess>();
-
             services.Configure<MvcOptions>(options =>
             {
                 options.Filters.Add(new CorsAuthorizationFilterFactory("StratagileAdminPolicy"));
-            });
-
-            services.AddResponseCompression(options =>
-            {
-                options.Providers.Add<GzipCompressionProvider>();
-                options.MimeTypes =
-                    ResponseCompressionDefaults.MimeTypes.Concat(
-                        new[] { "image/svg+xml" });
-            });
-
-            services.Configure<GzipCompressionProviderOptions>(options =>
-            {
-                options.Level = CompressionLevel.Fastest;
-            });
+            });           
 
             // Register the Swagger generator, defining 1 or more Swagger documents
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new Info { Title = "GRID Admin API", Version = "v1" });
-                var xmlDocPath = System.AppDomain.CurrentDomain.BaseDirectory + @"AdminService.xml";
-                c.IncludeXmlComments(xmlDocPath);
-            });
+            services.AddSwaggerDocumentation(ServiceName, "v1");            
         }
 
         /// <summary>
@@ -94,19 +70,11 @@ namespace AdminService
         /// <param name="env"></param>
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            //if (!env.IsProduction())
-            //{
-                app.UseSwagger();
+            if (!env.IsProduction())
+            {
+                app.UseSwaggerDocumentation(ServiceName, "v1");
 
-                // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.), 
-                // specifying the Swagger JSON endpoint.
-                app.UseSwaggerUI(c =>
-                {
-                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "GRID Admin API V1");
-                    c.RoutePrefix = string.Empty;
-                });
-           // }
-
+            }
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -116,7 +84,6 @@ namespace AdminService
             app.UseCors("StratagileAdminPolicy");
             app.Use(next => context => {
                 context.Request.EnableRewind();
-
                 return next(context);
             });
             app.UseMiddleware<LogMiddleware>();
@@ -131,11 +98,10 @@ namespace AdminService
                 );
                 
             });
-
-
+            
             app.Run(async (context) =>
             {
-                await context.Response.WriteAsync("Admin Service!");
+                await context.Response.WriteAsync(ServiceName +" Service!");
             });
           
         }       
