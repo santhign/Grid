@@ -257,3 +257,7 @@ out/
 
 # local nuget folder
 nuget/
+GridWebServices/AdminService/AdminService.xml
+GridWebServices/CatelogService/CatelogService.xml
+GridWebServices/CustomerService/CustomerService.xml
+GridWebServices/OrderService/OrderService.xml

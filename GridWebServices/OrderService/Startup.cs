@@ -1,20 +1,14 @@
 ﻿//using OrderService.DataAccess;
-using System.IO.Compression;
+using Core.Helpers;
+using InfrastructureService;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Cors.Internal;
-using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Swashbuckle.AspNetCore.Swagger;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using InfrastructureService;
-using Microsoft.AspNetCore.Http.Internal;
-using Core.Helpers;
 
 namespace OrderService
 {
@@ -24,9 +18,11 @@ namespace OrderService
     public class Startup
     {
         public IConfiguration Configuration { get; }
+        public string ServiceName { get; }
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+            ServiceName = "Order";
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -53,42 +49,16 @@ namespace OrderService
                 options.Filters.Add(new CorsAuthorizationFilterFactory("GridOrderPolicy"));
             });
 
-            services.AddResponseCompression(options =>
-            {
-                options.Providers.Add<GzipCompressionProvider>();
-                options.MimeTypes =
-                    ResponseCompressionDefaults.MimeTypes.Concat(
-                        new[] { "image/svg+xml" });
-            });
-
-            services.Configure<GzipCompressionProviderOptions>(options =>
-            {
-                options.Level = CompressionLevel.Fastest;
-            });
-
-            // Register the Swagger generator, defining 1 or more Swagger documents
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new Info { Title = "GRID Order API", Version = "v1" });
-                var xmlDocPath = System.AppDomain.CurrentDomain.BaseDirectory + @"OrderService.xml";
-                c.IncludeXmlComments(xmlDocPath);
-            });
+            services.AddSwaggerDocumentation(ServiceName, "v1");
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            //if (!env.IsProduction())
-            //{
-                app.UseSwagger();
-
-                // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.), 
-                // specifying the Swagger JSON endpoint.
-                app.UseSwaggerUI(c =>
-                {
-                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "GRID Order API V1");
-                });
-           // }
+            if (!env.IsProduction())
+            {
+                app.UseSwaggerDocumentation(ServiceName, "v1");
+            }
 
             if (env.IsDevelopment())
             {
@@ -106,7 +76,7 @@ namespace OrderService
             app.UseMvc();
             app.Run(async (context) =>
             {
-                await context.Response.WriteAsync("Order Service!");
+                await context.Response.WriteAsync(ServiceName + " Service!");
             });
         }
 

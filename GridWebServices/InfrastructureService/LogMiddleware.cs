@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Serilog;
+using Serilog.Context;
 using Serilog.Events;
 using System;
 using System.Collections.Generic;
@@ -9,6 +10,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace InfrastructureService
@@ -16,7 +18,7 @@ namespace InfrastructureService
     public class LogMiddleware
     {
         const string MessageTemplate =
-               "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms with {RequestBody} and {ResponseBody}";
+               "{_loginCustomerId} HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms with {RequestBody} and {ResponseBody}";
 
         static readonly ILogger Log = Serilog.Log.ForContext<LogMiddleware>();
 
@@ -58,9 +60,19 @@ namespace InfrastructureService
                         SafeLog(request.Path,
                             ref requestBodyContent,
                             ref responseBodyContent);
-
-                        var log = level == LogEventLevel.Error ? LogForErrorContext(httpContext) : Log;
-                        log.Write(level, MessageTemplate, httpContext.Request.Method, httpContext.Request.Path, statusCode, stopWatch.Elapsed.TotalMilliseconds, requestBodyContent, responseBodyContent);
+                        
+                        //Get CustomerId
+                        var _loginCustomerId = -1;
+                        Regex re = new Regex(@"\\?\""_loginCustomerId\\?\"":(-?\d+)");
+                        Match m = re.Match(responseBodyContent);
+                        if (m.Success)
+                        {
+                            int.TryParse(m.Groups[1].Value, out _loginCustomerId);                            
+                        }
+                        using (LogContext.PushProperty("_loginCustomerId", _loginCustomerId))
+                        {
+                            Log.Information(MessageTemplate, _loginCustomerId, httpContext.Request.Method, httpContext.Request.Path, statusCode, stopWatch.Elapsed.TotalMilliseconds, requestBodyContent, responseBodyContent);
+                        }                        
                     }
                 }
                 else

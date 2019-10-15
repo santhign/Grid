@@ -2,6 +2,7 @@
 using Core.Helpers;
 using InfrastructureService;
 using Microsoft.Extensions.Configuration;
+using Serilog;
 using System;
 using System.IO;
 using System.Threading;
@@ -40,7 +41,7 @@ namespace UnblockNumberServiceApp
         static void Main(string[] args)
         {
 
-            LogInfo.Initialize(Configuration);            
+            //LogInfo.Initialize(Configuration);            
             _connectionString = Configuration.GetConnectionString("DefaultConnection");
             UnblockNumberDataAccess unblockNumberDataAccess = new UnblockNumberDataAccess(_connectionString);
             _timeInterval = unblockNumberDataAccess.GetIntervel();
@@ -94,8 +95,7 @@ namespace UnblockNumberServiceApp
                             }
                         }
                         catch (Exception ex)
-                        {
-                            LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                        {                            
                             await unblockNumberDataAccess.UpdateUnBlockNumberDetails(result.CustomerID, result.MobileNumber, null, 0, result.ID);
                         }
                     }
@@ -104,7 +104,8 @@ namespace UnblockNumberServiceApp
             }
             catch (Exception ex)
             {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                //LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
+                Log.Error(ex,"Exception Application error");
             }
         }        
     }
