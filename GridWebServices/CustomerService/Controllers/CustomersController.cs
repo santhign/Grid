@@ -19,6 +19,7 @@ using InfrastructureService.MessageQueue;
 using Newtonsoft.Json;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace CustomerService.Controllers
 {
@@ -26,6 +27,7 @@ namespace CustomerService.Controllers
     /// Customers Controller class
     /// </summary>
     /// <seealso cref="Microsoft.AspNetCore.Mvc.ControllerBase" />
+  [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class CustomersController : ControllerBase
@@ -34,6 +36,7 @@ namespace CustomerService.Controllers
         /// The iconfiguration
         /// </summary>
         IConfiguration _iconfiguration;
+        int customerID = -1;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CustomersController"/> class.
@@ -41,344 +44,173 @@ namespace CustomerService.Controllers
         /// <param name="configuration">The configuration.</param>
         public CustomersController(IConfiguration configuration)
         {
-            _iconfiguration = configuration;
+            _iconfiguration = configuration;            
         }
 
         // GET: api/Customers/5
         /// <summary>
         /// Gets the customer.
-        /// </summary>
-        /// <param name="token" in="Header"></param>
-        /// <returns></returns>
-        [Authorize]
+        /// </summary>        
+        /// <returns></returns>        
         [HttpGet]
-        public async Task<IActionResult> GetCustomer([FromHeader(Name = "Bearer")] string token)
-        {
+        public async Task<IActionResult> GetCustomer()
+        {   
             try
             {
-                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                //Get customerID from token
+                customerID = JWTAndSwaggerServiceExtensions.GetCustomerIDfromToken(this.User);
+
+                CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
+                Customer customer = await _customerAccess.GetCustomer(customerID);
+                if (customer == null)
                 {
-                    HasSucceeded = false,
-                    IsDomainValidationErrors = true,
-                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
-
-                });
-
-                AuthHelper helper = new AuthHelper(_iconfiguration);
-
-                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token);
-
-                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
-                {
-                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
-                    {
-                        int customerID = ((AuthTokenResponse)tokenAuthResponse.Results).CustomerID;
-                        if (!ModelState.IsValid)
-                        {
-                            return Ok(new OperationResponse
-                            {
-                                HasSucceeded = false,
-                                IsDomainValidationErrors = true,
-                                Message = string.Join("; ", ModelState.Values
-                                                           .SelectMany(x => x.Errors)
-                                                           .Select(x => x.ErrorMessage))
-                            });
-                        }
-
-                        CustomerDataAccess _customerAccess = new CustomerDataAccess(_iconfiguration);
-
-                        Customer customer = await _customerAccess.GetCustomer(customerID);
-
-                        if (customer == null)
-                        {
-                            return Ok(new ServerResponse
-                            {
-                                HasSucceeded = false,
-                                Message = EnumExtensions.GetDescription(DbReturnValue.NotExists)
-
-                            });
-                        }
-                        else
-                        {
-                            return Ok(new ServerResponse
-                            {
-                                HasSucceeded = true,
-                                Message = StatusMessages.SuccessMessage,
-                                Result = customer
-
-                            });
-                        }
-
-                    }
-
-                    else
-                    {
-                        //Token expired
-
-                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
-
-                        return Ok(new OperationResponse
-                        {
-                            HasSucceeded = false,
-                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
-                            IsDomainValidationErrors = true
-                        });
-
-                    }
-
+                    return Ok(ServerResponse.ServerResponseFailed(EnumExtensions.GetDescription(DbReturnValue.NotExists),customerID));
                 }
-
                 else
                 {
-                    // token auth failure
-                   LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
-
-                    return Ok(new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
-                        IsDomainValidationErrors = false
-                    });
+                    return Ok(ServerResponse.ServerResponseSuccess(customer, customerID));
                 }
-
             }
             catch (Exception ex)
             {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-
-                return Ok(new OperationResponse
-                {
-                    HasSucceeded = false,
-                    Message = StatusMessages.ServerError,
-                    IsDomainValidationErrors = false
-                });
-
+                Log.Error(ex, "Exception in controller {function}", "GetCustomer");
+                return Ok(OperationResponse.OperationResponseFailed(StatusMessages.ServerError,customerID));               
             }
-
         }
 
         /// <summary>
         /// Updates the customer profile.
         /// </summary>
-        /// <param name="token">The token.</param>
         /// <param name="_profile">The profile details.</param>
         /// <returns></returns>
         [HttpPost("UpdateCustomerProfile")]
-        public async Task<IActionResult> UpdateCustomerProfile([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody] CustomerProfile _profile)
-        {
+        public async Task<IActionResult> UpdateCustomerProfile([FromBody] CustomerProfile _profile)
+        {            
             try
             {
-                if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
+                //Get customerID from token
+                customerID = JWTAndSwaggerServiceExtensions.GetCustomerIDfromToken(this.User);
+
+                var customerAccess = new CustomerDataAccess(_iconfiguration);
+                if ((!string.IsNullOrWhiteSpace(_profile.NewPassword) && string.IsNullOrWhiteSpace(_profile.OldPassword))
+                    || (string.IsNullOrWhiteSpace(_profile.NewPassword) && !string.IsNullOrWhiteSpace(_profile.OldPassword)))
                 {
-                    HasSucceeded = false,
-                    IsDomainValidationErrors = true,
-                    Message = EnumExtensions.GetDescription(CommonErrors.TokenEmpty)
-
-                });
-
-                AuthHelper helper = new AuthHelper(_iconfiguration);
-
-                DatabaseResponse tokenAuthResponse = await helper.AuthenticateCustomerToken(token, APISources.Customer_UpdateProfile);
-
-                if (tokenAuthResponse.ResponseCode == (int)DbReturnValue.AuthSuccess)
+                    return Ok(OperationResponse.OperationResponseFailed(DbReturnValue.BothPasswordsNotPresent.GetDescription(),customerID));                    
+                }
+                if (!string.IsNullOrWhiteSpace(_profile.NewPassword))
                 {
-
-                    if (!((AuthTokenResponse)tokenAuthResponse.Results).IsExpired)
+                    if (!Regex.Match(new Base64Helper().base64Decode(_profile.NewPassword), @"(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}").Success)
                     {
-                        if (!ModelState.IsValid)
+                        return Ok(OperationResponse.OperationResponseFailed(DbReturnValue.PasswordPolicyError.GetDescription(),customerID));                       
+                    }
+                }
+                var statusResponse = await customerAccess.UpdateCustomerProfile(customerID, _profile);
+
+                if (statusResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
+                {
+                    ProfileMQ msgBody = new ProfileMQ();
+                    Dictionary<string, string> attribute = new Dictionary<string, string>();
+                    string topicName = string.Empty, subject = string.Empty;
+                    MQDataAccess _MQDataAccess = new MQDataAccess(_iconfiguration);
+                    try
+                    {
+                        msgBody = await _MQDataAccess.GetProfileUpdateMessageBody(customerID);
+
+                        topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration).Results.ToString().Trim();
+                        attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.EditContact.GetDescription());
+                        var pushResult = await _MQDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
+                        if (pushResult.Trim().ToUpper() == "OK")
                         {
-                            return Ok(new OperationResponse
-                            {
-                                HasSucceeded = false,
-                                IsDomainValidationErrors = true,
-                                Message = string.Join("; ", ModelState.Values
-                                                           .SelectMany(x => x.Errors)
-                                                           .Select(x => x.ErrorMessage))
-                            });
-                        }
-                        var customerAccess = new CustomerDataAccess(_iconfiguration);
-                        if ((!string.IsNullOrWhiteSpace(_profile.NewPassword) && string.IsNullOrWhiteSpace(_profile.OldPassword))
-                            || (string.IsNullOrWhiteSpace(_profile.NewPassword) && !string.IsNullOrWhiteSpace(_profile.OldPassword)))
-                        {
-                            return Ok(new OperationResponse
-                            {
-                                HasSucceeded = false,
-                                Message = DbReturnValue.BothPasswordsNotPresent.GetDescription(),
-                                IsDomainValidationErrors = false
-                            });
-                        }
-                        if (!string.IsNullOrWhiteSpace(_profile.NewPassword))
-                        {
-                            if (!Regex.Match(new Base64Helper().base64Decode(_profile.NewPassword), @"(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}").Success)
-                            {
-                                return Ok(new OperationResponse
-                                {
-                                    HasSucceeded = false,
-                                    Message = DbReturnValue.PasswordPolicyError.GetDescription(),
-                                    IsDomainValidationErrors = false
-                                });
-                            }
-                        }
-                        var statusResponse = await customerAccess.UpdateCustomerProfile(((AuthTokenResponse)tokenAuthResponse.Results).CustomerID, _profile);
-
-                        if (statusResponse.ResponseCode == (int)DbReturnValue.UpdateSuccess)
-                        {
-                            ProfileMQ msgBody = new ProfileMQ();
-                            Dictionary<string, string> attribute = new Dictionary<string, string>();
-                            string topicName = string.Empty, subject = string.Empty;
-                            MQDataAccess _MQDataAccess = new MQDataAccess(_iconfiguration);
-                            try
-                            {
-                                msgBody = await _MQDataAccess.GetProfileUpdateMessageBody(((AuthTokenResponse)tokenAuthResponse.Results).CustomerID);
-
-                                topicName = ConfigHelper.GetValueByKey(ConfigKey.SNS_Topic_ChangeRequest.GetDescription(), _iconfiguration).Results.ToString().Trim();
-                                attribute.Add(EventTypeString.EventType, Core.Enums.RequestType.EditContact.GetDescription());
-                                var pushResult = await _MQDataAccess.PublishMessageToMessageQueue(topicName, msgBody, attribute);
-                                if (pushResult.Trim().ToUpper() == "OK")
-                                {
 
 
-                                    MessageQueueRequest queueRequest = new MessageQueueRequest
-                                    {
-                                        Source = Source.ChangeRequest,
-                                        NumberOfRetries = 1,
-                                        SNSTopic = topicName,
-                                        CreatedOn = DateTime.Now,
-                                        LastTriedOn = DateTime.Now,
-                                        PublishedOn = DateTime.Now,
-                                        MessageAttribute = Core.Enums.RequestType.EditContact.GetDescription().ToString(),
-                                        MessageBody = JsonConvert.SerializeObject(msgBody),
-                                        Status = 1
-                                    };
-                                    await _MQDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
-                                }
-                                else
-                                {
-                                    MessageQueueRequest queueRequest = new MessageQueueRequest
-                                    {
-                                        Source = Source.ChangeRequest,
-                                        NumberOfRetries = 1,
-                                        SNSTopic = topicName,
-                                        CreatedOn = DateTime.Now,
-                                        LastTriedOn = DateTime.Now,
-                                        PublishedOn = DateTime.Now,
-                                        MessageAttribute = Core.Enums.RequestType.EditContact.GetDescription().ToString(),
-                                        MessageBody = JsonConvert.SerializeObject(msgBody),
-                                        Status = 0
-                                    };
-                                    await _MQDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
-                                }
-                            }
-                            catch (Exception ex)
+                            MessageQueueRequest queueRequest = new MessageQueueRequest
                             {
-                                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-                                MessageQueueRequestException queueRequest = new MessageQueueRequestException
-                                {
-                                    Source = Source.ChangeRequest,
-                                    NumberOfRetries = 1,
-                                    SNSTopic = string.IsNullOrWhiteSpace(topicName) ? null : topicName,
-                                    CreatedOn = DateTime.Now,
-                                    LastTriedOn = DateTime.Now,
-                                    PublishedOn = DateTime.Now,
-                                    MessageAttribute = Core.Enums.RequestType.EditContact.GetDescription().ToString(),
-                                    MessageBody = msgBody != null ? JsonConvert.SerializeObject(msgBody) : null,
-                                    Status = 0,
-                                    Remark = "Error Occured in UpdateCustomerProfile",
-                                    Exception = new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)
-
-
-                                };
-                            }
-                            return Ok(new ServerResponse
-                            {
-                                HasSucceeded = true,
-                                Message = StatusMessages.SuccessMessage,
-                                Result = statusResponse
-                            });
-                        }
-                        else if(statusResponse.ResponseCode == (int)DbReturnValue.OldPasswordInvalid)
-                        {
-                            LogInfo.Error(DbReturnValue.OldPasswordInvalid.GetDescription());
-
-                            return Ok(new OperationResponse
-                            {
-                                HasSucceeded = false,
-                                Message = DbReturnValue.OldPasswordInvalid.GetDescription(),
-                                IsDomainValidationErrors = false
-                            });
+                                Source = Source.ChangeRequest,
+                                NumberOfRetries = 1,
+                                SNSTopic = topicName,
+                                CreatedOn = DateTime.Now,
+                                LastTriedOn = DateTime.Now,
+                                PublishedOn = DateTime.Now,
+                                MessageAttribute = Core.Enums.RequestType.EditContact.GetDescription().ToString(),
+                                MessageBody = JsonConvert.SerializeObject(msgBody),
+                                Status = 1
+                            };
+                            await _MQDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
                         }
                         else
                         {
-                            LogInfo.Error(DbReturnValue.NoRecords.GetDescription());
-
-                            return Ok(new OperationResponse
+                            MessageQueueRequest queueRequest = new MessageQueueRequest
                             {
-                                HasSucceeded = false,
-                                Message = DbReturnValue.UpdationFailed.GetDescription(),
-                                IsDomainValidationErrors = false
-                            });
+                                Source = Source.ChangeRequest,
+                                NumberOfRetries = 1,
+                                SNSTopic = topicName,
+                                CreatedOn = DateTime.Now,
+                                LastTriedOn = DateTime.Now,
+                                PublishedOn = DateTime.Now,
+                                MessageAttribute = Core.Enums.RequestType.EditContact.GetDescription().ToString(),
+                                MessageBody = JsonConvert.SerializeObject(msgBody),
+                                Status = 0
+                            };
+                            await _MQDataAccess.InsertMessageInMessageQueueRequest(queueRequest);
                         }
-
                     }
-
-                    else
+                    catch (Exception ex)
                     {
-                        //Token expired
-
-                        LogInfo.Warning(EnumExtensions.GetDescription(CommonErrors.ExpiredToken));
-
-                        return Ok(new OperationResponse
+                        Log.Error(ex, "Error in {function} {section}", "UpdateCustomerProfile", "GetProfileUpdateMessageBody");
+                        MessageQueueRequestException queueRequest = new MessageQueueRequestException
                         {
-                            HasSucceeded = false,
-                            Message = EnumExtensions.GetDescription(DbReturnValue.TokenExpired),
-                            IsDomainValidationErrors = true
-                        });
+                            Source = Source.ChangeRequest,
+                            NumberOfRetries = 1,
+                            SNSTopic = string.IsNullOrWhiteSpace(topicName) ? null : topicName,
+                            CreatedOn = DateTime.Now,
+                            LastTriedOn = DateTime.Now,
+                            PublishedOn = DateTime.Now,
+                            MessageAttribute = Core.Enums.RequestType.EditContact.GetDescription().ToString(),
+                            MessageBody = msgBody != null ? JsonConvert.SerializeObject(msgBody) : null,
+                            Status = 0,
+                            Remark = "Error Occured in UpdateCustomerProfile",
+                            Exception = new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical)
 
+
+                        };
                     }
-
+                    return Ok(ServerResponse.ServerResponseSuccess(statusResponse, customerID));
+                    
                 }
-
+                else if (statusResponse.ResponseCode == (int)DbReturnValue.OldPasswordInvalid)
+                {
+                    Log.Error("Error Description {Error} {function}", DbReturnValue.OldPasswordInvalid.GetDescription(), "UpdateCustomerProfile");
+                    return Ok(OperationResponse.OperationResponseFailed(DbReturnValue.OldPasswordInvalid.GetDescription(), customerID));
+                }
                 else
                 {
-                    // token auth failure
-                    LogInfo.Warning(EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed));
-
-                    return Ok(new OperationResponse
-                    {
-                        HasSucceeded = false,
-                        Message = EnumExtensions.GetDescription(DbReturnValue.TokenAuthFailed),
-                        IsDomainValidationErrors = false
-                    });
+                    Log.Error("Error Description {Error} {function}",DbReturnValue.NoRecords.GetDescription(), "UpdateCustomerProfile");
+                    return Ok(OperationResponse.OperationResponseFailed(DbReturnValue.UpdationFailed.GetDescription(), customerID));
                 }
 
             }
             catch (Exception ex)
             {
-                LogInfo.Error(new ExceptionHelper().GetLogString(ex, ErrorLevel.Critical));
-
-                return Ok(new OperationResponse
-                {
-                    HasSucceeded = false,
-                    Message = StatusMessages.ServerError,
-                    IsDomainValidationErrors = false
-                });
-
+                Log.Error(ex, "Error in {function}", "UpdateCustomerProfile");
+                return Ok(OperationResponse.OperationResponseFailed(StatusMessages.ServerError, customerID));
             }
         }
 
-
+/*
         // GET: api/Customers/5/6532432/1
         /// <summary>
         /// This method will return all associated plans for that customer.
         /// </summary>   
-        /// <param name="token" in="Header"></param>
         /// <param name="mobileNumber">Mobile Number</param>
         /// <param name="planType">Plan Type</param>  
         /// <returns></returns>
         /// <exception cref="Exception">Customer record not found for " + token + " token</exception>
         [HttpGet("CustomerPlans")]
-        public async Task<IActionResult> GetCustomerPlans([FromHeader(Name = "Grid-Authorization-Token")] string token, string mobileNumber, int? planType)
+        public async Task<IActionResult> GetCustomerPlans( string mobileNumber, int? planType)
         {
+            //Get customerID from token
+            customerID = JWTAndSwaggerServiceExtensions.GetCustomerIDfromToken(this.User);
+
             try
             {
                 if (string.IsNullOrEmpty(token)) return Ok(new OperationResponse
@@ -484,11 +316,10 @@ namespace CustomerService.Controllers
         /// <summary>
         /// This method will return all associated shared plans for that customer.
         /// </summary>   
-        /// <param name="token" in="Header"></param>
         /// <returns></returns>
         /// <exception cref="Exception">Customer record not found for " + token + " token</exception>
         [HttpGet("CustomerSharedPlans")]
-        public async Task<IActionResult> GetCustomerSharedPlans([FromHeader(Name = "Grid-Authorization-Token")] string token)
+        public async Task<IActionResult> GetCustomerSharedPlans()
         {
             try
             {
@@ -596,7 +427,6 @@ namespace CustomerService.Controllers
         /// <summary>
         /// Creates the specified token.
         /// </summary>
-        /// <param name="Token">The token.</param>
         /// <param name="customer">The customer.</param>
         /// <returns></returns>
         [HttpPost]
@@ -713,13 +543,12 @@ namespace CustomerService.Controllers
         /// Validate customer's referral code.
         /// Return success or failure flag with message
         /// </summary>
-        /// <param name="token" in="Header"></param>
         /// <param name="request">The request.</param>
         /// <returns>
         /// LoggedInPrinciple
         /// </returns>
         [HttpPost("ValidateReferralCode")]
-        public async Task<IActionResult> ValidateReferralCode([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody]ValidateReferralCodeRequest request)
+        public async Task<IActionResult> ValidateReferralCode( [FromBody]ValidateReferralCodeRequest request)
         {
             try
             {
@@ -824,12 +653,11 @@ namespace CustomerService.Controllers
         /// <summary>
         /// Return Subscribers api with MobileNumber, DisplayName, SIMID, PremiumType, ActivatedOn, IsPrimary
         /// </summary>
-        /// <param name="token" in="Header"></param>
         /// <returns>
         /// OperationResponse
         /// </returns>
         [HttpGet("Subscribers")]
-        public async Task<IActionResult> Subscribers([FromHeader(Name = "Grid-Authorization-Token")] string token)
+        public async Task<IActionResult> Subscribers()
         {
             try
             {
@@ -940,11 +768,10 @@ namespace CustomerService.Controllers
         /// <summary>
         /// Searches the customer.
         /// </summary>
-        /// <param name="token" in="Header"></param>
         /// <param name="SearchValue">The search value.</param>
         /// <returns></returns>
         [HttpGet("SearchCustomer/{SearchValue}")]
-        public async Task<IActionResult> SearchCustomer([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] string SearchValue)
+        public async Task<IActionResult> SearchCustomer( [FromRoute] string SearchValue)
         {
             try
             {
@@ -1051,7 +878,6 @@ namespace CustomerService.Controllers
         /// <summary>
         /// This will send forget password mail
         /// </summary>      
-        /// <param name="Token"></param>
         /// <param name="email">abcd@gmail.com</param>
         /// <returns>
         /// Customer Id and Token key
@@ -1211,11 +1037,10 @@ namespace CustomerService.Controllers
         /// <summary>
         /// Updates the referral code.
         /// </summary>
-        /// <param name="token" in="Header"></param>
         /// <param name="customerReferralCode">The customer referral code.</param>
         /// <returns></returns>
         [HttpPost("ValidateUpdateSelfReferralCode")]
-        public async Task<IActionResult> ValidateUpdateSelfReferralCode([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody]CustomerNewReferralCode customerReferralCode)
+        public async Task<IActionResult> ValidateUpdateSelfReferralCode( [FromBody]CustomerNewReferralCode customerReferralCode)
         {
             try
             {
@@ -1350,11 +1175,10 @@ namespace CustomerService.Controllers
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="token" in="Header"></param>
         /// <returns></returns>
         [HttpGet]
         [Route("GetBillingAddress")]
-        public async Task<IActionResult> GetBillingAddress([FromHeader(Name = "Grid-Authorization-Token")] string token)
+        public async Task<IActionResult> GetBillingAddress()
         {
             try
             {
@@ -1459,11 +1283,10 @@ namespace CustomerService.Controllers
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="token" in="Header"></param>
         /// <returns></returns>
         [HttpGet]
         [Route("GetPaymentMethod")]
-        public async Task<IActionResult> GetPaymentMethod([FromHeader(Name = "Grid-Authorization-Token")] string token)
+        public async Task<IActionResult> GetPaymentMethod()
         {
             try
             {
@@ -1568,12 +1391,11 @@ namespace CustomerService.Controllers
         /// <summary>
         /// Update Email subscription on customer profile level
         /// </summary>
-        /// <param name="token" in="Header"></param>
         /// <param name="EmailSubscription">0=No,1=Yes</param>
         /// <returns></returns>
         [HttpGet]
         [Route("UpdateEmailSubscription/{EmailSubscription}")]
-        public async Task<IActionResult> UpdateEmailSubscription([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int EmailSubscription)
+        public async Task<IActionResult> UpdateEmailSubscription( [FromRoute] int EmailSubscription)
         {
             try
             {
@@ -1680,10 +1502,9 @@ namespace CustomerService.Controllers
         /// <summary>
         /// Gets the customer orders.
         /// </summary>
-        /// <param name="token" in="Header"></param>
         /// <returns></returns>
         [HttpGet("Orders")]
-        public async Task<IActionResult> GetCustomerOrders([FromHeader(Name = "Grid-Authorization-Token")] string token)
+        public async Task<IActionResult> GetCustomerOrders()
         {
             try
             {
@@ -1789,10 +1610,9 @@ namespace CustomerService.Controllers
         /// <summary>
         /// Gets the customer rewardsummary.
         /// </summary>
-        /// <param name="token" in="Header"></param>
         /// <returns></returns>
         [HttpGet("RewardSummary")]
-        public async Task<IActionResult> GetRewardSummary([FromHeader(Name = "Grid-Authorization-Token")] string token)
+        public async Task<IActionResult> GetRewardSummary()
         {
             try
             {
@@ -1914,12 +1734,11 @@ namespace CustomerService.Controllers
         /// <summary>
         /// Gets the customer rewarddetails.
         /// </summary>
-        /// <param name="token" in="Header"></param>
         /// <param name="FromDate"></param>
         /// <param name="ToDate"></param>
         /// <returns></returns>
         [HttpGet("RewardDetails/{FromDate}/{ToDate}")]
-        public async Task<IActionResult> GetRewardDetails([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] DateTime FromDate, [FromRoute] DateTime ToDate)
+        public async Task<IActionResult> GetRewardDetails( [FromRoute] DateTime FromDate, [FromRoute] DateTime ToDate)
         {
             try
             {
@@ -2023,12 +1842,11 @@ namespace CustomerService.Controllers
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="token" in="Header"></param>
         /// <param name="_billing"></param>
         /// <returns></returns>
         [HttpPost]
         [Route("UpdateBillingDetails")]
-        public async Task<IActionResult> UpdateBillingDetails([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody]customerBilling _billing)
+        public async Task<IActionResult> UpdateBillingDetails( [FromBody]customerBilling _billing)
         {
             try
             {
@@ -2199,12 +2017,11 @@ namespace CustomerService.Controllers
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="token" in="Header"></param>
         /// <param name="MobileNumber"></param>
         /// <returns></returns>
         [HttpGet]
         [Route("GetBasePlan/{MobileNumber}")]
-        public async Task<IActionResult> GetBasePlan([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] string MobileNumber)
+        public async Task<IActionResult> GetBasePlan( [FromRoute] string MobileNumber)
         {
             try
             {
@@ -2308,12 +2125,11 @@ namespace CustomerService.Controllers
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="token" in="Header"></param>
         /// <param name="details"></param>
         /// <returns></returns>
         [HttpPost]
         [Route("UpdateDisplayName")]
-        public async Task<IActionResult> UpdateDisplayName([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromBody]DisplayDetails details)
+        public async Task<IActionResult> UpdateDisplayName( [FromBody]DisplayDetails details)
         {
             try
             {
@@ -2489,13 +2305,12 @@ namespace CustomerService.Controllers
         /// <summary>
         /// Update SMS subscriotion on number level
         /// </summary>
-        /// <param name="token" in="Header"></param>
         /// <param name="MobileNumber"></param>
         /// <param name="SMSSubscription">0=No,1=Yes</param>
         /// <returns></returns>
         [HttpGet]
         [Route("UpdateSMSSubscription/{MobileNumber}/{SMSSubscription}")]
-        public async Task<IActionResult> UpdateSMSSubscription([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] string MobileNumber, [FromRoute] int SMSSubscription)
+        public async Task<IActionResult> UpdateSMSSubscription( [FromRoute] string MobileNumber, [FromRoute] int SMSSubscription)
         {
             try
             {
@@ -2600,13 +2415,12 @@ namespace CustomerService.Controllers
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="token" in="Header"></param>
         /// <param name="MobileNumber"></param>
         /// <param name="VoiceSubscription">0=No,1=Yes</param>
         /// <returns></returns>
         [HttpGet]
         [Route("UpdateVoiceSubscription/{MobileNumber}/{VoiceSubscription}")]
-        public async Task<IActionResult> UpdateVoiceSubscription([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] string MobileNumber, [FromRoute] int VoiceSubscription)
+        public async Task<IActionResult> UpdateVoiceSubscription( [FromRoute] string MobileNumber, [FromRoute] int VoiceSubscription)
         {
             try
             {
@@ -2712,11 +2526,10 @@ namespace CustomerService.Controllers
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="token" in="Header"></param>
         /// <returns></returns>
         [HttpGet]
         [Route("GetShippingAddress")]
-        public async Task<IActionResult> GetShippingAddress([FromHeader(Name = "Grid-Authorization-Token")] string token)
+        public async Task<IActionResult> GetShippingAddress()
         {
             try
             {
@@ -2820,7 +2633,7 @@ namespace CustomerService.Controllers
 
         [HttpPost]
         [Route("ValidatePassword")]
-        public async Task<IActionResult> ValidatePassword([FromHeader(Name = "Grid-Authorization-Token")] string token, LoginDto login)
+        public async Task<IActionResult> ValidatePassword( LoginDto login)
         {
             try
             {
@@ -2924,7 +2737,7 @@ namespace CustomerService.Controllers
 
         [HttpGet]
         [Route("GetCustomerChangeRequests")]
-        public async Task<IActionResult> GetCustomerChangeRequests([FromHeader(Name = "Grid-Authorization-Token")] string token)
+        public async Task<IActionResult> GetCustomerChangeRequests()
         {
             try
             {
@@ -3028,7 +2841,7 @@ namespace CustomerService.Controllers
 
 
         [HttpGet("GetCustomerPurchasedVASes")]
-        public async Task<IActionResult> GetCustomerPurchasedVASes([FromHeader(Name = "Grid-Authorization-Token")] string token, string mobileNumber)
+        public async Task<IActionResult> GetCustomerPurchasedVASes( string mobileNumber)
         {
             try
             {
@@ -3132,7 +2945,7 @@ namespace CustomerService.Controllers
         }
 
         [HttpGet("GetBundledVASes")]
-        public async Task<IActionResult> GetBundledVASes([FromHeader(Name = "Grid-Authorization-Token")] string token, string mobileNumber)
+        public async Task<IActionResult> GetBundledVASes( string mobileNumber)
         {
             try
             {
@@ -3236,7 +3049,7 @@ namespace CustomerService.Controllers
         }
 
         [HttpGet("LogOut")]
-        public async Task<IActionResult> LogOut([FromHeader(Name = "Grid-Authorization-Token")] string token)
+        public async Task<IActionResult> LogOut()
         {
             try
             {
@@ -3379,5 +3192,6 @@ namespace CustomerService.Controllers
 
             }
         }
+ */
     }
 }

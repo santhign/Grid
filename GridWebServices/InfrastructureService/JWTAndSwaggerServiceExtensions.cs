@@ -5,14 +5,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
+using Serilog;
 
 namespace InfrastructureService
 {
-    public static class SwaggerServiceExtensions
+    public static class JWTAndSwaggerServiceExtensions
     {
-        public static IServiceCollection AddSwaggerDocumentation(this IServiceCollection services, string serviceName, string version="v1")
+        public static IServiceCollection AddSwaggerDocumentation(this IServiceCollection services, string serviceName, string version = "v1")
         {
-          
+
             // Register the Swagger generator, defining 1 or more Swagger documents
             services.AddSwaggerGen(c =>
             {
@@ -32,11 +36,31 @@ namespace InfrastructureService
                 string xmldocName = string.Format(@"{0}Service.xml", serviceName);
                 var xmlDocPath = System.AppDomain.CurrentDomain.BaseDirectory + xmldocName;
                 c.IncludeXmlComments(xmlDocPath);
-            });            
-
+            });
             return services;
         }
-
+        public static IServiceCollection AddJWTAuthentication(this IServiceCollection services)
+        {
+            // configure jwt authentication
+            var key = Encoding.ASCII.GetBytes("stratagile grid customer signin jwt hashing secret");
+            services.AddAuthentication(x =>
+            {
+            x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(x =>
+            {
+                x.RequireHttpsMetadata = false;
+                x.SaveToken = true;
+                x.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = false,
+                    ValidateAudience = false
+                };
+            });
+            return services;
+        }        
         public static IApplicationBuilder UseSwaggerDocumentation(this IApplicationBuilder app, string serviceName, string version = "v1")
         {
             string title = String.Format("GRID {0} Service API", serviceName);
@@ -55,5 +79,23 @@ namespace InfrastructureService
 
             return app;
         }
+        
+        public static int GetCustomerIDfromToken(ClaimsPrincipal user)
+        {
+            int customerID = -1;
+            try
+            {
+                var claimsIdentity = user.Identity as ClaimsIdentity;
+                int.TryParse(claimsIdentity.FindFirst(ClaimTypes.Name)?.Value, out customerID);
+                return customerID;
+            }
+            catch(Exception ex)
+            {
+                Log.Error(ex, "Failed to get CustomerId from claim in {function}", "GetCustomerIDfromToken");
+                throw ex;
+            }
+            
+        }
+
     }
 }

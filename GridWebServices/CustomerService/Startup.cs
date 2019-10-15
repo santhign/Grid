@@ -68,27 +68,28 @@ namespace CustomerService
             });
 
             services.AddSwaggerDocumentation("Customer", "v1"); //Code in Infrastructure
-            
-            // configure jwt authentication
-            var key = Encoding.ASCII.GetBytes(Configuration["jwtSecret"]);
-            services.AddAuthentication(x =>
-            {
-                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-            .AddJwtBearer(x =>
-            {
-                x.RequireHttpsMetadata = false;
-                x.SaveToken = true;
-                x.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateIssuer = false,
-                    ValidateAudience = false
-                };
-            });
 
+            // configure jwt authentication
+            //var key = Encoding.ASCII.GetBytes(Configuration["jwtSecret"]);
+            //services.AddAuthentication(x =>
+            //{
+            //    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            //    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            //})
+            //.AddJwtBearer(x =>
+            //{
+            //    x.RequireHttpsMetadata = false;
+            //    x.SaveToken = true;
+            //    x.TokenValidationParameters = new TokenValidationParameters
+            //    {
+            //        ValidateIssuerSigningKey = true,
+            //        IssuerSigningKey = new SymmetricSecurityKey(key),
+            //        ValidateIssuer = false,
+            //        ValidateAudience = false
+            //    };
+            //});
+
+            services.AddJWTAuthentication();
             // configure DI for application services
             services.AddScoped<IUserService, UserService>();
         }
@@ -99,7 +100,8 @@ namespace CustomerService
             // Enable Cors
             app.UseCors("MyPolicy");
             app.UseSwaggerDocumentation("Customer","v1");     //Code in Infrastructure       
-            
+            app.UseAuthentication();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -111,7 +113,7 @@ namespace CustomerService
             });
             app.UseMiddleware<LogMiddleware>();
             
-            app.UseAuthentication();
+            
 
             app.UseMvc();
             app.Run(async (context) =>

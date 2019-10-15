@@ -75,30 +75,16 @@ namespace OrderService.Controllers
         public async Task<IActionResult> Get([FromHeader(Name = "Grid-Authorization-Token")] string token, [FromRoute] int id)
         {
             //Variables
-            AuthHelper authHelper = new AuthHelper(_iconfiguration);
-            OperationResponse tokenAuthResponse;
+            AuthHelper authHelper = new AuthHelper(_iconfiguration);            
             OperationResponse failedApiResponse = new OperationResponse(false, "");
             DatabaseResponse customerResponse, orderDetailsResponse;
-            int customerID = -1;  
+            int customerID = -1;
 
-            //Token Checking
-            try
-            {
-                tokenAuthResponse = await authHelper.AuthenticateLoginToken(token);
-                customerID = tokenAuthResponse._loginUserId;
-                // if failed return the failed message
-                if (tokenAuthResponse.HasSucceeded == false)
-                {
-                    return Ok(tokenAuthResponse);
-                }
-            }
-            catch(Exception ex)
-            {
-                Log.Error(ex, "Exception in {function}","AuthenticateLoginToken");
-                return Ok(failedApiResponse);
-            }
+            //Get customerID from token
+            customerID = JWTAndSwaggerServiceExtensions.GetCustomerIDfromToken(this.User);
+            
 
-            using (LogContext.PushProperty("_loginUserId", customerID))
+            using (LogContext.PushProperty("_loginCustomerId", customerID))
             {
                 //Order part
                 
@@ -111,7 +97,7 @@ namespace OrderService.Controllers
                         // failed to locate customer                        
                         failedApiResponse.Message = EnumExtensions.GetDescription(CommonErrors.TokenNotMatching);
                         failedApiResponse.IsDomainValidationErrors = false;
-                        failedApiResponse._loginUserId = customerID;
+                        failedApiResponse._loginCustomerId = customerID;
                         return Ok(failedApiResponse);
                     }
                 }
@@ -133,7 +119,7 @@ namespace OrderService.Controllers
                         {
                             HasSucceeded = false,
                             Message = EnumExtensions.GetDescription(DbReturnValue.NotExists),
-                            _loginUserId = customerID
+                            _loginCustomerId = customerID
                         }); ;
                     }
                 }
@@ -149,7 +135,7 @@ namespace OrderService.Controllers
                     HasSucceeded = true,
                     Message = EnumExtensions.GetDescription(DbReturnValue.RecordExists),
                     Result = orderDetailsResponse.Results,
-                    _loginUserId = customerID
+                    _loginCustomerId = customerID
 
                 });
             }           

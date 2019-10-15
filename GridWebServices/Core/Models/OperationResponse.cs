@@ -33,6 +33,16 @@ namespace Core.Models
             HasSucceeded = hasSucceeded;
             Message = message;
         }
+        public static RequestStatus OperationResponseFailed(string failReason, int customerId)
+        {
+            return new OperationResponse
+            {
+                HasSucceeded = false,
+                Message = failReason,
+                IsDomainValidationErrors = false,
+                _loginCustomerId = customerId
+            };
+        }
 
         public ServerResponse GenerateResponse()
         {
@@ -63,6 +73,27 @@ namespace Core.Models
             Message = msg;
         }
 
+        public static RequestStatus ServerResponseSuccess(object results, int customerId)
+        {
+            return new ServerResponse
+            {
+                HasSucceeded = true,
+                Message = StatusMessages.SuccessMessage,
+                Result = results,
+                _loginCustomerId = customerId
+            };            
+        }
+
+        public static RequestStatus ServerResponseFailed(string failReason, int customerId)
+        {
+            return new OperationResponse
+            {
+                HasSucceeded = false,
+                Message = failReason,
+                IsDomainValidationErrors = false,
+                _loginCustomerId = customerId
+            };
+        }
 
     }
 

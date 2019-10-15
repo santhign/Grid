@@ -18,7 +18,7 @@ namespace InfrastructureService
     public class LogMiddleware
     {
         const string MessageTemplate =
-               "{_loginUserId} HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms with {RequestBody} and {ResponseBody}";
+               "{_loginCustomerId} HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms with {RequestBody} and {ResponseBody}";
 
         static readonly ILogger Log = Serilog.Log.ForContext<LogMiddleware>();
 
@@ -62,16 +62,16 @@ namespace InfrastructureService
                             ref responseBodyContent);
                         
                         //Get CustomerId
-                        var _loginUserId = -1;
-                        Regex re = new Regex(@"\\?\""_loginUserId\\?\"":(-?\d+)");
+                        var _loginCustomerId = -1;
+                        Regex re = new Regex(@"\\?\""_loginCustomerId\\?\"":(-?\d+)");
                         Match m = re.Match(responseBodyContent);
                         if (m.Success)
                         {
-                            int.TryParse(m.Groups[1].Value, out _loginUserId);                            
+                            int.TryParse(m.Groups[1].Value, out _loginCustomerId);                            
                         }
-                        using (LogContext.PushProperty("_loginUserId", _loginUserId))
+                        using (LogContext.PushProperty("_loginCustomerId", _loginCustomerId))
                         {
-                            Log.Information(MessageTemplate, _loginUserId, httpContext.Request.Method, httpContext.Request.Path, statusCode, stopWatch.Elapsed.TotalMilliseconds, requestBodyContent, responseBodyContent);
+                            Log.Information(MessageTemplate, _loginCustomerId, httpContext.Request.Method, httpContext.Request.Path, statusCode, stopWatch.Elapsed.TotalMilliseconds, requestBodyContent, responseBodyContent);
                         }                        
                     }
                 }
