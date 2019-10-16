@@ -61,4 +61,10 @@ namespace CatelogService.Models
         public string usercode { get; set; }
         public string schemecode { get; set; }
     }
+
+    public class BundlePromotionalDetails
+    {
+        public int BundleID { get; set; }
+        public string promocode { get; set; }
+    }
 }
