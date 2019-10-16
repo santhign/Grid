@@ -149,7 +149,7 @@ namespace CatelogService.DataAccess
             }
         }    
 
-        public async Task<List<Bundle>> GetBundleByPromocode(int bundleId, string promocode)
+        public async Task<List<Bundle>> GetBundleByPromocode(BundlePromotionalDetails _details)
         {
             try
             {
@@ -160,8 +160,8 @@ namespace CatelogService.DataAccess
                     new SqlParameter( "@PromotionCode",  SqlDbType.VarChar )
                 };
 
-                parameters[0].Value = bundleId;
-                parameters[1].Value = promocode;
+                parameters[0].Value = _details.BundleID;
+                parameters[1].Value = _details.promocode;
 
                 _DataHelper = new DataAccessHelper("Catelog_GetPromotionalBundle", parameters, _configuration);
 
