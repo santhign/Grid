@@ -4613,6 +4613,7 @@ namespace OrderService.Controllers
                         {
                             if ((TokenSession)updateCheckoutDetailsResponse.Results != null)
                             {
+                                //throw new NullReferenceException();
                                 PaymentHelper gatewayHelper = new PaymentHelper();
                                 DatabaseResponse paymentProcessingRespose = await gatewayHelper.ProcessTransaction(_iconfiguration, updateCheckoutDetailsResponse, updateRequest.MPGSOrderID, updateRequest.Result, "customerid:" + customerID + " - order processing - ");
                                 var sourceTyeResponse = await _orderAccess.GetSourceTypeByMPGSSOrderId(updateRequest.MPGSOrderID);
